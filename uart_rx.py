@@ -318,6 +318,7 @@ def main(stdscr):
                 global BAUDSET_DATA_STATE
                 BAUDSET_DATA_STATE = 1
             elif (chr(k) in literals):
+                testval("/dev/ttyAMA0", BAUDSET_DATA, chr(k))
                 writeser(ser, chr(k))
             else:
                 writeser(ser, chr(k))
