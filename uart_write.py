@@ -49,7 +49,8 @@ def main():
 	        print "iteration=", iteration/32, "baudrate=", baudrate
 #		reset_state(ser)
 		ser.write(s)
-#		time.sleep(.5)
+		#time.sleep(0.5) # note - 0.5 was in mainroom py file, 1 was in myroom file
+#		time.sleep(1)
 	        s = "BRG9L"
 	        index=0
 	        row=0
