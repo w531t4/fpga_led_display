@@ -1,0 +1,25 @@
+Index,Path Delay,Logic Levels,Types,Route Delay,Source Clock,Destination Clock,Data Start Pin,Data End Pin
+1,7.978,1,SB_LUT4,6.314,main|clk_root_keep,timeout_2s_1|un68_running_inferred_clock,matscan1.timeout_column_address.counter[0].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[1]
+2,7.978,1,SB_LUT4,6.314,main|clk_root_keep,timeout_2s_1|un68_running_inferred_clock,matscan1.timeout_column_address.counter[1].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[2]
+3,7.978,1,SB_LUT4,6.314,main|clk_root_keep,timeout_2s_1|un68_running_inferred_clock,matscan1.timeout_column_address.counter[2].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[3]
+4,7.978,1,SB_LUT4,6.314,main|clk_root_keep,timeout_2s_1|un68_running_inferred_clock,matscan1.timeout_column_address.counter[3].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[4]
+5,7.978,1,SB_LUT4,6.314,main|clk_root_keep,timeout_2s_1|un68_running_inferred_clock,matscan1.timeout_column_address.counter[4].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[5]
+6,10.919,5,SB_LUT4 SB_LUT4 SB_CARRY SB_LUT4 SB_LUT4,7.139,timeout_2s_1|un68_running_inferred_clock,main|clk_root_keep,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10].Q,fb_f.rgb565_bottom[0].D
+7,10.919,5,SB_LUT4 SB_LUT4 SB_CARRY SB_LUT4 SB_LUT4,7.139,timeout_2s_1|un68_running_inferred_clock,main|clk_root_keep,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10].Q,fb_f.rgb565_bottom[10].D
+8,10.919,5,SB_LUT4 SB_LUT4 SB_CARRY SB_LUT4 SB_LUT4,7.139,timeout_2s_1|un68_running_inferred_clock,main|clk_root_keep,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10].Q,fb_f.rgb565_bottom[11].D
+9,10.919,5,SB_LUT4 SB_LUT4 SB_CARRY SB_LUT4 SB_LUT4,7.139,timeout_2s_1|un68_running_inferred_clock,main|clk_root_keep,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10].Q,fb_f.rgb565_bottom[12].D
+10,10.919,5,SB_LUT4 SB_LUT4 SB_CARRY SB_LUT4 SB_LUT4,7.139,timeout_2s_1|un68_running_inferred_clock,main|clk_root_keep,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10].Q,fb_f.rgb565_bottom[13].D
+11,10.382,4,SB_LUT4 SB_LUT4 SB_LUT4 SB_LUT4,7.219,matrix_scan|row_latch_inferred_clock,main|clk_root_keep,matscan1.brightness_mask_active[4].Q,matscan1.timeout_output_enable.counter[2].D
+12,10.371,4,SB_LUT4 SB_LUT4 SB_LUT4 SB_LUT4,7.219,matrix_scan|row_latch_inferred_clock,main|clk_root_keep,matscan1.brightness_mask_active[5].Q,matscan1.timeout_output_enable.counter[2].D
+13,10.248,4,SB_LUT4 SB_LUT4 SB_LUT4 SB_LUT4,7.219,matrix_scan|row_latch_inferred_clock,main|clk_root_keep,matscan1.brightness_mask_active[4].Q,matscan1.timeout_output_enable.counter[3].D
+14,10.237,4,SB_LUT4 SB_LUT4 SB_LUT4 SB_LUT4,7.219,matrix_scan|row_latch_inferred_clock,main|clk_root_keep,matscan1.brightness_mask_active[5].Q,matscan1.timeout_output_enable.counter[3].D
+15,8.566,3,SB_LUT4 SB_LUT4 SB_LUT4,5.848,matrix_scan|row_latch_inferred_clock,main|clk_root_keep,matscan1.brightness_mask_active[0].Q,matscan1.timeout_output_enable.counter[0].D
+16,3.645,0,,2.549,matrix_scan|row_latch_inferred_clock,timeout_2s_1|un68_running_inferred_clock,matscan1.row_address[3].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[10]
+17,3.645,0,,2.549,matrix_scan|row_latch_inferred_clock,timeout_2s_1|un68_running_inferred_clock,matscan1.row_address[0].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[7]
+18,3.645,0,,2.549,matrix_scan|row_latch_inferred_clock,timeout_2s_1|un68_running_inferred_clock,matscan1.row_address[1].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[8]
+19,3.645,0,,2.549,matrix_scan|row_latch_inferred_clock,timeout_2s_1|un68_running_inferred_clock,matscan1.row_address[2].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0.RADDR[9]
+20,3.645,0,,2.549,matrix_scan|row_latch_inferred_clock,timeout_2s_1|un68_running_inferred_clock,matscan1.row_address[3].Q,fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_1.RADDR[10]
+21,8.762,6,SB_LUT4 SB_LUT4 SB_CARRY SB_CARRY SB_CARRY SB_LUT4,5.796,matrix_scan|row_latch_inferred_clock,matrix_scan|row_latch_inferred_clock_1,matscan1.brightness_mask[3].Q,matscan1.row_address[3].D
+22,8.752,6,SB_LUT4 SB_LUT4 SB_CARRY SB_CARRY SB_CARRY SB_LUT4,5.796,matrix_scan|row_latch_inferred_clock,matrix_scan|row_latch_inferred_clock_1,matscan1.brightness_mask[4].Q,matscan1.row_address[3].D
+23,8.562,5,SB_LUT4 SB_LUT4 SB_CARRY SB_CARRY SB_LUT4,5.782,matrix_scan|row_latch_inferred_clock,matrix_scan|row_latch_inferred_clock_1,matscan1.brightness_mask[3].Q,matscan1.row_address[2].D
+24,8.552,5,SB_LUT4 SB_LUT4 SB_CARRY SB_CARRY SB_LUT4,5.782,matrix_scan|row_latch_inferred_clock,matrix_scan|row_latch_inferred_clock_1,matscan1.brightness_mask[4].Q,matscan1.row_address[2].D

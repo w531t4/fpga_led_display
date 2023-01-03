@@ -1,0 +1,370 @@
+# Sun Apr  7 11:23:57 2019
+
+Synopsys Lattice Technology Mapper, Version maplat, Build 1612R, Built Dec  5 2016 09:30:53
+Copyright (C) 1994-2016 Synopsys, Inc. All rights reserved. This Synopsys software and all associated documentation are proprietary to Synopsys, Inc. and may only be used pursuant to the terms and conditions of a written license agreement with Synopsys, Inc. All other use, reproduction, modification, or distribution of the Synopsys software or the associated documentation is strictly prohibited.
+Product Version L-2016.09L+ice40
+
+Mapper Startup Complete (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 98MB peak: 99MB)
+
+@N: MF248 |Running in 64-bit mode.
+@N: MF666 |Clock conversion enabled. (Command "set_option -fix_gated_and_generated_clocks 1" in the project file.)
+
+Design Input Complete (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 98MB peak: 100MB)
+
+
+Mapper Initialization Complete (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 98MB peak: 100MB)
+
+
+Start loading timing files (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 100MB peak: 100MB)
+
+
+Finished loading timing files (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 100MB peak: 102MB)
+
+Adding property syn_ta_report_clock_domain_crossing, value 0 to view:work.main(verilog)
+Adding property syn_ta_max_display_worst_paths, value -1 to view:work.main(verilog)
+
+Start Timing Analyst (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 132MB peak: 134MB)
+
+
+Start final timing analysis (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 132MB peak: 134MB)
+
+@N: MT615 |Found clock my16mhzclk with period 62.50ns 
+@N: MT615 |Found clock main|clk_root_logic_derived_clock with period 7.46ns 
+
+
+##### START OF TIMING REPORT #####[
+# Timing Report written on Sun Apr  7 11:23:57 2019
+#
+
+
+Top view:               main
+Requested Frequency:    16.0 MHz
+Wire load mode:         top
+Paths requested:        5
+Constraint File(s):    
+@N: MT320 |This timing report is an estimate of place and route data. For final timing results, use the FPGA vendor place and route report.
+
+@N: MT322 |Clock constraints include only register-to-register paths associated with each individual clock.
+
+
+
+Performance Summary
+*******************
+
+
+Worst slack in design: -7.015
+
+                                      Requested     Estimated     Requested     Estimated                 Clock                         Clock           
+Starting Clock                        Frequency     Frequency     Period        Period        Slack       Type                          Group           
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+main|clk_root_logic_derived_clock     134.0 MHz     69.1 MHz      7.463         14.478        -7.015      derived (from my16mhzclk)     default_clkgroup
+my16mhzclk                            16.0 MHz      NA            62.500        NA            DCM/PLL     declared                      default_clkgroup
+========================================================================================================================================================
+@N: MT582 |Estimated period and frequency not reported for given clock unless the clock has at least one timing path which is not a false or a max delay path and that does not have excessive slack
+
+
+
+
+
+Clock Relationships
+*******************
+
+Clocks                                                                |    rise  to  rise    |    fall  to  fall   |    rise  to  fall    |    fall  to  rise  
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+Starting                           Ending                             |  constraint  slack   |  constraint  slack  |  constraint  slack   |  constraint  slack 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+main|clk_root_logic_derived_clock  main|clk_root_logic_derived_clock  |  7.463       -7.015  |  7.463       2.744  |  3.631       -3.047  |  3.831       -0.887
+===============================================================================================================================================================
+ Note: 'No paths' indicates there are no paths in the design for that pair of clock edges.
+       'Diff grp' indicates that paths exist but the starting clock and ending clock are in different clock groups.
+
+
+
+Interface Information 
+*********************
+
+No IO constraint found
+
+
+
+====================================
+Detailed Report for Clock: main|clk_root_logic_derived_clock
+====================================
+
+
+
+Starting Points with Worst Slack
+********************************
+
+                                Starting                                                                          Arrival           
+Instance                        Reference                             Type        Pin     Net                     Time        Slack 
+                                Clock                                                                                               
+------------------------------------------------------------------------------------------------------------------------------------
+mydebug.current_position[4]     main|clk_root_logic_derived_clock     SB_DFFS     Q       current_position[4]     0.796       -7.015
+====================================================================================================================================
+
+
+Ending Points with Worst Slack
+******************************
+
+                          Starting                                                                           Required           
+Instance                  Reference                             Type         Pin     Net                     Time         Slack 
+                          Clock                                                                                                 
+--------------------------------------------------------------------------------------------------------------------------------
+mydebug.debug_bits[3]     main|clk_root_logic_derived_clock     SB_DFFER     D       debug_bits_6_0_i[3]     7.308        -7.015
+================================================================================================================================
+
+
+
+Worst Path Information
+***********************
+
+
+Path information for path number 1: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      14.323
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (critical) :                     -7.015
+
+    Number of logic level(s):                6
+    Starting point:                          mydebug.current_position[4] / Q
+    Ending point:                            mydebug.debug_bits[3] / D
+    The start point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+    The end   point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+
+Instance / Net                                            Pin      Pin               Arrival     No. of    
+Name                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------
+mydebug.current_position[4]                  SB_DFFS      Q        Out     0.796     0.796       -         
+current_position[4]                          Net          -        -       1.599     -           7         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      I0       In      -         2.395       -         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      O        Out     0.661     3.056       -         
+un5_N_5_mux                                  Net          -        -       1.371     -           56        
+mydebug.debug_bits_RNO_18[3]                 SB_LUT4      I2       In      -         4.427       -         
+mydebug.debug_bits_RNO_18[3]                 SB_LUT4      O        Out     0.558     4.986       -         
+debug_bits_RNO_18[3]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_16[3]                 SB_LUT4      I0       In      -         6.357       -         
+mydebug.debug_bits_RNO_16[3]                 SB_LUT4      O        Out     0.661     7.018       -         
+debug_bits_RNO_16[3]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_7[3]                  SB_LUT4      I0       In      -         8.389       -         
+mydebug.debug_bits_RNO_7[3]                  SB_LUT4      O        Out     0.569     8.957       -         
+debug_bits_2_67_ns_1[5]                      Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_1[3]                  SB_LUT4      I2       In      -         10.329      -         
+mydebug.debug_bits_RNO_1[3]                  SB_LUT4      O        Out     0.558     10.887      -         
+N_1791                                       Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO[3]                    SB_LUT4      I2       In      -         12.258      -         
+mydebug.debug_bits_RNO[3]                    SB_LUT4      O        Out     0.558     12.816      -         
+debug_bits_6_0_i[3]                          Net          -        -       1.507     -           1         
+mydebug.debug_bits[3]                        SB_DFFER     D        In      -         14.323      -         
+===========================================================================================================
+Total path delay (propagation time + setup) of 14.478 is 4.517(31.2%) logic and 9.961(68.8%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 2: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      14.323
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (critical) :                     -7.015
+
+    Number of logic level(s):                6
+    Starting point:                          mydebug.current_position[4] / Q
+    Ending point:                            mydebug.debug_bits[4] / D
+    The start point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+    The end   point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+
+Instance / Net                                            Pin      Pin               Arrival     No. of    
+Name                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------
+mydebug.current_position[4]                  SB_DFFS      Q        Out     0.796     0.796       -         
+current_position[4]                          Net          -        -       1.599     -           7         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      I0       In      -         2.395       -         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      O        Out     0.661     3.056       -         
+un5_N_5_mux                                  Net          -        -       1.371     -           56        
+mydebug.debug_bits_RNO_18[4]                 SB_LUT4      I2       In      -         4.427       -         
+mydebug.debug_bits_RNO_18[4]                 SB_LUT4      O        Out     0.558     4.986       -         
+debug_bits_RNO_18[4]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_16[4]                 SB_LUT4      I0       In      -         6.357       -         
+mydebug.debug_bits_RNO_16[4]                 SB_LUT4      O        Out     0.661     7.018       -         
+debug_bits_RNO_16[4]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_7[4]                  SB_LUT4      I0       In      -         8.389       -         
+mydebug.debug_bits_RNO_7[4]                  SB_LUT4      O        Out     0.569     8.957       -         
+debug_bits_2_67_ns_1[6]                      Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_1[4]                  SB_LUT4      I2       In      -         10.329      -         
+mydebug.debug_bits_RNO_1[4]                  SB_LUT4      O        Out     0.558     10.887      -         
+N_1055                                       Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO[4]                    SB_LUT4      I2       In      -         12.258      -         
+mydebug.debug_bits_RNO[4]                    SB_LUT4      O        Out     0.558     12.816      -         
+debug_bits_6[4]                              Net          -        -       1.507     -           1         
+mydebug.debug_bits[4]                        SB_DFFER     D        In      -         14.323      -         
+===========================================================================================================
+Total path delay (propagation time + setup) of 14.478 is 4.517(31.2%) logic and 9.961(68.8%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 3: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      14.323
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (critical) :                     -7.015
+
+    Number of logic level(s):                6
+    Starting point:                          mydebug.current_position[4] / Q
+    Ending point:                            mydebug.debug_bits[7] / D
+    The start point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+    The end   point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+
+Instance / Net                                            Pin      Pin               Arrival     No. of    
+Name                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------
+mydebug.current_position[4]                  SB_DFFS      Q        Out     0.796     0.796       -         
+current_position[4]                          Net          -        -       1.599     -           7         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      I0       In      -         2.395       -         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      O        Out     0.661     3.056       -         
+un5_N_5_mux                                  Net          -        -       1.371     -           56        
+mydebug.debug_bits_RNO_18[7]                 SB_LUT4      I2       In      -         4.427       -         
+mydebug.debug_bits_RNO_18[7]                 SB_LUT4      O        Out     0.558     4.986       -         
+debug_bits_RNO_18[7]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_16[7]                 SB_LUT4      I0       In      -         6.357       -         
+mydebug.debug_bits_RNO_16[7]                 SB_LUT4      O        Out     0.661     7.018       -         
+debug_bits_RNO_16[7]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_7[7]                  SB_LUT4      I0       In      -         8.389       -         
+mydebug.debug_bits_RNO_7[7]                  SB_LUT4      O        Out     0.569     8.957       -         
+debug_bits_2_88_ns_1[7]                      Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_1[7]                  SB_LUT4      I2       In      -         10.329      -         
+mydebug.debug_bits_RNO_1[7]                  SB_LUT4      O        Out     0.558     10.887      -         
+N_1224                                       Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO[7]                    SB_LUT4      I2       In      -         12.258      -         
+mydebug.debug_bits_RNO[7]                    SB_LUT4      O        Out     0.558     12.816      -         
+debug_bits_6[7]                              Net          -        -       1.507     -           1         
+mydebug.debug_bits[7]                        SB_DFFER     D        In      -         14.323      -         
+===========================================================================================================
+Total path delay (propagation time + setup) of 14.478 is 4.517(31.2%) logic and 9.961(68.8%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 4: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      14.323
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (critical) :                     -7.015
+
+    Number of logic level(s):                6
+    Starting point:                          mydebug.current_position[4] / Q
+    Ending point:                            mydebug.debug_bits[6] / D
+    The start point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+    The end   point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+
+Instance / Net                                            Pin      Pin               Arrival     No. of    
+Name                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------
+mydebug.current_position[4]                  SB_DFFS      Q        Out     0.796     0.796       -         
+current_position[4]                          Net          -        -       1.599     -           7         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      I0       In      -         2.395       -         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      O        Out     0.661     3.056       -         
+un5_N_5_mux                                  Net          -        -       1.371     -           56        
+mydebug.debug_bits_RNO_18[6]                 SB_LUT4      I2       In      -         4.427       -         
+mydebug.debug_bits_RNO_18[6]                 SB_LUT4      O        Out     0.558     4.986       -         
+debug_bits_RNO_18[6]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_16[6]                 SB_LUT4      I0       In      -         6.357       -         
+mydebug.debug_bits_RNO_16[6]                 SB_LUT4      O        Out     0.661     7.018       -         
+debug_bits_RNO_16[6]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_7[6]                  SB_LUT4      I0       In      -         8.389       -         
+mydebug.debug_bits_RNO_7[6]                  SB_LUT4      O        Out     0.569     8.957       -         
+debug_bits_2_88_ns_1[6]                      Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_1[6]                  SB_LUT4      I2       In      -         10.329      -         
+mydebug.debug_bits_RNO_1[6]                  SB_LUT4      O        Out     0.558     10.887      -         
+N_1223                                       Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO[6]                    SB_LUT4      I2       In      -         12.258      -         
+mydebug.debug_bits_RNO[6]                    SB_LUT4      O        Out     0.558     12.816      -         
+debug_bits_6[6]                              Net          -        -       1.507     -           1         
+mydebug.debug_bits[6]                        SB_DFFER     D        In      -         14.323      -         
+===========================================================================================================
+Total path delay (propagation time + setup) of 14.478 is 4.517(31.2%) logic and 9.961(68.8%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 5: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      14.323
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (critical) :                     -7.015
+
+    Number of logic level(s):                6
+    Starting point:                          mydebug.current_position[4] / Q
+    Ending point:                            mydebug.debug_bits[5] / D
+    The start point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+    The end   point is clocked by            main|clk_root_logic_derived_clock [rising] on pin C
+
+Instance / Net                                            Pin      Pin               Arrival     No. of    
+Name                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------
+mydebug.current_position[4]                  SB_DFFS      Q        Out     0.796     0.796       -         
+current_position[4]                          Net          -        -       1.599     -           7         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      I0       In      -         2.395       -         
+mydebug.current_position_fast_RNI7AGD[3]     SB_LUT4      O        Out     0.661     3.056       -         
+un5_N_5_mux                                  Net          -        -       1.371     -           56        
+mydebug.debug_bits_RNO_18[5]                 SB_LUT4      I2       In      -         4.427       -         
+mydebug.debug_bits_RNO_18[5]                 SB_LUT4      O        Out     0.558     4.986       -         
+debug_bits_RNO_18[5]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_16[5]                 SB_LUT4      I0       In      -         6.357       -         
+mydebug.debug_bits_RNO_16[5]                 SB_LUT4      O        Out     0.661     7.018       -         
+debug_bits_RNO_16[5]                         Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_7[5]                  SB_LUT4      I0       In      -         8.389       -         
+mydebug.debug_bits_RNO_7[5]                  SB_LUT4      O        Out     0.569     8.957       -         
+debug_bits_2_67_ns_1[7]                      Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO_1[5]                  SB_LUT4      I2       In      -         10.329      -         
+mydebug.debug_bits_RNO_1[5]                  SB_LUT4      O        Out     0.558     10.887      -         
+N_1056                                       Net          -        -       1.371     -           1         
+mydebug.debug_bits_RNO[5]                    SB_LUT4      I2       In      -         12.258      -         
+mydebug.debug_bits_RNO[5]                    SB_LUT4      O        Out     0.558     12.816      -         
+debug_bits_6[5]                              Net          -        -       1.507     -           1         
+mydebug.debug_bits[5]                        SB_DFFER     D        In      -         14.323      -         
+===========================================================================================================
+Total path delay (propagation time + setup) of 14.478 is 4.517(31.2%) logic and 9.961(68.8%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+
+##### END OF TIMING REPORT #####]
+
+Timing exceptions that could not be applied
+None
+
+Finished final timing analysis (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 132MB peak: 134MB)
+
+
+Start Writing Netlists (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 132MB peak: 134MB)
+
+Writing Analyst data base /home/awhite/CLionProjects/led_display/fpga/template_Implmnt/template_ta.srm
+
+Finished Writing Netlist Databases (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 133MB peak: 134MB)
+
+Mapper successful!
+
+At Mapper Exit (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 21MB peak: 134MB)
+
+Process took 0h:00m:01s realtime, 0h:00m:01s cputime
+# Sun Apr  7 11:23:57 2019
+
+###########################################################]

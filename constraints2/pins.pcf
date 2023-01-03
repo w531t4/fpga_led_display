@@ -1,0 +1,73 @@
+  # ##############################################################################
+
+# iCEcube PCF
+
+# Version:            2017.01.27914
+
+# File Generated:     Jun 24 2017 13:04:57
+
+# Family & Device:    iCE40LP8K
+
+# Package:            CM81
+
+# ##############################################################################
+
+###IOSet List 24
+
+
+set_io pin1_usb_dp A2
+set_io pin2_usb_dn A1
+set_io pin3_clk_16mhz B2
+set_io pin3 B1
+set_io pin4 C2
+set_io pin5 C1
+set_io pin6 D2
+set_io pin7 D1
+set_io pin8 E2
+set_io pin9 E1
+set_io pin10 G2
+set_io pin11 H1
+set_io pin12 J1
+set_io pin13 H2
+set_io pin14_sdo H9
+set_io pin15_sdi D9
+set_io pin16_sck D8
+set_io pin17_ss C9
+set_io pin18 A9
+set_io pin19 B8
+set_io pin20 A8
+set_io pin21 B7
+set_io pin22 A7
+set_io pin23 B6
+set_io pin24 A6
+set_io pinLED B3
+
+
+#set_io pin13 J1
+#set_io pin15_sdi H7
+#set_io pin1_usb_dp A3
+#set_io pin20 E8
+#set_io pin2_usb_dn A4
+#set_io pin4 B2
+#set_io pin10 E1
+#set_io pin18 D9
+#set_io pin7 B1
+#set_io pin11 G1
+#set_io pin19 C9
+#set_io pin22 A8
+#set_io pin6 A1
+#set_io pin12 H1
+#set_io pin16_sck G7
+#set_io pin21 A9
+#set_io pin5 A2
+#set_io pin9 D1
+#set_io pin14_sdo G6
+#set_io pin24 A6
+#set_io pin8 C1
+#set_io pin17_ss F7
+#set_io pin23 A7
+#set_io pin3_clk_16mhz B4
+#set_io pinLED B3
+#
+
+
