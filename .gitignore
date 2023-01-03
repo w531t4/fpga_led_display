@@ -6,5 +6,6 @@ bitmaps
 images
 build_artifacts
 template_Implmnt
-a.out
 *.pyc
+stdout.log
+stdout.log.bak
