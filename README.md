@@ -9,3 +9,10 @@ Note: Following instructions from https://tinyfpga.com/bx/guide.html
 - `. venv/bin/activate`
 - `pip install tinyprog`
 
+# visualizing verilog
+Based on suggestion from https://stackoverflow.com/questions/67923728/yosys-producing-an-electronic-schematics-from-verilog
+- install node
+- `dnf install python3-nodeenv`
+- `nodeenv --verbose nenv` (or) `nodenv --prebuilt nenv`
+- `npm install -g netlistsvg`
+- use json file from yosys to produce results (see Makefile)

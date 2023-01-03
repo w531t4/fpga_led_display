@@ -8,32 +8,32 @@ module main (
 	// lessons
 	// 1. Ensure that all unused IO are set to no pullup
 
-  inout pin1_usb_dp,
-  inout pin2_usb_dn,
+  output pin1_usb_dp,
+  output pin2_usb_dn,
   input pin3_clk_16mhz,
-  inout pin3,
-  inout pin4,
-  inout pin5,
-  inout pin6,
-  inout pin7,
-  inout pin8,
-  inout pin9,
-  inout pin10,
-  inout pin11,
-  inout pin12,
-  inout pin13,
-  inout pin14_sdo,
-  inout pin15_sdi,
-  inout pin16_sck,
-  inout pin17_ss,
-  inout pin18,
-  inout pin19,
-  inout pin20,
-  inout pin21,
-  inout pin22,
-  inout pin23,
-  inout pin24,
-  inout pinLED
+  output pin3,
+  output pin4,
+  output pin5,
+  output pin6,
+  input pin7,
+  output pin8,
+  output pin9,
+  output pin10,
+  output pin11,
+  output pin12,
+  output pin13,
+  output pin14_sdo,
+  output pin15_sdi,
+  output pin16_sck,
+  output pin17_ss,
+  output pin18,
+  output pin19,
+  output pin20,
+  output pin21,
+  output pin22,
+  output pin23,
+  input pin24,
+  output pinLED
 //  output pin_usb_pu
 );
 
@@ -108,12 +108,7 @@ module main (
     .REFERENCECLK(pin3_clk_16mhz),
     .PLLOUTGLOBAL(clk_root_logic),
     .RESETB(1'b1),
-    .BYPASS(1'b0),
-	.EXTFEEDBACK(1'bz),
-	.SDI(1'bz),
-	.SCLK(1'bz),
-	.LATCHINPUTVALUE(1'bz),
-  	.DYNAMICDELAY(8'bz)
+    .BYPASS(1'b0)
 ) /* synthesis syn_noprune=1 */ ;
 	wire clk_root;
 	//assign clk_root = clk_root_logic;
@@ -273,7 +268,7 @@ module main (
 
 	wire [183:0] ddata =  {
 		//
-		3'bz,
+		3'b0,
 		//								181
 		debug_command[7:0],
 		pixel_load_counter2[3:0],
@@ -333,6 +328,7 @@ module main (
 
 	/* use this signal for insight! */
 
+	// are pin1/2 even needed?
 	assign pin1_usb_dp = 1'b1;
 	assign pin2_usb_dn = 1'b1;
 	// A/ Row[0]
@@ -363,6 +359,7 @@ module main (
 	// Blue  1
 	// 14,15,16,17 ==> JTAG
 
+	// are pin's 14-17 + led even needed
 	assign pin14_sdo = 1'b1;
 	assign pin15_sdi = 1'b1;
 	assign pin16_sck = 1'b1;
