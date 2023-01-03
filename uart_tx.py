@@ -15,7 +15,7 @@ def main():
 
     #	serial_device = "/dev/ttyUSB0"
     serial_device = "/dev/ttyAMA0"
-    targetfile = "blah565.raw"
+    targetfile = "images/blah565.raw"
     chunksize = 128
     f = open(targetfile, 'rb')
     fw = f.read()

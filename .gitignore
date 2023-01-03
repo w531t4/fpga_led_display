@@ -5,6 +5,7 @@ datasheet
 bitmaps
 images
 build_artifacts
-Multiported-RAM
 template_Implmnt
-a.out
+*.pyc
+stdout.log
+stdout.log.bak
