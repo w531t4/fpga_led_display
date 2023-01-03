@@ -268,7 +268,7 @@ module main (
 
 	wire [183:0] ddata =  {
 		//
-		3'bz,
+		3'b0,
 		//								181
 		debug_command[7:0],
 		pixel_load_counter2[3:0],
