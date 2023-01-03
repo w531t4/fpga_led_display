@@ -1,0 +1,102 @@
+#--  Synopsys, Inc.
+#--  Version L-2016.09L+ice40
+#--  Project file /home/awhite/CLionProjects/led_display/fpga/template_syn.prj
+#--  Written on Sun Apr  7 11:28:02 2019
+
+
+#project files
+add_file -fpga_constraint "template_syn_1.fdc"
+
+
+
+add_file -verilog -lib work "src/main.v" 
+add_file -verilog -lib work "src/brightness.v" 
+add_file -verilog -lib work "src/clock_divider.v" 
+add_file -verilog -lib work "src/control_module.v" 
+add_file -verilog -lib work "src/debug_uart_rx.v" 
+add_file -verilog -lib work "src/debugger.v" 
+add_file -verilog -lib work "src/framebuffer.v" 
+add_file -verilog -lib work "src/framebuffer_fetch.v" 
+add_file -verilog -lib work "src/matrix_scan.v" 
+add_file -verilog -lib work "src/newram.v" 
+add_file -verilog -lib work "src/newram2.v" 
+add_file -verilog -lib work "src/pixel_split.v" 
+add_file -verilog -lib work "src/rgb565.v" 
+add_file -verilog -lib work "src/syncore_ram.v" 
+add_file -verilog -lib work "src/timeout.v" 
+add_file -verilog -lib work "src/uart_tx.v" 
+add_file -verilog -lib work "src/Multiported-RAM/dpram.v" 
+add_file -verilog -lib work "src/Multiported-RAM/mpram.v" 
+add_file -verilog -lib work "src/Multiported-RAM/mpram_gen.v" 
+add_file -verilog -lib work "src/Multiported-RAM/mrram.v" 
+add_file -verilog -lib work "src/Multiported-RAM/mpram_xor.v" 
+#implementation: "template_Implmnt"
+impl -add template_Implmnt -type fpga
+
+#
+#implementation attributes
+
+set_option -vlog_std sysv
+set_option -num_critical_paths 1
+set_option -num_startend_points 1
+set_option -project_relative_includes 1
+
+#device options
+set_option -technology SBTiCE40
+set_option -part iCE40LP8K
+set_option -package CM81
+set_option -speed_grade 
+set_option -part_companion ""
+
+#compilation/mapping options
+set_option -top_module "main"
+
+# hdl_compiler_options
+set_option -distributed_compile 0
+
+# mapper_without_write_options
+set_option -frequency auto
+set_option -srs_instrumentation 1
+
+# mapper_options
+set_option -write_verilog 0
+set_option -write_vhdl 0
+
+# Lattice iCE40
+set_option -maxfan 1000
+set_option -rw_check_on_ram 1
+set_option -disable_io_insertion 0
+set_option -pipe 1
+set_option -retiming 0
+set_option -update_models_cp 0
+set_option -fix_gated_and_generated_clocks 1
+set_option -run_prop_extract 1
+
+# NFilter
+set_option -no_sequential_opt 0
+
+# timing_analyst_options
+set_option -reporting_number_paths -1
+set_option -reporting_output_srm 0
+
+# sequential_optimization_options
+set_option -symbolic_fsm_compiler 1
+
+# Compiler Options
+set_option -compiler_compatible 0
+set_option -resource_sharing 1
+set_option -multi_file_compilation_unit 1
+
+# Compiler Options
+set_option -auto_infer_blackbox 0
+
+#timing report file option
+set_option -reporting_filename "template_syn.ta"
+
+#automatic place and route (vendor) options
+set_option -write_apr_constraint 1
+
+#set result format/file last
+project -result_file "template_Implmnt/template.edf"
+impl -active template_Implmnt
+project -run synthesis -clean

@@ -31,7 +31,7 @@ module control_module #(
 	output ram_access_start_latch2,
 	output [11:0] cmd_line_addr2
 
-);	
+);
 
 	wire [7:0] uart_rx_data;
 	wire uart_rx_running;
@@ -46,7 +46,7 @@ module control_module #(
 	assign ram_reset = reset;
 	reg  [1:0]  cmd_line_state = 2'b0;
 	reg  [4:0]  cmd_line_addr_row = 5'd0;
-	reg  [7:0]  cmd_line_addr_col = 7'd0 /* synthesis syn_preserve=1 */ ;
+	reg  [7:0]  cmd_line_addr_col = 7'd0 /* synthesis syn_preserve=1 */ ; // why is this written as 8 bits?
 	wire [11:0] cmd_line_addr = { cmd_line_addr_row[4:0], ~cmd_line_addr_col[6:1], cmd_line_addr_col[0] };
 
 	assign cmd_line_addr2 = cmd_line_addr[11:0];
