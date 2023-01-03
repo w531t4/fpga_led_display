@@ -8,8 +8,8 @@ module main (
 	// lessons
 	// 1. Ensure that all unused IO are set to no pullup
 
-  inout pin1_usb_dp,
-  inout pin2_usb_dn,
+  output pin1_usb_dp,
+  output pin2_usb_dn,
   input pin3_clk_16mhz,
   output pin3,
   output pin4,
@@ -22,10 +22,10 @@ module main (
   output pin11,
   output pin12,
   output pin13,
-  inout pin14_sdo,
-  inout pin15_sdi,
-  inout pin16_sck,
-  inout pin17_ss,
+  output pin14_sdo,
+  output pin15_sdi,
+  output pin16_sck,
+  output pin17_ss,
   output pin18,
   output pin19,
   output pin20,
@@ -33,7 +33,7 @@ module main (
   output pin22,
   output pin23,
   input pin24,
-  inout pinLED
+  output pinLED
 //  output pin_usb_pu
 );
 
@@ -333,6 +333,7 @@ module main (
 
 	/* use this signal for insight! */
 
+	// are pin1/2 even needed?
 	assign pin1_usb_dp = 1'b1;
 	assign pin2_usb_dn = 1'b1;
 	// A/ Row[0]
@@ -363,6 +364,7 @@ module main (
 	// Blue  1
 	// 14,15,16,17 ==> JTAG
 
+	// are pin's 14-17 + led even needed
 	assign pin14_sdo = 1'b1;
 	assign pin15_sdi = 1'b1;
 	assign pin16_sck = 1'b1;
