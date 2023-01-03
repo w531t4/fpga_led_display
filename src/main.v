@@ -108,12 +108,7 @@ module main (
     .REFERENCECLK(pin3_clk_16mhz),
     .PLLOUTGLOBAL(clk_root_logic),
     .RESETB(1'b1),
-    .BYPASS(1'b0),
-	.EXTFEEDBACK(1'bz),
-	.SDI(1'bz),
-	.SCLK(1'bz),
-	.LATCHINPUTVALUE(1'bz),
-  	.DYNAMICDELAY(8'bz)
+    .BYPASS(1'b0)
 ) /* synthesis syn_noprune=1 */ ;
 	wire clk_root;
 	//assign clk_root = clk_root_logic;
