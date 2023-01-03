@@ -1,0 +1,1397 @@
+# Sat Mar 23 14:48:44 2019
+
+Synopsys Lattice Technology Mapper, Version maplat, Build 1612R, Built Dec  5 2016 09:30:53
+Copyright (C) 1994-2016 Synopsys, Inc. All rights reserved. This Synopsys software and all associated documentation are proprietary to Synopsys, Inc. and may only be used pursuant to the terms and conditions of a written license agreement with Synopsys, Inc. All other use, reproduction, modification, or distribution of the Synopsys software or the associated documentation is strictly prohibited.
+Product Version L-2016.09L+ice40
+
+Mapper Startup Complete (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 98MB peak: 99MB)
+
+@N: MF248 |Running in 64-bit mode.
+@N: MF666 |Clock conversion enabled. (Command "set_option -fix_gated_and_generated_clocks 1" in the project file.)
+
+Design Input Complete (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 98MB peak: 100MB)
+
+
+Mapper Initialization Complete (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 98MB peak: 100MB)
+
+
+Start loading timing files (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 100MB peak: 100MB)
+
+
+Finished loading timing files (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 100MB peak: 102MB)
+
+@N: MF203 |Set autoconstraint_io 
+Adding property syn_ta_report_clock_domain_crossing, value 0 to view:work.main(verilog)
+Adding property syn_ta_max_display_worst_paths, value -1 to view:work.main(verilog)
+
+Start Timing Analyst (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 133MB peak: 136MB)
+
+
+Start final timing analysis (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 134MB peak: 136MB)
+
+@N: MT615 |Found clock myclk_matrix with period 22.39ns 
+@N: MT615 |Found clock myclk_root with period 7.46ns 
+@N: MT615 |Found clock myctrl.timeout_cmd_line_write.un68_running with period 7.46ns 
+@W: MT420 |Found inferred clock matrix_scan|row_latch_inferred_clock with period 1000.00ns. Please declare a user-defined clock on object "n:matscan1.row_latch"
+@W: MT420 |Found inferred clock matrix_scan|row_latch_inferred_clock_1 with period 1000.00ns. Please declare a user-defined clock on object "n:matscan1.row_latch"
+
+
+##### START OF TIMING REPORT #####[
+# Timing Report written on Sat Mar 23 14:48:45 2019
+#
+
+
+Top view:               main
+Requested Frequency:    1.0 MHz
+Wire load mode:         top
+Paths requested:        5
+Constraint File(s):    
+@N: MT320 |This timing report is an estimate of place and route data. For final timing results, use the FPGA vendor place and route report.
+
+
+Performance Summary
+*******************
+
+
+Worst slack in design: -9.068
+
+                                               Requested     Estimated     Requested     Estimated                 Clock                           Clock              
+Starting Clock                                 Frequency     Frequency     Period        Period        Slack       Type                            Group              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+matrix_scan|row_latch_inferred_clock           1.0 MHz       112.4 MHz     1000.000      8.897         991.103     inferred                        Inferred_clkgroup_1
+matrix_scan|row_latch_inferred_clock_1         1.0 MHz       112.4 MHz     1000.000      8.897         991.103     inferred                        Inferred_clkgroup_2
+myclk_matrix                                   44.7 MHz      20.6 MHz      22.388        48.427        -4.340      generated (from myclk_root)     mydefault          
+myclk_root                                     134.0 MHz     45.8 MHz      7.463         21.838        -9.068      declared                        mydefault          
+myctrl.timeout_cmd_line_write.un68_running     134.0 MHz     45.8 MHz      7.463         21.838        -7.188      generated (from myclk_root)     mydefault          
+System                                         1.0 MHz       54.6 MHz      1000.000      18.308        981.692     system                          system_clkgroup    
+======================================================================================================================================================================
+
+
+
+
+
+Clock Relationships
+*******************
+
+Clocks                                                                                  |    rise  to  rise     |    fall  to  fall     |    rise  to  fall     |    fall  to  rise   
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Starting                                    Ending                                      |  constraint  slack    |  constraint  slack    |  constraint  slack    |  constraint  slack  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+System                                      System                                      |  No paths    -        |  1000.000    987.296  |  1000.000    981.692  |  1000.000    984.070
+System                                      myclk_root                                  |  7.463       -3.025   |  7.463       -2.245   |  No paths    -        |  7.463       -2.245 
+System                                      myctrl.timeout_cmd_line_write.un68_running  |  No paths    -        |  7.463       -0.702   |  No paths    -        |  No paths    -      
+myclk_root                                  System                                      |  7.463       -4.474   |  No paths    -        |  No paths    -        |  7.463       -6.434 
+myclk_root                                  myclk_root                                  |  7.463       -9.068   |  7.463       0.712    |  3.731       -7.188   |  3.731       -2.947 
+myclk_root                                  myclk_matrix                                |  7.463       0.712    |  No paths    -        |  No paths    -        |  No paths    -      
+myclk_root                                  myctrl.timeout_cmd_line_write.un68_running  |  No paths    -        |  7.463       3.944    |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock        System                                      |  1000.000    984.102  |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock        myclk_root                                  |  Diff grp    -        |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock        matrix_scan|row_latch_inferred_clock        |  1000.000    991.103  |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock        matrix_scan|row_latch_inferred_clock_1      |  Diff grp    -        |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock        myclk_matrix                                |  Diff grp    -        |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock        myctrl.timeout_cmd_line_write.un68_running  |  No paths    -        |  No paths    -        |  Diff grp    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock_1      System                                      |  1000.000    984.102  |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock_1      myclk_root                                  |  Diff grp    -        |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock_1      matrix_scan|row_latch_inferred_clock        |  Diff grp    -        |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock_1      matrix_scan|row_latch_inferred_clock_1      |  1000.000    991.103  |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock_1      myclk_matrix                                |  Diff grp    -        |  No paths    -        |  No paths    -        |  No paths    -      
+matrix_scan|row_latch_inferred_clock_1      myctrl.timeout_cmd_line_write.un68_running  |  No paths    -        |  No paths    -        |  Diff grp    -        |  No paths    -      
+myclk_matrix                                System                                      |  22.388      8.418    |  No paths    -        |  No paths    -        |  22.388      10.523 
+myclk_matrix                                myclk_root                                  |  7.463       -1.155   |  No paths    -        |  No paths    -        |  3.731       -0.987 
+myclk_matrix                                myclk_matrix                                |  22.388      13.904   |  22.388      18.869   |  11.194      4.536    |  11.194      3.079  
+myclk_matrix                                myctrl.timeout_cmd_line_write.un68_running  |  No paths    -        |  No paths    -        |  3.731       -4.340   |  No paths    -      
+myctrl.timeout_cmd_line_write.un68_running  System                                      |  No paths    -        |  No paths    -        |  No paths    -        |  7.463       -1.102 
+myctrl.timeout_cmd_line_write.un68_running  myclk_root                                  |  No paths    -        |  7.463       -3.456   |  No paths    -        |  3.731       -7.188 
+======================================================================================================================================================================================
+ Note: 'No paths' indicates there are no paths in the design for that pair of clock edges.
+       'Diff grp' indicates that paths exist but the starting clock and ending clock are in different clock groups.
+
+
+
+Interface Information 
+*********************
+
+
+
+Input Ports: 
+
+Port               Starting            User           Arrival     Required           
+Name               Reference           Constraint     Time        Time         Slack 
+                   Clock                                                             
+-------------------------------------------------------------------------------------
+pin1_usb_dp        NA                  NA             NA          NA           NA    
+pin2_usb_dn        NA                  NA             NA          NA           NA    
+pin3_clk_16mhz     NA                  NA             NA          NA           NA    
+pin7               System (rising)     NA             0.000       -3.025       -3.025
+pin11              NA                  NA             NA          NA           NA    
+pin14_sdo          NA                  NA             NA          NA           NA    
+pin15_sdi          NA                  NA             NA          NA           NA    
+pin16_sck          NA                  NA             NA          NA           NA    
+pin17_ss           NA                  NA             NA          NA           NA    
+pin22              NA                  NA             NA          NA           NA    
+pinLED             NA                  NA             NA          NA           NA    
+=====================================================================================
+
+
+Output Ports: 
+
+Port      Starting                                                 User           Arrival     Required            
+Name      Reference                                                Constraint     Time        Time         Slack  
+          Clock                                                                                                   
+------------------------------------------------------------------------------------------------------------------
+pin3      matrix_scan|row_latch_inferred_clock (rising)            NA             8.564       1000.000     991.436
+pin4      matrix_scan|row_latch_inferred_clock (rising)            NA             8.564       1000.000     991.436
+pin5      matrix_scan|row_latch_inferred_clock (rising)            NA             8.564       1000.000     991.436
+pin6      matrix_scan|row_latch_inferred_clock (rising)            NA             8.564       1000.000     991.436
+pin8      myclk_matrix (falling)                                   NA             9.507       22.388       12.881 
+pin9      myclk_matrix (rising)                                    NA             13.969      22.388       8.418  
+pin10     myclk_root (rising)                                      NA             11.937      7.463        -4.474 
+pin12     myclk_root (falling)                                     NA             13.866      7.463        -6.403 
+pin13     myclk_root (falling)                                     NA             13.897      7.463        -6.434 
+pin18     myclk_root (falling)                                     NA             13.866      7.463        -6.403 
+pin19     myclk_root (falling)                                     NA             13.866      7.463        -6.403 
+pin20     myclk_root (falling)                                     NA             13.825      7.463        -6.362 
+pin21     myclk_root (falling)                                     NA             13.866      7.463        -6.403 
+pin23     myclk_root (rising)                                      NA             11.937      7.463        -4.474 
+pin24     myctrl.timeout_cmd_line_write.un68_running (falling)     NA             8.564       7.463        -1.102 
+==================================================================================================================
+
+
+
+====================================
+Detailed Report for Clock: matrix_scan|row_latch_inferred_clock
+====================================
+
+
+
+Starting Points with Worst Slack
+********************************
+
+                                   Starting                                                                            Arrival            
+Instance                           Reference                                Type        Pin     Net                    Time        Slack  
+                                   Clock                                                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------
+matscan1.brightness_mask[2]        matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       brightness_mask[2]     0.796       984.102
+matscan1.brightness_mask[3]        matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       brightness_mask[3]     0.796       984.143
+matscan1.brightness_mask[4]        matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       brightness_mask[4]     0.796       984.163
+matscan1.brightness_mask[0]        matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       brightness_mask[0]     0.796       984.174
+matscan1.brightness_mask[5]        matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       brightness_mask[5]     0.796       984.174
+matscan1.brightness_mask[1]        matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       brightness_mask[1]     0.796       984.267
+matscan1.row_address_active[0]     matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       pin3_c                 0.796       991.436
+matscan1.row_address_active[1]     matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       pin4_c                 0.796       991.436
+matscan1.row_address_active[2]     matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       pin5_c                 0.796       991.436
+matscan1.row_address_active[3]     matrix_scan|row_latch_inferred_clock     SB_DFFR     Q       pin6_c                 0.796       991.436
+==========================================================================================================================================
+
+
+Ending Points with Worst Slack
+******************************
+
+                            Starting                                                                            Required            
+Instance                    Reference                                Type        Pin       Net                  Time         Slack  
+                            Clock                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+pin13                       matrix_scan|row_latch_inferred_clock     Port        pin13     pin13                1000.000     984.102
+pin20                       matrix_scan|row_latch_inferred_clock     Port        pin20     pin20                1000.000     984.163
+pin18                       matrix_scan|row_latch_inferred_clock     Port        pin18     pin18                1000.000     984.174
+pin19                       matrix_scan|row_latch_inferred_clock     Port        pin19     pin19                1000.000     984.174
+pin21                       matrix_scan|row_latch_inferred_clock     Port        pin21     pin21                1000.000     984.174
+pin12                       matrix_scan|row_latch_inferred_clock     Port        pin12     pin12                1000.000     984.246
+matscan1.row_address[3]     matrix_scan|row_latch_inferred_clock     SB_DFFR     D         row_address_3[3]     999.845      991.103
+matscan1.row_address[2]     matrix_scan|row_latch_inferred_clock     SB_DFFR     D         row_address_3[2]     999.845      991.303
+pin3                        matrix_scan|row_latch_inferred_clock     Port        pin3      pin3                 1000.000     991.436
+pin4                        matrix_scan|row_latch_inferred_clock     Port        pin4      pin4                 1000.000     991.436
+====================================================================================================================================
+
+
+
+Worst Path Information
+***********************
+
+
+Path information for path number 1: 
+      Requested Period:                      1000.000
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         1000.000
+
+    - Propagation time:                      15.899
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 984.101
+
+    Number of logic level(s):                4
+    Starting point:                          matscan1.brightness_mask[2] / Q
+    Ending point:                            pin13 / pin13
+    The start point is clocked by            matrix_scan|row_latch_inferred_clock [rising] on pin C
+    The end   point is clocked by            System [rising]
+
+Instance / Net                                       Pin             Pin               Arrival     No. of    
+Name                                     Type        Name            Dir     Delay     Time        Fan Out(s)
+-------------------------------------------------------------------------------------------------------------
+matscan1.brightness_mask[2]              SB_DFFR     Q               Out     0.796     0.796       -         
+brightness_mask[2]                       Net         -               -       1.599     -           6         
+ctrl.urx.un1_brightness_mask_i_o8[2]     SB_LUT4     I1              In      -         2.395       -         
+ctrl.urx.un1_brightness_mask_i_o8[2]     SB_LUT4     O               Out     0.558     2.953       -         
+N_111                                    Net         -               -       1.371     -           5         
+px_top.b_green.un1_value_2_i_0_0         SB_LUT4     I0              In      -         4.324       -         
+px_top.b_green.un1_value_2_i_0_0         SB_LUT4     O               Out     0.661     4.986       -         
+un1_value_2_i_0_0                        Net         -               -       1.371     -           1         
+px_top.b_green.out                       SB_LUT4     I0              In      -         6.357       -         
+px_top.b_green.out                       SB_LUT4     O               Out     0.661     7.018       -         
+pin13_c                                  Net         -               -       3.340     -           2         
+pin13_obuf                               SB_IO       D_OUT_0         In      -         10.358      -         
+pin13_obuf                               SB_IO       PACKAGE_PIN     Out     5.541     15.899      -         
+pin13                                    Net         -               -       0.000     -           2         
+pin13                                    Port        pin13           Out     -         15.899      -         
+=============================================================================================================
+Total path delay (propagation time + setup) of 15.899 is 8.218(51.7%) logic and 7.681(48.3%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+
+
+====================================
+Detailed Report for Clock: matrix_scan|row_latch_inferred_clock_1
+====================================
+
+
+
+Starting Points with Worst Slack
+********************************
+
+                                   Starting                                                                              Arrival            
+Instance                           Reference                                  Type        Pin     Net                    Time        Slack  
+                                   Clock                                                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------
+matscan1.brightness_mask[2]        matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       brightness_mask[2]     0.796       984.102
+matscan1.brightness_mask[3]        matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       brightness_mask[3]     0.796       984.143
+matscan1.brightness_mask[4]        matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       brightness_mask[4]     0.796       984.163
+matscan1.brightness_mask[0]        matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       brightness_mask[0]     0.796       984.174
+matscan1.brightness_mask[5]        matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       brightness_mask[5]     0.796       984.174
+matscan1.brightness_mask[1]        matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       brightness_mask[1]     0.796       984.267
+matscan1.row_address_active[0]     matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       pin3_c                 0.796       991.436
+matscan1.row_address_active[1]     matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       pin4_c                 0.796       991.436
+matscan1.row_address_active[2]     matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       pin5_c                 0.796       991.436
+matscan1.row_address_active[3]     matrix_scan|row_latch_inferred_clock_1     SB_DFFR     Q       pin6_c                 0.796       991.436
+============================================================================================================================================
+
+
+Ending Points with Worst Slack
+******************************
+
+                            Starting                                                                              Required            
+Instance                    Reference                                  Type        Pin       Net                  Time         Slack  
+                            Clock                                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------
+pin13                       matrix_scan|row_latch_inferred_clock_1     Port        pin13     pin13                1000.000     984.102
+pin20                       matrix_scan|row_latch_inferred_clock_1     Port        pin20     pin20                1000.000     984.163
+pin18                       matrix_scan|row_latch_inferred_clock_1     Port        pin18     pin18                1000.000     984.174
+pin19                       matrix_scan|row_latch_inferred_clock_1     Port        pin19     pin19                1000.000     984.174
+pin21                       matrix_scan|row_latch_inferred_clock_1     Port        pin21     pin21                1000.000     984.174
+pin12                       matrix_scan|row_latch_inferred_clock_1     Port        pin12     pin12                1000.000     984.246
+matscan1.row_address[3]     matrix_scan|row_latch_inferred_clock_1     SB_DFFR     D         row_address_3[3]     999.845      991.103
+matscan1.row_address[2]     matrix_scan|row_latch_inferred_clock_1     SB_DFFR     D         row_address_3[2]     999.845      991.303
+pin3                        matrix_scan|row_latch_inferred_clock_1     Port        pin3      pin3                 1000.000     991.436
+pin4                        matrix_scan|row_latch_inferred_clock_1     Port        pin4      pin4                 1000.000     991.436
+======================================================================================================================================
+
+
+
+Worst Path Information
+***********************
+
+
+Path information for path number 1: 
+      Requested Period:                      1000.000
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         1000.000
+
+    - Propagation time:                      15.899
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 984.101
+
+    Number of logic level(s):                4
+    Starting point:                          matscan1.brightness_mask[2] / Q
+    Ending point:                            pin13 / pin13
+    The start point is clocked by            matrix_scan|row_latch_inferred_clock_1 [rising] on pin C
+    The end   point is clocked by            System [rising]
+
+Instance / Net                                       Pin             Pin               Arrival     No. of    
+Name                                     Type        Name            Dir     Delay     Time        Fan Out(s)
+-------------------------------------------------------------------------------------------------------------
+matscan1.brightness_mask[2]              SB_DFFR     Q               Out     0.796     0.796       -         
+brightness_mask[2]                       Net         -               -       1.599     -           6         
+ctrl.urx.un1_brightness_mask_i_o8[2]     SB_LUT4     I1              In      -         2.395       -         
+ctrl.urx.un1_brightness_mask_i_o8[2]     SB_LUT4     O               Out     0.558     2.953       -         
+N_111                                    Net         -               -       1.371     -           5         
+px_top.b_green.un1_value_2_i_0_0         SB_LUT4     I0              In      -         4.324       -         
+px_top.b_green.un1_value_2_i_0_0         SB_LUT4     O               Out     0.661     4.986       -         
+un1_value_2_i_0_0                        Net         -               -       1.371     -           1         
+px_top.b_green.out                       SB_LUT4     I0              In      -         6.357       -         
+px_top.b_green.out                       SB_LUT4     O               Out     0.661     7.018       -         
+pin13_c                                  Net         -               -       3.340     -           2         
+pin13_obuf                               SB_IO       D_OUT_0         In      -         10.358      -         
+pin13_obuf                               SB_IO       PACKAGE_PIN     Out     5.541     15.899      -         
+pin13                                    Net         -               -       0.000     -           2         
+pin13                                    Port        pin13           Out     -         15.899      -         
+=============================================================================================================
+Total path delay (propagation time + setup) of 15.899 is 8.218(51.7%) logic and 7.681(48.3%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+
+
+====================================
+Detailed Report for Clock: myclk_matrix
+====================================
+
+
+
+Starting Points with Worst Slack
+********************************
+
+                                                  Starting                                                    Arrival           
+Instance                                          Reference        Type         Pin     Net                   Time        Slack 
+                                                  Clock                                                                         
+--------------------------------------------------------------------------------------------------------------------------------
+matscan1.timeout_column_address.counter[0]        myclk_matrix     SB_DFFER     Q       column_address[0]     0.796       -4.340
+matscan1.timeout_column_address.counter[1]        myclk_matrix     SB_DFFER     Q       column_address[1]     0.796       -4.340
+matscan1.timeout_column_address.counter[2]        myclk_matrix     SB_DFFER     Q       column_address[2]     0.796       -4.340
+matscan1.timeout_column_address.counter[3]        myclk_matrix     SB_DFFER     Q       column_address[3]     0.796       -4.340
+matscan1.timeout_column_address.counter[4]        myclk_matrix     SB_DFFER     Q       column_address[4]     0.796       -4.340
+matscan1.timeout_column_address.counter[5]        myclk_matrix     SB_DFFER     Q       column_address[5]     0.796       -4.340
+matscan1.timeout_clk_pixel_load_en.counter[0]     myclk_matrix     SB_DFFER     Q       counter[0]            0.796       -1.155
+matscan1.timeout_clk_pixel_load_en.counter[5]     myclk_matrix     SB_DFFER     Q       counter[5]            0.796       -1.145
+matscan1.timeout_clk_pixel_load_en.counter[1]     myclk_matrix     SB_DFFER     Q       counter[1]            0.796       -1.124
+matscan1.timeout_clk_pixel_load_en.counter[2]     myclk_matrix     SB_DFFER     Q       counter[2]            0.796       -1.114
+================================================================================================================================
+
+
+Ending Points with Worst Slack
+******************************
+
+                                                                                     Starting                                                               Required           
+Instance                                                                             Reference        Type             Pin          Net                     Time         Slack 
+                                                                                     Clock                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[1]     column_address_i[0]     3.432        -4.340
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[1]     column_address_i[0]     3.432        -4.340
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[2]     column_address_i[1]     3.432        -4.340
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[2]     column_address_i[1]     3.432        -4.340
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[3]     column_address_i[2]     3.432        -4.340
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[3]     column_address_i[2]     3.432        -4.340
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[4]     column_address_i[3]     3.432        -4.340
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[4]     column_address_i[3]     3.432        -4.340
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[5]     column_address_i[4]     3.432        -4.340
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     myclk_matrix     SB_RAM2048x2     RADDR[5]     column_address_i[4]     3.432        -4.340
+===============================================================================================================================================================================
+
+
+
+Worst Path Information
+***********************
+
+
+Path information for path number 1: 
+      Requested Period:                      3.731
+    - Setup time:                            0.300
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.432
+
+    - Propagation time:                      7.771
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -4.340
+
+    Number of logic level(s):                1
+    Starting point:                          matscan1.timeout_column_address.counter[0] / Q
+    Ending point:                            fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0 / RADDR[1]
+    The start point is clocked by            myclk_matrix [rising] on pin C
+    The end   point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin RCLK
+
+Instance / Net                                                                                        Pin          Pin               Arrival     No. of    
+Name                                                                                 Type             Name         Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+matscan1.timeout_column_address.counter[0]                                           SB_DFFER         Q            Out     0.796     0.796       -         
+column_address[0]                                                                    Net              -            -       1.599     -           5         
+matscan1.timeout_column_address.counter_RNILRA3[0]                                   SB_LUT4          I0           In      -         2.395       -         
+matscan1.timeout_column_address.counter_RNILRA3[0]                                   SB_LUT4          O            Out     0.661     3.056       -         
+column_address_i[0]                                                                  Net              -            -       4.715     -           18        
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     SB_RAM2048x2     RADDR[1]     In      -         7.771       -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 8.071 is 1.757(21.8%) logic and 6.314(78.2%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 2: 
+      Requested Period:                      3.731
+    - Setup time:                            0.300
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.432
+
+    - Propagation time:                      7.771
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -4.340
+
+    Number of logic level(s):                1
+    Starting point:                          matscan1.timeout_column_address.counter[1] / Q
+    Ending point:                            fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0 / RADDR[2]
+    The start point is clocked by            myclk_matrix [rising] on pin C
+    The end   point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin RCLK
+
+Instance / Net                                                                                        Pin          Pin               Arrival     No. of    
+Name                                                                                 Type             Name         Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+matscan1.timeout_column_address.counter[1]                                           SB_DFFER         Q            Out     0.796     0.796       -         
+column_address[1]                                                                    Net              -            -       1.599     -           5         
+matscan1.timeout_column_address.counter_RNIMSA3[1]                                   SB_LUT4          I0           In      -         2.395       -         
+matscan1.timeout_column_address.counter_RNIMSA3[1]                                   SB_LUT4          O            Out     0.661     3.056       -         
+column_address_i[1]                                                                  Net              -            -       4.715     -           18        
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     SB_RAM2048x2     RADDR[2]     In      -         7.771       -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 8.071 is 1.757(21.8%) logic and 6.314(78.2%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 3: 
+      Requested Period:                      3.731
+    - Setup time:                            0.300
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.432
+
+    - Propagation time:                      7.771
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -4.340
+
+    Number of logic level(s):                1
+    Starting point:                          matscan1.timeout_column_address.counter[2] / Q
+    Ending point:                            fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0 / RADDR[3]
+    The start point is clocked by            myclk_matrix [rising] on pin C
+    The end   point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin RCLK
+
+Instance / Net                                                                                        Pin          Pin               Arrival     No. of    
+Name                                                                                 Type             Name         Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+matscan1.timeout_column_address.counter[2]                                           SB_DFFER         Q            Out     0.796     0.796       -         
+column_address[2]                                                                    Net              -            -       1.599     -           5         
+matscan1.timeout_column_address.counter_RNINTA3[2]                                   SB_LUT4          I0           In      -         2.395       -         
+matscan1.timeout_column_address.counter_RNINTA3[2]                                   SB_LUT4          O            Out     0.661     3.056       -         
+column_address_i[2]                                                                  Net              -            -       4.715     -           18        
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     SB_RAM2048x2     RADDR[3]     In      -         7.771       -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 8.071 is 1.757(21.8%) logic and 6.314(78.2%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 4: 
+      Requested Period:                      3.731
+    - Setup time:                            0.300
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.432
+
+    - Propagation time:                      7.771
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -4.340
+
+    Number of logic level(s):                1
+    Starting point:                          matscan1.timeout_column_address.counter[3] / Q
+    Ending point:                            fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0 / RADDR[4]
+    The start point is clocked by            myclk_matrix [rising] on pin C
+    The end   point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin RCLK
+
+Instance / Net                                                                                        Pin          Pin               Arrival     No. of    
+Name                                                                                 Type             Name         Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+matscan1.timeout_column_address.counter[3]                                           SB_DFFER         Q            Out     0.796     0.796       -         
+column_address[3]                                                                    Net              -            -       1.599     -           5         
+matscan1.timeout_column_address.counter_RNIOUA3[3]                                   SB_LUT4          I0           In      -         2.395       -         
+matscan1.timeout_column_address.counter_RNIOUA3[3]                                   SB_LUT4          O            Out     0.661     3.056       -         
+column_address_i[3]                                                                  Net              -            -       4.715     -           18        
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     SB_RAM2048x2     RADDR[4]     In      -         7.771       -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 8.071 is 1.757(21.8%) logic and 6.314(78.2%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 5: 
+      Requested Period:                      3.731
+    - Setup time:                            0.300
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.432
+
+    - Propagation time:                      7.771
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -4.340
+
+    Number of logic level(s):                1
+    Starting point:                          matscan1.timeout_column_address.counter[4] / Q
+    Ending point:                            fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0 / RADDR[5]
+    The start point is clocked by            myclk_matrix [rising] on pin C
+    The end   point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin RCLK
+
+Instance / Net                                                                                        Pin          Pin               Arrival     No. of    
+Name                                                                                 Type             Name         Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+matscan1.timeout_column_address.counter[4]                                           SB_DFFER         Q            Out     0.796     0.796       -         
+column_address[4]                                                                    Net              -            -       1.599     -           5         
+matscan1.timeout_column_address.counter_RNIPVA3[4]                                   SB_LUT4          I0           In      -         2.395       -         
+matscan1.timeout_column_address.counter_RNIPVA3[4]                                   SB_LUT4          O            Out     0.661     3.056       -         
+column_address_i[4]                                                                  Net              -            -       4.715     -           18        
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.dpram_inst.mem_mem_0_0     SB_RAM2048x2     RADDR[5]     In      -         7.771       -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 8.071 is 1.757(21.8%) logic and 6.314(78.2%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+
+
+====================================
+Detailed Report for Clock: myclk_root
+====================================
+
+
+
+Starting Points with Worst Slack
+********************************
+
+                                                                          Starting                                                         Arrival           
+Instance                                                                  Reference      Type         Pin     Net                          Time        Slack 
+                                                                          Clock                                                                              
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+mydebug.current_position[5]                                               myclk_root     SB_DFFS      Q       current_position[5]          0.796       -9.068
+mydebug.current_position_fast[3]                                          myclk_root     SB_DFFR      Q       current_position_fast[3]     0.796       -8.996
+mydebug.current_position_fast[4]                                          myclk_root     SB_DFFR      Q       current_position_fast[4]     0.796       -8.965
+mydebug.current_position_fast[6]                                          myclk_root     SB_DFFR      Q       current_position_fast[6]     0.796       -8.779
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10]     myclk_root     SB_DFF       Q       RAddr_r[10]                  0.796       -7.188
+mydebug.current_position[4]                                               myclk_root     SB_DFFR      Q       current_position[4]          0.796       -7.150
+mydebug.data_copy[8]                                                      myclk_root     SB_DFFER     Q       data_copy[8]                 0.796       -7.139
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[11]     myclk_root     SB_DFF       Q       RAddr_r[11]                  0.796       -7.115
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r[10]     myclk_root     SB_DFF       Q       WAddr_r[10]                  0.796       -7.084
+mydebug.data_copy[40]                                                     myclk_root     SB_DFFER     Q       data_copy[40]                0.796       -7.067
+=============================================================================================================================================================
+
+
+Ending Points with Worst Slack
+******************************
+
+                          Starting                                                       Required           
+Instance                  Reference      Type          Pin     Net                       Time         Slack 
+                          Clock                                                                             
+------------------------------------------------------------------------------------------------------------
+mydebug.debug_bits[0]     myclk_root     SB_DFFE       D       debug_bits_7[0]           7.308        -9.068
+fb_f.rgb565_bottom[0]     myclk_root     SB_DFFNER     D       ram_b_data_out_0_rep1     3.576        -7.188
+fb_f.rgb565_bottom[1]     myclk_root     SB_DFFNER     D       ram_b_data_out_1_rep1     3.576        -7.188
+fb_f.rgb565_bottom[2]     myclk_root     SB_DFFNER     D       ram_b_data_out_2_rep1     3.576        -7.188
+fb_f.rgb565_bottom[3]     myclk_root     SB_DFFNER     D       ram_b_data_out_3_rep1     3.576        -7.188
+fb_f.rgb565_bottom[4]     myclk_root     SB_DFFNER     D       ram_b_data_out_4_rep1     3.576        -7.188
+fb_f.rgb565_bottom[5]     myclk_root     SB_DFFNER     D       ram_b_data_out_5_rep1     3.576        -7.188
+fb_f.rgb565_bottom[6]     myclk_root     SB_DFFNER     D       ram_b_data_out_6_rep1     3.576        -7.188
+fb_f.rgb565_bottom[7]     myclk_root     SB_DFFNER     D       ram_b_data_out_7_rep1     3.576        -7.188
+fb_f.rgb565_bottom[8]     myclk_root     SB_DFFNER     D       ram_b_data_out_8_rep1     3.576        -7.188
+============================================================================================================
+
+
+
+Worst Path Information
+***********************
+
+
+Path information for path number 1: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      16.376
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (critical) :                     -9.068
+
+    Number of logic level(s):                7
+    Starting point:                          mydebug.current_position[5] / Q
+    Ending point:                            mydebug.debug_bits[0] / D
+    The start point is clocked by            myclk_root [rising] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                           Pin      Pin               Arrival     No. of    
+Name                                         Type        Name     Dir     Delay     Time        Fan Out(s)
+----------------------------------------------------------------------------------------------------------
+mydebug.current_position[5]                  SB_DFFS     Q        Out     0.796     0.796       -         
+current_position[5]                          Net         -        -       1.599     -           7         
+mydebug.current_position_fast_RNIKNGL[4]     SB_LUT4     I0       In      -         2.395       -         
+mydebug.current_position_fast_RNIKNGL[4]     SB_LUT4     O        Out     0.661     3.056       -         
+current_position_fast_RNIKNGL[4]             Net         -        -       1.371     -           34        
+mydebug.debug_bits_RNO_25[0]                 SB_LUT4     I2       In      -         4.427       -         
+mydebug.debug_bits_RNO_25[0]                 SB_LUT4     O        Out     0.558     4.986       -         
+debug_bits_2_74_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_18[0]                 SB_LUT4     I2       In      -         6.357       -         
+mydebug.debug_bits_RNO_18[0]                 SB_LUT4     O        Out     0.558     6.915       -         
+debug_bits_RNO_18[0]                         Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     I0       In      -         8.286       -         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     O        Out     0.661     8.947       -         
+debug_bits_2_79_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     I2       In      -         10.318      -         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     O        Out     0.558     10.876      -         
+debug_bits_RNO_2[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     I0       In      -         12.247      -         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     O        Out     0.661     12.909      -         
+debug_bits_RNO_0[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     I1       In      -         14.280      -         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     O        Out     0.589     14.869      -         
+debug_bits_7[0]                              Net         -        -       1.507     -           1         
+mydebug.debug_bits[0]                        SB_DFFE     D        In      -         16.376      -         
+==========================================================================================================
+Total path delay (propagation time + setup) of 16.531 is 5.199(31.4%) logic and 11.332(68.6%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 2: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      16.304
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -8.996
+
+    Number of logic level(s):                7
+    Starting point:                          mydebug.current_position_fast[3] / Q
+    Ending point:                            mydebug.debug_bits[0] / D
+    The start point is clocked by            myclk_root [rising] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                           Pin      Pin               Arrival     No. of    
+Name                                         Type        Name     Dir     Delay     Time        Fan Out(s)
+----------------------------------------------------------------------------------------------------------
+mydebug.current_position_fast[3]             SB_DFFR     Q        Out     0.796     0.796       -         
+current_position_fast[3]                     Net         -        -       1.599     -           5         
+mydebug.current_position_fast_RNIKNGL[4]     SB_LUT4     I1       In      -         2.395       -         
+mydebug.current_position_fast_RNIKNGL[4]     SB_LUT4     O        Out     0.589     2.984       -         
+current_position_fast_RNIKNGL[4]             Net         -        -       1.371     -           34        
+mydebug.debug_bits_RNO_25[0]                 SB_LUT4     I2       In      -         4.355       -         
+mydebug.debug_bits_RNO_25[0]                 SB_LUT4     O        Out     0.558     4.913       -         
+debug_bits_2_74_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_18[0]                 SB_LUT4     I2       In      -         6.284       -         
+mydebug.debug_bits_RNO_18[0]                 SB_LUT4     O        Out     0.558     6.842       -         
+debug_bits_RNO_18[0]                         Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     I0       In      -         8.213       -         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     O        Out     0.661     8.875       -         
+debug_bits_2_79_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     I2       In      -         10.246      -         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     O        Out     0.558     10.804      -         
+debug_bits_RNO_2[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     I0       In      -         12.175      -         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     O        Out     0.661     12.836      -         
+debug_bits_RNO_0[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     I1       In      -         14.207      -         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     O        Out     0.589     14.797      -         
+debug_bits_7[0]                              Net         -        -       1.507     -           1         
+mydebug.debug_bits[0]                        SB_DFFE     D        In      -         16.304      -         
+==========================================================================================================
+Total path delay (propagation time + setup) of 16.459 is 5.127(31.1%) logic and 11.332(68.9%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 3: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      16.304
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -8.996
+
+    Number of logic level(s):                7
+    Starting point:                          mydebug.current_position[5] / Q
+    Ending point:                            mydebug.debug_bits[0] / D
+    The start point is clocked by            myclk_root [rising] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                           Pin      Pin               Arrival     No. of    
+Name                                         Type        Name     Dir     Delay     Time        Fan Out(s)
+----------------------------------------------------------------------------------------------------------
+mydebug.current_position[5]                  SB_DFFS     Q        Out     0.796     0.796       -         
+current_position[5]                          Net         -        -       1.599     -           7         
+mydebug.current_position_fast_RNIKNGL[4]     SB_LUT4     I0       In      -         2.395       -         
+mydebug.current_position_fast_RNIKNGL[4]     SB_LUT4     O        Out     0.661     3.056       -         
+current_position_fast_RNIKNGL[4]             Net         -        -       1.371     -           34        
+mydebug.debug_bits_RNO_26[0]                 SB_LUT4     I2       In      -         4.427       -         
+mydebug.debug_bits_RNO_26[0]                 SB_LUT4     O        Out     0.558     4.986       -         
+debug_bits_2_77_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_19[0]                 SB_LUT4     I2       In      -         6.357       -         
+mydebug.debug_bits_RNO_19[0]                 SB_LUT4     O        Out     0.558     6.915       -         
+debug_bits_RNO_19[0]                         Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     I1       In      -         8.286       -         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     O        Out     0.589     8.875       -         
+debug_bits_2_79_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     I2       In      -         10.246      -         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     O        Out     0.558     10.804      -         
+debug_bits_RNO_2[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     I0       In      -         12.175      -         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     O        Out     0.661     12.836      -         
+debug_bits_RNO_0[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     I1       In      -         14.207      -         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     O        Out     0.589     14.797      -         
+debug_bits_7[0]                              Net         -        -       1.507     -           1         
+mydebug.debug_bits[0]                        SB_DFFE     D        In      -         16.304      -         
+==========================================================================================================
+Total path delay (propagation time + setup) of 16.459 is 5.127(31.1%) logic and 11.332(68.9%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 4: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      16.283
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -8.975
+
+    Number of logic level(s):                7
+    Starting point:                          mydebug.current_position[5] / Q
+    Ending point:                            mydebug.debug_bits[0] / D
+    The start point is clocked by            myclk_root [rising] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                           Pin      Pin               Arrival     No. of    
+Name                                         Type        Name     Dir     Delay     Time        Fan Out(s)
+----------------------------------------------------------------------------------------------------------
+mydebug.current_position[5]                  SB_DFFS     Q        Out     0.796     0.796       -         
+current_position[5]                          Net         -        -       1.599     -           7         
+mydebug.current_position_fast_RNI1JNV[4]     SB_LUT4     I0       In      -         2.395       -         
+mydebug.current_position_fast_RNI1JNV[4]     SB_LUT4     O        Out     0.661     3.056       -         
+current_position_fast_RNI1JNV[4]             Net         -        -       1.371     -           57        
+mydebug.debug_bits_RNO_25[0]                 SB_LUT4     I3       In      -         4.427       -         
+mydebug.debug_bits_RNO_25[0]                 SB_LUT4     O        Out     0.465     4.893       -         
+debug_bits_2_74_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_18[0]                 SB_LUT4     I2       In      -         6.264       -         
+mydebug.debug_bits_RNO_18[0]                 SB_LUT4     O        Out     0.558     6.822       -         
+debug_bits_RNO_18[0]                         Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     I0       In      -         8.193       -         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     O        Out     0.661     8.854       -         
+debug_bits_2_79_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     I2       In      -         10.225      -         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     O        Out     0.558     10.783      -         
+debug_bits_RNO_2[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     I0       In      -         12.154      -         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     O        Out     0.661     12.816      -         
+debug_bits_RNO_0[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     I1       In      -         14.187      -         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     O        Out     0.589     14.776      -         
+debug_bits_7[0]                              Net         -        -       1.507     -           1         
+mydebug.debug_bits[0]                        SB_DFFE     D        In      -         16.283      -         
+==========================================================================================================
+Total path delay (propagation time + setup) of 16.438 is 5.106(31.1%) logic and 11.332(68.9%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 5: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      16.273
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -8.965
+
+    Number of logic level(s):                7
+    Starting point:                          mydebug.current_position_fast[4] / Q
+    Ending point:                            mydebug.debug_bits[0] / D
+    The start point is clocked by            myclk_root [rising] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                           Pin      Pin               Arrival     No. of    
+Name                                         Type        Name     Dir     Delay     Time        Fan Out(s)
+----------------------------------------------------------------------------------------------------------
+mydebug.current_position_fast[4]             SB_DFFR     Q        Out     0.796     0.796       -         
+current_position_fast[4]                     Net         -        -       1.599     -           2         
+mydebug.current_position_fast_RNIKNGL[4]     SB_LUT4     I2       In      -         2.395       -         
+mydebug.current_position_fast_RNIKNGL[4]     SB_LUT4     O        Out     0.558     2.953       -         
+current_position_fast_RNIKNGL[4]             Net         -        -       1.371     -           34        
+mydebug.debug_bits_RNO_25[0]                 SB_LUT4     I2       In      -         4.324       -         
+mydebug.debug_bits_RNO_25[0]                 SB_LUT4     O        Out     0.558     4.882       -         
+debug_bits_2_74_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_18[0]                 SB_LUT4     I2       In      -         6.253       -         
+mydebug.debug_bits_RNO_18[0]                 SB_LUT4     O        Out     0.558     6.811       -         
+debug_bits_RNO_18[0]                         Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     I0       In      -         8.182       -         
+mydebug.debug_bits_RNO_9[0]                  SB_LUT4     O        Out     0.661     8.844       -         
+debug_bits_2_79_ns_1[6]                      Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     I2       In      -         10.215      -         
+mydebug.debug_bits_RNO_2[0]                  SB_LUT4     O        Out     0.558     10.773      -         
+debug_bits_RNO_2[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     I0       In      -         12.144      -         
+mydebug.debug_bits_RNO_0[0]                  SB_LUT4     O        Out     0.661     12.805      -         
+debug_bits_RNO_0[0]                          Net         -        -       1.371     -           1         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     I1       In      -         14.176      -         
+mydebug.debug_bits_RNO[0]                    SB_LUT4     O        Out     0.589     14.766      -         
+debug_bits_7[0]                              Net         -        -       1.507     -           1         
+mydebug.debug_bits[0]                        SB_DFFE     D        In      -         16.273      -         
+==========================================================================================================
+Total path delay (propagation time + setup) of 16.428 is 5.095(31.0%) logic and 11.332(69.0%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+
+
+====================================
+Detailed Report for Clock: myctrl.timeout_cmd_line_write.un68_running
+====================================
+
+
+
+Starting Points with Worst Slack
+********************************
+
+                                                                          Starting                                                                          Arrival           
+Instance                                                                  Reference                                      Type       Pin     Net             Time        Slack 
+                                                                          Clock                                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10]     myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       RAddr_r[10]     0.796       -7.188
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[11]     myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       RAddr_r[11]     0.796       -7.115
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r[10]     myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       WAddr_r[10]     0.796       -7.084
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r[11]     myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       WAddr_r[11]     0.796       -6.991
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[1]      myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       RAddr_r[1]      0.796       -6.155
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r[0]      myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       WAddr_r[0]      0.796       -6.083
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[2]      myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       RAddr_r[2]      0.796       -6.079
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r[1]      myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       WAddr_r[1]      0.796       -6.052
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[3]      myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       RAddr_r[3]      0.796       -6.007
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r[3]      myctrl.timeout_cmd_line_write.un68_running     SB_DFF     Q       WAddr_r[3]      0.796       -5.955
+==============================================================================================================================================================================
+
+
+Ending Points with Worst Slack
+******************************
+
+                          Starting                                                                                  Required           
+Instance                  Reference                                      Type         Pin     Net                   Time         Slack 
+                          Clock                                                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------
+mydebug.data_copy[56]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[0]     3.576        -7.188
+mydebug.data_copy[57]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[1]     3.576        -7.188
+mydebug.data_copy[58]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[2]     3.576        -7.188
+mydebug.data_copy[59]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[3]     3.576        -7.188
+mydebug.data_copy[60]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[4]     3.576        -7.188
+mydebug.data_copy[61]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[5]     3.576        -7.188
+mydebug.data_copy[62]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[6]     3.576        -7.188
+mydebug.data_copy[63]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[7]     3.576        -7.188
+mydebug.data_copy[64]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[8]     3.576        -7.188
+mydebug.data_copy[65]     myctrl.timeout_cmd_line_write.un68_running     SB_DFFER     D       ram_b_data_out[9]     3.576        -7.188
+=======================================================================================================================================
+
+
+
+Worst Path Information
+***********************
+
+
+Path information for path number 1: 
+      Requested Period:                      3.731
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.576
+
+    - Propagation time:                      10.764
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -7.188
+
+    Number of logic level(s):                5
+    Starting point:                          fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10] / Q
+    Ending point:                            mydebug.data_copy[64] / D
+    The start point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                                                                            Pin      Pin               Arrival     No. of    
+Name                                                                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10]                        SB_DFF       Q        Out     0.796     0.796       -         
+RAddr_r[10]                                                                                  Net          -        -       1.599     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      I0       In      -         2.395       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      O        Out     0.661     3.056       -         
+un1_bypass1_0_N_22                                                                           Net          -        -       1.371     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      I0       In      -         4.427       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      O        Out     0.661     5.089       -         
+un1_bypass1_0_I_9_c_inv                                                                      Net          -        -       0.905     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     I0       In      -         5.994       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     CO       Out     0.380     6.373       -         
+un1_bypass1_0_data_tmp[5]                                                                    Net          -        -       0.386     -           8         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WData_r_RNI06QQ1[0]                SB_LUT4      I3       In      -         6.759       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WData_r_RNI06QQ1[0]                SB_LUT4      O        Out     0.465     7.224       -         
+N_70                                                                                         Net          -        -       1.371     -           3         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIA4F62_1     SB_LUT4      I0       In      -         8.596       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIA4F62_1     SB_LUT4      O        Out     0.661     9.257       -         
+ram_b_data_out[8]                                                                            Net          -        -       1.507     -           1         
+mydebug.data_copy[64]                                                                        SB_DFFER     D        In      -         10.764      -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 10.919 is 3.780(34.6%) logic and 7.139(65.4%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 2: 
+      Requested Period:                      3.731
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.576
+
+    - Propagation time:                      10.764
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -7.188
+
+    Number of logic level(s):                5
+    Starting point:                          fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10] / Q
+    Ending point:                            mydebug.data_copy[62] / D
+    The start point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                                                                            Pin      Pin               Arrival     No. of    
+Name                                                                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10]                        SB_DFF       Q        Out     0.796     0.796       -         
+RAddr_r[10]                                                                                  Net          -        -       1.599     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      I0       In      -         2.395       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      O        Out     0.661     3.056       -         
+un1_bypass1_0_N_22                                                                           Net          -        -       1.371     -           2         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      I0       In      -         4.427       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      O        Out     0.661     5.089       -         
+un1_bypass1_0_I_9_c_inv_0                                                                    Net          -        -       0.905     -           2         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     I0       In      -         5.994       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     CO       Out     0.380     6.373       -         
+un1_bypass1_0_data_tmp[5]                                                                    Net          -        -       0.386     -           8         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_RNI2V4N1       SB_LUT4      I3       In      -         6.759       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_RNI2V4N1       SB_LUT4      O        Out     0.465     7.224       -         
+N_74                                                                                         Net          -        -       1.371     -           3         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIJTGU1_1     SB_LUT4      I0       In      -         8.596       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIJTGU1_1     SB_LUT4      O        Out     0.661     9.257       -         
+ram_b_data_out[6]                                                                            Net          -        -       1.507     -           1         
+mydebug.data_copy[62]                                                                        SB_DFFER     D        In      -         10.764      -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 10.919 is 3.780(34.6%) logic and 7.139(65.4%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 3: 
+      Requested Period:                      3.731
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.576
+
+    - Propagation time:                      10.764
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -7.188
+
+    Number of logic level(s):                5
+    Starting point:                          fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10] / Q
+    Ending point:                            mydebug.data_copy[65] / D
+    The start point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                                                                            Pin      Pin               Arrival     No. of    
+Name                                                                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10]                        SB_DFF       Q        Out     0.796     0.796       -         
+RAddr_r[10]                                                                                  Net          -        -       1.599     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      I0       In      -         2.395       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      O        Out     0.661     3.056       -         
+un1_bypass1_0_N_22                                                                           Net          -        -       1.371     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      I0       In      -         4.427       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      O        Out     0.661     5.089       -         
+un1_bypass1_0_I_9_c_inv                                                                      Net          -        -       0.905     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     I0       In      -         5.994       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     CO       Out     0.380     6.373       -         
+un1_bypass1_0_data_tmp[5]                                                                    Net          -        -       0.386     -           8         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WData_r_RNI17QQ1[1]                SB_LUT4      I3       In      -         6.759       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WData_r_RNI17QQ1[1]                SB_LUT4      O        Out     0.465     7.224       -         
+N_71                                                                                         Net          -        -       1.371     -           3         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIC6F62_1     SB_LUT4      I0       In      -         8.596       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIC6F62_1     SB_LUT4      O        Out     0.661     9.257       -         
+ram_b_data_out[9]                                                                            Net          -        -       1.507     -           1         
+mydebug.data_copy[65]                                                                        SB_DFFER     D        In      -         10.764      -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 10.919 is 3.780(34.6%) logic and 7.139(65.4%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 4: 
+      Requested Period:                      3.731
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.576
+
+    - Propagation time:                      10.764
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -7.188
+
+    Number of logic level(s):                5
+    Starting point:                          fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10] / Q
+    Ending point:                            mydebug.data_copy[66] / D
+    The start point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                                                                            Pin      Pin               Arrival     No. of    
+Name                                                                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10]                        SB_DFF       Q        Out     0.796     0.796       -         
+RAddr_r[10]                                                                                  Net          -        -       1.599     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      I0       In      -         2.395       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      O        Out     0.661     3.056       -         
+un1_bypass1_0_N_22                                                                           Net          -        -       1.371     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      I0       In      -         4.427       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      O        Out     0.661     5.089       -         
+un1_bypass1_0_I_9_c_inv                                                                      Net          -        -       0.905     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     I0       In      -         5.994       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     CO       Out     0.380     6.373       -         
+un1_bypass1_0_data_tmp[5]                                                                    Net          -        -       0.386     -           8         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WData_r_RNI48QQ1[2]                SB_LUT4      I3       In      -         6.759       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WData_r_RNI48QQ1[2]                SB_LUT4      O        Out     0.465     7.224       -         
+N_72                                                                                         Net          -        -       1.371     -           3         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIG8F62_1     SB_LUT4      I0       In      -         8.596       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIG8F62_1     SB_LUT4      O        Out     0.661     9.257       -         
+ram_b_data_out[10]                                                                           Net          -        -       1.507     -           1         
+mydebug.data_copy[66]                                                                        SB_DFFER     D        In      -         10.764      -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 10.919 is 3.780(34.6%) logic and 7.139(65.4%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 5: 
+      Requested Period:                      3.731
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         3.576
+
+    - Propagation time:                      10.764
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -7.188
+
+    Number of logic level(s):                5
+    Starting point:                          fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10] / Q
+    Ending point:                            mydebug.data_copy[67] / D
+    The start point is clocked by            myctrl.timeout_cmd_line_write.un68_running [falling] on pin C
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                                                                            Pin      Pin               Arrival     No. of    
+Name                                                                                         Type         Name     Dir     Delay     Time        Fan Out(s)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r[10]                        SB_DFF       Q        Out     0.796     0.796       -         
+RAddr_r[10]                                                                                  Net          -        -       1.599     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      I0       In      -         2.395       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WAddr_r_RNIORDK[10]                SB_LUT4      O        Out     0.661     3.056       -         
+un1_bypass1_0_N_22                                                                           Net          -        -       1.371     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      I0       In      -         4.427       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c_inv            SB_LUT4      O        Out     0.661     5.089       -         
+un1_bypass1_0_I_9_c_inv                                                                      Net          -        -       0.905     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     I0       In      -         5.994       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass1_0_I_9_c                SB_CARRY     CO       Out     0.380     6.373       -         
+un1_bypass1_0_data_tmp[5]                                                                    Net          -        -       0.386     -           8         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WData_r_RNI59QQ1[3]                SB_LUT4      I3       In      -         6.759       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.WData_r_RNI59QQ1[3]                SB_LUT4      O        Out     0.465     7.224       -         
+N_73                                                                                         Net          -        -       1.371     -           3         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIIAF62_1     SB_LUT4      I0       In      -         8.596       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIIAF62_1     SB_LUT4      O        Out     0.661     9.257       -         
+ram_b_data_out[11]                                                                           Net          -        -       1.507     -           1         
+mydebug.data_copy[67]                                                                        SB_DFFER     D        In      -         10.764      -         
+===========================================================================================================================================================
+Total path delay (propagation time + setup) of 10.919 is 3.780(34.6%) logic and 7.139(65.4%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+
+
+====================================
+Detailed Report for Clock: System
+====================================
+
+
+
+Starting Points with Worst Slack
+********************************
+
+                         Starting                                                   Arrival           
+Instance                 Reference     Type          Pin      Net                   Time        Slack 
+                         Clock                                                                        
+------------------------------------------------------------------------------------------------------
+pin7                     System        Port          pin7     pin7                  0.000       -3.025
+ctrl.ram_address[2]      System        SB_DFFNER     Q        ram_a_address[2]      0.796       -2.245
+ctrl.ram_address[3]      System        SB_DFFNER     Q        ram_a_address[3]      0.796       -2.152
+ctrl.ram_address[4]      System        SB_DFFNER     Q        ram_a_address[4]      0.796       -2.045
+ctrl.ram_address[5]      System        SB_DFFNER     Q        ram_a_address[5]      0.796       -1.952
+ctrl.ram_address[6]      System        SB_DFFNER     Q        ram_a_address[6]      0.796       -1.845
+ctrl.ram_address[7]      System        SB_DFFNER     Q        ram_a_address[7]      0.796       -1.752
+ctrl.ram_address[8]      System        SB_DFFNER     Q        ram_a_address[8]      0.796       -1.645
+ctrl.ram_address[9]      System        SB_DFFNER     Q        ram_a_address[9]      0.796       -1.552
+ctrl.ram_address[10]     System        SB_DFFNER     Q        ram_a_address[10]     0.796       -1.445
+======================================================================================================
+
+
+Ending Points with Worst Slack
+******************************
+
+                           Starting                                                          Required           
+Instance                   Reference     Type         Pin     Net                            Time         Slack 
+                           Clock                                                                                
+----------------------------------------------------------------------------------------------------------------
+mydebug.data_copy[200]     System        SB_DFFER     D       clkdiv_baudrate_reset2_0_i     7.308        -3.025
+mydebug.data_copy[192]     System        SB_DFFER     D       timeout_word_start             7.308        -2.994
+mydebug.data_copy[56]      System        SB_DFFER     D       ram_b_data_out[0]              7.308        -2.245
+mydebug.data_copy[57]      System        SB_DFFER     D       ram_b_data_out[1]              7.308        -2.245
+mydebug.data_copy[58]      System        SB_DFFER     D       ram_b_data_out[2]              7.308        -2.245
+mydebug.data_copy[59]      System        SB_DFFER     D       ram_b_data_out[3]              7.308        -2.245
+mydebug.data_copy[60]      System        SB_DFFER     D       ram_b_data_out[4]              7.308        -2.245
+mydebug.data_copy[61]      System        SB_DFFER     D       ram_b_data_out[5]              7.308        -2.245
+mydebug.data_copy[62]      System        SB_DFFER     D       ram_b_data_out[6]              7.308        -2.245
+mydebug.data_copy[63]      System        SB_DFFER     D       ram_b_data_out[7]              7.308        -2.245
+================================================================================================================
+
+
+
+Worst Path Information
+***********************
+
+
+Path information for path number 1: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      10.333
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -3.025
+
+    Number of logic level(s):                2
+    Starting point:                          pin7 / pin7
+    Ending point:                            mydebug.data_copy[200] / D
+    The start point is clocked by            System [rising]
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                                  Pin             Pin               Arrival     No. of    
+Name                                               Type         Name            Dir     Delay     Time        Fan Out(s)
+------------------------------------------------------------------------------------------------------------------------
+pin7                                               Port         pin7            In      0.000     0.000       -         
+pin7                                               Net          -               -       0.000     -           1         
+pin7_ibuf                                          SB_IO        PACKAGE_PIN     In      -         0.000       -         
+pin7_ibuf                                          SB_IO        D_IN_0          Out     1.520     1.520       -         
+pin7_c                                             Net          -               -       6.717     -           4         
+ctrl.urx.timeout_word.un11_runningkeep_RNIF22P     SB_LUT4      I1              In      -         8.237       -         
+ctrl.urx.timeout_word.un11_runningkeep_RNIF22P     SB_LUT4      O               Out     0.589     8.826       -         
+clkdiv_baudrate_reset2_0_i                         Net          -               -       1.507     -           10        
+mydebug.data_copy[200]                             SB_DFFER     D               In      -         10.333      -         
+========================================================================================================================
+Total path delay (propagation time + setup) of 10.488 is 2.264(21.6%) logic and 8.224(78.4%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 2: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      10.302
+    - Clock delay at starting point:         0.000 (ideal)
+    = Slack (non-critical) :                 -2.994
+
+    Number of logic level(s):                2
+    Starting point:                          pin7 / pin7
+    Ending point:                            mydebug.data_copy[192] / D
+    The start point is clocked by            System [rising]
+    The end   point is clocked by            myclk_root [rising] on pin C
+
+Instance / Net                                                  Pin             Pin               Arrival     No. of    
+Name                                               Type         Name            Dir     Delay     Time        Fan Out(s)
+------------------------------------------------------------------------------------------------------------------------
+pin7                                               Port         pin7            In      0.000     0.000       -         
+pin7                                               Net          -               -       0.000     -           1         
+pin7_ibuf                                          SB_IO        PACKAGE_PIN     In      -         0.000       -         
+pin7_ibuf                                          SB_IO        D_IN_0          Out     1.520     1.520       -         
+pin7_c                                             Net          -               -       6.717     -           4         
+ctrl.urx.timeout_word.un11_runningkeep_RNIDI1L     SB_LUT4      I1              In      -         8.237       -         
+ctrl.urx.timeout_word.un11_runningkeep_RNIDI1L     SB_LUT4      O               Out     0.558     8.795       -         
+timeout_word_start                                 Net          -               -       1.507     -           3         
+mydebug.data_copy[192]                             SB_DFFER     D               In      -         10.302      -         
+========================================================================================================================
+Total path delay (propagation time + setup) of 10.457 is 2.233(21.4%) logic and 8.224(78.6%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 3: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      9.552
+    - Clock delay at starting point:         0.000 (ideal)
+    - Estimated clock delay at start point:  -0.000
+    = Slack (non-critical) :                 -2.245
+
+    Number of logic level(s):                8
+    Starting point:                          ctrl.ram_address[2] / Q
+    Ending point:                            fb_f.rgb565_bottom[8] / D
+    The start point is clocked by            System [falling] on pin C
+    The end   point is clocked by            myclk_root [falling] on pin C
+
+Instance / Net                                                                                           Pin      Pin               Arrival     No. of    
+Name                                                                                       Type          Name     Dir     Delay     Time        Fan Out(s)
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ctrl.ram_address[2]                                                                        SB_DFFNER     Q        Out     0.796     0.796       -         
+ram_a_address[2]                                                                           Net           -        -       1.599     -           36        
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r_RNIUCA61[2]              SB_LUT4       I2       In      -         2.395       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r_RNIUCA61[2]              SB_LUT4       O        Out     0.558     2.953       -         
+un1_bypass2_0_N_17                                                                         Net           -        -       1.371     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c_inv         SB_LUT4       I0       In      -         4.324       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c_inv         SB_LUT4       O        Out     0.661     4.986       -         
+un1_bypass2_0_I_15_c_inv                                                                   Net           -        -       0.905     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c             SB_CARRY      I0       In      -         5.891       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c             SB_CARRY      CO       Out     0.380     6.270       -         
+un1_bypass2_0_data_tmp[1]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_33_c             SB_CARRY      CI       In      -         6.284       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_33_c             SB_CARRY      CO       Out     0.186     6.470       -         
+un1_bypass2_0_data_tmp[2]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_21_c             SB_CARRY      CI       In      -         6.484       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_21_c             SB_CARRY      CO       Out     0.186     6.670       -         
+un1_bypass2_0_data_tmp[3]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_27_c             SB_CARRY      CI       In      -         6.684       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_27_c             SB_CARRY      CO       Out     0.186     6.870       -         
+un1_bypass2_0_data_tmp[4]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c              SB_CARRY      CI       In      -         6.884       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c              SB_CARRY      CO       Out     0.186     7.070       -         
+un1_bypass2_0_data_tmp[5]                                                                  Net           -        -       0.386     -           24        
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIA4F62     SB_LUT4       I1       In      -         7.456       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIA4F62     SB_LUT4       O        Out     0.589     8.045       -         
+ram_b_data_out_8_rep1                                                                      Net           -        -       1.507     -           1         
+fb_f.rgb565_bottom[8]                                                                      SB_DFFNER     D        In      -         9.552       -         
+==========================================================================================================================================================
+Total path delay (propagation time + setup) of 9.707 is 3.883(40.0%) logic and 5.824(60.0%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 4: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      9.552
+    - Clock delay at starting point:         0.000 (ideal)
+    - Estimated clock delay at start point:  -0.000
+    = Slack (non-critical) :                 -2.245
+
+    Number of logic level(s):                8
+    Starting point:                          ctrl.ram_address[2] / Q
+    Ending point:                            fb_f.rgb565_bottom[1] / D
+    The start point is clocked by            System [falling] on pin C
+    The end   point is clocked by            myclk_root [falling] on pin C
+
+Instance / Net                                                                                           Pin      Pin               Arrival     No. of    
+Name                                                                                       Type          Name     Dir     Delay     Time        Fan Out(s)
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ctrl.ram_address[2]                                                                        SB_DFFNER     Q        Out     0.796     0.796       -         
+ram_a_address[2]                                                                           Net           -        -       1.599     -           36        
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r_RNIUCA61[2]              SB_LUT4       I2       In      -         2.395       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r_RNIUCA61[2]              SB_LUT4       O        Out     0.558     2.953       -         
+un1_bypass2_0_N_17                                                                         Net           -        -       1.371     -           2         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c_inv         SB_LUT4       I0       In      -         4.324       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c_inv         SB_LUT4       O        Out     0.661     4.986       -         
+un1_bypass2_0_I_15_c_inv_0                                                                 Net           -        -       0.905     -           2         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c             SB_CARRY      I0       In      -         5.891       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c             SB_CARRY      CO       Out     0.380     6.270       -         
+un1_bypass2_0_data_tmp[1]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_33_c             SB_CARRY      CI       In      -         6.284       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_33_c             SB_CARRY      CO       Out     0.186     6.470       -         
+un1_bypass2_0_data_tmp[2]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_21_c             SB_CARRY      CI       In      -         6.484       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_21_c             SB_CARRY      CO       Out     0.186     6.670       -         
+un1_bypass2_0_data_tmp[3]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_27_c             SB_CARRY      CI       In      -         6.684       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_27_c             SB_CARRY      CO       Out     0.186     6.870       -         
+un1_bypass2_0_data_tmp[4]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c              SB_CARRY      CI       In      -         6.884       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c              SB_CARRY      CO       Out     0.186     7.070       -         
+un1_bypass2_0_data_tmp[5]                                                                  Net           -        -       0.386     -           24        
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNI13352     SB_LUT4       I1       In      -         7.456       -         
+fb.mpram_ins_p2.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNI13352     SB_LUT4       O        Out     0.589     8.045       -         
+ram_b_data_out_1_rep1                                                                      Net           -        -       1.507     -           1         
+fb_f.rgb565_bottom[1]                                                                      SB_DFFNER     D        In      -         9.552       -         
+==========================================================================================================================================================
+Total path delay (propagation time + setup) of 9.707 is 3.883(40.0%) logic and 5.824(60.0%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+Path information for path number 5: 
+      Requested Period:                      7.463
+    - Setup time:                            0.155
+    + Clock delay at ending point:           0.000 (ideal)
+    = Required time:                         7.308
+
+    - Propagation time:                      9.552
+    - Clock delay at starting point:         0.000 (ideal)
+    - Estimated clock delay at start point:  -0.000
+    = Slack (non-critical) :                 -2.245
+
+    Number of logic level(s):                8
+    Starting point:                          ctrl.ram_address[2] / Q
+    Ending point:                            fb_f.rgb565_top[15] / D
+    The start point is clocked by            System [falling] on pin C
+    The end   point is clocked by            myclk_root [falling] on pin C
+
+Instance / Net                                                                                           Pin      Pin               Arrival     No. of    
+Name                                                                                       Type          Name     Dir     Delay     Time        Fan Out(s)
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+ctrl.ram_address[2]                                                                        SB_DFFNER     Q        Out     0.796     0.796       -         
+ram_a_address[2]                                                                           Net           -        -       1.599     -           36        
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r_RNIUCA61[2]              SB_LUT4       I2       In      -         2.395       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.RAddr_r_RNIUCA61[2]              SB_LUT4       O        Out     0.558     2.953       -         
+un1_bypass2_0_N_17                                                                         Net           -        -       1.371     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c_inv         SB_LUT4       I0       In      -         4.324       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c_inv         SB_LUT4       O        Out     0.661     4.986       -         
+un1_bypass2_0_I_15_c_inv                                                                   Net           -        -       0.905     -           2         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c             SB_CARRY      I0       In      -         5.891       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_15_c             SB_CARRY      CO       Out     0.380     6.270       -         
+un1_bypass2_0_data_tmp[1]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_33_c             SB_CARRY      CI       In      -         6.284       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_33_c             SB_CARRY      CO       Out     0.186     6.470       -         
+un1_bypass2_0_data_tmp[2]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_21_c             SB_CARRY      CI       In      -         6.484       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_21_c             SB_CARRY      CO       Out     0.186     6.670       -         
+un1_bypass2_0_data_tmp[3]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_27_c             SB_CARRY      CI       In      -         6.684       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_27_c             SB_CARRY      CO       Out     0.186     6.870       -         
+un1_bypass2_0_data_tmp[4]                                                                  Net           -        -       0.014     -           1         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c              SB_CARRY      CI       In      -         6.884       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c              SB_CARRY      CO       Out     0.186     7.070       -         
+un1_bypass2_0_data_tmp[5]                                                                  Net           -        -       0.386     -           24        
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIF16F2     SB_LUT4       I1       In      -         7.456       -         
+fb.mpram_ins_p1.genblk1\.mrram_ins.RPORTrpi\[0\]\.dpram_i.un1_bypass2_0_I_9_c_RNIF16F2     SB_LUT4       O        Out     0.589     8.045       -         
+ram_b_data_out_15_rep2                                                                     Net           -        -       1.507     -           1         
+fb_f.rgb565_top[15]                                                                        SB_DFFNER     D        In      -         9.552       -         
+==========================================================================================================================================================
+Total path delay (propagation time + setup) of 9.707 is 3.883(40.0%) logic and 5.824(60.0%) route.
+Path delay compensated for clock skew. Clock skew is added to clock-to-out value, and is subtracted from setup time value
+
+
+
+##### END OF TIMING REPORT #####]
+
+Timing exceptions that could not be applied
+None
+
+Finished final timing analysis (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 134MB peak: 136MB)
+
+
+Start Writing Netlists (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 134MB peak: 136MB)
+
+Writing Analyst data base /home/awhite/CLionProjects/led_display/fpga/template_Implmnt/template_ta.srm
+
+Finished Writing Netlist Databases (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 134MB peak: 136MB)
+
+Mapper successful!
+
+At Mapper Exit (Real Time elapsed 0h:00m:00s; CPU Time elapsed 0h:00m:00s; Memory used current: 21MB peak: 136MB)
+
+Process took 0h:00m:01s realtime, 0h:00m:01s cputime
+# Sat Mar 23 14:48:45 2019
+
+###########################################################]
