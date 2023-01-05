@@ -49,8 +49,10 @@ module framebuffer_fetch (
 			rgb565_bottom <= 16'd0;
 		end
 		else begin
-
-			if (pixel_load_counter == 'd2) begin
+			if (pixel_load_counter == 'd3) begin
+				half_address <= 1'b1;
+			end
+			else if (pixel_load_counter == 'd2) begin
 				half_address <= 1'b1;
 			end
 			else if (pixel_load_counter == 'd1) begin
