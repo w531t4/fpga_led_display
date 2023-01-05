@@ -132,8 +132,6 @@ pll new_pll_inst (
 		.row_latch(row_latch),
 		.output_enable(output_enable),
 		.brightness_mask(brightness_mask),
-
-		.row_latch2(row_latch),
 		.state_advance2(state_advance),
 		.row_latch_state2(row_latch_state),
 		.clk_pixel_load_en2(clk_pixel_load_en)
