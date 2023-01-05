@@ -3,11 +3,9 @@ module debugger	#(
     parameter DIVIDER_TICKS = 28'd67000000,
     parameter DATA_WIDTH = 8,
     parameter DATA_WIDTH_BASE2 = 4,
-    // 133Mhz / 1146 = 116005 baud
-    parameter UART_TICKS_PER_BIT = 1146,
-    parameter UART_TICKS_PER_BIT_SIZE = 11
-    //parameter UART_TICKS_PER_BIT = 1163,
-    //parameter UART_TICKS_PER_BIT_SIZE = 12
+    // 22MHz / 191 = 115183 baud
+    parameter UART_TICKS_PER_BIT = 191,
+    parameter UART_TICKS_PER_BIT_SIZE = 8
 ) (
     input clk_in,
     input reset,

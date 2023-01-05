@@ -86,50 +86,13 @@ module main (
 	wire [7:0] debug_command;
 	wire debug_command_pulse;
     wire debug_command_busy;
-  // Fin=12, Fout=133 (cct 132);
-	// Fin=16 Fout=132
-	//defparam usb_pll_inst.DIVR = 0;
-	//defparam usb_pll_inst.DIVF = 7'b1000001;
-	//defparam usb_pll_inst.DIVQ = 3'b011;
-	// Fin=16 Fout=144
-	/*
-	defparam usb_pll_inst.DIVR = 0;
-	defparam usb_pll_inst.DIVF = 7'b1000010;
-	defparam usb_pll_inst.DIVQ = 3'b011;
-	*/
-	//Fin=16 Fout=132
-	defparam usb_pll_inst.DIVR = 0;
-	defparam usb_pll_inst.DIVF = 7'b1000001;
-	defparam usb_pll_inst.DIVQ = 3'b011;
 
-	wire clk_root_logic;
-
-  SB_PLL40_CORE usb_pll_inst (
-    .REFERENCECLK(pin3_clk_16mhz),
-    .PLLOUTGLOBAL(clk_root_logic),
-    .RESETB(1'b1),
-    .BYPASS(1'b0)
+pll new_pll_inst (
+	.clock_in(pin3_clk_16mhz),
+	.clock_out(clk_root)
 ) /* synthesis syn_noprune=1 */ ;
 	wire clk_root;
-	//assign clk_root = clk_root_logic;
-	//assign clk_root = ((debug_command == "S") && ~debug_command_pulse) ? 1'bz : clk_root_logic;
 
-
-	SB_GB gbc(
-		.USER_SIGNAL_TO_GLOBAL_BUFFER (clk_root_logic),
-		.GLOBAL_BUFFER_OUTPUT ( clk_root ) ) /* synthesis syn_noprune=1 */ ;
-
-
-	defparam usb_pll_inst.FILTER_RANGE = 3'b001;
-	defparam usb_pll_inst.FEEDBACK_PATH = "SIMPLE";
-
-	defparam usb_pll_inst.DELAY_ADJUSTMENT_MODE_FEEDBACK = "FIXED";
-	defparam usb_pll_inst.FDA_FEEDBACK = 4'b0000;
-	defparam usb_pll_inst.DELAY_ADJUSTMENT_MODE_RELATIVE = "FIXED";
-	defparam usb_pll_inst.FDA_RELATIVE = 4'b0000;
-	defparam usb_pll_inst.SHIFTREG_DIV_MODE = 2'b00;
-	defparam usb_pll_inst.PLLOUT_SELECT = "GENCLK";
-  //defparam usb_pll_inst.ENABLE_ICEGATE = 1'b0;
 
 	wire buffered_global_reset;
 	timeout #(
@@ -137,7 +100,7 @@ module main (
 	) timeout_global_reset (
 		.reset(1'b0),
 		//.reset(debug_command == "H"),
-		.clk_in(clk_root_logic),
+		.clk_in(clk_root),
 		//.start(1'b1),
 		.start(~((debug_command == "H") && debug_command_pulse)),
 		.value(4'd15),
@@ -147,30 +110,20 @@ module main (
 
 	/* produce a clock for use on the LED matrix */
 	reg [1:0] sync_fifo;
-	always @(posedge clk_root_logic) begin
+	// this is a buffer to transfer global reset across clock domains
+	// TODO: Is this still needed?
+	always @(posedge clk_root) begin
 			{ global_reset, sync_fifo } <= { sync_fifo, buffered_global_reset };
 
 	//always @(posedge clk_root_logic)
 
 	end
 
-	clock_divider #(
-		.CLK_DIV_WIDTH(2),
-		.CLK_DIV_COUNT(3)
-	) clkdiv_matrix (
-		.reset(global_reset),
-		.clk_in(clk_root),
-		.clk_out(clk_matrix)
-	) /* synthesis syn_noprune=1 */ ;
-
-	// yields 133MHZ/3 = 44.333MHz
-	//        main.v     clk_matrix
-
 	/* produce signals to scan a 64x32 LED matrix, with 6-bit color */
 
 	matrix_scan matscan1 (
 		.reset(global_reset),
-		.clk_in(clk_matrix),
+		.clk_in(clk_root),
 		.column_address(column_address),
 		.row_address(row_address),
 		.row_address_active(row_address_active),
@@ -309,15 +262,15 @@ module main (
 		}  /* synthesis syn_preserve = 1 */ ;
 
 	debugger #(
-		// 133 MHz / 6000000 = 22.16
-		.DIVIDER_TICKS_WIDTH(25),
-		.DIVIDER_TICKS(6000000),
+		// 22MHz / 1000000 = 22
+		.DIVIDER_TICKS_WIDTH(20),
+		.DIVIDER_TICKS(1000000),
 		.DATA_WIDTH_BASE2(8),
 		.DATA_WIDTH(184)
 	//.DATA_WIDTH_BASE2($clog2($size(ddata))),
 		//.DATA_WIDTH($size(ddata))
 	) mydebug (
-		.clk_in(clk_root_logic),
+		.clk_in(clk_root),
 		.reset(global_reset),
 		.data_in(ddata),
 		.debug_uart_rx_in(debug_uart_rx),
