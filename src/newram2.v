@@ -47,7 +47,7 @@
   parameter	 DATAWIDTH = 16;
   parameter	 DATA_A_WIDTH = 8;
   parameter	 DATA_B_WIDTH = 16;
-  parameter	 ADDRWIDTH = 12; 
+  parameter	 ADDRWIDTH = 12;
   parameter	 MEMDEPTH = 2**(ADDRWIDTH);
 
   input PortAClk;
@@ -164,7 +164,7 @@ output wire [DATAW      *nRPORTS-1:0] RData); // read  data - packed from nRPORT
 */
   /*
   Syncore_ram
- #(	
+ #(
 				.SPRAM(0)
 				,.READ_MODE_A(2)
 				,.READ_MODE_B(2)
@@ -183,8 +183,8 @@ output wire [DATAW      *nRPORTS-1:0] RData); // read  data - packed from nRPORT
 				,.REGISTER_RD_ADDR_PORTB(1)
 				,.REGISTER_OUTPUT_PORTB(1)
 				,.ENABLE_OUTPUT_REG_PORTB(0)
-				,.RESET_OUTPUT_REG_PORTB(1)	
-				) 
+				,.RESET_OUTPUT_REG_PORTB(1)
+				)
 			U1(
 				.PortClk({clk_b, clk_a})
 				,.PortReset({PortBReset, PortAReset})
