@@ -138,21 +138,26 @@ module fm6126init
 (
 	input clk_in,
 	input reset,
-	output output_enable,
-	output [2:0] rgb1,
-	output [2:0] rgb2,
-	output latch,
-	output done
+	input output_enable_in,
+	input [2:0] rgb1_in,
+	input [2:0] rgb2_in,
+	input latch_in,
+	output reg output_enable_out,
+	output reg [2:0] rgb1_out,
+	output reg [2:0] rgb2_out,
+	output reg latch_out,
+	output reg done
 	);
 
-	reg C12[15:0] = 16'b0111111111111111;
-	reg C13[15:0] = 16'b0000000001000000;
-    reg currentState[6:0];
-	reg widthCounter[3:0] = 4'd0; // 16 bits
+	reg [15:0] C12 = 16'b0111111111111111;
+	reg [15:0] C13 = 16'b0000000001000000;
+    reg [6:0] currentState;
+	reg [3:0] widthCounter = 4'd0; // 16 bits
 
 	//TODO: how do i not manually specify 64 here?
-	reg widthState[LED_WIDTH - 1:0];
 	localparam LED_WIDTH = 'd64; // 64 pixel width led display
+	reg [LED_WIDTH - 1:0] widthState;
+
 	localparam STAGE1_OFFSET = 'd12,
 			   STAGE2_OFFSET = 'd13;
 
@@ -163,14 +168,14 @@ module fm6126init
 					STATE1_END       = 7'b0001000,
                     STATE2_BEGIN     = 7'b0010000,
 					STATE2_END       = 7'b0100000,
-					FINISH           = 7'b1000000;
+					STATE_FINISH           = 7'b1000000;
 // End of default setup for RGB Matrix 64x32 panel
 	always @(posedge clk_in, posedge reset) begin
 		if (reset) begin
 			currentState <= STATE_START;
-			output_enable <= 1'b0; // inverted here
+			output_enable_out <= 1'b0; // inverted here
 			// not setting clock low, because that happens automatically.
-			latch <= 1'b0;
+			latch_out <= 1'b0;
 			done <= 1'b0;
 			widthCounter <= 4'd0;
 			// when widthState becomes all zero, set latch
@@ -178,7 +183,7 @@ module fm6126init
 			widthState <= ({LED_WIDTH{1'b1}}) >> (LED_WIDTH - STAGE1_OFFSET);
 		end
 		else begin
-			if (current_state == STATE_START || current_state == STATE1_BEGIN) begin
+			if (currentState == STATE_START || currentState == STATE1_BEGIN) begin
 				currentState <= STATE1_END;
 				widthCounter <= widthCounter + 1'b1;
 				// ({LED_WIDTH{1'b1}}) <-- create LED_WIDTH bit register prefilled with 1's
@@ -190,23 +195,23 @@ module fm6126init
 				//					 it'll yield a 0, which we'll then invert and use as an indicator
 				//					 to set the latch
 				// (! see_above) <-- invert the result
-				latch <= (! (| (widthState >> (LED_WIDTH - 1))));
+				latch_out <= (! (| (widthState >> (LED_WIDTH - 1))));
 				// shift right one, regardless
 				widthState <= ({LED_WIDTH{1'b1}}) >> (LED_WIDTH - STAGE1_OFFSET);
-				rgb1 <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
-				rgb2 <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
+				rgb1_out <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
+				rgb2_out <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
 			end
 			// reached STATE1_END and we've counted all the pixels, move to stage 2
-			else if (current_state == STATE1_END && (! (& widthCounter))) begin
+			else if (currentState == STATE1_END && (! (& widthCounter))) begin
 				currentState <= STATE2_BEGIN;
-				latch <= 1'b0;
+				latch_out <= 1'b0;
 				widthState <= ({LED_WIDTH{1'b1}}) >> (LED_WIDTH - STAGE2_OFFSET);
 			end
-			else if (current_state == STATE1_END) begin
+			else if (currentState == STATE1_END) begin
 				currentState <= STATE1_BEGIN;
-				latch <= 1'b0;
+				latch_out <= 1'b0;
 			end
-			else if (current_state == STATE2_BEGIN) begin
+			else if (currentState == STATE2_BEGIN) begin
 				currentState <= STATE2_END;
 				widthCounter <= widthCounter + 1'b1;
 				// ({LED_WIDTH{1'b1}}) <-- create LED_WIDTH bit register prefilled with 1's
@@ -218,25 +223,28 @@ module fm6126init
 				//					 it'll yield a 0, which we'll then invert and use as an indicator
 				//					 to set the latch
 				// (! see_above) <-- invert the result
-				latch <= (! (| (widthState >> (LED_WIDTH - 1))));
+				latch_out <= (! (| (widthState >> (LED_WIDTH - 1))));
 				// shift right one, regardless
 				widthState <= ({LED_WIDTH{1'b1}}) >> (LED_WIDTH - STAGE2_OFFSET);
-				rgb1 <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
-				rgb2 <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
+				rgb1_out <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
+				rgb2_out <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
 			end
-			else if (clk_count == (CLK_DIV_COUNT - 1)) begin
-				clk_out <= ~clk_out;
-				clk_count <= 'b0;
-			end
-			else if (current_state == STATE2_END && (! (& widthCounter))) begin
+			else if (currentState == STATE2_END && (! (& widthCounter))) begin
 				currentState <= STATE_FINISH;
 				done <= 1'b1;
-				latch <= 1'b0;
+				latch_out <= 1'b0;
 				widthState <= ({LED_WIDTH{1'b1}}) >> (LED_WIDTH - STAGE2_OFFSET);
 			end
-			else if (current_state == STATE2_END) begin
+			else if (currentState == STATE2_END) begin
 				currentState <= STATE2_BEGIN;
-				latch <= 1'b0;
+				latch_out <= 1'b0;
+			end
+			else if (currentState == STATE_FINISH) begin
+				done <= 1'b1;
+				latch_out <= latch_in;
+				rgb1_out <= rgb1_in;
+				rgb2_out <= rgb2_in;
+				output_enable_out <= output_enable_in;
 			end
         end
 	end
