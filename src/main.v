@@ -305,7 +305,8 @@ pll new_pll_inst (
 	// Pixel Clk
 	assign pin10 = clk_pixel;
 	//assign pin11 = ram_a_clk_enable;
-	assign pin11 = ram_a_clk_enable;
+	//assign pin11 = clk_root;
+	assign pin11 = 1'b1;
 	// Red   1
 	assign pin12 = rgb2[0];
 	// Green 1 [don't use for debugging]
@@ -329,7 +330,9 @@ pll new_pll_inst (
 	assign pin20 = rgb1[1];
 	// Blue  2
 	assign pin21 = rgb1[2];
-	assign pin22 = ram_b_clk_enable;
+	assign pin22 = 1'b1;
+	//assign pin22 = clk_matrix;
+	//assign pin22 = ram_b_clk_enable;
 	assign pin23 = tx_out;
 	//assign pin24 = 1'bz;
 	assign debug_uart_rx = pin24;
