@@ -11,7 +11,7 @@
         "backup*.tgz": true,
         "stdout.log*": true,
         "synlog.tcl": true,
-        "template_*": true,
+       // "template_*": true,
         ".pytest_cache": true,
     }
 }
