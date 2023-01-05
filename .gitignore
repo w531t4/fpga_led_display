@@ -22,6 +22,8 @@ template_Implmnt/template.srs
 template_Implmnt/template_cck.rpt
 template_Implmnt/template_scck.rpt
 template_Implmnt/template_synplify.fdc
+template_Implmnt/template_XXXXXOLD.edf
+template_Implmnt/template_XXXXXOLD.scf
 template_Implmnt/run_options.txt
 template_Implmnt/*.log
 template_Implmnt/synlog
