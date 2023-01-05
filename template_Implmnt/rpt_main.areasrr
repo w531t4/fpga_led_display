@@ -9,18 +9,18 @@ Part:			ICE40LP8KCM81 (Lattice)
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     517                100 %                
+FLOPS     479                100 %                
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main:	517 (35.90 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main:	479 (36.37 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       677                100 %                
-CARRYS     119                100 %                
+LUTS       598                100 %                
+CARRYS     112                100 %                
 ===================================================
-Total COMBINATIONAL LOGIC in the block main:	796 (55.28 % Utilization)
+Total COMBINATIONAL LOGIC in the block main:	710 (53.91 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -28,35 +28,15 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     24                 100 %                
 =================================================
-Total MEMORY ELEMENTS in the block main:	24 (1.67 % Utilization)
+Total MEMORY ELEMENTS in the block main:	24 (1.82 % Utilization)
 
 
 IO PADS
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-PADS     32                 100 %                
+PADS     33                 100 %                
 =================================================
-Total IO PADS in the block main:	32 (2.22 % Utilization)
-
--------------------------------------------------------------------------
-########   Utilization report for  cell:   clock_divider_2s_3s   ########
-Instance path:   main.clock_divider_2s_3s                                
-=========================================================================
-
-SEQUENTIAL ELEMENTS
-Name      Total elements     Utilization     Notes
---------------------------------------------------
-FLOPS     3                  0.580 %              
-==================================================
-Total SEQUENTIAL ELEMENTS in the block main.clock_divider_2s_3s:	3 (0.21 % Utilization)
-
-
-COMBINATIONAL LOGIC
-Name     Total elements     Utilization     Notes
--------------------------------------------------
-LUTS     1                  0.1480 %             
-=================================================
-Total COMBINATIONAL LOGIC in the block main.clock_divider_2s_3s:	1 (0.07 % Utilization)
+Total IO PADS in the block main:	33 (2.51 % Utilization)
 
 --------------------------------------------------------------------
 ########   Utilization report for  cell:   control_module   ########
@@ -66,47 +46,47 @@ Instance path:   main.control_module
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     95                 18.4 %               
+FLOPS     76                 15.9 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.control_module:	95 (6.60 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.control_module:	76 (5.77 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       100                14.8 %               
-CARRYS     12                 10.1 %               
+LUTS       86                 14.4 %               
+CARRYS     13                 11.6 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block main.control_module:	112 (7.78 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.control_module:	99 (7.52 % Utilization)
 
 
 IO PADS
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-PADS     1                  3.12 %               
+PADS     1                  3.03 %               
 =================================================
-Total IO PADS in the block main.control_module:	1 (0.07 % Utilization)
+Total IO PADS in the block main.control_module:	1 (0.08 % Utilization)
 
-------------------------------------------------------------------------------------------
-########   Utilization report for  cell:   debug_uart_rx_49_6s_48_24_1_2_4_8_16   ########
-Instance path:   control_module.debug_uart_rx_49_6s_48_24_1_2_4_8_16                      
-==========================================================================================
+---------------------------------------------------------------------------------------
+########   Utilization report for  cell:   debug_uart_rx_9_4s_8_4_1_2_4_8_16   ########
+Instance path:   control_module.debug_uart_rx_9_4s_8_4_1_2_4_8_16                      
+=======================================================================================
 
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     26                 5.03 %               
+FLOPS     24                 5.01 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block control_module.debug_uart_rx_49_6s_48_24_1_2_4_8_16:	26 (1.81 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block control_module.debug_uart_rx_9_4s_8_4_1_2_4_8_16:	24 (1.82 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       40                 5.91 %               
-CARRYS     5                  4.2 %                
+LUTS       35                 5.85 %               
+CARRYS     6                  5.36 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block control_module.debug_uart_rx_49_6s_48_24_1_2_4_8_16:	45 (3.12 % Utilization)
+Total COMBINATIONAL LOGIC in the block control_module.debug_uart_rx_9_4s_8_4_1_2_4_8_16:	41 (3.11 % Utilization)
 
 ------------------------------------------------------------------
 ########   Utilization report for  cell:   timeout_2s_1   ########
@@ -116,88 +96,88 @@ Instance path:   control_module.timeout_2s_1
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     5                  0.9670 %             
+FLOPS     4                  0.8350 %             
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block control_module.timeout_2s_1:	5 (0.35 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block control_module.timeout_2s_1:	4 (0.30 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     6                  0.8860 %             
+LUTS     5                  0.8360 %             
 =================================================
-Total COMBINATIONAL LOGIC in the block control_module.timeout_2s_1:	6 (0.42 % Utilization)
+Total COMBINATIONAL LOGIC in the block control_module.timeout_2s_1:	5 (0.38 % Utilization)
 
------------------------------------------------------------------------------------------------------
-########   Utilization report for  cell:   debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8   ########
-Instance path:   main.debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8                                
-=====================================================================================================
+---------------------------------------------------------------------------------------------------
+########   Utilization report for  cell:   debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8   ########
+Instance path:   main.debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8                                
+===================================================================================================
 
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     287                55.5 %               
+FLOPS     274                57.2 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8:	287 (19.93 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8:	274 (20.80 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       292                43.1 %               
-CARRYS     54                 45.4 %               
+LUTS       271                45.3 %               
+CARRYS     46                 41.1 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block main.debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8:	346 (24.03 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8:	317 (24.07 % Utilization)
 
 
 IO PADS
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-PADS     1                  3.12 %               
+PADS     1                  3.03 %               
 =================================================
-Total IO PADS in the block main.debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8:	1 (0.07 % Utilization)
+Total IO PADS in the block main.debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8:	1 (0.08 % Utilization)
 
---------------------------------------------------------------------------------------------------------------
-########   Utilization report for  cell:   debug_uart_rx_1146s_11s_1145s_572s_1_2_4_8_16   ########           
-Instance path:   debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8.debug_uart_rx_1146s_11s_1145s_572s_1_2_4_8_16
-==============================================================================================================
+--------------------------------------------------------------------------------------------------------
+########   Utilization report for  cell:   debug_uart_rx_191s_8s_190s_95s_1_2_4_8_16   ########         
+Instance path:   debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.debug_uart_rx_191s_8s_190s_95s_1_2_4_8_16
+========================================================================================================
 
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     31                 6 %                  
+FLOPS     28                 5.85 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8.debug_uart_rx_1146s_11s_1145s_572s_1_2_4_8_16:	31 (2.15 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.debug_uart_rx_191s_8s_190s_95s_1_2_4_8_16:	28 (2.13 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       35                 5.17 %               
-CARRYS     10                 8.4 %                
+LUTS       31                 5.18 %               
+CARRYS     10                 8.93 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8.debug_uart_rx_1146s_11s_1145s_572s_1_2_4_8_16:	45 (3.12 % Utilization)
+Total COMBINATIONAL LOGIC in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.debug_uart_rx_191s_8s_190s_95s_1_2_4_8_16:	41 (3.11 % Utilization)
 
----------------------------------------------------------------------------------------------
-########   Utilization report for  cell:   uart_tx_1146s_11s_1_2_4_8_16   ########           
-Instance path:   debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8.uart_tx_1146s_11s_1_2_4_8_16
-=============================================================================================
+-----------------------------------------------------------------------------------------
+########   Utilization report for  cell:   uart_tx_191s_8s_1_2_4_8_16   ########         
+Instance path:   debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.uart_tx_191s_8s_1_2_4_8_16
+=========================================================================================
 
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     26                 5.03 %               
+FLOPS     23                 4.8 %                
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8.uart_tx_1146s_11s_1_2_4_8_16:	26 (1.81 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.uart_tx_191s_8s_1_2_4_8_16:	23 (1.75 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       44                 6.5 %                
-CARRYS     9                  7.56 %               
+LUTS       31                 5.18 %               
+CARRYS     9                  8.04 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block debugger_25s_6000000s_184s_8s_1146s_11s_1_2_4_8.uart_tx_1146s_11s_1_2_4_8_16:	53 (3.68 % Utilization)
+Total COMBINATIONAL LOGIC in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.uart_tx_191s_8s_1_2_4_8_16:	40 (3.04 % Utilization)
 
 -----------------------------------------------------------------------
 ########   Utilization report for  cell:   framebuffer_fetch   ########
@@ -207,17 +187,17 @@ Instance path:   main.framebuffer_fetch
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     39                 7.54 %               
+FLOPS     38                 7.93 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.framebuffer_fetch:	39 (2.71 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.framebuffer_fetch:	38 (2.89 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     15                 2.22 %               
+LUTS     7                  1.17 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block main.framebuffer_fetch:	15 (1.04 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.framebuffer_fetch:	7 (0.53 % Utilization)
 
 ------------------------------------------------------------------
 ########   Utilization report for  cell:   timeout_2s_0   ########
@@ -227,17 +207,17 @@ Instance path:   framebuffer_fetch.timeout_2s_0
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     5                  0.9670 %             
+FLOPS     4                  0.8350 %             
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block framebuffer_fetch.timeout_2s_0:	5 (0.35 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block framebuffer_fetch.timeout_2s_0:	4 (0.30 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     12                 1.77 %               
+LUTS     5                  0.8360 %             
 =================================================
-Total COMBINATIONAL LOGIC in the block framebuffer_fetch.timeout_2s_0:	12 (0.83 % Utilization)
+Total COMBINATIONAL LOGIC in the block framebuffer_fetch.timeout_2s_0:	5 (0.38 % Utilization)
 
 -----------------------------------------------------------------
 ########   Utilization report for  cell:   matrix_scan   ########
@@ -247,18 +227,26 @@ Instance path:   main.matrix_scan
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     51                 9.86 %               
+FLOPS     51                 10.6 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.matrix_scan:	51 (3.54 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.matrix_scan:	51 (3.87 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       83                 12.3 %               
-CARRYS     23                 19.3 %               
+LUTS       76                 12.7 %               
+CARRYS     23                 20.5 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block main.matrix_scan:	106 (7.36 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.matrix_scan:	99 (7.52 % Utilization)
+
+
+IO PADS
+Name     Total elements     Utilization     Notes
+-------------------------------------------------
+PADS     1                  3.03 %               
+=================================================
+Total IO PADS in the block main.matrix_scan:	1 (0.08 % Utilization)
 
 -----------------------------------------------------------------
 ########   Utilization report for  cell:   timeout_10s   ########
@@ -268,18 +256,18 @@ Instance path:   matrix_scan.timeout_10s
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     11                 2.13 %               
+FLOPS     11                 2.3 %                
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block matrix_scan.timeout_10s:	11 (0.76 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block matrix_scan.timeout_10s:	11 (0.84 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       28                 4.14 %               
-CARRYS     9                  7.56 %               
+LUTS       32                 5.35 %               
+CARRYS     9                  8.04 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_10s:	37 (2.57 % Utilization)
+Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_10s:	41 (3.11 % Utilization)
 
 ----------------------------------------------------------------
 ########   Utilization report for  cell:   timeout_6s   ########
@@ -289,18 +277,18 @@ Instance path:   matrix_scan.timeout_6s
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     7                  1.35 %               
+FLOPS     7                  1.46 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block matrix_scan.timeout_6s:	7 (0.49 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block matrix_scan.timeout_6s:	7 (0.53 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       15                 2.22 %               
-CARRYS     5                  4.2 %                
+LUTS       15                 2.51 %               
+CARRYS     5                  4.46 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_6s:	20 (1.39 % Utilization)
+Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_6s:	20 (1.52 % Utilization)
 
 ----------------------------------------------------------------
 ########   Utilization report for  cell:   timeout_7s   ########
@@ -310,18 +298,18 @@ Instance path:   matrix_scan.timeout_7s
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     8                  1.55 %               
+FLOPS     8                  1.67 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block matrix_scan.timeout_7s:	8 (0.56 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block matrix_scan.timeout_7s:	8 (0.61 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       12                 1.77 %               
-CARRYS     6                  5.04 %               
+LUTS       13                 2.17 %               
+CARRYS     6                  5.36 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_7s:	18 (1.25 % Utilization)
+Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_7s:	19 (1.44 % Utilization)
 
 -------------------------------------------------------------
 ########   Utilization report for  cell:   newram2   ########
@@ -331,18 +319,18 @@ Instance path:   main.newram2
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     34                 6.58 %               
+FLOPS     32                 6.68 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.newram2:	34 (2.36 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.newram2:	32 (2.43 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       141                20.8 %               
-CARRYS     30                 25.2 %               
+LUTS       113                18.9 %               
+CARRYS     30                 26.8 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block main.newram2:	171 (11.88 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.newram2:	143 (10.86 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -350,15 +338,15 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     24                 100 %                
 =================================================
-Total MEMORY ELEMENTS in the block main.newram2:	24 (1.67 % Utilization)
+Total MEMORY ELEMENTS in the block main.newram2:	24 (1.82 % Utilization)
 
 
 IO PADS
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-PADS     2                  6.25 %               
+PADS     2                  6.06 %               
 =================================================
-Total IO PADS in the block main.newram2:	2 (0.14 % Utilization)
+Total IO PADS in the block main.newram2:	2 (0.15 % Utilization)
 
 ----------------------------------------------------------------
 ########   Utilization report for  cell:   mpram_Z1_0   ########
@@ -368,10 +356,10 @@ Instance path:   newram2.mpram_Z1_0
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       52                 7.68 %               
-CARRYS     12                 10.1 %               
+LUTS       36                 6.02 %               
+CARRYS     12                 10.7 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block newram2.mpram_Z1_0:	64 (4.44 % Utilization)
+Total COMBINATIONAL LOGIC in the block newram2.mpram_Z1_0:	48 (3.64 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -379,7 +367,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     8                  33.3 %               
 =================================================
-Total MEMORY ELEMENTS in the block newram2.mpram_Z1_0:	8 (0.56 % Utilization)
+Total MEMORY ELEMENTS in the block newram2.mpram_Z1_0:	8 (0.61 % Utilization)
 
 --------------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   mrram_4096s_16s_2s_2_0s_init_ram_12s_1   ########
@@ -389,10 +377,10 @@ Instance path:   mpram_Z1_0.mrram_4096s_16s_2s_2_0s_init_ram_12s_1
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       52                 7.68 %               
-CARRYS     12                 10.1 %               
+LUTS       36                 6.02 %               
+CARRYS     12                 10.7 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block mpram_Z1_0.mrram_4096s_16s_2s_2_0s_init_ram_12s_1:	64 (4.44 % Utilization)
+Total COMBINATIONAL LOGIC in the block mpram_Z1_0.mrram_4096s_16s_2s_2_0s_init_ram_12s_1:	48 (3.64 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -400,7 +388,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     8                  33.3 %               
 =================================================
-Total MEMORY ELEMENTS in the block mpram_Z1_0.mrram_4096s_16s_2s_2_0s_init_ram_12s_1:	8 (0.56 % Utilization)
+Total MEMORY ELEMENTS in the block mpram_Z1_0.mrram_4096s_16s_2s_2_0s_init_ram_12s_1:	8 (0.61 % Utilization)
 
 -----------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   dpram_4096s_16s_2_0s_init_ram_0_1   ########  
@@ -410,10 +398,10 @@ Instance path:   mrram_4096s_16s_2s_2_0s_init_ram_12s_1.dpram_4096s_16s_2_0s_ini
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       52                 7.68 %               
-CARRYS     12                 10.1 %               
+LUTS       36                 6.02 %               
+CARRYS     12                 10.7 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_1.dpram_4096s_16s_2_0s_init_ram_0_1:	64 (4.44 % Utilization)
+Total COMBINATIONAL LOGIC in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_1.dpram_4096s_16s_2_0s_init_ram_0_1:	48 (3.64 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -421,7 +409,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     8                  33.3 %               
 =================================================
-Total MEMORY ELEMENTS in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_1.dpram_4096s_16s_2_0s_init_ram_0_1:	8 (0.56 % Utilization)
+Total MEMORY ELEMENTS in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_1.dpram_4096s_16s_2_0s_init_ram_0_1:	8 (0.61 % Utilization)
 
 ---------------------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_1   ########
@@ -431,9 +419,9 @@ Instance path:   dpram_4096s_16s_2_0s_init_ram_0_1.mpram_gen_4096s_16s_1s_1s_0s_
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     8                  1.18 %               
+LUTS     8                  1.34 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block dpram_4096s_16s_2_0s_init_ram_0_1.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_1:	8 (0.56 % Utilization)
+Total COMBINATIONAL LOGIC in the block dpram_4096s_16s_2_0s_init_ram_0_1.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_1:	8 (0.61 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -441,7 +429,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     8                  33.3 %               
 =================================================
-Total MEMORY ELEMENTS in the block dpram_4096s_16s_2_0s_init_ram_0_1.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_1:	8 (0.56 % Utilization)
+Total MEMORY ELEMENTS in the block dpram_4096s_16s_2_0s_init_ram_0_1.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_1:	8 (0.61 % Utilization)
 
 ----------------------------------------------------------------
 ########   Utilization report for  cell:   mpram_Z1_1   ########
@@ -451,18 +439,18 @@ Instance path:   newram2.mpram_Z1_1
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     34                 6.58 %               
+FLOPS     32                 6.68 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block newram2.mpram_Z1_1:	34 (2.36 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block newram2.mpram_Z1_1:	32 (2.43 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       86                 12.7 %               
-CARRYS     18                 15.1 %               
+LUTS       74                 12.4 %               
+CARRYS     18                 16.1 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block newram2.mpram_Z1_1:	104 (7.22 % Utilization)
+Total COMBINATIONAL LOGIC in the block newram2.mpram_Z1_1:	92 (6.99 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -470,7 +458,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     16                 66.7 %               
 =================================================
-Total MEMORY ELEMENTS in the block newram2.mpram_Z1_1:	16 (1.11 % Utilization)
+Total MEMORY ELEMENTS in the block newram2.mpram_Z1_1:	16 (1.21 % Utilization)
 
 --------------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   mrram_4096s_16s_2s_2_0s_init_ram_12s_0   ########
@@ -480,18 +468,18 @@ Instance path:   mpram_Z1_1.mrram_4096s_16s_2s_2_0s_init_ram_12s_0
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     34                 6.58 %               
+FLOPS     32                 6.68 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block mpram_Z1_1.mrram_4096s_16s_2s_2_0s_init_ram_12s_0:	34 (2.36 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block mpram_Z1_1.mrram_4096s_16s_2s_2_0s_init_ram_12s_0:	32 (2.43 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       86                 12.7 %               
-CARRYS     18                 15.1 %               
+LUTS       74                 12.4 %               
+CARRYS     18                 16.1 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block mpram_Z1_1.mrram_4096s_16s_2s_2_0s_init_ram_12s_0:	104 (7.22 % Utilization)
+Total COMBINATIONAL LOGIC in the block mpram_Z1_1.mrram_4096s_16s_2s_2_0s_init_ram_12s_0:	92 (6.99 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -499,7 +487,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     16                 66.7 %               
 =================================================
-Total MEMORY ELEMENTS in the block mpram_Z1_1.mrram_4096s_16s_2s_2_0s_init_ram_12s_0:	16 (1.11 % Utilization)
+Total MEMORY ELEMENTS in the block mpram_Z1_1.mrram_4096s_16s_2s_2_0s_init_ram_12s_0:	16 (1.21 % Utilization)
 
 -----------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   dpram_4096s_16s_2_0s_init_ram_0_0   ########  
@@ -509,18 +497,18 @@ Instance path:   mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_ini
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     34                 6.58 %               
+FLOPS     32                 6.68 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_0_0:	34 (2.36 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_0_0:	32 (2.43 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       56                 8.27 %               
-CARRYS     12                 10.1 %               
+LUTS       44                 7.36 %               
+CARRYS     12                 10.7 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_0_0:	68 (4.72 % Utilization)
+Total COMBINATIONAL LOGIC in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_0_0:	56 (4.25 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -528,7 +516,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     8                  33.3 %               
 =================================================
-Total MEMORY ELEMENTS in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_0_0:	8 (0.56 % Utilization)
+Total MEMORY ELEMENTS in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_0_0:	8 (0.61 % Utilization)
 
 ---------------------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_0   ########
@@ -538,9 +526,9 @@ Instance path:   dpram_4096s_16s_2_0s_init_ram_0_0.mpram_gen_4096s_16s_1s_1s_0s_
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     10                 1.48 %               
+LUTS     10                 1.67 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block dpram_4096s_16s_2_0s_init_ram_0_0.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_0:	10 (0.69 % Utilization)
+Total COMBINATIONAL LOGIC in the block dpram_4096s_16s_2_0s_init_ram_0_0.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_0:	10 (0.76 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -548,7 +536,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     8                  33.3 %               
 =================================================
-Total MEMORY ELEMENTS in the block dpram_4096s_16s_2_0s_init_ram_0_0.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_0:	8 (0.56 % Utilization)
+Total MEMORY ELEMENTS in the block dpram_4096s_16s_2_0s_init_ram_0_0.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_1_0:	8 (0.61 % Utilization)
 
 -----------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   dpram_4096s_16s_2_0s_init_ram_1_0   ########  
@@ -558,10 +546,10 @@ Instance path:   mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_ini
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       30                 4.43 %               
-CARRYS     6                  5.04 %               
+LUTS       30                 5.02 %               
+CARRYS     6                  5.36 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_1_0:	36 (2.50 % Utilization)
+Total COMBINATIONAL LOGIC in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_1_0:	36 (2.73 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -569,7 +557,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     8                  33.3 %               
 =================================================
-Total MEMORY ELEMENTS in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_1_0:	8 (0.56 % Utilization)
+Total MEMORY ELEMENTS in the block mrram_4096s_16s_2s_2_0s_init_ram_12s_0.dpram_4096s_16s_2_0s_init_ram_1_0:	8 (0.61 % Utilization)
 
 ---------------------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_0_0   ########
@@ -579,9 +567,9 @@ Instance path:   dpram_4096s_16s_2_0s_init_ram_1_0.mpram_gen_4096s_16s_1s_1s_0s_
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     16                 2.36 %               
+LUTS     16                 2.68 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block dpram_4096s_16s_2_0s_init_ram_1_0.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_0_0:	16 (1.11 % Utilization)
+Total COMBINATIONAL LOGIC in the block dpram_4096s_16s_2_0s_init_ram_1_0.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_0_0:	16 (1.21 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -589,7 +577,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 RAMS     8                  33.3 %               
 =================================================
-Total MEMORY ELEMENTS in the block dpram_4096s_16s_2_0s_init_ram_1_0.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_0_0:	8 (0.56 % Utilization)
+Total MEMORY ELEMENTS in the block dpram_4096s_16s_2_0s_init_ram_1_0.mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s_0_0:	8 (0.61 % Utilization)
 
 -----------------------------------------------------------------
 ########   Utilization report for  cell:   pixel_split   ########
@@ -599,9 +587,9 @@ Instance path:   main.pixel_split
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     19                 2.81 %               
+LUTS     22                 3.68 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block main.pixel_split:	19 (1.32 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.pixel_split:	22 (1.67 % Utilization)
 
 ----------------------------------------------------------------
 ########   Utilization report for  cell:   brightness   ########
@@ -611,9 +599,9 @@ Instance path:   pixel_split.brightness
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     7                  1.03 %               
+LUTS     7                  1.17 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block pixel_split.brightness:	7 (0.49 % Utilization)
+Total COMBINATIONAL LOGIC in the block pixel_split.brightness:	7 (0.53 % Utilization)
 
 ------------------------------------------------------------------
 ########   Utilization report for  cell:   brightness_2   ########
@@ -623,9 +611,9 @@ Instance path:   pixel_split.brightness_2
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     5                  0.7390 %             
+LUTS     9                  1.51 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block pixel_split.brightness_2:	5 (0.35 % Utilization)
+Total COMBINATIONAL LOGIC in the block pixel_split.brightness_2:	9 (0.68 % Utilization)
 
 ------------------------------------------------------------------
 ########   Utilization report for  cell:   brightness_3   ########
@@ -635,9 +623,9 @@ Instance path:   pixel_split.brightness_3
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     7                  1.03 %               
+LUTS     6                  1 %                  
 =================================================
-Total COMBINATIONAL LOGIC in the block pixel_split.brightness_3:	7 (0.49 % Utilization)
+Total COMBINATIONAL LOGIC in the block pixel_split.brightness_3:	6 (0.46 % Utilization)
 
 -------------------------------------------------------------------
 ########   Utilization report for  cell:   pixel_split_0   ########
@@ -647,9 +635,9 @@ Instance path:   main.pixel_split_0
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     15                 2.22 %               
+LUTS     15                 2.51 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block main.pixel_split_0:	15 (1.04 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.pixel_split_0:	15 (1.14 % Utilization)
 
 ------------------------------------------------------------------
 ########   Utilization report for  cell:   brightness_4   ########
@@ -659,9 +647,9 @@ Instance path:   pixel_split_0.brightness_4
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     5                  0.7390 %             
+LUTS     5                  0.8360 %             
 =================================================
-Total COMBINATIONAL LOGIC in the block pixel_split_0.brightness_4:	5 (0.35 % Utilization)
+Total COMBINATIONAL LOGIC in the block pixel_split_0.brightness_4:	5 (0.38 % Utilization)
 
 ------------------------------------------------------------------
 ########   Utilization report for  cell:   brightness_5   ########
@@ -671,9 +659,9 @@ Instance path:   pixel_split_0.brightness_5
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     5                  0.7390 %             
+LUTS     5                  0.8360 %             
 =================================================
-Total COMBINATIONAL LOGIC in the block pixel_split_0.brightness_5:	5 (0.35 % Utilization)
+Total COMBINATIONAL LOGIC in the block pixel_split_0.brightness_5:	5 (0.38 % Utilization)
 
 ------------------------------------------------------------------
 ########   Utilization report for  cell:   brightness_6   ########
@@ -683,9 +671,21 @@ Instance path:   pixel_split_0.brightness_6
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     5                  0.7390 %             
+LUTS     5                  0.8360 %             
 =================================================
-Total COMBINATIONAL LOGIC in the block pixel_split_0.brightness_6:	5 (0.35 % Utilization)
+Total COMBINATIONAL LOGIC in the block pixel_split_0.brightness_6:	5 (0.38 % Utilization)
+
+---------------------------------------------------------
+########   Utilization report for  cell:   pll   ########
+Instance path:   main.pll                                
+=========================================================
+
+IO PADS
+Name     Total elements     Utilization     Notes
+-------------------------------------------------
+PADS     1                  3.03 %               
+=================================================
+Total IO PADS in the block main.pll:	1 (0.08 % Utilization)
 
 ----------------------------------------------------------------
 ########   Utilization report for  cell:   timeout_4s   ########
@@ -695,17 +695,17 @@ Instance path:   main.timeout_4s
 SEQUENTIAL ELEMENTS
 Name      Total elements     Utilization     Notes
 --------------------------------------------------
-FLOPS     5                  0.9670 %             
+FLOPS     5                  1.04 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.timeout_4s:	5 (0.35 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.timeout_4s:	5 (0.38 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     11                 1.62 %               
+LUTS     8                  1.34 %               
 =================================================
-Total COMBINATIONAL LOGIC in the block main.timeout_4s:	11 (0.76 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.timeout_4s:	8 (0.61 % Utilization)
 
 #### START OF Block RAM DETAILED REPORT ####
 

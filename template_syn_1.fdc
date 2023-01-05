@@ -1,8 +1,8 @@
 ###==== BEGIN Header
 
 # Synopsys, Inc. constraint file
-# /home/awhite/CLionProjects/led_display/fpga/template_syn_1.fdc
-# Written on Mon Apr  8 08:15:59 2019
+# /home/awhite/Documents/Projects/fpga_led_display/template_syn_1.fdc
+# Written on Wed Jan  4 11:25:52 2023
 # by Synplify Pro, L-2016.09L+ice40 FDC Constraint Editor
 
 # Custom constraint commands may be added outside of the SCOPE tab sections bounded with BEGIN/END.
@@ -15,14 +15,14 @@
 ###==== END Collections
 
 ###==== BEGIN Clocks - (Populated from tab in SCOPE, do not edit)
-create_clock  -name {myclk_root} {n:clk_root_logic} -period {7.57575757575757575} -add
+create_clock  -name {clk_root} {n:new_pll_inst.clock_out} -period {45.4545454545} -add
 create_clock  -name {my16mhzclk} {p:pin3_clk_16mhz} -period {62.5} -add
-set_clock_groups -derive -asynchronous -name {my_c_other} -group { {c:my16mhzclk} }
+
 ###==== END Clocks
 
 ###==== BEGIN "Generated Clocks" - (Populated from tab in SCOPE, do not edit)
 create_generated_clock  -name {myclk_matrix} -source {n:clk_root_logic} {n:clkdiv_matrix.clk_out} -divide_by {3} -add
-create_generated_clock  -name {myclk_debug} -source {n:clk_root_logic} {n:mydebug.debug_start} -divide_by {13200000} -add
+create_generated_clock  -disable -name {myclk_debug} -source {n:clk_root_logic} {n:mydebug.debug_start} -divide_by {13200000} -add
 create_generated_clock  -disable -name {myclk_uart_rx_baudrate} -source {n:clk_root_logic} {n:ctrl.urx.clkdiv_baudrate.clk_out} -divide_by {25} -add
 create_generated_clock  -disable -name {myctrl.timeout_cmd_line_write.un68_running} -source {n:clk_root_logic} {n:ctrl.timeout_cmd_line_write.un68_running} -multiply_by {1} -add
 create_generated_clock  -disable -name {myrow_latch} -source {n:clk_root} {n:matscan1.row_latch_1} -divide_by {2} -add
@@ -48,6 +48,7 @@ define_io_standard   -default_output syn_pad_type {SB_LVCMOS} -delay_type {outpu
 
 ###==== BEGIN "Compile Points" - (Populated from tab in SCOPE, do not edit)
 ###==== END "Compile Points"
+
 
 
 
