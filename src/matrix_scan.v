@@ -96,6 +96,8 @@ module matrix_scan (
 	/* produces the variable-width output enable signal
 	   this signal is controlled by the rolling brightness_mask_active signal (brightness_mask has advanced already)
 	   the wider the output_enable pulse, the brighter the LEDs */
+	/* this shoud never be < 1us though, apparently TODO: need to prove*/
+
 	timeout #(
 		.COUNTER_WIDTH(10)
 	) timeout_output_enable (

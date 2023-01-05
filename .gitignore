@@ -1,6 +1,5 @@
 __pycache__
 .pytest_cache
-datasheet
 *.tgz
 bitmaps
 images
@@ -35,3 +34,4 @@ stdout.log
 stdout.log.bak
 **/*.htm
 **/*.szr
+waveforms_projects

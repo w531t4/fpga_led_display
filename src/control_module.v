@@ -53,6 +53,7 @@ module control_module #(
 
 	wire uart_rx_dataready;
 	debug_uart_rx #(
+		// 133MHz / 49 = 2,714,285 baud
 		.TICKS_PER_BIT(6'd49),
 		.TICKS_PER_BIT_SIZE(6)
 	) mycontrol_rxuart (

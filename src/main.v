@@ -309,6 +309,7 @@ module main (
 		}  /* synthesis syn_preserve = 1 */ ;
 
 	debugger #(
+		// 133 MHz / 6000000 = 22.16
 		.DIVIDER_TICKS_WIDTH(25),
 		.DIVIDER_TICKS(6000000),
 		.DATA_WIDTH_BASE2(8),

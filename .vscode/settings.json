@@ -1,0 +1,17 @@
+{
+    "files.exclude": {
+        "waveforms_projects": true,
+        "__pycache__": true,
+        "bitmaps": true,
+        "nenv": true,
+        "gtkwave": true,
+        "src/testbenches": true,
+        "usbserial": true,
+        "verilog": true,
+        "backup*.tgz": true,
+        "stdout.log*": true,
+        "synlog.tcl": true,
+        "template_*": true,
+        ".pytest_cache": true,
+    }
+}
