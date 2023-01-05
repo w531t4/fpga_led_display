@@ -3,6 +3,7 @@ module debugger	#(
     parameter DIVIDER_TICKS = 28'd67000000,
     parameter DATA_WIDTH = 8,
     parameter DATA_WIDTH_BASE2 = 4,
+    // 133Mhz / 1146 = 116005 baud
     parameter UART_TICKS_PER_BIT = 1146,
     parameter UART_TICKS_PER_BIT_SIZE = 11
     //parameter UART_TICKS_PER_BIT = 1163,
@@ -40,7 +41,7 @@ module debugger	#(
     reg [7:0] debug_bits = 8'bz;
     reg [DIVIDER_TICKS_WIDTH-1:0] count = 0;
 
-
+    // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             debug_start <= 0;
@@ -67,7 +68,9 @@ module debugger	#(
 
     end
 
-
+    // i'm guessing we're doing this in an attempt to not spam negotiate on the
+    // serial channel. we're looking roughly 22times a second?. It's been awhie since
+    // i last looked at this.
     localparam	    STATE_IDLE 			= 5'b00001,
                     STATE_START       	= 5'b00010,
                     STATE_SEND  		= 5'b00100,

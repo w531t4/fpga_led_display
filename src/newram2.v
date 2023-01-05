@@ -1,32 +1,32 @@
-// ----------------------------------------------------------------------------- 
-// --- 
-// ---                 (C) COPYRIGHT 2001-2010 SYNOPSYS, INC. 
-// ---                           ALL RIGHTS RESERVED 
-// --- 
-// --- This software and the associated documentation are confidential and 
-// --- proprietary to Synopsys, Inc.  Your use or disclosure of this 
-// --- software is subject to the terms and conditions of a written 
-// --- license agreement between you, or your company, and Synopsys, Inc. 
-// --- 
-// --- The entire notice above must be reproduced on all authorized copies. 
-// --- 
-// ----------------------------------------------------------------------------- 
-// 
- 
- 
+// -----------------------------------------------------------------------------
+// ---
+// ---                 (C) COPYRIGHT 2001-2010 SYNOPSYS, INC.
+// ---                           ALL RIGHTS RESERVED
+// ---
+// --- This software and the associated documentation are confidential and
+// --- proprietary to Synopsys, Inc.  Your use or disclosure of this
+// --- software is subject to the terms and conditions of a written
+// --- license agreement between you, or your company, and Synopsys, Inc.
+// ---
+// --- The entire notice above must be reproduced on all authorized copies.
+// ---
+// -----------------------------------------------------------------------------
+//
+
+
 
  // Output ports are always registered to ensure Rams get packed into BlockRAM
- 
+
 //`include "Multiported-RAM/utils.vh"
 //`include "Multiported-RAM/mpram.v"
 
 
 `timescale 1ns/100ps
- //`ifdef synthesis 
+ //`ifdef synthesis
      module newram2
- //`else 
+ //`else
  //    module newram_rtl
- //`endif 
+ //`endif
 (
 	 PortAClk
 	,PortAAddr
@@ -230,7 +230,7 @@ output wire [DATAW      *nRPORTS-1:0] RData); // read  data - packed from nRPORT
 
 /*
  Syncore_ram
- #(	
+ #(
 				.SPRAM(SPRAM)
 				,.READ_MODE_A(READ_MODE_A)
 				,.READ_MODE_B(READ_MODE_B)
@@ -247,8 +247,8 @@ output wire [DATAW      *nRPORTS-1:0] RData); // read  data - packed from nRPORT
 				,.REGISTER_RD_ADDR_PORTB(REGISTER_RD_ADDR_PORTB)
 				,.REGISTER_OUTPUT_PORTB(REGISTER_OUTPUT_PORTB)
 				,.ENABLE_OUTPUT_REG_PORTB(ENABLE_OUTPUT_REG_PORTB)
-				,.RESET_OUTPUT_REG_PORTB(RESET_OUTPUT_REG_PORTB)	
-				) 
+				,.RESET_OUTPUT_REG_PORTB(RESET_OUTPUT_REG_PORTB)
+				)
 			U1(
 				.PortClk({PortBClk, PortAClk})
 				,.PortReset({PortBReset, PortAReset})

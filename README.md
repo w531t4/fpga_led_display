@@ -16,3 +16,15 @@ Based on suggestion from https://stackoverflow.com/questions/67923728/yosys-prod
 - `nodeenv --verbose nenv` (or) `nodenv --prebuilt nenv`
 - `npm install -g netlistsvg`
 - use json file from yosys to produce results (see Makefile)
+
+
+# helpful references
+- https://zipcpu.com/blog/2017/06/02/generating-timing.html
+
+
+# things i'd like to look at
+- https://www.youtube.com/watch?v=BcJ6UdDx1vg
+- https://www.youtube.com/watch?v=P8MpZGjwgR0
+- https://youtu.be/wwANKw36Mjw
+- https://youtu.be/xlvqUts9H9c
+- https://www.tutorialspoint.com/compile_verilog_online.php (helpful for testing snippets of verilog)
