@@ -53,9 +53,10 @@ module control_module #(
 
 	wire uart_rx_dataready;
 	debug_uart_rx #(
-		// 133MHz / 49 = 2,714,285 baud
-		.TICKS_PER_BIT(6'd49),
-		.TICKS_PER_BIT_SIZE(6)
+		// we want 22MHz / 2,430,000 = 9.0534
+		// 22MHz / 9 = 2,444,444 baud 2444444
+		.TICKS_PER_BIT(6'd9),
+		.TICKS_PER_BIT_SIZE(4)
 	) mycontrol_rxuart (
 	.reset(reset),
 	.i_clk(clk_in),
