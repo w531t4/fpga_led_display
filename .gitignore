@@ -10,6 +10,8 @@ src/*.vcd
 src/*.vvp
 src/testbenches/*.vcd
 src/testbenches/*.vvp
+template_Implmnt/template.fse
+template_Implmnt/template.sap
 template_Implmnt/backup
 template_Implmnt/dm/layer0.xdm
 template_Implmnt/sbt/Log/*.log
