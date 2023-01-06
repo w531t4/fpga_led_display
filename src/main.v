@@ -86,13 +86,6 @@ module main (
 	wire clk_root;
 	wire buffered_global_reset;
 	wire tx_out;
-
-pll new_pll_inst (
-	.clock_in(pin3_clk_16mhz),
-	.clock_out(clk_root)
-) /* synthesis syn_noprune=1 */ ;
-
-
 	wire init_complete;
 	wire [2:0] rgb1_intermediary;
 	wire [2:0] rgb2_intermediary;
@@ -140,6 +133,13 @@ pll new_pll_inst (
 		ram_a_data_in[7:0],
 		uart_rx_data[7:0]
 		}  /* synthesis syn_preserve = 1 */ ;
+
+	// No wires past here
+
+	pll new_pll_inst (
+		.clock_in(pin3_clk_16mhz),
+		.clock_out(clk_root)
+	) /* synthesis syn_noprune=1 */ ;
 
 fm6126init do_init (
 	.clk_in(clk_root),
