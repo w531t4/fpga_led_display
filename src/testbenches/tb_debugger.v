@@ -42,7 +42,7 @@ module tb_debugger;
 
     initial
         begin
-            $dumpfile("tb_debugger.vcd");
+            $dumpfile(`DUMP_FILE_NAME);
             $dumpvars(0, tb_debugger);
             clk = 0;
             reset = 0;

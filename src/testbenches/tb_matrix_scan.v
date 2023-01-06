@@ -27,7 +27,7 @@ matrix_scan  matrix_scan_instance
 	);
   initial
   begin
-      $dumpfile("tb_matrix_scan.vcd");
+      $dumpfile(`DUMP_FILE_NAME);
       $dumpvars(0, tb_matrix_scan);
     clk = 0;
     reset = 0;

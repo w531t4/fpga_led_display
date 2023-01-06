@@ -538,7 +538,7 @@ test_probe = 5;
 
  initial
   begin
-   $dumpfile ("dump.vcd");
+   $dumpfile (`DUMP_FILE_NAME);
    $dumpvars (0, tbtest);
   end
 

@@ -14,7 +14,7 @@ clock_divider  #(.CLK_DIV_COUNT(5))
 
   initial
   begin
-      $dumpfile("tb_clock_divider.vcd");
+      $dumpfile(`DUMP_FILE_NAME);
       $dumpvars(0, tb_clock_divider);
     clk = 0;
     reset = 0;
