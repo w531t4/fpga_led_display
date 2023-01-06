@@ -22,7 +22,7 @@ VSOURCES=src/brightness.v \
 		 src/Multiported-RAM/mpram_gen.v \
 		 src/Multiported-RAM/mpram_xor.v \
 		 src/new_pll.v \
-		 src/sb_ice40.v
+		 src/platform/sb_ice40.v
 
 YOSYS=../ice40_toolchain/yosys/yosys
 NETLISTSVG=nenv/bin/netlistsvg
