@@ -99,6 +99,47 @@ pll new_pll_inst (
 	wire output_enable_intermediary;
 	wire row_latch_intermediary;
 
+	wire [183:0] ddata =  {
+		//
+		3'b0,
+		//								181
+		debug_command[7:0],
+		pixel_load_counter2[3:0],
+		clk_pixel_load_en,
+		clk_pixel_load,
+		cmd_line_addr2[11:7], 		// 5
+		~cmd_line_addr2[6:1], cmd_line_addr2[0], //7
+		//								155
+		cmd_line_addr2[11:0],
+		rgb2[2:0],
+		rgb1[2:0],
+		rx_running,
+		row_latch,
+		row_latch_state[1:0],
+		ram_b_reset,
+		cmd_line_state[1:0],
+		uart_rx,
+		ram_access_start_latch,
+		ram_access_start,
+		//								127
+		pixel_rgb565_top[15:0],
+		pixel_rgb565_bottom[15:0],
+		brightness_mask[5:0],
+		brightness_enable[5:0],
+		rgb_enable[2:0],
+		column_address[5:0],
+		row_address[3:0],
+		row_address_active[3:0],
+		ram_b_address[10:0],
+		ram_b_clk_enable,
+		ram_b_data_out[15:0],
+		ram_a_write_enable,
+		ram_a_data_out[7:0],
+		ram_a_address[11:0],
+		ram_a_clk_enable,
+		ram_a_data_in[7:0],
+		uart_rx_data[7:0]
+		}  /* synthesis syn_preserve = 1 */ ;
 
 fm6126init do_init (
 	.clk_in(clk_root),
@@ -236,47 +277,6 @@ fm6126init do_init (
 	) /* synthesis syn_noprune=1 */ ;
 
 
-	wire [183:0] ddata =  {
-		//
-		3'b0,
-		//								181
-		debug_command[7:0],
-		pixel_load_counter2[3:0],
-		clk_pixel_load_en,
-		clk_pixel_load,
-		cmd_line_addr2[11:7], 		// 5
-		~cmd_line_addr2[6:1], cmd_line_addr2[0], //7
-		//								155
-		cmd_line_addr2[11:0],
-		rgb2[2:0],
-		rgb1[2:0],
-		rx_running,
-		row_latch,
-		row_latch_state[1:0],
-		ram_b_reset,
-		cmd_line_state[1:0],
-		uart_rx,
-		ram_access_start_latch,
-		ram_access_start,
-		//								127
-		pixel_rgb565_top[15:0],
-		pixel_rgb565_bottom[15:0],
-		brightness_mask[5:0],
-		brightness_enable[5:0],
-		rgb_enable[2:0],
-		column_address[5:0],
-		row_address[3:0],
-		row_address_active[3:0],
-		ram_b_address[10:0],
-		ram_b_clk_enable,
-		ram_b_data_out[15:0],
-		ram_a_write_enable,
-		ram_a_data_out[7:0],
-		ram_a_address[11:0],
-		ram_a_clk_enable,
-		ram_a_data_in[7:0],
-		uart_rx_data[7:0]
-		}  /* synthesis syn_preserve = 1 */ ;
 
 	debugger #(
 		// 22MHz / 1000000 = 22
