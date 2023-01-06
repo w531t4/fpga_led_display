@@ -93,7 +93,6 @@ module main (
 	wire [2:0] rgb1_intermediary;
 	wire [2:0] rgb2; /* the current RGB value for the bottom-half of the display */
 	wire [2:0] rgb2_intermediary;
-	wire init_complete;
 	wire output_enable_intermediary;
 
 	wire [183:0] ddata =  {
@@ -156,8 +155,7 @@ fm6126init do_init (
 	.output_enable_out(output_enable),
 	.rgb1_out(rgb1),
 	.rgb2_out(rgb2),
-	.latch_out(row_latch),
-	.done(init_complete)
+	.latch_out(row_latch)
 ) /* synthesis syn_noprune=1 */ ;
 
 	timeout #(

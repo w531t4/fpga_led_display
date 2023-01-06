@@ -8,7 +8,6 @@ module fm6126init_tb;
 	wire output_enable_out;
 	wire [2:0] rgb1_out;
 	wire [2:0] rgb2_out;
-    wire done;
    always #5 clk_root <= ~clk_root;
    initial begin
          $dumpfile(`DUMP_FILE_NAME);
@@ -29,6 +28,5 @@ module fm6126init_tb;
                 .output_enable_out(output_enable_out),
                 .rgb1_out(rgb1_out),
                 .rgb2_out(rgb2_out),
-                .latch_out(latch_out),
-                .done(done));
+                .latch_out(latch_out));
 endmodule

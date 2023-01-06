@@ -147,8 +147,7 @@ module fm6126init
 	output output_enable_out,
 	output [2:0] rgb1_out,
 	output [2:0] rgb2_out,
-	output latch_out,
-	output reg done
+	output latch_out
 	);
 
 	reg output_enable_reg;
@@ -188,7 +187,6 @@ module fm6126init
 			rgb2_reg <= 3'b0;
 			output_enable_reg <= 1'b0;
 			latch_reg <= 1'b0;
-			done <= 1'b0;
 		end
 		else begin
 			if (currentState == STATE1_BEGIN) begin
@@ -239,7 +237,6 @@ module fm6126init
 			end
 			else if (currentState == STATE2_END && (~ (| widthCounter))) begin
 				currentState <= STATE_FINISH;
-				done <= 1'b1;
 				latch_reg <= 1'b0;
 			end
 			else if (currentState == STATE2_END) begin
@@ -247,7 +244,6 @@ module fm6126init
 				latch_reg <= 1'b0;
 			end
 			else if (currentState == STATE_FINISH) begin
-				done <= 1'b1;
 				latch_reg <= latch_in;
 				rgb1_reg <= rgb1_in;
 				rgb2_reg <= rgb2_in;
@@ -258,7 +254,6 @@ module fm6126init
 				output_enable_reg <= 1'b0; // inverted here
 				// not setting clock low, because that happens automatically.
 				latch_reg <= 1'b0;
-				done <= 1'b0;
 				widthCounter <= 4'd0;
 				// when widthState becomes all zero, set latch
 				// grow 1'b1 to LED_WIDTH bits in length. See description below
