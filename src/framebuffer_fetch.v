@@ -20,8 +20,8 @@ module framebuffer_fetch (
 	assign ram_clk_enable = ram_clk_enable_real;
 	/* grab data on falling edge of pixel clock */
 	//wire pixel_load_running;
-	wire [3:0] pixel_load_counter;
-	assign pixel_load_counter2[3:0] = pixel_load_counter[3:0];
+	wire [1:0] pixel_load_counter;
+	assign pixel_load_counter2[3:0] = { 2'b0, pixel_load_counter[1:0] };
 
 	reg half_address;
 	assign ram_address = { half_address, row_address[3:0], ~column_address[5:0] };
