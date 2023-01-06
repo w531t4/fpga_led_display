@@ -37,12 +37,19 @@ module main (
 //  output pin_usb_pu
 );
 
+	wire clk_root;
+
 	reg global_reset;
+	wire buffered_global_reset;
+
 	wire clk_pixel_load;
 	wire clk_pixel;
+	wire clk_pixel_load_en;
+	wire [3:0] pixel_load_counter2;
 
 	wire row_latch;
 	wire row_latch_intermediary;
+	wire [1:0] row_latch_state;
 
 	wire [7:0] ram_a_data_in;
 	wire [7:0] ram_a_data_out;
@@ -50,6 +57,9 @@ module main (
 	wire ram_a_write_enable;
 	wire ram_a_clk_enable;
 	wire ram_a_reset;
+
+	wire ram_access_start;
+	wire ram_access_start_latch;
 
 	wire [15:0] ram_b_data_out;
 	wire [10:0] ram_b_address;
@@ -59,8 +69,18 @@ module main (
 	wire [15:0] pixel_rgb565_top;
 	wire [15:0] pixel_rgb565_bottom;
 
+	wire state_advance;
+	wire [1:0] cmd_line_state;
+	wire [11:0] cmd_line_addr2;
 	wire uart_rx;
+	wire [7:0] uart_rx_data;
+	wire rx_running;
+
 	wire debug_uart_rx;
+	wire [7:0] debug_command;
+	wire debug_command_pulse;
+    wire debug_command_busy;
+	wire tx_out;
 
 	wire [5:0] column_address;
 	wire [3:0] row_address;
@@ -73,22 +93,6 @@ module main (
 	wire [2:0] rgb1_intermediary;
 	wire [2:0] rgb2; /* the current RGB value for the bottom-half of the display */
 	wire [2:0] rgb2_intermediary;
-	wire [1:0] cmd_line_state;
-	wire [7:0] uart_rx_data;
-	wire ram_access_start;
-	wire ram_access_start_latch;
-	wire state_advance;
-	wire [1:0] row_latch_state;
-	wire clk_pixel_load_en;
-	wire rx_running;
-	wire [11:0] cmd_line_addr2;
-	wire [3:0] pixel_load_counter2;
-	wire [7:0] debug_command;
-	wire debug_command_pulse;
-    wire debug_command_busy;
-	wire clk_root;
-	wire buffered_global_reset;
-	wire tx_out;
 	wire init_complete;
 	wire output_enable_intermediary;
 
