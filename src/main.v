@@ -38,9 +38,6 @@ module main (
 );
 
 	reg global_reset;
-
-	//wire clk_root;
-	wire clk_matrix;
 	wire clk_pixel_load;
 	wire clk_pixel;
 
