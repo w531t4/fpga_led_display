@@ -21,21 +21,21 @@ module tbtest;
 
 
   parameter	 DATAWIDTH = 256;
-  parameter	 ADDRWIDTH = 16; 
+  parameter	 ADDRWIDTH = 16;
   parameter	 MEMDEPTH = 2**(ADDRWIDTH);
 
 
   parameter	 PERIOD_A = 50;
   parameter	 PERIOD_B = 75;
 
- 
+
   parameter	 LATENCY = 2;
   parameter	 ITER  = 20;
   parameter 	 DELAY = 10;
 
 
 
-  wire 				PortAClk; 
+  wire 				PortAClk;
   reg  [ADDRWIDTH-1:0] 		PortAAddr;
   reg  [DATAWIDTH-1:0] 		PortADataIn;
 
@@ -50,12 +50,12 @@ module tbtest;
 
 
 
-  wire 				PortBClk; 
-  reg  [ADDRWIDTH-1:0] 		PortBAddr; 
-  reg  [DATAWIDTH-1:0] 		PortBDataIn; 
+  wire 				PortBClk;
+  reg  [ADDRWIDTH-1:0] 		PortBAddr;
+  reg  [DATAWIDTH-1:0] 		PortBDataIn;
 
 
-  wire [DATAWIDTH-1:0] 		PortBDataOut_rtl, PortBDataOut_synth; 
+  wire [DATAWIDTH-1:0] 		PortBDataOut_rtl, PortBDataOut_synth;
 
 
   reg 				PortBWriteEnable;
@@ -73,8 +73,8 @@ module tbtest;
   reg clk2;
 
 
-  reg [ADDRWIDTH-1:0] StoreAddrA [ITER:0] ; 
-  reg [ADDRWIDTH-1:0] StoreAddrB [ITER:0] ; 
+  reg [ADDRWIDTH-1:0] StoreAddrA [ITER:0] ;
+  reg [ADDRWIDTH-1:0] StoreAddrB [ITER:0] ;
 
 
 
@@ -84,15 +84,15 @@ module tbtest;
 //Compare Data
 
 
- task CompareDataA;  
+ task CompareDataA;
    integer m;
    begin
 
 
-     for (m=0; m < LATENCY; m = m + 1) 
+     for (m=0; m < LATENCY; m = m + 1)
       begin
          @(negedge PortAClk);
-      end  
+      end
 
 
    #(DELAY);
@@ -101,14 +101,14 @@ module tbtest;
      if(PortADataOut_rtl != PortADataOut_synth)
         begin
 	  NumOfErrs = NumOfErrs + 1;
-  	  $fdisplay(tb_log, "PortAAddr = %h, PortADataOut_rtl = %h,  PortADataOut_synth = %h, <---- ERROR", 
-   	       		PortAAddr, PortADataOut_rtl, PortADataOut_synth); 
-        end  	
+  	  $fdisplay(tb_log, "PortAAddr = %h, PortADataOut_rtl = %h,  PortADataOut_synth = %h, <---- ERROR",
+   	       		PortAAddr, PortADataOut_rtl, PortADataOut_synth);
+        end
     end
- endtask  
+ endtask
 
 
- task CompareDataB; 
+ task CompareDataB;
    integer p;
   begin
 
@@ -116,7 +116,7 @@ module tbtest;
     for (p=0; p < LATENCY; p = p + 1)
       begin
    	@(negedge PortBClk);
-      end  
+      end
 
 
   #(DELAY);
@@ -125,11 +125,11 @@ module tbtest;
      if(PortBDataOut_rtl != PortBDataOut_synth)
         begin
 	  NumOfErrs = NumOfErrs + 1;
-  	  $fdisplay(tb_log, "PortBAddr = %h, PortBDataOut_rtl = %h,  PortBDataOut_synth = %h, <---- ERROR", 
-   	       		PortBAddr, PortBDataOut_rtl, PortBDataOut_synth); 
-        end  	
+  	  $fdisplay(tb_log, "PortBAddr = %h, PortBDataOut_rtl = %h,  PortBDataOut_synth = %h, <---- ERROR",
+   	       		PortBAddr, PortBDataOut_rtl, PortBDataOut_synth);
+        end
     end
- endtask  
+ endtask
 
 
 
@@ -194,14 +194,14 @@ newram	 DUT_synth (
   assign PortBClk = clk1; //clk2
 
 
-  initial 
+  initial
    begin
- 	tb_log 		 = $fopen("tb.log"); 
+ 	tb_log 		 = $fopen("tb.log");
  	NumOfErrs	 = 0;
 
 
  // Initialize all the input ports
- 	
+
  	PortAAddr 	 = 'd0;
  	PortADataIn	 = 'd0;
  	PortAWriteEnable = 1'b0;
@@ -216,30 +216,30 @@ newram	 DUT_synth (
  	PortBReset	 = 1'b0;
 
 
-   end 	
+   end
 
 
 
  initial
   begin
- 
+
 
   test_probe = 0;
-  @(negedge PortAClk);	    
-  @(negedge PortAClk);	    
-  @(negedge PortBClk);	    
-  @(negedge PortBClk);	    
- 
+  @(negedge PortAClk);
+  @(negedge PortAClk);
+  @(negedge PortBClk);
+  @(negedge PortBClk);
+
 
   `ifdef test1
- 
+
 
    // Test scenario: 1
-   // Write into ports A & B at random addresses one after the another  
+   // Write into ports A & B at random addresses one after the another
    // and read back the contents
 
 
- 
+
    // PortA Write
      for (i= 0; i < ITER; i = i + 1)
 	begin
@@ -247,30 +247,30 @@ newram	 DUT_synth (
 
 	     PortAWriteEnable = 1'b1;
 	     PortAReadEnable  = 1'b0;
-	     PortAAddr  = $random; 
-	     PortADataIn = $random; 
-	     StoreAddrA[i]  = PortAAddr; 
+	     PortAAddr  = $random;
+	     PortADataIn = $random;
+	     StoreAddrA[i]  = PortAAddr;
 
 
 	    @(negedge PortAClk);
-	    
+
 	     PortAWriteEnable = 1'b0;
     	end
-  
+
   	@(negedge PortAClk);
-  	
+
      // PortB Write
        for (j= 0; j < ITER; j = j + 1)
   	begin
-           
+
   	     PortBWriteEnable 	= 1'b1;
-	     PortBReadEnable  	= 1'b0;  	     
-  	     PortBAddr  = $random; 
-  	     PortBDataIn = $random; 
-  	     StoreAddrB[j]  = PortBAddr; 
-  
-  	    @(negedge PortBClk);  // No Latency required I guess 
-  	    
+	     PortBReadEnable  	= 1'b0;
+  	     PortBAddr  = $random;
+  	     PortBDataIn = $random;
+  	     StoreAddrB[j]  = PortBAddr;
+
+  	    @(negedge PortBClk);  // No Latency required I guess
+
   	    PortBWriteEnable = 1'b0;
     	end
 
@@ -278,240 +278,240 @@ newram	 DUT_synth (
 
   // PortA Read
        for (k= 0; k < ITER; k = k + 1)
-  	begin     
-  
+  	begin
+
   	     PortAWriteEnable 	= 1'b0;
   	     PortAReadEnable  	= 1'b1;
-  	     PortAAddr  	= StoreAddrA[k]; 
-  		
+  	     PortAAddr  	= StoreAddrA[k];
+
   	   CompareDataA;
-  	     
+
       	end
-    
+
     // PortB Read
        for (n= 0; n < ITER; n = n + 1)
-    	begin       
-    
+    	begin
+
     	     PortBWriteEnable 	= 1'b0;
     	     PortBReadEnable  	= 1'b1;
-    	     PortBAddr 		= StoreAddrB[n]; 
-    	      
+    	     PortBAddr 		= StoreAddrB[n];
+
 	    CompareDataB;
-  	       
+
   	end
-  
+
   test_probe = 1;
-  
- `endif 
+
+ `endif
 
 `ifdef test2
-  
+
   // Test scenario: 2 --> Enable this only when Output port is registered
-     // Write into ports A & B at random addresses simultaneously  
+     // Write into ports A & B at random addresses simultaneously
      // and read back the contents
-     
+
    fork : test2Write
     // PortA Write
        for (i= 0; i < ITER; i = i + 1)
   	begin
-     
- 
+
+
   	     PortAWriteEnable 	= 1'b1;
   	     PortAReadEnable  	= 1'b0;
-  	     PortAAddr  	= $random; 
-  	     PortADataIn 	= $random; 
-  	     StoreAddrA[i]  	= PortAAddr; 
-  
+  	     PortAAddr  	= $random;
+  	     PortADataIn 	= $random;
+  	     StoreAddrA[i]  	= PortAAddr;
+
   	    @(negedge PortAClk);
       	end
-    
-    // What happens when the address clash ?? 
-    
+
+    // What happens when the address clash ??
+
        // PortB Write
          for (j= 0; j < ITER; j = j + 1)
     	begin
-       
-    
+
+
     	     PortBWriteEnable 	= 1'b1;
     	     PortBReadEnable  	= 1'b0;
-    	     PortBAddr  	= $random; 
-    	     PortBDataIn 	= $random; 
-    	     StoreAddrB[j]  	= PortBAddr; 
-    
+    	     PortBAddr  	= $random;
+    	     PortBDataIn 	= $random;
+    	     StoreAddrB[j]  	= PortBAddr;
+
     	    @(negedge PortBClk);  // No Latency required I guess
       	end
-    
+
    join // end test2Write
-   
-   
+
+
    fork : test2Read
     // PortA Read
          for (k= 0; k < ITER; k = k + 1)
     	begin
-       
-   
+
+
   	     PortAWriteEnable 	= 1'b0;
   	     PortAReadEnable  	= 1'b1;
-  	     PortAAddr  	= StoreAddrA[k]; 
-  	     
-		CompareDataA;     	     
+  	     PortAAddr  	= StoreAddrA[k];
+
+		CompareDataA;
         end
-      
-      
+
+
       // PortB Read
          for (n= 0; n < ITER; n = n + 1)
       	begin
-      
+
     	     PortBWriteEnable 	= 1'b0;
     	     PortBReadEnable  	= 1'b1;
-    	     PortBAddr 		= StoreAddrB[n]; 
-    	       
+    	     PortBAddr 		= StoreAddrB[n];
+
 		CompareDataB;
-		
+
     	end
-  
+
   join // end test2Read
-  
+
   test_probe = 2;
-    
+
  `endif // creating lots of problems with memeory contention in Simulations
-    
+
 
  `ifdef test3
-    
-  
+
+
   // Test scenario: 3
-    // Write into port A & Read from B at random addresses & vice versa 
-      
+    // Write into port A & Read from B at random addresses & vice versa
+
    // PortA Write PortB Read
        for (i= 0; i < ITER; i = i + 1)
   	begin
-     
+
   	     PortAWriteEnable = 1'b1;
   	     PortAReadEnable  = 1'b0;
-  	     PortAAddr  = $random; 
-  	     PortADataIn = $random; 
-  	     StoreAddrA[i]  = PortAAddr; 
-  
-  	    @(negedge PortAClk);  	    
+  	     PortAAddr  = $random;
+  	     PortADataIn = $random;
+  	     StoreAddrA[i]  = PortAAddr;
+
+  	    @(negedge PortAClk);
             @(negedge PortBClk);
 
 	     PortBWriteEnable 	= 1'b0;
 	     PortBReadEnable  	= 1'b1;
-	     PortBAddr 		= StoreAddrA[i]; 
-          	       
+	     PortBAddr 		= StoreAddrA[i];
+
        	   CompareDataB;
-      	       
+
   	end
-  	
-        
+
+
     // PortB Write PortA Read
       for (j= 0; j < ITER; j = j + 1)
     	begin
-       
+
     	     PortBWriteEnable = 1'b1;
-    	     PortBReadEnable  	= 1'b0; 
-    	     PortBAddr  = $random; 
-    	     PortBDataIn = $random; 
-    	     StoreAddrB[j]  = PortBAddr; 
-    
+    	     PortBReadEnable  	= 1'b0;
+    	     PortBAddr  = $random;
+    	     PortBDataIn = $random;
+    	     StoreAddrB[j]  = PortBAddr;
+
     	    @(negedge PortBClk);  // No Latency required I guess
       	    @(negedge PortAClk);
-    	
+
     	     PortAWriteEnable 	= 1'b0;
     	     PortAReadEnable  	= 1'b1;
-    	     PortAAddr  	= StoreAddrB[j]; 
-    	
-	CompareDataA;    	     
-	
+    	     PortAAddr  	= StoreAddrB[j];
+
+	CompareDataA;
+
         end
-            
+
  test_probe = 3;
- 
+
   `endif
-  
+
  `ifdef test4
 
 // Test scenario: 4
     // Read & Write into same port simultaneously (Checking the Write_modes)
-      
+
    // PortA Write PortA Read
        for (i= 0; i < ITER; i = i + 1)
   	begin
-     
+
   	     PortAWriteEnable = 1'b1;
   	     PortAReadEnable  	= 1'b1;
-  	     PortAAddr  = $random; 
-  	     PortADataIn = $random; 
-  	     StoreAddrA[i]  = PortAAddr; 
-  	     
+  	     PortAAddr  = $random;
+  	     PortADataIn = $random;
+  	     StoreAddrA[i]  = PortAAddr;
+
        	   CompareDataA;
-      	       
+
   	end
-  	
+
    // PortB Write PortB Read
        for (i= 0; i < ITER; i = i + 1)
   	begin
-     
+
   	     PortBWriteEnable = 1'b1;
   	     PortBReadEnable  	= 1'b1;
-  	     PortBAddr  = $random; 
-  	     PortBDataIn = $random; 
-  	     StoreAddrB[i]  = PortBAddr; 
-  	     
+  	     PortBAddr  = $random;
+  	     PortBDataIn = $random;
+  	     StoreAddrB[i]  = PortBAddr;
+
        	   CompareDataB;
-      	       
+
   	end
-  	
+
 
 test_probe = 4;
 
  `endif
- 
+
  `ifdef test5
- 
+
 // Test scenario: 5
     // Test Reset conditions.
     // Read & Write into same port simultaneously (Checking the Write_modes)
-      
+
    // PortA Write PortA Read
        for (i= 0; i < ITER; i = i + 1)
   	begin
-  	
-  	    PortAReset	 = 1'b1;  
-     
+
+  	    PortAReset	 = 1'b1;
+
   	     PortAWriteEnable = 1'b1;
   	     PortAReadEnable  	= 1'b1;
-  	     PortAAddr  = $random; 
-  	     PortADataIn = $random; 
-  	     StoreAddrA[i]  = PortAAddr; 
-  	     
+  	     PortAAddr  = $random;
+  	     PortADataIn = $random;
+  	     StoreAddrA[i]  = PortAAddr;
+
        	   CompareDataA;
-      	       
+
   	end
-  	
+
    // PortB Write PortB Read
        for (i= 0; i < ITER; i = i + 1)
   	begin
-     
-     	    PortBReset	 = 1'b1;  
-     	    
+
+     	    PortBReset	 = 1'b1;
+
   	    @(negedge PortBClk);
   	    @(negedge PortBClk);
-  
+
   	     PortBWriteEnable = 1'b1;
   	     PortBReadEnable  	= 1'b1;
-  	     PortBAddr  = $random; 
-  	     PortBDataIn = $random; 
-  	     StoreAddrB[i]  = PortBAddr; 
-  	     
+  	     PortBAddr  = $random;
+  	     PortBDataIn = $random;
+  	     StoreAddrB[i]  = PortBAddr;
+
        	   CompareDataB;
-      	       
+
   	end
 
 
-	PortAReset	 = 1'b0;  
-	PortBReset	 = 1'b0;  
+	PortAReset	 = 1'b0;
+	PortBReset	 = 1'b0;
 
 test_probe = 5;
 
@@ -520,15 +520,15 @@ test_probe = 5;
 /// Check for Any Errors
 
   	if (NumOfErrs == 0)
-	  $display("Simulation Successful !!! "); 
-   	else       		
-   	 $display("Simulation FAILED !!! "); 
+	  $display("Simulation Successful !!! ");
+   	else
+   	 $display("Simulation FAILED !!! ");
 
 
-  	
-		$fclose(tb_log); 
-		
-		$finish; 
+
+		$fclose(tb_log);
+
+		$finish;
 
 
 
@@ -536,10 +536,10 @@ test_probe = 5;
 
 
 
- initial 
+ initial
   begin
-   $dumpfile ("dump.vcd"); 
-   $dumpvars (0, tbtest); 
+   $dumpfile ("dump.vcd");
+   $dumpvars (0, tbtest);
   end
 
 

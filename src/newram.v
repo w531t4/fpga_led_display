@@ -1,30 +1,30 @@
-// ----------------------------------------------------------------------------- 
-// --- 
-// ---                 (C) COPYRIGHT 2001-2010 SYNOPSYS, INC. 
-// ---                           ALL RIGHTS RESERVED 
-// --- 
-// --- This software and the associated documentation are confidential and 
-// --- proprietary to Synopsys, Inc.  Your use or disclosure of this 
-// --- software is subject to the terms and conditions of a written 
-// --- license agreement between you, or your company, and Synopsys, Inc. 
-// --- 
-// --- The entire notice above must be reproduced on all authorized copies. 
-// --- 
-// ----------------------------------------------------------------------------- 
-// 
- 
- 
+// -----------------------------------------------------------------------------
+// ---
+// ---                 (C) COPYRIGHT 2001-2010 SYNOPSYS, INC.
+// ---                           ALL RIGHTS RESERVED
+// ---
+// --- This software and the associated documentation are confidential and
+// --- proprietary to Synopsys, Inc.  Your use or disclosure of this
+// --- software is subject to the terms and conditions of a written
+// --- license agreement between you, or your company, and Synopsys, Inc.
+// ---
+// --- The entire notice above must be reproduced on all authorized copies.
+// ---
+// -----------------------------------------------------------------------------
+//
+
+
 
  // Output ports are always registered to ensure Rams get packed into BlockRAM
- 
+
 
 
 `timescale 1ns/100ps
- //`ifdef synthesis 
+ //`ifdef synthesis
      module newram
- //`else 
+ //`else
  //    module newram_rtl
- //`endif 
+ //`endif
 (
 	 PortAClk
 	,PortAAddr
@@ -45,7 +45,7 @@
   parameter	 DATAWIDTH = 16;
   parameter	 DATA_A_WIDTH = 8;
   parameter	 DATA_B_WIDTH = 16;
-  parameter	 ADDRWIDTH = 12; 
+  parameter	 ADDRWIDTH = 12;
   parameter	 MEMDEPTH = 2**(ADDRWIDTH);
 
   input PortAClk;
@@ -99,7 +99,7 @@
   assign clk_a = PortAClk && PortAClkEnable;
   assign clk_b = PortBClk && PortBClkEnable;
  Syncore_ram
- #(	
+ #(
 				.SPRAM(0)
 				,.READ_MODE_A(2)
 				,.READ_MODE_B(2)
@@ -116,8 +116,8 @@
 				,.REGISTER_RD_ADDR_PORTB(1)
 				,.REGISTER_OUTPUT_PORTB(1)
 				,.ENABLE_OUTPUT_REG_PORTB(0)
-				,.RESET_OUTPUT_REG_PORTB(1)	
-				) 
+				,.RESET_OUTPUT_REG_PORTB(1)
+				)
 			U1(
 				.PortClk({clk_B, clk_a})
 				,.PortReset({PortBReset, PortAReset})
@@ -132,7 +132,7 @@ assign PortBDataOut = { data_b_out };
 
 /*
  Syncore_ram
- #(	
+ #(
 				.SPRAM(SPRAM)
 				,.READ_MODE_A(READ_MODE_A)
 				,.READ_MODE_B(READ_MODE_B)
@@ -149,8 +149,8 @@ assign PortBDataOut = { data_b_out };
 				,.REGISTER_RD_ADDR_PORTB(REGISTER_RD_ADDR_PORTB)
 				,.REGISTER_OUTPUT_PORTB(REGISTER_OUTPUT_PORTB)
 				,.ENABLE_OUTPUT_REG_PORTB(ENABLE_OUTPUT_REG_PORTB)
-				,.RESET_OUTPUT_REG_PORTB(RESET_OUTPUT_REG_PORTB)	
-				) 
+				,.RESET_OUTPUT_REG_PORTB(RESET_OUTPUT_REG_PORTB)
+				)
 			U1(
 				.PortClk({PortBClk, PortAClk})
 				,.PortReset({PortBReset, PortAReset})
