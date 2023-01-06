@@ -42,6 +42,7 @@ module main (
 	wire clk_pixel;
 
 	wire row_latch;
+	wire row_latch_intermediary;
 
 	wire [7:0] ram_a_data_in;
 	wire [7:0] ram_a_data_out;
@@ -69,7 +70,9 @@ module main (
 	wire [2:0] rgb_enable;
 	wire [5:0] brightness_enable;
 	wire [2:0] rgb1; /* the current RGB value for the top-half of the display */
+	wire [2:0] rgb1_intermediary;
 	wire [2:0] rgb2; /* the current RGB value for the bottom-half of the display */
+	wire [2:0] rgb2_intermediary;
 	wire [1:0] cmd_line_state;
 	wire [7:0] uart_rx_data;
 	wire ram_access_start;
@@ -87,10 +90,7 @@ module main (
 	wire buffered_global_reset;
 	wire tx_out;
 	wire init_complete;
-	wire [2:0] rgb1_intermediary;
-	wire [2:0] rgb2_intermediary;
 	wire output_enable_intermediary;
-	wire row_latch_intermediary;
 
 	wire [183:0] ddata =  {
 		//
