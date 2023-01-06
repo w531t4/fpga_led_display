@@ -21,6 +21,7 @@ VSOURCES=src/brightness.v \
 		 src/Multiported-RAM/dpram.v \
 		 src/Multiported-RAM/mpram_gen.v \
 		 src/Multiported-RAM/mpram_xor.v \
+		 src/fm6126init.v \
 		 src/new_pll.v \
 		 src/platform/sb_ice40.v
 
