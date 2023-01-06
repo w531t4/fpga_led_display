@@ -93,7 +93,7 @@ pll new_pll_inst (
 ) /* synthesis syn_noprune=1 */ ;
 
 
-	reg init_complete;
+	wire init_complete;
 	wire [2:0] rgb1_intermediary;
 	wire [2:0] rgb2_intermediary;
 	wire output_enable_intermediary;
