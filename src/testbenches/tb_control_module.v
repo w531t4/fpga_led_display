@@ -58,8 +58,8 @@ control_module #(
 		.cmd_line_state2(cmd_line_state2)
 	);
 
-  initial 
-  begin 
+  initial
+  begin
       $dumpfile("tb_control_module.vcd");
       $dumpvars(0, tb_control_module);
       clk = 0;

@@ -49,14 +49,14 @@ uart_rx #(
 		.rx_invalid(rx_invalid)
 	);
 
-  initial 
-  begin 
+  initial
+  begin
       $dumpfile("tb_uart_rx.vcd");
 	  $dumpvars(0, tb_uart_rx);
 	  clk = 0;
 	  reset = 0;
 	  local_reset = 0;
-  end 
+  end
   reg [3:0] i = 'd0;
   reg [8:0] j = 'd0;
 
@@ -103,7 +103,7 @@ uart_rx #(
   #4001 local_reset = !local_reset;
   initial
   #10000000 $finish;
-    
+
   always begin
      #7.52  clk <=  ! clk;  // produces ~133MHz
   end

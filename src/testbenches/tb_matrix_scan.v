@@ -25,14 +25,14 @@ matrix_scan  matrix_scan_instance
 		.output_enable(output_enable),
 		.brightness_mask(brightness_mask)
 	);
-  initial 
-  begin 
+  initial
+  begin
       $dumpfile("tb_matrix_scan.vcd");
       $dumpvars(0, tb_matrix_scan);
-    clk = 0; 
-    reset = 0; 
-  end 
-    
+    clk = 0;
+    reset = 0;
+  end
+
   initial
   #2 reset = ! reset;
 
@@ -41,9 +41,9 @@ matrix_scan  matrix_scan_instance
 
   initial
   #10000000 $finish;
-    
-  always begin 
-     #5  clk <=  ! clk; 
+
+  always begin
+     #5  clk <=  ! clk;
   end
  // always begin
    // #700 reset <= ! reset;

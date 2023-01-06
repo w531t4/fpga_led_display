@@ -1,4 +1,4 @@
-/*	
+/*
 	MIT License
 
 	Copyright (c) 2018 Matheus Alencar Nascimento (matt-alencar)
@@ -22,14 +22,14 @@
 	SOFTWARE.
 */
 
-module uart_tx 
+module uart_tx
 	/* BEGIN PARAMETERS LIST */
 	#(
 		parameter TICKS_PER_BIT = 32,
 		parameter TICKS_PER_BIT_SIZE = 6
 	)
-	/* END PARAMETERS LIST */ 
-	
+	/* END PARAMETERS LIST */
+
 	/* BEGIN MODULE IO LIST */
 	(
 		input i_clk,
@@ -46,16 +46,16 @@ module uart_tx
 				STATE_SEND_BITS		= 5'b00100,
 				STATE_SEND_STOP		= 5'b01000,
 				STATE_DONE			= 5'b10000;
-	
+
 	reg [4:0] currentState, nextState;
 	reg done_flag;
 	reg busy_flag;
 	reg tx_output;
-	
+
 	assign o_dout = tx_output;
 	assign o_done = done_flag;
 	assign o_busy = busy_flag;
-	
+
 	reg [7:0] tx_reg;
 	reg [3:0] tx_bit_counter;
 	reg [TICKS_PER_BIT_SIZE-1:0] ticks_counter;
@@ -70,101 +70,101 @@ module uart_tx
 		tx_bit_counter = 0;
 		ticks_counter = 0;
 	end
-	
+
 	always @(*) begin
 		case(currentState)
 
-			default: begin 
+			default: begin
 				nextState = STATE_IDLE;
 				done_flag = 0;
 				busy_flag = 0;
 				tx_output = 1; //idle line
 			end
 
-			STATE_IDLE: begin 
+			STATE_IDLE: begin
 				done_flag = 0;
 				busy_flag = 0;
 				tx_output = 1; //idle line
-				
+
 				if(i_start)
 					nextState = STATE_SEND_START;
 				else
 					nextState = STATE_IDLE;
 			end // -- END STATE_IDLE --
-			
-			STATE_SEND_START: begin 
+
+			STATE_SEND_START: begin
 				done_flag = 0;
 				busy_flag = 1;
 				tx_output = 0; //send low signal (start)
-				
+
 				if(ticks_counter_ovf)
 					nextState = STATE_SEND_BITS;
 				else
 					nextState = STATE_SEND_START;
-					
+
 			end // -- END STATE_SEND_START --
-			
-			STATE_SEND_BITS: begin 
+
+			STATE_SEND_BITS: begin
 				done_flag = 0;
 				busy_flag = 1;
 				tx_output = tx_bit_counter_ovf ? 1'b1 : tx_reg[0];
-				
+
 				if(tx_bit_counter_ovf)
 					nextState = STATE_SEND_STOP;
 				else
 					nextState = STATE_SEND_BITS;
-					
+
 			end // -- END STATE_SEND_BITS --
-			
-			STATE_SEND_STOP: begin 
+
+			STATE_SEND_STOP: begin
 				done_flag = 0;
 				busy_flag = 1;
 				tx_output = 1; //send high signal (stop)
-				
+
 				if(ticks_counter_ovf)
 					nextState = STATE_DONE;
 				else
 					nextState = STATE_SEND_STOP;
 			end // -- END STATE_SEND_STOP --
-			
-			STATE_DONE: begin 
+
+			STATE_DONE: begin
 				done_flag = 1;
 				busy_flag = 1;
 				tx_output = 1; //idle line
 				nextState = STATE_IDLE;
 			end // -- END STATE_DONE --
-			
+
 		endcase
 	end
-	
-	always @(posedge i_clk) begin 
+
+	always @(posedge i_clk) begin
 		currentState <= nextState;
 
 		//Any of those states require the 'ticks_counter_ovf' signal to work
-		if (currentState == STATE_SEND_START || 
-			currentState == STATE_SEND_BITS || 
+		if (currentState == STATE_SEND_START ||
+			currentState == STATE_SEND_BITS ||
 			currentState == STATE_SEND_STOP) begin
-			
+
 			if(ticks_counter_ovf) begin
 				ticks_counter <= 0;
-			end	
-			else 
+			end
+			else
 				ticks_counter <= ticks_counter + 1;
 		end
-		
-		if (currentState == STATE_SEND_BITS) begin 
+
+		if (currentState == STATE_SEND_BITS) begin
 			if(ticks_counter_ovf) begin
 				tx_bit_counter <= tx_bit_counter + 1;
 				tx_reg <= tx_reg >> 1; //LSB shift
 			end
 		end
 
-		if(currentState == STATE_IDLE) begin 
-			if(i_start) begin 
+		if(currentState == STATE_IDLE) begin
+			if(i_start) begin
 				tx_reg <= i_data;
 				tx_bit_counter <= 0;
 			end
 		end
 	end
 
-endmodule 
+endmodule
