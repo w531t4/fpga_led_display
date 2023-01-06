@@ -46,6 +46,66 @@ module framebuffer (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 
 # Simplified repeating thing
 ## in
+4x 4x2KB memory = 32KB memory requires
+```
+>>> 32*1024
+32768
+>>> 32*1024*8
+262144
+>>> math.log(262144,2)
+18.0
+```
+```
+    input wire [7:0] DataInA;
+		DIA 2 used of 9
+    input wire [15:0] DataInB;  <-- these don't matter, we always write 0
+	   	DIB 4 used of 9
+    input wire [11:0] AddressA; <-- 11 bits + 1 bit to choose which bank?
+		ADA 12 used of 13
+    input wire [10:0] AddressB;
+   		ADB 11 used of 13
+	output wire [7:0] QA; <-- these don't matter, nothing is done w/ them
+		DOA 2 used of 9
+    output wire [15:0] QB;
+		DOB 4used of 9
+
+
+    input wire [7:0] DataInA;
+		DIA 2 used of 9
+    input wire [11:0] AddressA; <-- 11 bits + 1 bit to choose which bank?
+		ADA 12 used of 13
+    input wire [10:0] AddressB;
+   		ADB 11 used of 13
+    output wire [15:0] QB;
+		DOB 4used of 9
+
+	A write (DIA) places 2 bits across 4 memory modules @ 2^5 and 2^3 positions
+	Written to Address A - selected using (12MSB of 13) on each of the 4 memory modules
+
+	When data is attempted to reach on B, we don't need 12 bits to do so because we want
+	 [12, 13, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+	 [ B,  B,  B, B, B, B, B, B, B, B, B, X, 0]
+
+	B Pulls the 4 LSB from each of the 4 memory modules, each memory modules returns 4 bits
+
+
+|--------------------------------------------------------------------------
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+|                                                                          |
+
+
+
+```
+
 ### A
 - AddressA (as `ram_a_address`) comes from control_module via `control_module.ram_address`
 - DataInA (as `ram_a_data_in`) comes from control_module via `control_module.ram_data_out`
@@ -84,22 +144,22 @@ Shared
     defparam framebuffer_x.DATA_WIDTH_A = 2 ;
 DP8KC framebuffer_0_0_3
 	DIA: {LO, LO, LO, DataInA[1], LO, LO, DataInA[0], LO, LO} # 9 bits
-	DIB: {LO, LO, LO, LO, LO, DataInB[9], DataInB[8], DataInB[1], DataInB[0]} # 9 bits
+	DIB: {LO, LO, LO, LO, LO, DataInB[9], DataInB[8], DataInB[1], DataInB[0]} # 9 bits <-- these don't matter, we always write 0
 	DOA: {Null, Null, Null, Null, Null, Null, Null, QA[1], QA[0]} # 9 bits
 	DOB: {Null, Null, Null, Null, Null, QB[9], QB[8], QB[1], QB[0]}  # 9 bits
 DP8KC framebuffer_0_1_2
 	DIA: {LO, LO, LO, DataInA[3], LO, LO, DataInA[2], LO, LO} # 9 bits
-	DIB: {LO, LO, LO, LO, LO, DataInB[11], DataInB[10], DataInB[3], DataInB[2]} # 9 bits
+	DIB: {LO, LO, LO, LO, LO, DataInB[11], DataInB[10], DataInB[3], DataInB[2]} # 9 bits <-- these don't matter, we always write 0
 	DOA: {Null, Null, Null, Null, Null, Null, Null, QA[3], QA[2]} # 9 bits
 	DOB: {Null, Null, Null, Null, Null, Q[11], QB[10], QB[3], QB[2]}  # 9 bits
 DP8KC framebuffer_0_2_1
 	DIA: {LO, LO, LO, DataInA[5], LO, LO, DataInA[4], LO, LO} # 9 bits
-	DIB: {LO, LO, LO, LO, LO, DataInB[13], DataInB[12], DataInB[5], DataInB[4]} # 9 bits
+	DIB: {LO, LO, LO, LO, LO, DataInB[13], DataInB[12], DataInB[5], DataInB[4]} # 9 bits <-- these don't matter, we always write 0
 	DOA: {Null, Null, Null, Null, Null, Null, Null, QA[5], QA[4]} # 9 bits
 	DOB: {Null, Null, Null, Null, Null, Q[13], QB[12], QB[5], QB[4]}  # 9 bits
 DP8KC framebuffer_0_3_0
 	DIA: {LO, LO, LO, DataInA[7], LO, LO, DataInA[6], LO, LO} # 9 bits
-	DIB: {LO, LO, LO, LO, LO, DataInB[15], DataInB[14], DataInB[7], DataInB[6]} # 9 bits
+	DIB: {LO, LO, LO, LO, LO, DataInB[15], DataInB[14], DataInB[7], DataInB[6]} # 9 bits <-- these don't matter, we always write 0
 	DOA: {Null, Null, Null, Null, Null, Null, Null, QA[7], QA[6]} # 9 bits
 	DOB: {Null, Null, Null, Null, Null, Q[15], QB[14], QB[7], QB[6]}  # 9 bits
 

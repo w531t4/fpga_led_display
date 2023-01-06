@@ -1,14 +1,15 @@
-# Written by Synplify Pro version maplat, Build 1612R. Synopsys Run ID: sid1672707735 
+# Written by Synplify Pro version maplat, Build 1612R. Synopsys Run ID: sid1673022344 
 # Top Level Design Parameters 
 
 # Clocks 
 create_clock -period 62.500 -waveform {0.000 31.250} -name {my16mhzclk} -add [get_ports {pin3_clk_16mhz}] 
-create_clock -period 7.576 -waveform {0.000 3.788} -name {myclk_root} -add [get_pins {usb_pll_inst/PLLOUTGLOBAL}] 
+create_clock -period 45.455 -waveform {0.000 22.727} -name {clk_root} -add [get_pins {new_pll_inst.uut/PLLOUTCORE}] 
+create_clock -period 1000.000 -waveform {0.000 500.000} -name {matrix_scan|row_latch_inferred_clock} [get_pins {matscan1.row_latch_inferred_clock_RNO/O}] 
+create_clock -period 1000.000 -waveform {0.000 500.000} -name {matrix_scan|row_latch_inferred_clock_1} [get_pins {matscan1.row_latch_inferred_clock_RNO/O}] 
 
 # Virtual Clocks 
 
 # Generated Clocks 
-create_generated_clock -name {myclk_matrix} -divide_by {3} -add -source [get_pins {usb_pll_inst/PLLOUTGLOBAL}]  [get_pins {matscan1.clk_pixel_en/C matscan1.row_address[0]/C matscan1.row_latch_state[1]/C matscan1.row_latch_state[0]/C matscan1.state[1]/C matscan1.state[0]/C matscan1.row_address[3]/C matscan1.row_address[2]/C matscan1.row_address[1]/C matscan1.brightness_mask[5]/C matscan1.brightness_mask[4]/C matscan1.brightness_mask[3]/C matscan1.brightness_mask[2]/C matscan1.brightness_mask[1]/C matscan1.brightness_mask[0]/C matscan1.brightness_mask_active[5]/C matscan1.brightness_mask_active[4]/C matscan1.brightness_mask_active[3]/C matscan1.brightness_mask_active[2]/C matscan1.brightness_mask_active[1]/C matscan1.brightness_mask_active[0]/C matscan1.row_address_active[3]/C matscan1.row_address_active[2]/C matscan1.row_address_active[1]/C matscan1.row_address_active[0]/C matscan1.timeout_output_enable.counter[9]/C matscan1.timeout_output_enable.counter[8]/C matscan1.timeout_output_enable.counter[7]/C matscan1.timeout_output_enable.counter[6]/C matscan1.timeout_output_enable.counter[5]/C matscan1.timeout_output_enable.counter[4]/C matscan1.timeout_output_enable.counter[3]/C matscan1.timeout_output_enable.counter[2]/C matscan1.timeout_output_enable.counter[1]/C matscan1.timeout_output_enable.counter[0]/C matscan1.timeout_output_enable.start_latch/C matscan1.timeout_column_address.counter[5]/C matscan1.timeout_column_address.counter[4]/C matscan1.timeout_column_address.counter[3]/C matscan1.timeout_column_address.counter[2]/C matscan1.timeout_column_address.counter[1]/C matscan1.timeout_column_address.counter[0]/C matscan1.timeout_column_address.start_latch/C matscan1.timeout_clk_pixel_load_en.counter[6]/C matscan1.timeout_clk_pixel_load_en.counter[5]/C matscan1.timeout_clk_pixel_load_en.counter[4]/C matscan1.timeout_clk_pixel_load_en.counter[3]/C matscan1.timeout_clk_pixel_load_en.counter[2]/C matscan1.timeout_clk_pixel_load_en.counter[1]/C matscan1.timeout_clk_pixel_load_en.counter[0]/C matscan1.timeout_clk_pixel_load_en.start_latch/C}] 
 
 # Paths Between Clocks 
 
@@ -37,6 +38,9 @@ create_generated_clock -name {myclk_matrix} -divide_by {3} -add -source [get_pin
 # Clock Delay Constraints 
 
 
+set_false_path -from [get_clocks {matrix_scan|row_latch_inferred_clock_1}] -to [get_clocks {matrix_scan|row_latch_inferred_clock}]
+set_false_path -from [get_clocks {matrix_scan|row_latch_inferred_clock}] -to [get_clocks {matrix_scan|row_latch_inferred_clock_1}]
+
 # syn_mode Attributes 
 
 # Cells 
@@ -46,7 +50,7 @@ create_generated_clock -name {myclk_matrix} -divide_by {3} -add -source [get_pin
 # Input Transition Constraints 
 
 # Unused constraints (intentionally commented out) 
-# create_generated_clock -name myclk_debug -source n:clk_root_logic n:mydebug.debug_start -divide_by 13200000 -add
+# create_generated_clock -name myclk_matrix -source n:clk_root_logic n:clkdiv_matrix.clk_out -divide_by 3 -add
 
 # Non-forward-annotatable constraints (intentionally commented out) 
 
