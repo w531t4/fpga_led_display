@@ -84,6 +84,9 @@ module main (
 	wire debug_command_pulse;
     wire debug_command_busy;
 	wire clk_root;
+	wire buffered_global_reset;
+	wire tx_out;
+
 pll new_pll_inst (
 	.clock_in(pin3_clk_16mhz),
 	.clock_out(clk_root)
@@ -112,7 +115,6 @@ fm6126init do_init (
 	.done(init_complete)
 ) /* synthesis syn_noprune=1 */ ;
 
-	wire buffered_global_reset;
 	timeout #(
 		.COUNTER_WIDTH(4)
 	) timeout_global_reset (
@@ -233,7 +235,6 @@ fm6126init do_init (
 		.rgb_output(rgb2_intermediary)
 	) /* synthesis syn_noprune=1 */ ;
 
-	wire tx_out;
 
 	wire [183:0] ddata =  {
 		//
