@@ -32,7 +32,7 @@ module tb_newram2;
 	) /* synthesis syn_noprune=1 */ ;
 
 	initial begin
-		$dumpfile("tb_newram2.vcd");
+		$dumpfile(`DUMP_FILE_NAME);
 		$dumpvars(0, tb_newram2);
 		clk = 0;
 		reset = 0;

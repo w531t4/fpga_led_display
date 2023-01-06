@@ -28,3 +28,4 @@ Based on suggestion from https://stackoverflow.com/questions/67923728/yosys-prod
 - https://youtu.be/wwANKw36Mjw
 - https://youtu.be/xlvqUts9H9c
 - https://www.tutorialspoint.com/compile_verilog_online.php (helpful for testing snippets of verilog)
+- https://zipcpu.com/fpga-hell.html

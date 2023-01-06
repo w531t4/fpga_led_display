@@ -97,7 +97,7 @@ module tb_main;
 
     initial
         begin
-            $dumpfile("tb_main.vcd");
+            $dumpfile(`DUMP_FILE_NAME);
             $dumpvars(0, tb_main);
             clk = 0;
             reset = 0;

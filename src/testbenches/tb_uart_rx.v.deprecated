@@ -51,7 +51,7 @@ uart_rx #(
 
   initial
   begin
-      $dumpfile("tb_uart_rx.vcd");
+      $dumpfile(`DUMP_FILE_NAME);
 	  $dumpvars(0, tb_uart_rx);
 	  clk = 0;
 	  reset = 0;

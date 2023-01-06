@@ -8,7 +8,8 @@ reg clk;
 reg reset;
 reg local_reset;
 reg rx_line;
-reg [7:0] ram_data_in = 8'b01100101;
+//20220106
+//reg [7:0] ram_data_in = 8'b01100101;
 wire rx_running;
 wire [2:0] rgb_enable;
 wire [5:0] brightness_enable;
@@ -18,7 +19,10 @@ wire ram_write_enable;
 wire ram_clk_enable;
 wire ram_reset;
 wire [1:0 ] cmd_line_state2;
-wire rx_invalid;
+//20220106
+//wire rx_invalid;
+
+
 //reg [9:0] mycustom_uart_rx = 9'b1011001010;
 //reg [1023:0] mycustom_uart_rx = "L0111223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788";
 reg [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
@@ -48,19 +52,21 @@ control_module #(
 		.rx_running(rx_running),
 		.rgb_enable(rgb_enable),
 		.brightness_enable(brightness_enable),
-		.ram_data_in(ram_data_in),
+        //20220106
+		//.ram_data_in(ram_data_in),
 		.ram_data_out(ram_data_out),
 		.ram_address(ram_address),
 		.ram_write_enable(ram_write_enable),
 		.ram_clk_enable(ram_clk_enable),
 		.ram_reset(ram_reset),
-		.rx_invalid(rx_invalid),
+        //20220106
+		//.rx_invalid(rx_invalid),
 		.cmd_line_state2(cmd_line_state2)
 	);
 
   initial
   begin
-      $dumpfile("tb_control_module.vcd");
+      $dumpfile(`DUMP_FILE_NAME);
       $dumpvars(0, tb_control_module);
       clk = 0;
       reset = 0;

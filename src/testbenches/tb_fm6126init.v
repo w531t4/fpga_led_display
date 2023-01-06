@@ -11,7 +11,7 @@ module fm6126init_tb;
     wire done;
    always #5 clk_root <= ~clk_root;
    initial begin
-         $dumpfile("fm6126init.vcd");
+         $dumpfile(`DUMP_FILE_NAME);
          $dumpvars(0, fm6126init_tb);
          clk_root = 0;
          reset = 0;

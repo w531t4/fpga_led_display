@@ -31,11 +31,11 @@ ARTIFACT_DIR=build_artifacts
 YOSYS=../ice40_toolchain/yosys/yosys
 NETLISTSVG=nenv/bin/netlistsvg
 IVERILOG_BIN=iverilog
-IVERILOG_FLAGS=""
+IVERILOG_FLAGS=
 VVP_BIN=vvp
-VVP_FLAGS=""
+VVP_FLAGS=
 GTKWAVE_BIN=gtkwave
-GTKWAVE_FLAGS=""
+GTKWAVE_FLAGS=
 
 .PHONY: all diagram simulation clean
 all: diagram simulation
@@ -57,9 +57,12 @@ TB_DIR = src/testbenches
 SRCS := $(shell find $(SRC_DIR) -name '*.v')
 TBSRCS := $(shell find $(TB_DIR) -name '*.v')
 VVPOBJS := $(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
+VCDOBJS := $(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vcd)))
 #$(warning In a command script $(VVPOBJS))
-simulation: vvp
-vvp: $(VVPOBJS)
+simulation: $(VCDOBJS)
+
+$(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
+	$(VVP_BIN) ${VVP_FLAGS} $<
 
 $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
