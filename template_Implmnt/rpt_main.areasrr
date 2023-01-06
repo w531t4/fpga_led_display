@@ -11,16 +11,16 @@ Name      Total elements     Utilization     Notes
 --------------------------------------------------
 FLOPS     482                100 %                
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main:	482 (38.53 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main:	482 (38.47 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       569                100 %                
+LUTS       571                100 %                
 CARRYS     107                100 %                
 ===================================================
-Total COMBINATIONAL LOGIC in the block main:	676 (54.04 % Utilization)
+Total COMBINATIONAL LOGIC in the block main:	678 (54.11 % Utilization)
 
 
 MEMORY ELEMENTS
@@ -36,7 +36,7 @@ Name     Total elements     Utilization     Notes
 -------------------------------------------------
 PADS     32                 100 %                
 =================================================
-Total IO PADS in the block main:	32 (2.56 % Utilization)
+Total IO PADS in the block main:	32 (2.55 % Utilization)
 
 --------------------------------------------------------------------
 ########   Utilization report for  cell:   control_module   ########
@@ -48,16 +48,16 @@ Name      Total elements     Utilization     Notes
 --------------------------------------------------
 FLOPS     74                 15.4 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.control_module:	74 (5.92 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.control_module:	74 (5.91 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       83                 14.6 %               
+LUTS       87                 15.2 %               
 CARRYS     13                 12.1 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block main.control_module:	96 (7.67 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.control_module:	100 (7.98 % Utilization)
 
 
 IO PADS
@@ -83,10 +83,10 @@ Total SEQUENTIAL ELEMENTS in the block control_module.debug_uart_rx_9_4s_8_4_1_2
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       35                 6.15 %               
+LUTS       36                 6.3 %                
 CARRYS     6                  5.61 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block control_module.debug_uart_rx_9_4s_8_4_1_2_4_8_16:	41 (3.28 % Utilization)
+Total COMBINATIONAL LOGIC in the block control_module.debug_uart_rx_9_4s_8_4_1_2_4_8_16:	42 (3.35 % Utilization)
 
 ------------------------------------------------------------------
 ########   Utilization report for  cell:   timeout_2s_1   ########
@@ -104,9 +104,9 @@ Total SEQUENTIAL ELEMENTS in the block control_module.timeout_2s_1:	3 (0.24 % Ut
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     4                  0.7030 %             
+LUTS     3                  0.5250 %             
 =================================================
-Total COMBINATIONAL LOGIC in the block control_module.timeout_2s_1:	4 (0.32 % Utilization)
+Total COMBINATIONAL LOGIC in the block control_module.timeout_2s_1:	3 (0.24 % Utilization)
 
 ---------------------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8   ########
@@ -118,16 +118,16 @@ Name      Total elements     Utilization     Notes
 --------------------------------------------------
 FLOPS     274                56.8 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8:	274 (21.90 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8:	274 (21.87 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       271                47.6 %               
+LUTS       271                47.5 %               
 CARRYS     46                 43 %                 
 ===================================================
-Total COMBINATIONAL LOGIC in the block main.debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8:	317 (25.34 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8:	317 (25.30 % Utilization)
 
 
 IO PADS
@@ -147,16 +147,16 @@ Name      Total elements     Utilization     Notes
 --------------------------------------------------
 FLOPS     28                 5.81 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.debug_uart_rx_191s_8s_190s_95s_1_2_4_8_16:	28 (2.24 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.debug_uart_rx_191s_8s_190s_95s_1_2_4_8_16:	28 (2.23 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       31                 5.45 %               
+LUTS       31                 5.43 %               
 CARRYS     10                 9.35 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.debug_uart_rx_191s_8s_190s_95s_1_2_4_8_16:	41 (3.28 % Utilization)
+Total COMBINATIONAL LOGIC in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.debug_uart_rx_191s_8s_190s_95s_1_2_4_8_16:	41 (3.27 % Utilization)
 
 -----------------------------------------------------------------------------------------
 ########   Utilization report for  cell:   uart_tx_191s_8s_1_2_4_8_16   ########         
@@ -174,10 +174,10 @@ Total SEQUENTIAL ELEMENTS in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       31                 5.45 %               
+LUTS       31                 5.43 %               
 CARRYS     9                  8.41 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.uart_tx_191s_8s_1_2_4_8_16:	40 (3.20 % Utilization)
+Total COMBINATIONAL LOGIC in the block debugger_20s_1000000s_184s_8s_191s_8s_1_2_4_8.uart_tx_191s_8s_1_2_4_8_16:	40 (3.19 % Utilization)
 
 ----------------------------------------------------------------
 ########   Utilization report for  cell:   fm6126init   ########
@@ -189,16 +189,16 @@ Name      Total elements     Utilization     Notes
 --------------------------------------------------
 FLOPS     57                 11.8 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.fm6126init:	57 (4.56 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.fm6126init:	57 (4.55 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       104                18.3 %               
+LUTS       100                17.5 %               
 CARRYS     25                 23.4 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block main.fm6126init:	129 (10.31 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.fm6126init:	125 (9.98 % Utilization)
 
 
 IO PADS
@@ -224,7 +224,7 @@ Total SEQUENTIAL ELEMENTS in the block main.framebuffer_fetch:	12 (0.96 % Utiliz
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     12                 2.11 %               
+LUTS     12                 2.1 %                
 =================================================
 Total COMBINATIONAL LOGIC in the block main.framebuffer_fetch:	12 (0.96 % Utilization)
 
@@ -244,7 +244,7 @@ Total SEQUENTIAL ELEMENTS in the block framebuffer_fetch.timeout_2s_0:	3 (0.24 %
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     3                  0.5270 %             
+LUTS     3                  0.5250 %             
 =================================================
 Total COMBINATIONAL LOGIC in the block framebuffer_fetch.timeout_2s_0:	3 (0.24 % Utilization)
 
@@ -258,16 +258,16 @@ Name      Total elements     Utilization     Notes
 --------------------------------------------------
 FLOPS     51                 10.6 %               
 ==================================================
-Total SEQUENTIAL ELEMENTS in the block main.matrix_scan:	51 (4.08 % Utilization)
+Total SEQUENTIAL ELEMENTS in the block main.matrix_scan:	51 (4.07 % Utilization)
 
 
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       75                 13.2 %               
+LUTS       77                 13.5 %               
 CARRYS     23                 21.5 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block main.matrix_scan:	98 (7.83 % Utilization)
+Total COMBINATIONAL LOGIC in the block main.matrix_scan:	100 (7.98 % Utilization)
 
 
 IO PADS
@@ -293,10 +293,10 @@ Total SEQUENTIAL ELEMENTS in the block matrix_scan.timeout_10s:	11 (0.88 % Utili
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       31                 5.45 %               
+LUTS       31                 5.43 %               
 CARRYS     9                  8.41 %               
 ===================================================
-Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_10s:	40 (3.20 % Utilization)
+Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_10s:	40 (3.19 % Utilization)
 
 ----------------------------------------------------------------
 ########   Utilization report for  cell:   timeout_6s   ########
@@ -314,7 +314,7 @@ Total SEQUENTIAL ELEMENTS in the block matrix_scan.timeout_6s:	7 (0.56 % Utiliza
 COMBINATIONAL LOGIC
 Name       Total elements     Utilization     Notes
 ---------------------------------------------------
-LUTS       15                 2.64 %               
+LUTS       15                 2.63 %               
 CARRYS     5                  4.67 %               
 ===================================================
 Total COMBINATIONAL LOGIC in the block matrix_scan.timeout_6s:	20 (1.60 % Utilization)
@@ -356,7 +356,7 @@ Total SEQUENTIAL ELEMENTS in the block main.multimem:	6 (0.48 % Utilization)
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     16                 2.81 %               
+LUTS     16                 2.8 %                
 =================================================
 Total COMBINATIONAL LOGIC in the block main.multimem:	16 (1.28 % Utilization)
 
@@ -384,7 +384,7 @@ Total SEQUENTIAL ELEMENTS in the block multimem.newram3_0:	4 (0.32 % Utilization
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     10                 1.76 %               
+LUTS     10                 1.75 %               
 =================================================
 Total COMBINATIONAL LOGIC in the block multimem.newram3_0:	10 (0.80 % Utilization)
 
@@ -412,7 +412,7 @@ Total SEQUENTIAL ELEMENTS in the block newram3_0.Syncore_ram_Z1_0:	4 (0.32 % Uti
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     10                 1.76 %               
+LUTS     10                 1.75 %               
 =================================================
 Total COMBINATIONAL LOGIC in the block newram3_0.Syncore_ram_Z1_0:	10 (0.80 % Utilization)
 
@@ -508,7 +508,7 @@ Total SEQUENTIAL ELEMENTS in the block main.timeout_4s:	5 (0.40 % Utilization)
 COMBINATIONAL LOGIC
 Name     Total elements     Utilization     Notes
 -------------------------------------------------
-LUTS     8                  1.41 %               
+LUTS     8                  1.4 %                
 =================================================
 Total COMBINATIONAL LOGIC in the block main.timeout_4s:	8 (0.64 % Utilization)
 
