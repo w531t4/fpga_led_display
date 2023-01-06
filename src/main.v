@@ -86,13 +86,34 @@ module main (
 	wire [7:0] debug_command;
 	wire debug_command_pulse;
     wire debug_command_busy;
-
+	wire clk_root;
 pll new_pll_inst (
 	.clock_in(pin3_clk_16mhz),
 	.clock_out(clk_root)
 ) /* synthesis syn_noprune=1 */ ;
-	wire clk_root;
 
+
+	reg init_complete;
+	wire [2:0] rgb1_intermediary;
+	wire [2:0] rgb2_intermediary;
+	wire output_enable_intermediary;
+	wire row_latch_intermediary;
+
+
+fm6126init do_init (
+	.clk_in(clk_root),
+	//.reset(system_init_enable),
+	.reset(global_reset),
+	.output_enable_in(output_enable_intermediary),
+	.rgb1_in(rgb1_intermediary),
+	.rgb2_in(rgb2_intermediary),
+	.latch_in(row_latch_intermediary),
+	.output_enable_out(output_enable),
+	.rgb1_out(rgb1),
+	.rgb2_out(rgb2),
+	.latch_out(row_latch),
+	.done(init_complete)
+) /* synthesis syn_noprune=1 */ ;
 
 	wire buffered_global_reset;
 	timeout #(
@@ -129,8 +150,8 @@ pll new_pll_inst (
 		.row_address_active(row_address_active),
 		.clk_pixel_load(clk_pixel_load),
 		.clk_pixel(clk_pixel),
-		.row_latch(row_latch),
-		.output_enable(output_enable),
+		.row_latch(row_latch_intermediary),
+		.output_enable(output_enable_intermediary),
 		.brightness_mask(brightness_mask),
 		.state_advance2(state_advance),
 		.row_latch_state2(row_latch_state),
@@ -206,13 +227,13 @@ pll new_pll_inst (
 		.pixel_rgb565(pixel_rgb565_top),
 		.brightness_mask(brightness_mask & brightness_enable),
 		.rgb_enable(rgb_enable),
-		.rgb_output(rgb1)
+		.rgb_output(rgb1_intermediary)
 	) /* synthesis syn_noprune=1 */ ;
 	pixel_split px_bottom (
 		.pixel_rgb565(pixel_rgb565_bottom),
 		.brightness_mask(brightness_mask & brightness_enable),
 		.rgb_enable(rgb_enable),
-		.rgb_output(rgb2)
+		.rgb_output(rgb2_intermediary)
 	) /* synthesis syn_noprune=1 */ ;
 
 	wire tx_out;
