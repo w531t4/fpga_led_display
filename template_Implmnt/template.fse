@@ -1,13 +1,29 @@
 
-fsm_encoding {812511254} sequential
+fsm_encoding {1918211826} sequential
 
-fsm_state_encoding {812511254} 00 {00}
+fsm_state_encoding {1918211826} 0000001 {000}
 
-fsm_state_encoding {812511254} 01 {01}
+fsm_state_encoding {1918211826} 0000010 {001}
 
-fsm_state_encoding {812511254} 10 {10}
+fsm_state_encoding {1918211826} 0000100 {010}
 
-fsm_registers {812511254} {cmd_line_state[1]}  {cmd_line_state[0]} 
+fsm_state_encoding {1918211826} 0001000 {011}
+
+fsm_state_encoding {1918211826} 0010000 {100}
+
+fsm_state_encoding {1918211826} 0100000 {101}
+
+fsm_registers {1918211826} {currentState[2]}  {currentState[1]}  {currentState[0]} 
+
+fsm_encoding {811811184} sequential
+
+fsm_state_encoding {811811184} 00 {00}
+
+fsm_state_encoding {811811184} 01 {01}
+
+fsm_state_encoding {811811184} 10 {10}
+
+fsm_registers {811811184} {cmd_line_state[1]}  {cmd_line_state[0]} 
 
 fsm_encoding {916941695} onehot
 
@@ -23,17 +39,17 @@ fsm_state_encoding {916941695} STATE_DONE {10000}
 
 fsm_registers {916941695} {currentState[4]}  {currentState[3]}  {currentState[2]}  {currentState[1]}  {currentState[0]} 
 
-fsm_encoding {10994991} sequential
+fsm_encoding {10764761} sequential
 
-fsm_state_encoding {10994991} 0001 {00}
+fsm_state_encoding {10764761} 0001 {00}
 
-fsm_state_encoding {10994991} 0010 {01}
+fsm_state_encoding {10764761} 0010 {01}
 
-fsm_state_encoding {10994991} 0100 {10}
+fsm_state_encoding {10764761} 0100 {10}
 
-fsm_state_encoding {10994991} 1000 {11}
+fsm_state_encoding {10764761} 1000 {11}
 
-fsm_registers {10994991} {currentState_1[1]}  {currentState_1[0]} 
+fsm_registers {10764761} {currentState_1[1]}  {currentState_1[0]} 
 
 fsm_encoding {916941693} onehot
 
@@ -49,16 +65,16 @@ fsm_state_encoding {916941693} STATE_DONE {10000}
 
 fsm_registers {916941693} {currentState[4]}  {currentState[3]}  {currentState[2]}  {currentState[1]}  {currentState[0]} 
 
-fsm_encoding {2014011402} sequential
+fsm_encoding {1714011402} sequential
 
-fsm_state_encoding {2014011402} STATE_IDLE {000}
+fsm_state_encoding {1714011402} STATE_IDLE {000}
 
-fsm_state_encoding {2014011402} STATE_SEND_START {001}
+fsm_state_encoding {1714011402} STATE_SEND_START {001}
 
-fsm_state_encoding {2014011402} STATE_SEND_BITS {010}
+fsm_state_encoding {1714011402} STATE_SEND_BITS {010}
 
-fsm_state_encoding {2014011402} STATE_SEND_STOP {011}
+fsm_state_encoding {1714011402} STATE_SEND_STOP {011}
 
-fsm_state_encoding {2014011402} STATE_DONE {100}
+fsm_state_encoding {1714011402} STATE_DONE {100}
 
-fsm_registers {2014011402} {currentState[2]}  {currentState[1]}  {currentState[0]} 
+fsm_registers {1714011402} {currentState[2]}  {currentState[1]}  {currentState[0]} 

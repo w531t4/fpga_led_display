@@ -10,22 +10,23 @@ VSOURCES=src/brightness.v \
 		 src/pixel_split.v \
 		 src/rgb565.v \
 		 src/timeout.v \
-		 src/newram.v \
-		 src/syncore_ram.v \
-		 src/newram2.v \
 		 src/uart_tx.v \
 		 src/debugger.v \
 		 src/debug_uart_rx.v \
-		 src/Multiported-RAM/mpram.v \
-		 src/Multiported-RAM/mrram.v \
-		 src/Multiported-RAM/dpram.v \
-		 src/Multiported-RAM/mpram_gen.v \
-		 src/Multiported-RAM/mpram_xor.v \
 		 src/fm6126init.v \
 		 src/new_pll.v \
 		 src/multimem.v \
-		 src/newram3.v \
+		 src/mem_core/syncore_ram.v \
+		 src/mem_core/newram3.v \
 		 src/platform/sb_ice40.v
+
+#		 src/Multiported-RAM/mpram.v
+#		 src/Multiported-RAM/mrram.v
+#		 src/Multiported-RAM/dpram.v
+#		 src/Multiported-RAM/mpram_gen.v
+#		 src/Multiported-RAM/mpram_xor.v
+#		 src/newram.v
+#		 src/newram2.v
 
 ARTIFACT_DIR=build_artifacts
 YOSYS=../ice40_toolchain/yosys/yosys
@@ -69,7 +70,8 @@ $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 	$(shell mkdir -p $(SIMULATION_DIR))
 	${IVERILOG_BIN} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 
-$(SIMULATION_DIR)/main.vvp: $(foreach file, fm6126init.v \
+$(SIMULATION_DIR)/main.vvp: $(foreach file, \
+											fm6126init.v \
 										    new_pll.v \
 											timeout.v \
 											matrix_scan.v \
@@ -81,13 +83,14 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, fm6126init.v \
 											clock_divider.v \
 											platform/sb_ice40.v \
 											debug_uart_rx.v \
-											newram3.v \
+											mem_core/newram3.v \
 											brightness.v \
 											rgb565.v \
 											uart_tx.v \
-											syncore_ram.v, $(SRC_DIR)/$(file))
-$(SIMULATION_DIR)/newram2.vvp: $(foreach file, mpram.v mpram_lvt_1ht.v lvt_1ht.v mrram.v dpram.v mpram_gen.v, $(SRC_DIR)/Multiported-RAM/$(file))
-	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+											mem_core/syncore_ram.v \
+											, $(SRC_DIR)/$(file))
+#$(SIMULATION_DIR)/newram2.vvp: $(foreach file, mpram.v mpram_lvt_1ht.v lvt_1ht.v mrram.v dpram.v mpram_gen.v, $(SRC_DIR)/Multiported-RAM/$(file))
+#	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 
 $(SIMULATION_DIR)/control_module.vvp: $(foreach file, timeout.v debug_uart_rx.v clock_divider.v, $(SRC_DIR)/$(file))
 $(SIMULATION_DIR)/debugger.vvp: $(foreach file, debug_uart_rx.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
