@@ -29,3 +29,5 @@ Based on suggestion from https://stackoverflow.com/questions/67923728/yosys-prod
 - https://youtu.be/xlvqUts9H9c
 - https://www.tutorialspoint.com/compile_verilog_online.php (helpful for testing snippets of verilog)
 - https://zipcpu.com/fpga-hell.html
+- about bram and ice40 https://tinlethax.wordpress.com/2022/05/07/ice40-bram-101-probably-the-correct-way-to-use-ice40-block-ram/
+- "tasks" in testbenches https://stackoverflow.com/questions/49929065/verilog-icarus-giving-undefined-values
