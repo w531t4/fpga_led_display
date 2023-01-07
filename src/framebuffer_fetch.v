@@ -50,13 +50,12 @@ module framebuffer_fetch (
 		end
 		else begin
 			if (pixel_load_counter == 'd3) begin
-				half_address <= 1'b1;
+				half_address <= 1'b0;
 			end
 			else if (pixel_load_counter == 'd2) begin
 				half_address <= 1'b1;
 			end
 			else if (pixel_load_counter == 'd1) begin
-				half_address <= 1'b0;
 				rgb565_top <= ram_data_in;
 			end
 			else if (pixel_load_counter == 'd0) begin
