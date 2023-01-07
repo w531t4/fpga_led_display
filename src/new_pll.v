@@ -43,12 +43,17 @@ endmodule */
  * Achieved output frequency:    22.000 MHz
  */
 
+`ifdef SIM
+`timescale 1ns/10ps
+`endif
 module pll(
         input  clock_in,
         output clock_out,
         output locked
         );
-
+`ifdef SIM
+        assign clock_out = clock_in;
+`else
 SB_PLL40_CORE #(
                 .FEEDBACK_PATH("SIMPLE"),
                 .DIVR(4'b0000),         // DIVR =  0
@@ -62,6 +67,6 @@ SB_PLL40_CORE #(
                 .REFERENCECLK(clock_in),
                 .PLLOUTCORE(clock_out)
                 );
-
+`endif
 endmodule
 

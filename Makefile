@@ -68,7 +68,7 @@ $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
 $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	${IVERILOG_BIN} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+	${IVERILOG_BIN} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
 
 $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											fm6126init.v \
