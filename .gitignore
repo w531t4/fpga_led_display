@@ -4,6 +4,7 @@ __pycache__
 bitmaps
 images
 nenv
+venv
 build_artifacts
 src/*.vcd
 src/*.vvp
