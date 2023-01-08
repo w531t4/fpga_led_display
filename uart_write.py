@@ -2,9 +2,9 @@ import serial
 import sys
 from typing import IO
 def reset_state(ser: IO[bytes]) -> None:
-    ser.write(" "*64)
-    ser.write(" "*64)
-    ser.write("9"*64)
+    ser.write(b" "*64)
+    ser.write(b" "*64)
+    ser.write(b"9"*64)
 
 def main() -> None:
     serial_device = "/dev/ttyAMA0"
@@ -23,19 +23,19 @@ def main() -> None:
         baudrate=2670000
     ser = serial.Serial(serial_device, baudrate)
     iteration = 0
-    s = ""
+    s = b""
     while baudrate < 2800000:
         if (index >= len(fw)):
             print("iteration={iteration} baudrate={baudrate}".format(iteration=iteration/32,
                                                                      baudrate=baudrate))
-            s = "BRG9L"
+            s = b"BRG9L"
             index=0
             row=0
         ser.write(s)
         if (scan == True and (iteration % 800 == 0)):
             ser = serial.Serial(serial_device, baudrate)
             baudrate += 100
-        s = s+ "L"+chr(int(row)) + fw[index:index+chunksize]
+        s = s + b"L" +chr(int(row)).encode("utf-8") + fw[index:index+chunksize]
         index += chunksize
         row += 1
         iteration += 1
