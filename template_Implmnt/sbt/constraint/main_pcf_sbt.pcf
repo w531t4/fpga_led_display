@@ -14,7 +14,7 @@
 
 ###IOSet List 18
 set_io pin10 G2
-set_io pin11 H1
+#set_io pin11 H1
 set_io pin12 J1
 set_io pin13 H2
 set_io pin18 A9
@@ -31,7 +31,7 @@ set_io pin6 D2
 set_io pin7 D1
 set_io pin8 E2
 set_io pin9 E1
-set_io pinLED B3
-set_io pin1_usb_dp B4
-set_io pin2_usb_dn A4
+#set_io pinLED B3
+#set_io pin1_usb_dp B4
+#set_io pin2_usb_dn A4
 
