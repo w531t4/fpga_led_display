@@ -87,7 +87,7 @@ def writeser(ser, s: str):
     for each in s:
         ser.write(each.encode("utf-8"))
 
-def findbaud(stdscr, dev, curval):
+def findbaud(stdscr, curval):
     global BAUDSET_DATA_STATE
     global BAUDSET_DATA
     global BAUDSET_DATA_MAX
@@ -274,7 +274,7 @@ def main(stdscr):
         literals = ['R', 'r', 'G', 'g', 'B', 'b', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'L']
         if BAUDSET_DATA_STATE != -1 and BAUDSET_DATA_STATE != 3:
             stdscr.addstr(MAX_LINES+3,0, "uart_rx_data:"+ uart_rx_data)
-            findbaud(stdscr, "/dev/ttyAMA0", uart_rx_data)
+            findbaud(stdscr, uart_rx_data)
             testval("/dev/ttyAMA0", BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE])
         if (k != -1):
             if (chr(k) == 'H'):
