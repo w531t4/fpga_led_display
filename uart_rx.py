@@ -63,6 +63,7 @@ def get_safe_string_rev(c):
             d = d + "*"
     return d
 def do_debug(c, length=8, title="", titlelength=24):
+    global uart_rx_data
     binstring = ""
     for each in c:
         binstring = binstring + gen_bitstring(each)
@@ -77,7 +78,6 @@ def do_debug(c, length=8, title="", titlelength=24):
             r_c = r_c + chr(int(each,2))
     t = get_safe_string(c)
     if title == "uart_rx_data":
-        global uart_rx_data
         uart_rx_data = get_safe_string(c)
     rstring = (        '{0: <' + str(titlelength) + '}').format(title) \
             + ('{0: <' + str(4+16) + '}').format("0b"+binstring) \
@@ -90,27 +90,24 @@ def writeser(ser, s: str):
     for each in s:
         ser.write(each.encode("utf-8"))
 def findbaud(stdscr, dev, curval):
+    global BAUDSET_DATA_STATE
+    global BAUDSET_DATA
+    global BAUDSET_DATA_MAX
     stdscr.addstr(MAX_LINES+2,0, "DATA_TX:BAUD:" + str(BAUDSET_DATA) + " STATE:" + str(BAUDSET_DATA_STATE))
     if BAUDSET_DATA_STATE == 0 and curval == "A":
-        global BAUDSET_DATA_STATE
         BAUDSET_DATA_STATE = 1
         return
     elif BAUDSET_DATA_STATE == 1 and curval == "-":
-        global BAUDSET_DATA_STATE
         BAUDSET_DATA_STATE = 2
         return
     elif BAUDSET_DATA_STATE == 2 and curval == "C":
-        global BAUDSET_DATA_STATE
         BAUDSET_DATA_STATE = -1
         return
     else:
         if BAUDSET_DATA > BAUDSET_DATA_MAX:
-            global BAUDSET_DATA_STATE
             BAUDSET_DATA_STATE = -1
         else:
-            global BAUDSET_DATA_STATE
             BAUDSET_DATA_STATE = 0
-            global BAUDSET_DATA
             BAUDSET_DATA += BAUDSET_DATA_SCALE
     return
 
@@ -120,6 +117,12 @@ def testval(dev, baud, val: str):
     ser_data.close()
 #    ser_data.close()
 def main(stdscr):
+    global BAUDSET_DATA
+    global BAUDSET_DATA_SCALE
+    global BAUDSET_DATA_STATE
+    global BAUDSET_DATA_MAX
+    global BAUDSET_TESTVALS
+    global BAUDSET_DATA_INIT
     stdscr.clear()
     stdscr.nodelay(1)
 #    serial_device = "/dev/ttyAMA0"
@@ -314,9 +317,7 @@ def main(stdscr):
                 writeser(ser, 'h')
                 writeser(ser, 'h')
             elif (chr(k) == 'P'):
-                global BAUDSET_DATA
                 BAUDSET_DATA = BAUDSET_DATA_INIT
-                global BAUDSET_DATA_STATE
                 BAUDSET_DATA_STATE = 1
             elif (chr(k) in literals):
                 testval("/dev/ttyAMA0", BAUDSET_DATA, chr(k))
