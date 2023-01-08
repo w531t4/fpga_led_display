@@ -4,6 +4,7 @@
         "__pycache__": true,
         "bitmaps": true,
         "nenv": true,
+        "venv": true,
         "gtkwave": true,
         "src/testbenches/*.vcd": true,
         "src/testbenches/*.vvp": true,
