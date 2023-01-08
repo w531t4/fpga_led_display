@@ -1,10 +1,12 @@
 import serial
 import sys
-def reset_state(ser):
+from typing import IO
+def reset_state(ser: IO[bytes]) -> None:
     ser.write(" "*64)
     ser.write(" "*64)
     ser.write("9"*64)
-def main():
+
+def main() -> None:
     serial_device = "/dev/ttyAMA0"
     targetfile = "images/blah565.raw"
     chunksize = 128
