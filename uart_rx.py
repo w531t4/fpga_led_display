@@ -1,5 +1,6 @@
 import serial
 from curses import wrapper
+from typing import IO
 BAUDRATE = 115200
 MAX_LINES=40
 global COLUMN_SIZE
@@ -20,7 +21,7 @@ BAUDSET_DATA_MAX=2900000
 global enable_debug
 enable_debug = False
 
-def gen_bitstring(c):
+def gen_bitstring(c: str) -> str:
     r_int = ord(c)
     if len(bin(r_int)[2:]) < 8:
         bitstring = '0'*(8-len(bin(r_int)[2:])) + bin(r_int)[2:]
@@ -28,7 +29,7 @@ def gen_bitstring(c):
         bitstring = bin(r_int)[2:]
     return bitstring
 
-def get_hexstring(bitstring, raw=True):
+def get_hexstring(bitstring: str, raw: bool = True) -> str:
     retstring = ""
     for each in [bitstring[i:i+4] for i in range(0, len(bitstring), 4)]:
         retstring = retstring + hex(int(each,2))[2:]
@@ -37,7 +38,7 @@ def get_hexstring(bitstring, raw=True):
     else:
         return "0x" + retstring
 
-def get_safe_string(c):
+def get_safe_string(c: str) -> str:
     d = ""
     for each in c:
         if ((ord(each) >= 32) and (ord(each) <= 126)):
@@ -46,11 +47,11 @@ def get_safe_string(c):
             d = d + "*"
     return d
 
-def reverse_bits_char(c):
+def reverse_bits_char(c: str) -> str:
     a = gen_bitstring(c)[::-1]
     return chr(int(a,2))
 
-def get_safe_string_rev(c):
+def get_safe_string_rev(c: str) -> str:
     d = ""
     for each in c:
         each = reverse_bits_char(each)
@@ -60,7 +61,7 @@ def get_safe_string_rev(c):
             d = d + "*"
     return d
 
-def do_debug(c, length=8, title="", titlelength=24):
+def do_debug(c: str, length: int = 8, title: str = "", titlelength: int = 24) -> str:
     global uart_rx_data
     binstring = ""
     for each in c:
@@ -83,11 +84,11 @@ def do_debug(c, length=8, title="", titlelength=24):
             + " rchr=" +('{0: <' + str(2) +   '}').format(get_safe_string_rev(c))
     return rstring
 
-def writeser(ser, s: str):
+def writeser(ser: IO[bytes], s: str) -> None:
     for each in s:
         ser.write(each.encode("utf-8"))
 
-def findbaud(stdscr, curval):
+def findbaud(stdscr, curval: str) -> None:
     global BAUDSET_DATA_STATE
     global BAUDSET_DATA
     global BAUDSET_DATA_MAX
@@ -109,12 +110,12 @@ def findbaud(stdscr, curval):
             BAUDSET_DATA += BAUDSET_DATA_SCALE
     return
 
-def testval(dev, baud, val: str):
+def testval(dev: str, baud: int, val: str) -> None:
     ser_data = serial.Serial(dev, baud, timeout=None)
     ser_data.write(val.encode("utf-8"))
     ser_data.close()
 
-def main(stdscr):
+def main(stdscr) -> None:
     global BAUDSET_DATA
     global BAUDSET_DATA_SCALE
     global BAUDSET_DATA_STATE
