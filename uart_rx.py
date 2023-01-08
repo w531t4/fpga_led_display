@@ -216,54 +216,51 @@ def main(stdscr) -> None:
         #reverse binstring so we can access it sanely using python list constructs
         binstring = binstring[::-1]
         stdscr.addstr(2,0, "chars read:" + str(bytestring_total) + " bits:" + str(len(binstring)))
-        if False:
-            continue
-        else:
-            position = 0
-            error_offset = 3
-            i = 0
-            MAX_LINES = 38
-            COLUMN_SIZE = 0
-            for variable in structure:
-                if i < MAX_LINES:
-                    y_pos = i + error_offset
-                    x_pos = 0
-                else:
-                    y_pos = i + error_offset - MAX_LINES + 1
-                    x_pos = COLUMN_SIZE + 3
-                if variable['name'] == 'newline':
-                    position += 8
-                else:
-                    bits_used = variable['size']
-                    vname = variable['name']
-                    subsegment = binstring[position:position+bits_used]
-                    subsegment = subsegment[::-1]
-                    delta = len(subsegment) % 8
-                    if delta > 0:
-                        subsegment = "0"*(8-delta) + subsegment
-                    subsegment_numbytes = len(subsegment)/8
-                    subsegment_bytestring = ""
-                    for slice in [subsegment[k:k+8] for k in range(0, len(subsegment), 8)]:
-                        subsegment_bytestring = subsegment_bytestring + str(chr(int(slice,2)))
+        position = 0
+        error_offset = 3
+        i = 0
+        MAX_LINES = 38
+        COLUMN_SIZE = 0
+        for variable in structure:
+            if i < MAX_LINES:
+                y_pos = i + error_offset
+                x_pos = 0
+            else:
+                y_pos = i + error_offset - MAX_LINES + 1
+                x_pos = COLUMN_SIZE + 3
+            if variable['name'] == 'newline':
+                position += 8
+            else:
+                bits_used = variable['size']
+                vname = variable['name']
+                subsegment = binstring[position:position+bits_used]
+                subsegment = subsegment[::-1]
+                delta = len(subsegment) % 8
+                if delta > 0:
+                    subsegment = "0"*(8-delta) + subsegment
+                subsegment_numbytes = len(subsegment)/8
+                subsegment_bytestring = ""
+                for slice in [subsegment[k:k+8] for k in range(0, len(subsegment), 8)]:
+                    subsegment_bytestring = subsegment_bytestring + str(chr(int(slice,2)))
 
-                    #reverse the order, since things are currently c[0] c[1], we want c[1], c[0]
-                    subsegment_bytestring = subsegment_bytestring[::-1]
-                    output_string  = do_debug(subsegment_bytestring, title=vname)
-                    if enable_debug == True:
-                        fw.write("bits_used:" + str(bits_used) + " position:" + str(position) + \
-                            " subsegment: " + subsegment + " len(subsegment)=" + str(len(subsegment)) + \
-                            " delta:" + str(delta) + " num_bytes:" + str(subsegment_numbytes) + \
-                            " subsegment_bytestring:" + subsegment_bytestring + " length=" + \
-                            str(len(subsegment_bytestring)) + " title=" + vname + \
-                            " output_string:" + output_string + \
-                            " x_pos=" + str(x_pos) + " y_pos=" + str(y_pos) + '\n')
-                    if ((i < MAX_LINES) and (len(output_string) > COLUMN_SIZE)):
-                        COLUMN_SIZE = len(output_string)
-                    stdscr.addstr(y_pos, x_pos, output_string)
+                #reverse the order, since things are currently c[0] c[1], we want c[1], c[0]
+                subsegment_bytestring = subsegment_bytestring[::-1]
+                output_string  = do_debug(subsegment_bytestring, title=vname)
+                if enable_debug == True:
+                    fw.write("bits_used:" + str(bits_used) + " position:" + str(position) + \
+                        " subsegment: " + subsegment + " len(subsegment)=" + str(len(subsegment)) + \
+                        " delta:" + str(delta) + " num_bytes:" + str(subsegment_numbytes) + \
+                        " subsegment_bytestring:" + subsegment_bytestring + " length=" + \
+                        str(len(subsegment_bytestring)) + " title=" + vname + \
+                        " output_string:" + output_string + \
+                        " x_pos=" + str(x_pos) + " y_pos=" + str(y_pos) + '\n')
+                if ((i < MAX_LINES) and (len(output_string) > COLUMN_SIZE)):
+                    COLUMN_SIZE = len(output_string)
+                stdscr.addstr(y_pos, x_pos, output_string)
 
-                    position += bits_used
-                i += 1
-                stdscr.refresh()
+                position += bits_used
+            i += 1
+            stdscr.refresh()
         k = stdscr.getch()
         literals = ['R', 'r', 'G', 'g', 'B', 'b', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'L']
         if BAUDSET_DATA_STATE != -1 and BAUDSET_DATA_STATE != 3:
