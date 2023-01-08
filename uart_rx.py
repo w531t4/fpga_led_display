@@ -181,9 +181,14 @@ def main(stdscr) -> None:
         bytestring_total = 0
         binstring = ""
         hexstring = ""
+        i = 0
         while (bytestring_total < expected_bytes):
+            if enable_debug:
+                fw.write("bytestring_total=%s expected_bytes=%s i=%s\n" % (bytestring_total, expected_bytes, i))
             # ser.read_until() returns bytes
             bytestring = bytes(ser.read_until())
+            if enable_debug:
+                fw.write("bytestring=%s\n" % bytestring)
             bytestring_total += len(bytestring)
             for each in bytestring:
                     hexstring = hexstring + format(int(each), '02x')
@@ -193,13 +198,25 @@ def main(stdscr) -> None:
         #    binstring
         #    bytestring
 
+            i += 1
+        if enable_debug:
+            fw.write("(expected_bitsize % 8) != 0 :: expected_bitsize={expected_bitsize}\n".format(expected_bitsize=expected_bitsize))
         # trim any extra bits from bitstring, since we likely have padding on the end
         if ((expected_bitsize % 8) != 0):
+            if enable_debug:
+                fw.write("old_hexstring=%s\n" % (hexstring))
             offset = 8 - (expected_bitsize % 8)
             binstring = binstring[offset:]
+            if enable_debug:
+                fw.write("new_hexstring=%s offset=%s\n" % (8 - (expected_bitsize % 8), hexstring))
+        if enable_debug:
+            fw.write("len(binstring) != expected_bitsize :: len(binstring)={len_binstring} expected_bitsize={expected_bitsize}\n".format(expected_bitsize=expected_bitsize,
+                                                                                                                                     len_binstring=len(binstring)))
         #REVISIT THIS AARON
         # if the string is not the right size, skip it
         if (len(binstring) != expected_bitsize):
+            if enable_debug:
+                fw.write("len(binstring)=%s != expected_bitsize=%s hexstring=%s\n" % ( len(binstring), expected_bitsize, hexstring))
             stdscr.addstr(1,80, "len(binstring)=" + str(len(binstring)) + "!= " + str(expected_bitsize))
             continue
         else:
