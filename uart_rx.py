@@ -42,7 +42,7 @@ def get_hexstring(bitstring, raw=True):
         return "0x" + retstring
 
 def get_safe_string(c):
-#	d = c.replace('\n', '\\n').replace(chr(0x0c), '\\n').replace(chr(0x0b), '\\n')
+#    d = c.replace('\n', '\\n').replace(chr(0x0c), '\\n').replace(chr(0x0b), '\\n')
     d = ""
     for each in c:
         if ((ord(each) >= 32) and (ord(each) <= 126)):
@@ -54,7 +54,7 @@ def reverse_bits_char(c):
     a = gen_bitstring(c)[::-1]
     return chr(int(a,2))
 def get_safe_string_rev(c):
-#	d = c.replace('\n', '\\n').replace(chr(0x0c), '\\n').replace(chr(0x0b), '\\n')
+#    d = c.replace('\n', '\\n').replace(chr(0x0c), '\\n').replace(chr(0x0b), '\\n')
     d = ""
     for each in c:
         each = reverse_bits_char(each)
@@ -68,7 +68,7 @@ def do_debug(c, length=8, title="", titlelength=24):
     for each in c:
         binstring = binstring + gen_bitstring(each)
     hexrep = get_hexstring(binstring, raw=False)
-#	hexrep = "0x" + ('{:0>' + str(2) + '}').format(hex(int(binstring[2:length-2],2))[2:]) #+ ('{:0>' + str(2) + '}').format(hex(int(binstring[length-2:],2))[2:])
+#    hexrep = "0x" + ('{:0>' + str(2) + '}').format(hex(int(binstring[2:length-2],2))[2:]) #+ ('{:0>' + str(2) + '}').format(hex(int(binstring[length-2:],2))[2:])
     r_c = ""
     s = binstring
     for each in [s[i:i+8] for i in range(0, len(s), 8)]:
@@ -85,7 +85,7 @@ def do_debug(c, length=8, title="", titlelength=24):
             + ('{0: <' + str(4+4) + '}').format(hexrep) \
             + ('{0: <' + str(2) +   '}').format(get_safe_string(c)) \
             + " rchr=" +('{0: <' + str(2) +   '}').format(get_safe_string_rev(c))
-#			+ " rchar=" + get_safe_string_rev(c)
+#            + " rchar=" + get_safe_string_rev(c)
     return rstring
 def writeser(ser, s):
     for each in s:
@@ -189,18 +189,18 @@ def main(stdscr):
         binstring = ""
         hexstring = ""
         while (len(bytestring_total) < expected_bytes):
-#    		bytestring = ser.read_until()
+#            bytestring = ser.read_until()
             bytestring = ser.read_until()
             bytestring_total = bytestring_total + bytestring
-#    	        hexstring = ""
-#		binstring = ""
+#                hexstring = ""
+#        binstring = ""
             for each in bytestring:
                     hexstring = hexstring + format(ord(each), '02x')
                     binstring = binstring + format(ord(each), '08b')
         # there exists
-        #	hexstring
-        #	binstring
-        #	bytestring
+        #    hexstring
+        #    binstring
+        #    bytestring
 
         # trim any extra bits from bitstring, since we likely have padding on the end
         if ((expected_bitsize % 8) != 0):
@@ -273,26 +273,26 @@ def main(stdscr):
                     if ((i < MAX_LINES) and (len(output_string) > COLUMN_SIZE)):
                         COLUMN_SIZE = len(output_string)
                     stdscr.addstr(y_pos, x_pos, output_string)
-#    				stdscr.addstr(y_pos, x_pos, do_debug(subsegment, length=vsize, title=vname))
+#                        stdscr.addstr(y_pos, x_pos, do_debug(subsegment, length=vsize, title=vname))
                     position += bits_used
-    #				stdscr.refresh()
+    #                    stdscr.refresh()
                 i += 1
                 stdscr.refresh()
-    #	s = ""
-    #	for each in c:
-    #		s = s+ format(ord(each), '02x')
-    #	print s[::-1]
-#    	print(chr(27))
- #   	print output
+    #    s = ""
+    #    for each in c:
+    #        s = s+ format(ord(each), '02x')
+    #    print s[::-1]
+#        print(chr(27))
+ #        print output
         #print
         k = stdscr.getch()
         literals = ['R', 'r', 'G', 'g', 'B', 'b', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'L']
         if BAUDSET_DATA_STATE != -1 and BAUDSET_DATA_STATE != 3:
             stdscr.addstr(MAX_LINES+3,0, "uart_rx_data:"+ uart_rx_data)
-    #		findbaud(stdscr, "/dev/ttyUSB0", uart_rx_data)
-    #		testval("/dev/ttyUSB0", BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE]*10)
+    #        findbaud(stdscr, "/dev/ttyUSB0", uart_rx_data)
+    #        testval("/dev/ttyUSB0", BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE]*10)
             findbaud(stdscr, "/dev/ttyAMA0", uart_rx_data)
-    #		time.sleep(.1)
+    #        time.sleep(.1)
             testval("/dev/ttyAMA0", BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE])
         if (k != -1):
             if (chr(k) == 'H'):
