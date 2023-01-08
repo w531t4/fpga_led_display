@@ -8,8 +8,6 @@ module main (
 	// lessons
 	// 1. Ensure that all unused IO are set to no pullup
 
-  output pin1_usb_dp,
-  output pin2_usb_dn,
   input pin3_clk_16mhz,
   output pin3,
   output pin4,
@@ -19,22 +17,16 @@ module main (
   output pin8,
   output pin9,
   output pin10,
-  output pin11,
+  //output pin11,
   output pin12,
   output pin13,
-  output pin14_sdo,
-  output pin15_sdi,
-  output pin16_sck,
-  output pin17_ss,
   output pin18,
   output pin19,
   output pin20,
   output pin21,
-  output pin22,
+  // output pin22,
   output pin23,
-  input pin24,
-  output pinLED
-//  output pin_usb_pu
+  input pin24
 );
 
 	wire clk_root;
@@ -312,9 +304,6 @@ fm6126init do_init (
 
 	/* use this signal for insight! */
 
-	// are pin1/2 even needed?
-	assign pin1_usb_dp = 1'b1;
-	assign pin2_usb_dn = 1'b1;
 	// A/ Row[0]
 	assign pin3 = row_address_active[0];
 	// B / Row[1]
@@ -324,32 +313,19 @@ fm6126init do_init (
 	// D / Row[3]
 	assign pin6 = row_address_active[3];
 	// Uart Rx
-	//assign pin7 = 1'bz;
 	assign uart_rx = pin7;
-	// Debug LED
-	//assign pinLED = ~debug;
 	// Row Latch [don't use for debugging]
 	assign pin8 = row_latch;
 	// #OE
 	assign pin9 = ~output_enable;
 	// Pixel Clk
 	assign pin10 = clk_pixel;
-	//assign pin11 = ram_a_clk_enable;
-	//assign pin11 = clk_root;
-	assign pin11 = 1'b1;
+	//assign pin11 = 1'b1;
 	// Red   1
 	assign pin12 = rgb2[0];
 	// Green 1 [don't use for debugging]
 	assign pin13 = rgb2[1];
 	// Blue  1
-	// 14,15,16,17 ==> JTAG
-
-	// are pin's 14-17 + led even needed
-	assign pin14_sdo = 1'b1;
-	assign pin15_sdi = 1'b1;
-	assign pin16_sck = 1'b1;
-	assign pin17_ss = 1'b1;
-	assign pinLED = 1'b1;
 
 	assign pin18 = rgb2[2];
 
@@ -360,11 +336,8 @@ fm6126init do_init (
 	assign pin20 = rgb1[1];
 	// Blue  2
 	assign pin21 = rgb1[2];
-	assign pin22 = 1'b1;
-	//assign pin22 = clk_matrix;
-	//assign pin22 = ram_b_clk_enable;
+	//assign pin22 = 1'b1;
 	assign pin23 = tx_out;
-	//assign pin24 = 1'bz;
 	assign debug_uart_rx = pin24;
 
 endmodule
