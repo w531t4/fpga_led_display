@@ -97,10 +97,13 @@ module main (
 	wire output_enable;
 	wire output_enable_intermediary;
 
-	wire [183:0] ddata =  {
+	wire [7:0] num_commands_processed;
+
+	wire [191:0] ddata =  {
 		//
 		3'b0,
 		//								181
+		num_commands_processed[7:0],
 		debug_command[7:0],
 		pixel_load_counter2[3:0],
 		clk_pixel_load_en,
@@ -250,7 +253,8 @@ fm6126init do_init (
 		.rx_data(uart_rx_data),
 		.ram_access_start2(ram_access_start),
 		.ram_access_start_latch2(ram_access_start_latch),
-		.cmd_line_addr2(cmd_line_addr2)
+		.cmd_line_addr2(cmd_line_addr2),
+        .num_commands_processed(num_commands_processed)
 
 	) /* synthesis syn_noprune=1 */ ;
 
@@ -292,7 +296,7 @@ fm6126init do_init (
 		.DIVIDER_TICKS_WIDTH(20),
 		.DIVIDER_TICKS(1000000),
 		.DATA_WIDTH_BASE2(8),
-		.DATA_WIDTH(184)
+		.DATA_WIDTH(192)
 	//.DATA_WIDTH_BASE2($clog2($size(ddata))),
 		//.DATA_WIDTH($size(ddata))
 	) mydebug (

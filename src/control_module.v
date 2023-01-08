@@ -23,8 +23,8 @@ module control_module #(
 	output [7:0] rx_data,
 	output ram_access_start2,
 	output ram_access_start_latch2,
-	output [11:0] cmd_line_addr2
-
+	output [11:0] cmd_line_addr2,
+	output reg [7:0] num_commands_processed
 );
 
 	wire [7:0] uart_rx_data;
@@ -124,6 +124,7 @@ module control_module #(
 			cmd_line_state <= 2'd0;
 			cmd_line_addr_row <= 5'd0;
 			cmd_line_addr_col <= 8'd0;
+			num_commands_processed <= 7'b0;
 		end
 
 
@@ -144,6 +145,7 @@ module control_module #(
 			end
 			else begin
 				cmd_line_state <= 2'd0;
+				num_commands_processed <= num_commands_processed + 1'b1;
 			end
 
 			/* store this byte */

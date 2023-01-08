@@ -16,6 +16,7 @@ wire [5:0] brightness_enable;
 wire [7:0] ram_data_out;
 wire [11:0] ram_address;
 wire ram_write_enable;
+wire [7:0] num_commands_processed;
 wire ram_clk_enable;
 wire ram_reset;
 wire [1:0 ] cmd_line_state2;
@@ -63,7 +64,8 @@ control_module #(
 		.ram_reset(ram_reset),
         //20220106
 		//.rx_invalid(rx_invalid),
-		.cmd_line_state2(cmd_line_state2)
+		.cmd_line_state2(cmd_line_state2),
+        .num_commands_processed(num_commands_processed)
 	);
 
   initial
