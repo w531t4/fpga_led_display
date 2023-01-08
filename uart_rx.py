@@ -45,9 +45,11 @@ def get_safe_string(c):
         else:
             d = d + "*"
     return d
+
 def reverse_bits_char(c):
     a = gen_bitstring(c)[::-1]
     return chr(int(a,2))
+
 def get_safe_string_rev(c):
     d = ""
     for each in c:
@@ -57,6 +59,7 @@ def get_safe_string_rev(c):
         else:
             d = d + "*"
     return d
+
 def do_debug(c, length=8, title="", titlelength=24):
     global uart_rx_data
     binstring = ""
@@ -79,9 +82,11 @@ def do_debug(c, length=8, title="", titlelength=24):
             + ('{0: <' + str(2) +   '}').format(get_safe_string(c)) \
             + " rchr=" +('{0: <' + str(2) +   '}').format(get_safe_string_rev(c))
     return rstring
+
 def writeser(ser, s: str):
     for each in s:
         ser.write(each.encode("utf-8"))
+
 def findbaud(stdscr, dev, curval):
     global BAUDSET_DATA_STATE
     global BAUDSET_DATA
@@ -301,4 +306,5 @@ def main(stdscr):
     stdscr.refresh()
     stdscr.getkey()
     ser.close()
+
 wrapper(main)
