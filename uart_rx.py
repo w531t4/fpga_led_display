@@ -61,7 +61,7 @@ def get_safe_string_rev(c: str) -> str:
             d = d + "*"
     return d
 
-def do_debug(c: str, length: int = 8, title: str = "", titlelength: int = 24) -> str:
+def do_debug(c: str, title: str = "", titlelength: int = 24) -> str:
     global uart_rx_data
     binstring = ""
     for each in c:
@@ -255,7 +255,7 @@ def main(stdscr) -> None:
 
                     #reverse the order, since things are currently c[0] c[1], we want c[1], c[0]
                     subsegment_bytestring = subsegment_bytestring[::-1]
-                    output_string  = do_debug(subsegment_bytestring, length=bits_used, title=vname)
+                    output_string  = do_debug(subsegment_bytestring, title=vname)
                     if enable_debug == True:
                         fw.write("bits_used:" + str(bits_used) + " position:" + str(position) + \
                             " subsegment: " + subsegment + " len(subsegment)=" + str(len(subsegment)) + \
