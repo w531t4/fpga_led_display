@@ -86,9 +86,9 @@ def do_debug(c, length=8, title="", titlelength=24):
             + " rchr=" +('{0: <' + str(2) +   '}').format(get_safe_string_rev(c))
 #            + " rchar=" + get_safe_string_rev(c)
     return rstring
-def writeser(ser, s):
+def writeser(ser, s: str):
     for each in s:
-        ser.write(each)
+        ser.write(each.encode("utf-8"))
 def findbaud(stdscr, dev, curval):
     stdscr.addstr(MAX_LINES+2,0, "DATA_TX:BAUD:" + str(BAUDSET_DATA) + " STATE:" + str(BAUDSET_DATA_STATE))
     if BAUDSET_DATA_STATE == 0 and curval == "A":
@@ -114,9 +114,9 @@ def findbaud(stdscr, dev, curval):
             BAUDSET_DATA += BAUDSET_DATA_SCALE
     return
 
-def testval(dev, baud, val):
+def testval(dev, baud, val: str):
     ser_data = serial.Serial(dev, baud, timeout=None)
-    ser_data.write(val)
+    ser_data.write(val.encode("utf-8"))
     ser_data.close()
 #    ser_data.close()
 def main(stdscr):
@@ -169,6 +169,7 @@ def main(stdscr):
     structure.append({ 'name': 'clk_pixel_load_en', 'size': 1 })
     structure.append({ 'name': 'pixel_load_counter2', 'size': 4 })
     structure.append({ 'name': 'debug_command', 'size': 8 })
+    structure.append({ 'name': 'whitespace', 'size': 3 })
 
     if enable_debug == True:
         logfile = "blah"
@@ -184,18 +185,19 @@ def main(stdscr):
         expected_bytes = (expected_bitsize/8) + 1
     while True:
         bytestring = ""
-        bytestring_total = ""
+        bytestring_total = 0
         binstring = ""
         hexstring = ""
-        while (len(bytestring_total) < expected_bytes):
+        while (bytestring_total < expected_bytes):
 #            bytestring = ser.read_until()
-            bytestring = ser.read_until()
-            bytestring_total = bytestring_total + bytestring
+            # ser.read_until() returns bytes
+            bytestring = bytes(ser.read_until())
+            bytestring_total += len(bytestring)
 #                hexstring = ""
 #        binstring = ""
             for each in bytestring:
-                    hexstring = hexstring + format(ord(each), '02x')
-                    binstring = binstring + format(ord(each), '08b')
+                    hexstring = hexstring + format(int(each), '02x')
+                    binstring = binstring + format(int(each), '08b')
         # there exists
         #    hexstring
         #    binstring
@@ -215,8 +217,8 @@ def main(stdscr):
             stdscr.addstr(1,0, hexstring + " len(c)=" + str(len(binstring)) + "bits")
 
 
-        if (len(bytestring_total) > expected_bytes):
-            stdscr.addstr(0,0, hexstring +  " ERROR: received (" + str(len(bytestring_total)) + ") more than" + str(expected_bytes) + " bytes")
+        if (bytestring_total > expected_bytes):
+            stdscr.addstr(0,0, hexstring +  " ERROR: received (" + str(bytestring_total) + ") more than" + str(expected_bytes) + " bytes")
         else:
             stdscr.addstr(0,0, "                                                                                                                ")
 
@@ -226,7 +228,7 @@ def main(stdscr):
 
         #reverse binstring so we can access it sanely using python list constructs
         binstring = binstring[::-1]
-        stdscr.addstr(2,0, "chars read:" + str(len(bytestring_total)) + " bits:" + str(len(binstring)))
+        stdscr.addstr(2,0, "chars read:" + str(bytestring_total) + " bits:" + str(len(binstring)))
         if False:
             continue
         else:

@@ -28,7 +28,7 @@ def main():
     row = 0
     total = ""
     #baudrate=2620000
-    print "len(sys.argv)=", len(sys.argv)
+    print("len(sys.argv)={argv_length}".format(argv_length=len(sys.argv)))
     if (len(sys.argv) > 1):
         scan = False
         baudrate = int(sys.argv[1])
@@ -45,7 +45,8 @@ def main():
         #    print "baudrate=", baudrate, "row=", row
         #    ser.write("RGB ")
         if (index >= len(fw)):
-            print "iteration=", iteration/32, "baudrate=", baudrate
+            print("iteration={iteration} baudrate={baudrate}".format(iteration=iteration/32,
+                                                                     baudrate=baudrate))
 #        reset_state(ser)
         #time.sleep(0.5) # note - 0.5 was in mainroom py file, 1 was in myroom file
 #        time.sleep(1)
