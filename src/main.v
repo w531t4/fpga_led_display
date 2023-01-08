@@ -223,7 +223,12 @@ fm6126init do_init (
 	) /* synthesis syn_noprune=1 */ ;
 
 	/* the control module */
-	control_module ctrl (
+	control_module #(
+		// we want 22MHz / 2,430,000 = 9.0534
+		// 22MHz / 9 = 2,444,444 baud 2444444
+		.UART_CLK_TICKS_PER_BIT(4'd9),
+		.UART_CLK_TICKS_WIDTH(4)
+	) ctrl (
 		.reset(global_reset),
 		.clk_in(clk_root),
 		/* clk_root =  133MHZ */

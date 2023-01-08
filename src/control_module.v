@@ -1,15 +1,9 @@
 module control_module #(
 	/* UART configuration */
-	//parameter UART_CLK_DIV_COUNT = 30, /* 7 MHz in / 60 = ~115,200 baud (actually ~116,686 baud, +1.29%) */
-	//parameter UART_CLK_DIV_COUNT = 231, /* 53.2 MHz in / 462 = ~115,200 baud (actually ~115,151 baud, -0.04%) */
-	//parameter UART_CLK_DIV_COUNT = 10, /* 53.2 MHz in / 21 = ~2.5 Mbaud (actually 2.66 Mbaud) */
-	parameter UART_CLK_DIV_COUNT = 25, /* 133 MHz in / 50 = ~2.5 Mbaud (actually 2.66 Mbaud) */
-	// @25, 2.65Mhz
-	// @25 2627450
-	// 3/24 - saw uart clk at 2.684MHz
-	//paameter UART_CLK_DIV_COUNT = 25,
-						/* == 5.32MHz */
-	parameter UART_CLK_DIV_WIDTH = 8
+	// we want 22MHz / 2,430,000 = 9.0534
+	// 22MHz / 9 = 2,444,444 baud 2444444
+	parameter UART_CLK_TICKS_PER_BIT = 6'd9,
+	parameter UART_CLK_TICKS_WIDTH = 4
 ) (
 	input reset,
 	input clk_in, /* clk_root =  133MHZ */
@@ -55,8 +49,8 @@ module control_module #(
 	debug_uart_rx #(
 		// we want 22MHz / 2,430,000 = 9.0534
 		// 22MHz / 9 = 2,444,444 baud 2444444
-		.TICKS_PER_BIT(6'd9),
-		.TICKS_PER_BIT_SIZE(4)
+		.TICKS_PER_BIT(UART_CLK_TICKS_PER_BIT),
+		.TICKS_PER_BIT_SIZE(UART_CLK_TICKS_WIDTH)
 	) mycontrol_rxuart (
 	.reset(reset),
 	.i_clk(clk_in),

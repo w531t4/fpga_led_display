@@ -43,8 +43,10 @@ clock_divider #(
 	);
 
 control_module #(
-		.UART_CLK_DIV_COUNT(25),
-		.UART_CLK_DIV_WIDTH(8)
+    	// we want 22MHz / 2,430,000 = 9.0534
+	    // 22MHz / 9 = 2,444,444 baud 2444444
+		.UART_CLK_TICKS_PER_BIT(4'd9),
+		.UART_CLK_TICKS_WIDTH(4)
 	) control_module_instance (
 		.reset(reset),
 		.clk_in(clk),
@@ -123,7 +125,7 @@ initial
     #10000000 $finish;
 
 always begin
-    #7.52  clk <=  ! clk;  // produces ~133MHz
+    #22.72727  clk <= ! clk; // 2 of these make a period, 22MHz
 end
 
 endmodule
