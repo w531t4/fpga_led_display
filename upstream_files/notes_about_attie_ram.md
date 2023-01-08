@@ -142,6 +142,15 @@ Shared
 	ADB: {AB[10], AB[9], AB[8], AB[7], AB[6], AB[5], AB[4], AB[3], AB[2], AB[1], AB[0], LO, LO} # 13 bits
     defparam framebuffer_x.DATA_WIDTH_B = 4 ;
     defparam framebuffer_x.DATA_WIDTH_A = 2 ;
+
+	3 bits (8 addresses)
+	positioned in an address space of 8 bits that each yields a nibble
+	XXXOOOOO
+	implementation uses 8K ram
+	minimum addressing 12 bits, yielding 2 bits at each location
+		OR			   11 bits, yielding 4 bits at each location
+
+	12 bit addressing = 4096 addresses and it yields at most 4 bits frim
 DP8KC framebuffer_0_0_3
 	DIA: {LO, LO, LO, DataInA[1], LO, LO, DataInA[0], LO, LO} # 9 bits
 	DIB: {LO, LO, LO, LO, LO, DataInB[9], DataInB[8], DataInB[1], DataInB[0]} # 9 bits <-- these don't matter, we always write 0
@@ -165,8 +174,48 @@ DP8KC framebuffer_0_3_0
 
 
 # Extracted Attributes
+13 bit = 4096bit - address
+9 bit = 512bit - data
+inside first 512 bit cell
+write 11110110 to array =>
+B0Cell0: [nothingzzz1zz0zz, ]
+B1Cell0: []
+B2Cell0: []
+B3Cell0: []
+
+B0Cell0: ..._xxx1x_xxxxx_xxxxx_xxxxx_xxxxx_xxxxx_x0xxx
+B1Cell0: ..._xxx0x_xxxxx_xxxxx_xxxxx_xxxxx_xxxxx_x1xxx WRONG
+B2Cell0: ..._xxx1x_xxxxx_xxxxx_xxxxx_xxxxx_xxxxx_x1xxx
+B3Cell0: ..._xxx1x_xxxxx_xxxxx_xxxxx_xxxxx_xxxxx_x1xxx
+u
+
+8 cells [cell7, cell6, cell5, cell4, cell3, cell2, cell1, cell0] - 3bit addressing
+- writes always skip cell0
+- seen this with other things, but they skip 3 bits.. making things byte addressable, two would make it nibble addressable, 1 is 2bits wide
+# write to address
+32 4
+bottom has 5 bits of memory space
+MEMPICTURE for dataInA []
+[]
+addressA - 	wire [11:0] cmd_line_addr 					= { cmd_line_addr_row[4:0], ~cmd_line_addr_col[6:1], cmd_line_addr_col[0] };
+in addressA, the MSB is really just panel select. cmd_line_addr_col is 7bits, representing the 128bytes
+									- the reason the lowest bit isn't inverted is because we need the t
+AddressB - 	output [10:0] ram_addressassign ram_address = { half_address, row_address[3:0], ~column_address[5:0] };
+											      column_addresses is 6 bit - representing each pixel,
+in action
+ADA{ cmd_line_addr_row[4:0], ~cmd_line_addr_col[6:1], cmd_line_addr_col[0] }; 0
+ADB{ half_address, row_address[3:0], ~column_address[5:0] }; 0 0
 DP8KC framebuffer_0_0_3
 	DIA: {LO, LO, LO, DataInA[1], LO, LO, DataInA[0], LO, LO} # 9 bits
+			DATA Write (2bit addressing)  [3130, 2928, 2726, 2524, 2322, 2120, 1918, 1716, 1514, 1312, 1110, 0908, 0706, 0504, 0302, 0100]
+			our address: 6 =>  11z (P)::                                                                              |
+		 other  address: 4 =>  10z (P)::                                                                                    |
+			DATA Read (3bit addressing)   [31302928, 27262524, 23222120, 19181716, 15141312, 11100908, 07060504, 03020100]
+										                              b2            b1
+			_32_ 16 8 _4_ 2 1 (2 bit address +)
+0 -> 2 -> 4 -> 6 -> 8 -> 10
+0 -> 4 -> 8 -> 16
+
 	Alias: AddressA -> AA
 	ADA: {AA[11], AA[10], AA[9], AA[8], AA[7], AA[6], AA[5], AA[4], AA[3], AA[2], AA[1], AA[0], LO} # 13 bits
 	CEA: ClockEnA
