@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import serial
 import time
 from curses import wrapper
