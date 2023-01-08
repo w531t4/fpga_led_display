@@ -74,7 +74,6 @@ def do_debug(c: str, title: str = "", titlelength: int = 24) -> str:
             r_c = r_c + "X"
         else:
             r_c = r_c + chr(int(each,2))
-    t = get_safe_string(c)
     if title == "uart_rx_data":
         uart_rx_data = get_safe_string(c)
     rstring = (        '{0: <' + str(titlelength) + '}').format(title) \
@@ -125,11 +124,6 @@ def main(stdscr) -> None:
     stdscr.clear()
     stdscr.nodelay(1)
     serial_device = "/dev/ttyUSB0"
-    targetfile = "blah565.raw"
-    chunksize = 128
-    index = 0
-    row = 0
-    total = ""
     baudrate=BAUDRATE
     ser = serial.Serial(serial_device, baudrate, timeout=None)
     structure = []
@@ -242,7 +236,6 @@ def main(stdscr) -> None:
                 else:
                     bits_used = variable['size']
                     vname = variable['name']
-                    renderstring = ""
                     subsegment = binstring[position:position+bits_used]
                     subsegment = subsegment[::-1]
                     delta = len(subsegment) % 8
