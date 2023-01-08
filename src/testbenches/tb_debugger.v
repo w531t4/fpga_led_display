@@ -92,7 +92,7 @@ end
         #1000000 $finish;
 
     always begin
-        #3.73095  clk <=  ! clk; // 2 of these make a period, 134MHz
+        #22.72727  clk <=  ! clk; // 2 of these make a period, 22MHz
     end
    // always begin
    //     #400 reset <= ! reset;

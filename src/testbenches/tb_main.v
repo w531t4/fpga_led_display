@@ -14,170 +14,131 @@ module tb_main;
     wire pin4_ROA1;
     wire pin5_ROA2;
     wire pin6_ROA3;
-    reg pin7_uart_rx;
+    wire pin7_uart_rx;
     wire pin8_row_latch;
     wire pin9_OE;
     wire pin10_clk_pixel;
-    wire pin12_rgb1_0;
-    wire pin13_rgb1_1;
-    wire pin18_rbg1_2;
-    wire pin19_rgb2_0;
-    wire pin20_rgb2_1;
+    wire pin12_rgb2_0;
+    wire pin13_rgb2_1;
+    wire pin18_rbg2_2;
+    wire pin19_rgb1_0;
+    wire pin20_rgb1_1;
+    wire pin21_rgb1_2;
     wire pin23_txout;
     reg  pin24_debug_rx_in;
 
-    /*
-    assign pin3_clk = clk;
-    assign pin24_debug_rx_in = 1'b1;
-    assign pin7_uart_rx = rx_line_pics;
-    */
     reg clk;
+    reg clk_22mhz;
     reg reset;
     reg local_reset;
-    wire tx_out;
-    //reg clk_out;
-    wire debug_start;
-    reg debug_uart_rx_in;
-    reg [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
 
-    wire tb_clk_baudrate;
-    wire tb_clk_debug;
-    reg rx_line_pics1;
+    // debugger stuff
+    wire debug_command_busy;
+    wire debug_command_pulse;
+    wire [7:0] debug_command;
 
-    reg [3:0] i = 'd0;
-    reg [10:0] j = 'd0;
-    reg rx_line_debug;
-
+    //>>> "".join([a[i] for i in range(len(a)-1, -1, -1)])
+    //'brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110'
+    //reg [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
+    //reg [1071:0] mystring = 'h627252204c2d3737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313130;
+    reg [2111:0] mystring = 'h627252204c2d37373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313131304c133737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313130;
     main tbi_main (
-        //.pin1_usb_dp,
-        //.pin2_usb_dn,
         .pin3_clk_16mhz(clk),
         .pin3(pin3_ROA0),
         .pin4(pin4_ROA1),
         .pin5(pin5_ROA2),
         .pin6(pin6_ROA3),
-        .pin7(rx_line_pics),
-        //.pin7(pin7_uart_rx),
-        .pin8(pin8_row_latrch),
+        .pin7(pin7_uart_rx),
+        .pin8(pin8_row_latch),
         .pin9(pin9_OE),
         .pin10(pin10_clk_pixel),
-        //.pin11(),
-        .pin12(pin12_rgb1_0),
-        .pin13(pin13_rgb1_1),
-        .pin18(pin18_rgb1_2),
-        .pin19(pin19_rgb2_0),
-        .pin20(pin20_rgb2_1),
-        //.pin21(),
-        //.pin22(),
-        .pin23(pin23_txout)
-        //.pin24(1'b1)
-        //.pin24(pin24_debug_rx_in)
-        ////.pin24(rx_line_debug)
-        //.pinLED()
+        .pin12(pin12_rgb2_0),
+        .pin13(pin13_rgb2_1),
+        .pin18(pin18_rgb2_2),
+        .pin19(pin19_rgb1_0),
+        .pin20(pin20_rgb1_1),
+        .pin21(pin21_rgb1_2),
+        .pin23(pin23_txout),
+        .pin24(pin24_debug_rx_in)
     );
+    reg mask;
+    debugger #(
+		// 22MHz / 1000000 = 22
+		//.DIVIDER_TICKS_WIDTH(20),
+		//.DIVIDER_TICKS(1000000),
+        // use smaller than normal so it doesn't require us to simulate to
+        // infinity to see results
+		.DIVIDER_TICKS_WIDTH(9),
+		.DIVIDER_TICKS(500),
+		.DATA_WIDTH_BASE2('d12),
+		.DATA_WIDTH('d2112),
+        // override the below params to override the default transmit speeds
+        // 2444444 baud @ 22mhZ
+        .UART_TICKS_PER_BIT(4'd9),
+        .UART_TICKS_PER_BIT_SIZE(4)
+        // 22MHz / 1222222 = 18
+        //.UART_TICKS_PER_BIT(5'd18),
+        //.UART_TICKS_PER_BIT_SIZE(5)
+	) mydebug (
+        .clk_in(clk && mask),
+		.reset(local_reset),
+		.data_in(mystring),
+		.debug_uart_rx_in(1'b0),
+		.debug_command(debug_command),
+		.debug_command_pulse(debug_command_pulse),
+		.debug_command_busy(debug_command_busy),
+		.tx_out(pin7_uart_rx)
+	);
 
-
-    clock_divider #(
-        .CLK_DIV_COUNT(600),
-        .CLK_DIV_WIDTH(12)
-    ) clkdiv_debug (
-        .reset(local_reset),
-        .clk_in(clk),
-        .clk_out(tb_clk_debug)
-    );
-    clock_divider #(
-        .CLK_DIV_COUNT(25),
-        .CLK_DIV_WIDTH(6)
-    ) clkdiv_baudrate (
-        .reset(local_reset),
-        .clk_in(clk),
-        .clk_out(tb_clk_baudrate)
-    );
-
-
-    initial
-        begin
-            $dumpfile(`DUMP_FILE_NAME);
-            $dumpvars(0, tb_main);
-            clk = 0;
-            reset = 0;
-            local_reset = 0;
-           // rx_line_debug = 1;
-            rx_line_pics1 = 0;
-           // clk_out = 0;
-            //data_in = 24'b111100001010101000001101;
-
-        end
-
-/*
-    always @(posedge tb_clk_debug) begin
-
-        if (i == 'd10) begin
-            rx_line_debug <= 1'b0;
-            if (j >= ($bits(mystring)-8)) begin
-                j <= 'd0;
-            end
-            else begin
-                j <= j + 'd8;
-            end
-            i <= 'd0;
-        end
-        else if (i == 'd9) begin
-            rx_line_debug <= 1'b1;
-            i <= i+1;
-        end
-        else if (i == 'd8) begin
-            rx_line_debug <= 1'b1;
-            i <= i+1;
-        end
-        else begin
-            rx_line_debug <= mystring[i + j];
-            i <= i+1;
-        end
-    end
-    */
-
-    always @(posedge tb_clk_baudrate) begin
-
-        if (i == 'd10) begin
-            rx_line_pics1 <= 1'b0;
-            if (j >= ($bits(mystring)-8)) begin
-                j <= 'd0;
-            end
-            else begin
-                j <= j + 'd8;
-            end
-            i <= 'd0;
-        end
-        else if (i == 'd9) begin
-            rx_line_pics1 <= 1'b1;
-            i <= i+1;
-        end
-        else if (i == 'd8) begin
-            rx_line_pics1 <= 1'b1;
-            i <= i+1;
-        end
-        else begin
-            rx_line_pics1 <= mystring[i + j];
-            i <= i+1;
-        end
-    end
-
+    integer j;
     initial begin
-        #2 reset = ! reset;
-        #2 local_reset = ! local_reset;
-    end
-    initial begin
-        #3 reset = ! reset;
-        #3 local_reset = ! local_reset;
-    end
+        $dumpfile(`DUMP_FILE_NAME);
+        $dumpvars(0, tb_main);
+        clk = 0;
+        mask = 0;
 
-    initial
-        #1000000 $finish;
 
+        pin24_debug_rx_in = 0;
+        reset = 0;
+        local_reset = 0;
+        repeat (20) begin
+            @(posedge clk);
+        end
+        @(posedge clk)
+            local_reset = ! local_reset;
+            reset = ! reset;
+        @(posedge clk)
+            local_reset = ! local_reset;
+            reset = ! reset;
+        repeat (175) begin
+            @(posedge clk);
+        end
+        //@(posedge clk)
+        //    local_reset = ! local_reset;
+        //@(posedge clk)
+        //    local_reset = ! local_reset;
+        repeat (5) begin
+            @(posedge clk);
+        end
+        @(posedge clk)
+            mask = 1;
+
+        //repeat (200000) begin
+        //    @(posedge clk);
+        //end
+        //@(posedge clk)
+        //    local_reset = ! local_reset;
+        //    reset = ! reset;
+        //@(posedge clk)
+        //    local_reset = ! local_reset;
+        //    reset = ! reset;
+        //$finish;
+        #10000000 $finish;
+    end
     always begin
-        rx_line_debug <= 1'b1;
-        #3.73095  clk <=  ! clk; // 2 of these make a period, 134MHz
+        //#222.72727  clk_22mhz <= ! clk_22mhz; // 2 of these make a period, 22MHz
+        #31.25000  clk <=  ! clk; // 2 of these make a period, 16MHz
+        //#204.545   tb_clk_baudrate <= ! tb_clk_baudrate; // 2444444hz
     end
     // always begin
     //     #400 reset <= ! reset;
