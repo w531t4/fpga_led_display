@@ -89,12 +89,43 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											uart_tx.v \
 											mem_core/syncore_ram.v \
 											, $(SRC_DIR)/$(file))
-#$(SIMULATION_DIR)/newram2.vvp: $(foreach file, mpram.v mpram_lvt_1ht.v lvt_1ht.v mrram.v dpram.v mpram_gen.v, $(SRC_DIR)/Multiported-RAM/$(file))
+#$(SIMULATION_DIR)/newram2.vvp: $(SRC_DIR)/newram2.v $(TB_DIR)/tb_newram2.v $(foreach file, mpram.v mpram_lvt_1ht.v lvt_1ht.v mrram.v dpram.v mpram_gen.#v, $(SRC_DIR)/Multiported-RAM/$(file))
 #	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+#$(SIMULATION_DIR)/main.vvp: $(SRC_DIR)/main.v \
+#						    $(TB_DIR)/tb_main.v \
+#							$(foreach file, mpram.v mpram_lvt_1ht.v lvt_1ht.v mrram.v dpram.v mpram_gen.v, $(SRC_DIR)/Multiported-RAM/$(file)) \
+#							$(foreach file, \
+#											fm6126init.v \
+#										    new_pll.v \
+#											timeout.v \
+#											matrix_scan.v \
+#											framebuffer_fetch.v \
+#											control_module.v \
+#											pixel_split.v \
+#											debugger.v \
+#											clock_divider.v \
+#											platform/sb_ice40.v \
+#											debug_uart_rx.v \
+#											brightness.v \
+#											rgb565.v \
+#											uart_tx.v \
+#											newram2.v \
+#											mem_core/syncore_ram.v \
+#											, $(SRC_DIR)/$(file))
+#	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
 
-$(SIMULATION_DIR)/control_module.vvp: $(foreach file, timeout.v debug_uart_rx.v clock_divider.v, $(SRC_DIR)/$(file))
-$(SIMULATION_DIR)/debugger.vvp: $(foreach file, debug_uart_rx.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
-$(SIMULATION_DIR)/matrix_scan.vvp: $(foreach file, timeout.v, $(SRC_DIR)/$(file))
+
+$(SIMULATION_DIR)/newram3.vvp: $(SRC_DIR)/mem_core/newram3.v $(TB_DIR)/tb_newram3.v $(SRC_DIR)/mem_core/syncore_ram.v
+	${IVERILOG_BIN} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+$(SIMULATION_DIR)/control_module.vvp: $(SRC_DIR)/control_module.v \
+									  $(TB_DIR)/tb_control_module.v \
+									  $(foreach file, timeout.v debug_uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
+$(SIMULATION_DIR)/debugger.vvp: $(SRC_DIR)/debugger.v \
+							    $(TB_DIR)/tb_debugger.v \
+								$(foreach file, debug_uart_rx.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
+$(SIMULATION_DIR)/matrix_scan.vvp: $(SRC_DIR)/matrix_scan.v \
+								   $(TB_DIR)/tb_matrix_scan.v \
+								   $(foreach file, timeout.v, $(SRC_DIR)/$(file))
 
 clean:
 	rm -f $(SIMULATION_DIR)/*
