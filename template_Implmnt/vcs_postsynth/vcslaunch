@@ -1,2 +1,16 @@
-Error: Top level not specified
+#!/bin/sh -x
+# VCS script generated to simulate Synplify Pro project:
+# /home/awhite/Documents/Projects/fpga_led_display/template_syn.prj
+# Generated Sun Jan  8 19:38:02 2023
+# L-2016.09L+ice40
+# Synopsys, Inc.
 
+## mkdirs
+if [ ! -d work ]; then mkdir work; fi;
+if [ ! -d synplify ]; then mkdir synplify; fi;
+
+
+$VCS_HOME/bin/vlogan  -work work   /home/awhite/Documents/Projects/fpga_led_display/template_Implmnt/template.vm
+
+$VCS_HOME/bin/vcs -debug_all  work.main
+./simv 

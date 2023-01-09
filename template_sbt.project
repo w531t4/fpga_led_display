@@ -4,7 +4,7 @@ Version=Lattice Semiconductor Corporation iCEcube - Release: 2020.12.27943 - Bui
 ProjectName=template
 Vendor=SiliconBlue
 Synthesis=synplify
-ProjectVFiles=src/main.v=work,src/brightness.v=work,src/clock_divider.v=work,src/control_module.v=work,src/debug_uart_rx.v=work,src/debugger.v=work,src/framebuffer.v=work,src/framebuffer_fetch.v=work,src/matrix_scan.v=work,src/pixel_split.v=work,src/rgb565.v=work,src/timeout.v=work,src/uart_tx.v=work,src/new_pll.v=work,src/fm6126init.v=work,src/newram2.v=work,src/Multiported-RAM/mrram.v=work,src/Multiported-RAM/mpram_xor.v=work,src/Multiported-RAM/mpram.v=work,src/Multiported-RAM/mpram_gen.v=work,src/Multiported-RAM/dpram.v=work,src/multimem.v=work,src/mem_core/newram3.v=work,src/mem_core/syncore_ram.v=work
+ProjectVFiles=src/main.v,src/brightness.v,src/clock_divider.v,src/control_module.v,src/debug_uart_rx.v,src/debugger.v,src/framebuffer.v,src/framebuffer_fetch.v,src/matrix_scan.v,src/pixel_split.v,src/rgb565.v,src/timeout.v,src/uart_tx.v,src/new_pll.v,src/fm6126init.v,src/newram2.v,src/Multiported-RAM/mrram.v,src/Multiported-RAM/mpram_xor.v,src/Multiported-RAM/mpram.v,src/Multiported-RAM/mpram_gen.v,src/Multiported-RAM/dpram.v,src/multimem.v,src/mem_core/newram3.v,src/mem_core/syncore_ram.v
 ProjectCFiles=
 CurImplementation=template_Implmnt
 Implementations=template_Implmnt

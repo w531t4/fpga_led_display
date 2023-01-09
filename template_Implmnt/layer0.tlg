@@ -1,177 +1,231 @@
 Selecting top level module main
-@N: CG364 :"/home/awhite/lscc/iCEcube2.2017.08/synpbase/lib/generic/sb_ice40.v":698:7:698:19|Synthesizing module SB_PLL40_CORE in library work.
+@N: CG364 :"/home/awhite/lscc/iCEcube2.2020.12/synpbase/lib/generic/sb_ice40.v":698:7:698:19|Synthesizing module SB_PLL40_CORE in library work.
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/new_pll.v":24:7:24:9|Synthesizing module pll in library work.
+
+@W: CG781 :"/home/awhite/Documents/Projects/fpga_led_display/src/new_pll.v":46:10:46:12|Input EXTFEEDBACK on instance uut is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
+@W: CG781 :"/home/awhite/Documents/Projects/fpga_led_display/src/new_pll.v":46:10:46:12|Input DYNAMICDELAY on instance uut is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
+@W: CG781 :"/home/awhite/Documents/Projects/fpga_led_display/src/new_pll.v":46:10:46:12|Input SDI on instance uut is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
+@W: CG781 :"/home/awhite/Documents/Projects/fpga_led_display/src/new_pll.v":46:10:46:12|Input SCLK on instance uut is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
+@W: CG781 :"/home/awhite/Documents/Projects/fpga_led_display/src/new_pll.v":46:10:46:12|Input LATCHINPUTVALUE on instance uut is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":133:7:133:16|Synthesizing module fm6126init in library work.
+
+@W: CL271 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Pruning unused bits 11 to 0 of widthState[63:0]. If this is not the intended behavior, drive the inputs with valid values, or inputs from the top level.
+@W: CL190 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Optimizing register bit widthState[63] to a constant 0. To keep the instance, apply constraint syn_preserve=1 on the instance.
+@W: CL260 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Pruning register bit 63 of widthState[63:12]. If this is not the intended behavior, drive the input with valid values, or an input from the top level.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
 
 	COUNTER_WIDTH=32'b00000000000000000000000000000100
    Generated name = timeout_4s
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/clock_divider.v":5:7:5:19|Synthesizing module clock_divider in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/clock_divider.v":7:7:7:19|Synthesizing module clock_divider in library work.
 
-	CLK_DIV_WIDTH=32'b00000000000000000000000000000010
-	CLK_DIV_COUNT=32'b00000000000000000000000000000011
-   Generated name = clock_divider_2s_3s
+	CLK_DIV_WIDTH=2'b11
+	CLK_DIV_COUNT=2'b11
+   Generated name = clock_divider_3_3
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
 
 	COUNTER_WIDTH=32'b00000000000000000000000000000111
    Generated name = timeout_7s
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
 
 	COUNTER_WIDTH=32'b00000000000000000000000000000110
    Generated name = timeout_6s
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
 
 	COUNTER_WIDTH=32'b00000000000000000000000000001010
    Generated name = timeout_10s
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/matrix_scan.v":1:7:1:17|Synthesizing module matrix_scan in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/matrix_scan.v":1:7:1:17|Synthesizing module matrix_scan in library work.
 
-@W: CG360 :"/home/awhite/CLionProjects/led_display/fpga/matrix_scan.v":30:6:30:20|Removing wire clk_row_address, as there is no assignment to it.
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/timeout.v":9:7:9:13|Synthesizing module timeout in library work.
 
 	COUNTER_WIDTH=32'b00000000000000000000000000000010
    Generated name = timeout_2s
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/framebuffer_fetch.v":1:7:1:23|Synthesizing module framebuffer_fetch in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/framebuffer_fetch.v":1:7:1:23|Synthesizing module framebuffer_fetch in library work.
 
-@W: CS263 :"/home/awhite/CLionProjects/led_display/fpga/framebuffer_fetch.v":35:11:35:28|Port-width mismatch for port counter. The port definition is 2 bits, but the actual port connection bit width is 4. Adjust either the definition or the instantiation of this port.
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/clock_divider.v":5:7:5:19|Synthesizing module clock_divider in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/debug_uart_rx.v":25:7:25:19|Synthesizing module debug_uart_rx in library work.
 
-	CLK_DIV_WIDTH=32'b00000000000000000000000000001000
-	CLK_DIV_COUNT=32'b00000000000000000000000000011001
-   Generated name = clock_divider_8s_25s
+	TICKS_PER_BIT=5'b10101
+	TICKS_PER_BIT_SIZE=3'b101
+	TICKS_TO_BIT=32'b00000000000000000000000000010100
+	TICKS_TO_MIDLE=32'b00000000000000000000000000001010
+	STATE_IDLE=5'b00001
+	STATE_RECEIVE_START=5'b00010
+	STATE_RECEIVE_DATA=5'b00100
+	STATE_RECEIVE_STOP=5'b01000
+	STATE_DONE=5'b10000
+   Generated name = debug_uart_rx_21_5_20_10_1_2_4_8_16
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/uart_rx.v":3:7:3:13|Synthesizing module uart_rx in library work.
+@W: CG532 :"/home/awhite/Documents/Projects/fpga_led_display/src/debug_uart_rx.v":67:4:67:10|Within an initial block, only Verilog force statements and memory $readmemh/$readmemb initialization statements are recognized, and all other content is ignored.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/control_module.v":1:7:1:20|Synthesizing module control_module in library work.
 
-	CLK_DIV_COUNT=32'b00000000000000000000000000011001
-	CLK_DIV_WIDTH=32'b00000000000000000000000000001000
-	DATA_COUNT=32'b00000000000000000000000000001000
-	STOP_COUNT=32'b00000000000000000000000000000001
-	START_COUNT=32'b00000000000000000000000000000001
-	DATASTOP_COUNT=32'b00000000000000000000000000001001
-   Generated name = uart_rx_25s_8s_8_1_1s_9
+	UART_CLK_TICKS_PER_BIT=5'b10101
+	UART_CLK_TICKS_WIDTH=3'b101
+   Generated name = control_module_21_5
 
-@W: CS263 :"/home/awhite/CLionProjects/led_display/fpga/uart_rx.v":68:9:68:22|Port-width mismatch for port value. The port definition is 4 bits, but the actual port connection bit width is 32. Adjust either the definition or the instantiation of this port.
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/control_module.v":1:7:1:20|Synthesizing module control_module in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/syncore_ram.v":34:7:34:17|Synthesizing module Syncore_ram in library work.
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/Multiported-RAM/mpram.v":36:7:36:11|Synthesizing module mpram in library work.
+	DATAWIDTH=32'b00000000000000000000000000001001
+	ADDRWIDTH=32'b00000000000000000000000000001101
+	MEMDEPTH=32'b00000000000000000010000000000000
+	SPRAM=32'b00000000000000000000000000000000
+	READ_MODE_A=32'b00000000000000000000000000000001
+	READ_WRITE_A=32'b00000000000000000000000000000001
+	ENABLE_WR_PORTA=32'b00000000000000000000000000000001
+	REGISTER_RD_ADDR_PORTA=32'b00000000000000000000000000000001
+	REGISTER_OUTPUT_PORTA=32'b00000000000000000000000000000001
+	ENABLE_OUTPUT_REG_PORTA=32'b00000000000000000000000000000000
+	RESET_OUTPUT_REG_PORTA=32'b00000000000000000000000000000001
+	READ_MODE_B=32'b00000000000000000000000000000001
+	READ_WRITE_B=32'b00000000000000000000000000000010
+	ENABLE_WR_PORTB=32'b00000000000000000000000000000000
+	REGISTER_RD_ADDR_PORTB=32'b00000000000000000000000000000001
+	REGISTER_OUTPUT_PORTB=32'b00000000000000000000000000000001
+	ENABLE_OUTPUT_REG_PORTB=32'b00000000000000000000000000000000
+	RESET_OUTPUT_REG_PORTB=32'b00000000000000000000000000000001
+	TWO=32'b00000000000000000000000000000010
+	Rd_Iterations=32'b00000000000000000000000000000010
+	Wr_Iterations=32'b00000000000000000000000000000001
+	rd_inc=32'b00000000000000000000000000000000
+	wr_inc=32'b00000000000000000000000000000000
+   Generated name = Syncore_ram_Z1
 
-	MEMD=32'b00000000000000000001000000000000
-	DATAW=32'b00000000000000000000000000010000
-	nRPORTS=32'b00000000000000000000000000000010
-	nWPORTS=32'b00000000000000000000000000000001
-	TYPE=24'b010110000100111101010010
-	BYP=24'b010100100100010001010111
-	IFILE=64'b0110100101101110011010010111010001011111011100100110000101101101
-	ADDRW=32'b00000000000000000000000000001100
-	l2nW=32'b00000000000000000000000000000000
-	nBitsXOR=32'b00000000000000000000000000000000
-	nBitsBIN=32'b00000000000000000000000000000000
-	nBits1HT=32'b00000000000000000000000000000000
-	AUTOTYPE=48'b010011000101011001010100001100010100100001010100
-	iTYPE=48'b000000000000000000000000010110000100111101010010
-	WAW=1'b1
-	RAW=1'b1
-	RDW=1'b1
-   Generated name = mpram_Z1
+@W: CG532 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/syncore_ram.v":95:0:95:6|Within an initial block, only Verilog force statements and memory $readmemh/$readmemb initialization statements are recognized, and all other content is ignored.
+@W: CG133 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/syncore_ram.v":94:8:94:8|Object z is declared but not assigned. Either assign a value or remove the declaration.
+@N: CL134 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/syncore_ram.v":230:0:230:5|Found RAM mem, depth=8192, width=18
+@N: CL134 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/syncore_ram.v":230:0:230:5|Found RAM mem, depth=8192, width=18
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/newram3.v":24:12:24:18|Synthesizing module newram3 in library work.
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/Multiported-RAM/mrram.v":37:7:37:11|Synthesizing module mrram in library work.
+@W: CG360 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/newram3.v":88:8:88:22|Removing wire PortAReadEnable, as there is no assignment to it.
+@W: CG360 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/newram3.v":92:24:92:34|Removing wire PortBDataIn, as there is no assignment to it.
+@W: CG360 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/newram3.v":93:8:93:23|Removing wire PortBWriteEnable, as there is no assignment to it.
+@W: CG360 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/newram3.v":98:8:98:22|Removing wire PortBReadEnable, as there is no assignment to it.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/multimem.v":2:7:2:14|Synthesizing module multimem in library work.
 
-	MEMD=32'b00000000000000000001000000000000
-	DATAW=32'b00000000000000000000000000010000
-	nRPORTS=32'b00000000000000000000000000000010
-	BYPASS=32'b00000000000000000000000000000010
-	IZERO=32'b00000000000000000000000000000000
-	IFILE=64'b0110100101101110011010010111010001011111011100100110000101101101
-	ADDRW=32'b00000000000000000000000000001100
-   Generated name = mrram_4096s_16s_2s_2_0s_init_ram_12s
+@W: CG781 :"/home/awhite/Documents/Projects/fpga_led_display/src/multimem.v":109:9:109:12|Input PortBClk on instance num2 is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/rgb565.v":1:7:1:12|Synthesizing module rgb565 in library work.
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/Multiported-RAM/mpram_gen.v":36:7:36:15|Synthesizing module mpram_gen in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/brightness.v":1:7:1:16|Synthesizing module brightness in library work.
 
-	MEMD=32'b00000000000000000001000000000000
-	DATAW=32'b00000000000000000000000000010000
-	nRPORTS=32'b00000000000000000000000000000001
-	nWPORTS=32'b00000000000000000000000000000001
-	IZERO=32'b00000000000000000000000000000000
-	IFILE=64'b0110100101101110011010010111010001011111011100100110000101101101
-	ADDRW=32'b00000000000000000000000000001100
-   Generated name = mpram_gen_4096s_16s_1s_1s_0s_init_ram_12s
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/pixel_split.v":1:7:1:17|Synthesizing module pixel_split in library work.
 
-@W: CG371 :"/home/awhite/CLionProjects/led_display/fpga/Multiported-RAM/mpram_gen.v":60:23:60:31|Cannot find data file init_ram.hex for task $readmemh
-@W: CG532 :"/home/awhite/CLionProjects/led_display/fpga/Multiported-RAM/mpram_gen.v":56:2:56:8|Within an initial block, only Verilog force statements and memory $readmemh/$readmemb initialization statements are recognized, and all other content is ignored.
-@N: CL134 :"/home/awhite/CLionProjects/led_display/fpga/Multiported-RAM/mpram_gen.v":62:2:62:7|Found RAM mem, depth=4096, width=16
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/Multiported-RAM/dpram.v":36:7:36:11|Synthesizing module dpram in library work.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/debug_uart_rx.v":25:7:25:19|Synthesizing module debug_uart_rx in library work.
 
-	MEMD=32'b00000000000000000001000000000000
-	DATAW=32'b00000000000000000000000000010000
-	BYPASS=32'b00000000000000000000000000000010
-	IZERO=32'b00000000000000000000000000000000
-	IFILE=64'b0110100101101110011010010111010001011111011100100110000101101101
-   Generated name = dpram_4096s_16s_2_0s_init_ram
+	TICKS_PER_BIT=9'b110110010
+	TICKS_PER_BIT_SIZE=4'b1001
+	TICKS_TO_BIT=32'b00000000000000000000000110110001
+	TICKS_TO_MIDLE=32'b00000000000000000000000011011000
+	STATE_IDLE=5'b00001
+	STATE_RECEIVE_START=5'b00010
+	STATE_RECEIVE_DATA=5'b00100
+	STATE_RECEIVE_STOP=5'b01000
+	STATE_DONE=5'b10000
+   Generated name = debug_uart_rx_434_9_433_216_1_2_4_8_16
 
-@W: CG133 :"/home/awhite/CLionProjects/led_display/fpga/Multiported-RAM/mrram.v":58:10:58:10|Object _j_ is declared but not assigned. Either assign a value or remove the declaration.
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/newram2.v":26:12:26:18|Synthesizing module newram2 in library work.
+@W: CG532 :"/home/awhite/Documents/Projects/fpga_led_display/src/debug_uart_rx.v":67:4:67:10|Within an initial block, only Verilog force statements and memory $readmemh/$readmemb initialization statements are recognized, and all other content is ignored.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/uart_tx.v":25:7:25:13|Synthesizing module uart_tx in library work.
 
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/rgb565.v":1:7:1:12|Synthesizing module rgb565 in library work.
-
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/brightness.v":1:7:1:16|Synthesizing module brightness in library work.
-
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/pixel_split.v":1:7:1:17|Synthesizing module pixel_split in library work.
-
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/uart_tx.v":25:7:25:13|Synthesizing module uart_tx in library work.
-
-	TICKS_PER_BIT=32'b00000000000000000000010010001011
-	TICKS_PER_BIT_SIZE=32'b00000000000000000000000000001100
+	TICKS_PER_BIT=9'b110110010
+	TICKS_PER_BIT_SIZE=4'b1001
 	STATE_IDLE=5'b00001
 	STATE_SEND_START=5'b00010
 	STATE_SEND_BITS=5'b00100
 	STATE_SEND_STOP=5'b01000
 	STATE_DONE=5'b10000
-   Generated name = uart_tx_1163s_12s_1_2_4_8_16
+   Generated name = uart_tx_434_9_1_2_4_8_16
 
-@W: CG532 :"/home/awhite/CLionProjects/led_display/fpga/uart_tx.v":67:1:67:7|Within an initial block, only Verilog force statements and memory $readmemh/$readmemb initialization statements are recognized, and all other content is ignored.
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/debugger.v":1:7:1:14|Synthesizing module debugger in library work.
+@W: CG532 :"/home/awhite/Documents/Projects/fpga_led_display/src/uart_tx.v":67:1:67:7|Within an initial block, only Verilog force statements and memory $readmemh/$readmemb initialization statements are recognized, and all other content is ignored.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/debugger.v":1:7:1:14|Synthesizing module debugger in library work.
 
-	DIVIDER_TICKS_WIDTH=32'b00000000000000000000000000100001
-	DIVIDER_TICKS=32'b00000011111111100101011011000000
-	DATA_WIDTH=32'b00000000000000000000000000100000
+	DIVIDER_TICKS_WIDTH=5'b10110
+	DIVIDER_TICKS=22'b1000101010110111010111
+	DATA_WIDTH=32'b00000000000000000000000011000000
+	DATA_WIDTH_BASE2=32'b00000000000000000000000000001000
+	UART_TICKS_PER_BIT=9'b110110010
+	UART_TICKS_PER_BIT_SIZE=4'b1001
 	STATE_IDLE=5'b00001
 	STATE_START=5'b00010
 	STATE_SEND=5'b00100
 	STATE_WAIT=5'b01000
-   Generated name = debugger_33s_67000000s_32s_1_2_4_8
+   Generated name = debugger_22_2272727_192s_8s_434_9_1_2_4_8
 
-@W: CG133 :"/home/awhite/CLionProjects/led_display/fpga/debugger.v":39:28:39:36|Object nextState is declared but not assigned. Either assign a value or remove the declaration.
-@A: CL282 :"/home/awhite/CLionProjects/led_display/fpga/debugger.v":45:4:45:9|Feedback mux created for signal debug_bits[7:0]. It is possible a set/reset assignment for this is signal missing. To improve timing and area, specify a set/reset value.
-@N: CG364 :"/home/awhite/CLionProjects/led_display/fpga/main.v":2:7:2:10|Synthesizing module main in library work.
+@W: CG532 :"/home/awhite/Documents/Projects/fpga_led_display/src/debugger.v":65:4:65:10|Within an initial block, only Verilog force statements and memory $readmemh/$readmemb initialization statements are recognized, and all other content is ignored.
+@N: CG364 :"/home/awhite/Documents/Projects/fpga_led_display/src/main.v":2:7:2:10|Synthesizing module main in library work.
 
-@W: CG532 :"/home/awhite/CLionProjects/led_display/fpga/main.v":39:1:39:7|Within an initial block, only Verilog force statements and memory $readmemh/$readmemb initialization statements are recognized, and all other content is ignored.
-@W: CG781 :"/home/awhite/CLionProjects/led_display/fpga/main.v":110:16:110:27|Input EXTFEEDBACK on instance usb_pll_inst is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
-@W: CG781 :"/home/awhite/CLionProjects/led_display/fpga/main.v":110:16:110:27|Input DYNAMICDELAY on instance usb_pll_inst is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
-@W: CG781 :"/home/awhite/CLionProjects/led_display/fpga/main.v":110:16:110:27|Input SDI on instance usb_pll_inst is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
-@W: CG781 :"/home/awhite/CLionProjects/led_display/fpga/main.v":110:16:110:27|Input SCLK on instance usb_pll_inst is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
-@W: CG781 :"/home/awhite/CLionProjects/led_display/fpga/main.v":110:16:110:27|Input LATCHINPUTVALUE on instance usb_pll_inst is undriven; assigning to 0.  Simulation mismatch possible. Either assign the input or remove the declaration. 
-@W: CG360 :"/home/awhite/CLionProjects/led_display/fpga/main.v":74:6:74:19|Removing wire show_clock_pin, as there is no assignment to it.
-@W: CG360 :"/home/awhite/CLionProjects/led_display/fpga/main.v":95:6:95:12|Removing wire clk_usb, as there is no assignment to it.
-@W: CG360 :"/home/awhite/CLionProjects/led_display/fpga/main.v":100:6:100:15|Removing wire clk_locked, as there is no assignment to it.
-@W: CG360 :"/home/awhite/CLionProjects/led_display/fpga/main.v":274:6:274:14|Removing wire clk_debug, as there is no assignment to it.
-@W: CL156 :"/home/awhite/CLionProjects/led_display/fpga/main.v":294:5:297:3|*Input un1_ram_a_data_in[31:0] to expression [instance] has undriven bits; assigning undriven bits to 0.  Simulation mismatch possible. Assign all bits of the input.
-@W: CL158 :"/home/awhite/CLionProjects/led_display/fpga/main.v":11:8:11:18|Inout pin1_usb_dp is unused
-@W: CL158 :"/home/awhite/CLionProjects/led_display/fpga/main.v":12:8:12:18|Inout pin2_usb_dn is unused
-@W: CL158 :"/home/awhite/CLionProjects/led_display/fpga/main.v":22:8:22:12|Inout pin11 is unused
-@W: CL158 :"/home/awhite/CLionProjects/led_display/fpga/main.v":25:8:25:16|Inout pin14_sdo is unused
-@W: CL158 :"/home/awhite/CLionProjects/led_display/fpga/main.v":26:8:26:16|Inout pin15_sdi is unused
-@W: CL158 :"/home/awhite/CLionProjects/led_display/fpga/main.v":27:8:27:16|Inout pin16_sck is unused
-@W: CL158 :"/home/awhite/CLionProjects/led_display/fpga/main.v":28:8:28:15|Inout pin17_ss is unused
-@W: CL158 :"/home/awhite/CLionProjects/led_display/fpga/main.v":33:8:33:12|Inout pin22 is unused
-@W: CL156 :"/home/awhite/CLionProjects/led_display/fpga/newram2.v":131:12:131:29|*Input un1_addr_b_p1[23:0] to expression [instance] has undriven bits; assigning undriven bits to 0.  Simulation mismatch possible. Assign all bits of the input.
-@N: CL159 :"/home/awhite/CLionProjects/led_display/fpga/newram2.v":57:8:57:17|Input PortAReset is unused.
-@N: CL159 :"/home/awhite/CLionProjects/led_display/fpga/newram2.v":60:8:60:15|Input PortBClk is unused.
-@N: CL159 :"/home/awhite/CLionProjects/led_display/fpga/newram2.v":62:28:62:38|Input PortBDataIn is unused.
-@N: CL159 :"/home/awhite/CLionProjects/led_display/fpga/newram2.v":63:8:63:23|Input PortBWriteEnable is unused.
-@N: CL159 :"/home/awhite/CLionProjects/led_display/fpga/newram2.v":64:8:64:17|Input PortBReset is unused.
-@N: CL159 :"/home/awhite/CLionProjects/led_display/fpga/newram2.v":65:8:65:21|Input PortBClkEnable is unused.
-@N: CL159 :"/home/awhite/CLionProjects/led_display/fpga/control_module.v":23:13:23:23|Input ram_data_in is unused.
+@W: CG133 :"/home/awhite/Documents/Projects/fpga_led_display/src/main.v":69:5:69:21|Object global_reset_init is declared but not assigned. Either assign a value or remove the declaration.
+@N: CL189 :"/home/awhite/Documents/Projects/fpga_led_display/src/main.v":184:1:184:6|Register bit reset_cnt[5] is always 1.
+@W: CL260 :"/home/awhite/Documents/Projects/fpga_led_display/src/main.v":184:1:184:6|Pruning register bit 5 of reset_cnt[5:0]. If this is not the intended behavior, drive the input with valid values, or an input from the top level.
+@N: CL201 :"/home/awhite/Documents/Projects/fpga_led_display/src/debugger.v":76:4:76:9|Trying to extract state machine for register currentState.
+Extracted state machine for register currentState
+State machine has 4 reachable states with original encodings of:
+   0001
+   0010
+   0100
+   1000
+@N: CL201 :"/home/awhite/Documents/Projects/fpga_led_display/src/uart_tx.v":140:1:140:6|Trying to extract state machine for register currentState.
+Extracted state machine for register currentState
+State machine has 5 reachable states with original encodings of:
+   00001
+   00010
+   00100
+   01000
+   10000
+@N: CL201 :"/home/awhite/Documents/Projects/fpga_led_display/src/debug_uart_rx.v":169:4:169:9|Trying to extract state machine for register currentState.
+Extracted state machine for register currentState
+State machine has 5 reachable states with original encodings of:
+   00001
+   00010
+   00100
+   01000
+   10000
+@N: CL159 :"/home/awhite/Documents/Projects/fpga_led_display/src/multimem.v":2:26:2:32|Input DataInB is unused.
+@N: CL159 :"/home/awhite/Documents/Projects/fpga_led_display/src/multimem.v":3:4:3:11|Input ClockEnA is unused.
+@N: CL159 :"/home/awhite/Documents/Projects/fpga_led_display/src/multimem.v":3:14:3:21|Input ClockEnB is unused.
+@N: CL159 :"/home/awhite/Documents/Projects/fpga_led_display/src/multimem.v":3:24:3:26|Input WrA is unused.
+@N: CL159 :"/home/awhite/Documents/Projects/fpga_led_display/src/multimem.v":3:29:3:31|Input WrB is unused.
+@W: CL156 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/newram3.v":129:23:129:57|*Input un1_PortAWriteEnable[1:0] to expression [instance] has undriven bits; assigning undriven bits to 0.  Simulation mismatch possible. Assign all bits of the input.
+@W: CL156 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/newram3.v":130:22:130:54|*Input un1_PortAReadEnable[1:0] to expression [instance] has undriven bits; assigning undriven bits to 0.  Simulation mismatch possible. Assign all bits of the input.
+@W: CL156 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/newram3.v":131:18:131:42|*Input un1_PortADataIn[17:0] to expression [instance] has undriven bits; assigning undriven bits to 0.  Simulation mismatch possible. Assign all bits of the input.
+@W: CL247 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/syncore_ram.v":77:21:77:35|Input port bit 1 of PortWriteEnable[1:0] is unused
+
+@W: CL246 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/syncore_ram.v":80:30:80:39|Input port bits 17 to 9 of PortDataIn[17:0] are unused. Assign logic for all port bits or change the input port size.
+@N: CL159 :"/home/awhite/Documents/Projects/fpga_led_display/src/mem_core/syncore_ram.v":78:21:78:34|Input PortReadEnable is unused.
+@N: CL201 :"/home/awhite/Documents/Projects/fpga_led_display/src/control_module.v":114:1:114:6|Trying to extract state machine for register cmd_line_state.
+Extracted state machine for register cmd_line_state
+State machine has 3 reachable states with original encodings of:
+   00
+   01
+   10
+@W: CL249 :"/home/awhite/Documents/Projects/fpga_led_display/src/control_module.v":114:1:114:6|Initial value is not supported on state machine cmd_line_state
+@N: CL201 :"/home/awhite/Documents/Projects/fpga_led_display/src/debug_uart_rx.v":169:4:169:9|Trying to extract state machine for register currentState.
+Extracted state machine for register currentState
+State machine has 5 reachable states with original encodings of:
+   00001
+   00010
+   00100
+   01000
+   10000
+@W: CL190 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Optimizing register bit widthState[62] to a constant 0. To keep the instance, apply constraint syn_preserve=1 on the instance.
+@W: CL260 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Pruning register bit 62 of widthState[62:12]. If this is not the intended behavior, drive the input with valid values, or an input from the top level.
+@W: CL190 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Optimizing register bit widthState[61] to a constant 0. To keep the instance, apply constraint syn_preserve=1 on the instance.
+@W: CL260 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Pruning register bit 61 of widthState[61:12]. If this is not the intended behavior, drive the input with valid values, or an input from the top level.
+@W: CL190 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Optimizing register bit widthState[60] to a constant 0. To keep the instance, apply constraint syn_preserve=1 on the instance.
+@W: CL260 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Pruning register bit 60 of widthState[60:12]. If this is not the intended behavior, drive the input with valid values, or an input from the top level.
+@N: CL201 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Trying to extract state machine for register currentState.
+Extracted state machine for register currentState
+State machine has 6 reachable states with original encodings of:
+   0000001
+   0000010
+   0000100
+   0001000
+   0010000
+   0100000
+@W: CL190 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Optimizing register bit widthState[59] to a constant 0. To keep the instance, apply constraint syn_preserve=1 on the instance.
+@W: CL260 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Pruning register bit 59 of widthState[59:12]. If this is not the intended behavior, drive the input with valid values, or an input from the top level.
+@W: CL190 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Optimizing register bit widthState[58] to a constant 0. To keep the instance, apply constraint syn_preserve=1 on the instance.
+@W: CL260 :"/home/awhite/Documents/Projects/fpga_led_display/src/fm6126init.v":182:1:182:6|Pruning register bit 58 of widthState[58:12]. If this is not the intended behavior, drive the input with valid values, or an input from the top level.
