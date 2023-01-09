@@ -13,7 +13,7 @@ TARGET_DEBUG_MSG_HZ = 22
 
 def float_ticks_from_freq_divide(src_hz: float, tgt_hz: float) -> Tuple[Union[float, int]]:
     ticks = src_hz / tgt_hz
-    ticks_bitwidth = ceil(log(ticks, 2))
+    ticks_bitwidth = ceil(log(ticks+1, 2))
     closest_approx_ticks = find_closest_approx_to_tgt(src_hz=src_hz, tgt_hz=tgt_hz, result_ticks=ticks)
     closest_approx_bitwidth = ceil(log(closest_approx_ticks, 2))
     return (ticks, ticks_bitwidth, closest_approx_ticks, closest_approx_bitwidth)
@@ -107,7 +107,7 @@ tgt_hz = TARGET_DATA_BAUD
 tick_calc = float_ticks_from_freq_divide(src_hz=PRIMARY_CLOCK_HZ, tgt_hz=tgt_hz)
 summarize(src_hz=PRIMARY_CLOCK_HZ, tgt_hz=tgt_hz, tick_calc=tick_calc, context="RX DATA baud")
 describe_parameter(name=name_label, val_ticks=tick_calc[2], val_width=tick_calc[3])
-describe_parameter(name=name_label, val_ticks=tick_calc[3], val_width=ceil(log(tick_calc[3], 2)), unit="TICKS_WIDTH")
+describe_parameter(name=name_label, val_ticks=tick_calc[3], val_width=ceil(log(tick_calc[3]+1, 2)), unit="TICKS_WIDTH")
 print("\n")
 #
 
@@ -119,7 +119,7 @@ tgt_hz = TARGET_DEBUG_BAUD
 tick_calc = float_ticks_from_freq_divide(src_hz=PRIMARY_CLOCK_HZ, tgt_hz=tgt_hz)
 summarize(src_hz=PRIMARY_CLOCK_HZ, tgt_hz=tgt_hz, tick_calc=tick_calc, context="TX DEBUG baud")
 describe_parameter(name=name_label, val_ticks=tick_calc[2], val_width=tick_calc[3])
-describe_parameter(name=name_label, val_ticks=tick_calc[3], val_width=ceil(log(tick_calc[3], 2)), unit="TICKS_PER_BIT_WIDTH")
+describe_parameter(name=name_label, val_ticks=tick_calc[3], val_width=ceil(log(tick_calc[3]+1, 2)), unit="TICKS_PER_BIT_WIDTH")
 print("\n")
 
 # The frequency in which variables are captured from the system and
@@ -131,7 +131,7 @@ tgt_hz = TARGET_DEBUG_MSG_HZ
 tick_calc = float_ticks_from_freq_divide(src_hz=PRIMARY_CLOCK_HZ, tgt_hz=tgt_hz)
 summarize(src_hz=PRIMARY_CLOCK_HZ, tgt_hz=tgt_hz, tick_calc=tick_calc, context="Debug msg rate")
 describe_parameter(name=name_label, val_ticks=tick_calc[2], val_width=tick_calc[3], unit="PER_SEC_TICKS")
-describe_parameter(name=name_label, val_ticks=tick_calc[3], val_width=ceil(log(tick_calc[3], 2)), unit="PER_SEC_TICKS_WIDTH")
+describe_parameter(name=name_label, val_ticks=tick_calc[3], val_width=ceil(log(tick_calc[3]+1, 2)), unit="PER_SEC_TICKS_WIDTH")
 print("\n")
 
 # The frequency in which variables are captured from the system and
@@ -146,7 +146,7 @@ tick_calc = float_ticks_from_freq_divide(src_hz=PRIMARY_CLOCK_HZ, tgt_hz=tgt_hz)
 print("`ifdef SIM")
 print("// use smaller value in testbench so we don't infinitely sim")
 describe_parameter(name=name_label, val_ticks=15, val_width=4, unit="PER_SEC_TICKS_SIM")
-describe_parameter(name=name_label, val_ticks=4, val_width=ceil(log(4, 2)), unit="PER_SEC_TICKS_WIDTH_SIM")
+describe_parameter(name=name_label, val_ticks=4, val_width=ceil(log(4+1, 2)), unit="PER_SEC_TICKS_WIDTH_SIM")
 print("\n")
 
 # The number of nanoseconds in a half period. Used by test benches to define
