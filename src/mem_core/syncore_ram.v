@@ -102,6 +102,21 @@ wire [TWO -1:0] 	 		NOCHANGE;
 wire [TWO -1:0] 			WriteEnablePort;
 wire [DATAWIDTH*TWO-1:0] 		StoreDout;
 
+`ifdef SIM
+//CUSTOM
+//icecube fails to compile with this section enabled.
+// Fails with either readmemh or the for loop, though..
+// they're different errors. The for loop fails because
+// the loop count gets exceeded. readmemh fails because it
+// tries to provision too much mem objects.
+//integer z;
+initial begin
+
+	 $readmemh("init_ram.hex", mem, 0, MEMDEPTH-1); ///
+	//for(z = 0; z < MEMDEPTH; z = z+1)
+	   // mem[z] = {DATAWIDTH*TWO{1'b0}};
+end
+`endif
 
 wire [TWO -1:0]  Prm_NOCHANGE			= {(READ_MODE_B == 3), (READ_MODE_A == 3)};
 wire [TWO -1:0]	 Prm_WRITE_FIRST		= {(READ_MODE_B == 2), (READ_MODE_A == 2)};
