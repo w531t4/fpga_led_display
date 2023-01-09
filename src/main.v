@@ -53,6 +53,7 @@ module main (
 `endif
 
 	wire clk_root;
+	wire clk_matrix;
 
 	reg global_reset;
 	wire buffered_global_reset;
@@ -204,9 +205,18 @@ fm6126init do_init (
 
 	/* produce signals to scan a 64x32 LED matrix, with 6-bit color */
 
-	matrix_scan matscan1 (
+	clock_divider #(
+		.CLK_DIV_COUNT(2'd3),
+		.CLK_DIV_WIDTH(2'd3)
+	) clkdiv_baudrate (
 		.reset(global_reset),
 		.clk_in(clk_root),
+		.clk_out(clk_matrix)
+	);
+
+	matrix_scan matscan1 (
+		.reset(global_reset),
+		.clk_in(clk_matrix),
 		.column_address(column_address),
 		.row_address(row_address),
 		.row_address_active(row_address_active),
