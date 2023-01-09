@@ -1,27 +1,37 @@
 `timescale 1ns/100ps
 module tb_main;
-	// RX image data @ 2.44Mbaud
-	// 50MHz / 2444444 = 20.454549 -> 50Mhz/21 -> 2380952
-	parameter CTRLR_CLK_TICKS_PER_BIT = 5'd21;
-	parameter CTRLR_CLK_TICKS_WIDTH = 3'd5;
+// context: RX DATA baud
+// 50000000hz / 2444444hz = 20.4545 ticks width=5
+// tgt_hz variation (after rounding): 2.27%
+// 50000000hz / 2500000hz = 20 ticks width=5
+parameter CTRLR_CLK_TICKS_PER_BIT = 5'd20;
+parameter CTRLR_CLK_TICKS_WIDTH = 3'd5;
 
-	// Debug TX @ 115k baud
-	// 50MHz / 115183 = 434.02777
-	parameter DEBUG_TX_UART_TICKS_PER_BIT = 9'd434;
-	parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd9;
-	//#10 clk <= !clk; // 50MHz (1/50000000./2 = 10 EE-8)
 
-	// 50MHz / 22 = 2272727.27272
-	// log2(6045455) = 21.1159929 -> 22
-	parameter DEBUG_MSGS_PER_SEC_TICKS = 22'd2272727;
-	parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd22;
+// context: TX DEBUG baud
+// 50000000hz / 115200hz = 434.0278 ticks width=9
+// tgt_hz variation (after rounding): 0.01%
+// 50000000hz / 115207hz = 434 ticks width=9
+parameter DEBUG_TX_UART_TICKS_PER_BIT = 9'd434;
+parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd9;
+
+
+// context: Debug msg rate
+// 50000000hz / 22hz = 2272727.2727 ticks width=22
+// tgt_hz variation (after rounding): 0.00%
+// 50000000hz / 22hz = 2272727 ticks width=22
+parameter DEBUG_MSGS_PER_SEC_TICKS = 22'd2272727;
+parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd22;
+
 
 `ifdef SIM
-	// use smaller value in testbench so we don't infinitely sim
-	parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
-	parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
+// use smaller value in testbench so we don't infinitely sim
+parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
+parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 2'd4;
 
-    parameter SIM_HALF_PERIOD_NS = 10.000; // 50MHz (1/50000000./2 = 10 EE-8)
+
+// period = (1 / 50000000hz) / 2 = 10.00000
+parameter SIM_HALF_PERIOD_NS = 10.00000;
 `endif
     reg pin3_clk;
     wire pin3_ROA0;
