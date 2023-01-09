@@ -17,14 +17,14 @@ module main (
   output pin8,
   output pin9,
   output pin10,
-  //output pin11,
+  output pin11,
   output pin12,
   output pin13,
   output pin18,
   output pin19,
   output pin20,
   output pin21,
-  // output pin22,
+  output pin22,
   output pin23,
   input pin24
 );
@@ -370,7 +370,7 @@ fm6126init do_init (
 	assign pin9 = ~output_enable;
 	// Pixel Clk
 	assign pin10 = clk_pixel;
-	//assign pin11 = 1'b1;
+	assign pin11 = pixel_rgb565_top;
 	// Red   1
 	assign pin12 = rgb2[0];
 	// Green 1 [don't use for debugging]
@@ -386,7 +386,7 @@ fm6126init do_init (
 	assign pin20 = rgb1[1];
 	// Blue  2
 	assign pin21 = rgb1[2];
-	//assign pin22 = 1'b1;
+	assign pin22 = clk_pixel_load;
 	assign pin23 = tx_out;
 	assign debug_uart_rx = pin24;
 
