@@ -6,41 +6,9 @@
  * Use at your own risk.
  *
  * Given input frequency:        16.000 MHz
- * Requested output frequency:  133.000 MHz
- * Achieved output frequency:   132.000 MHz
- */
-/*
-module pll(
-        input  clock_in,
-        output clock_out,
-        output locked
-        );
+ * Requested output frequency:   50.000 MHz
+ * Achieved output frequency:    50.000 MHz
 
-SB_PLL40_CORE #(
-                .FEEDBACK_PATH("SIMPLE"),
-                .DIVR(4'b0000),         // DIVR =  0
-                .DIVF(7'b1000001),      // DIVF = 65
-                .DIVQ(3'b011),          // DIVQ =  3
-                .FILTER_RANGE(3'b001)   // FILTER_RANGE = 1
-        ) uut (
-                .LOCK(locked),
-                .RESETB(1'b1),
-                .BYPASS(1'b0),
-                .REFERENCECLK(clock_in),
-                .PLLOUTCORE(clock_out)
-                );
-
-endmodule */
-/**
- * PLL configuration
- *
- * This Verilog module was generated automatically
- * using the icepll tool from the IceStorm project.
- * Use at your own risk.
- *
- * Given input frequency:        16.000 MHz
- * Requested output frequency:   22.000 MHz
- * Achieved output frequency:    22.000 MHz
  */
 
 `ifdef SIM
@@ -57,8 +25,8 @@ module pll(
 SB_PLL40_CORE #(
                 .FEEDBACK_PATH("SIMPLE"),
                 .DIVR(4'b0000),         // DIVR =  0
-                .DIVF(7'b0101011),      // DIVF = 43
-                .DIVQ(3'b101),          // DIVQ =  5
+                .DIVF(7'b0110001),      // DIVF = 49
+                .DIVQ(3'b100),          // DIVQ =  4
                 .FILTER_RANGE(3'b001)   // FILTER_RANGE = 1
         ) uut (
                 .LOCK(locked),

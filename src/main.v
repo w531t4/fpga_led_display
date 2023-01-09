@@ -28,6 +28,29 @@ module main (
   output pin23,
   input pin24
 );
+	// RX image data @ 2.44Mbaud
+	// 50MHz / 2444444 = 20.454549 -> 50Mhz/21 -> 2380952
+	parameter CTRLR_CLK_TICKS_PER_BIT = 5'd21;
+	parameter CTRLR_CLK_TICKS_WIDTH = 3'd5;
+
+	// Debug TX @ 115k baud
+	// 50MHz / 115183 = 434.02777
+	parameter DEBUG_TX_UART_TICKS_PER_BIT = 9'd434;
+	parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd9;
+	//#10 clk <= !clk; // 50MHz (1/50000000./2 = 10 EE-8)
+
+	// 50MHz / 22 = 2272727.27272
+	// log2(6045455) = 21.1159929 -> 22
+	parameter DEBUG_MSGS_PER_SEC_TICKS = 22'd2272727;
+	parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd22;
+
+`ifdef SIM
+	// use smaller value in testbench so we don't infinitely sim
+	parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
+	parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
+
+    parameter SIM_HALF_PERIOD_NS = 10; // 50MHz (1/50000000./2 = 10 EE-8)
+`endif
 
 	wire clk_root;
 
@@ -219,10 +242,9 @@ fm6126init do_init (
 
 	/* the control module */
 	control_module #(
-		// we want 22MHz / 2,430,000 = 9.0534
-		// 22MHz / 9 = 2,444,444 baud 2444444
-		.UART_CLK_TICKS_PER_BIT(4'd9),
-		.UART_CLK_TICKS_WIDTH(4)
+		// The baudrate that we will receive image data over
+		.UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+		.UART_CLK_TICKS_WIDTH(CTRLR_CLK_TICKS_WIDTH)
 	) ctrl (
 		.reset(global_reset),
 		.clk_in(clk_root),
@@ -301,13 +323,14 @@ fm6126init do_init (
 
 
 	debugger #(
-		// 22MHz / 1000000 = 22
-		.DIVIDER_TICKS_WIDTH(20),
-		.DIVIDER_TICKS(1000000),
+		// Describes the sample rate of messages sent to debugger client
+		.DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH),
+		.DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
 		.DATA_WIDTH_BASE2(8),
-		.DATA_WIDTH(192)
-	//.DATA_WIDTH_BASE2($clog2($size(ddata))),
-		//.DATA_WIDTH($size(ddata))
+		.DATA_WIDTH(192),
+		// Describes the baudrate for sending messages to debugger client
+		.UART_TICKS_PER_BIT(DEBUG_TX_UART_TICKS_PER_BIT),
+		.UART_TICKS_PER_BIT_SIZE(DEBUG_TX_UART_TICKS_PER_BIT_WIDTH)
 	) mydebug (
 		.clk_in(clk_root),
 		.reset(global_reset),

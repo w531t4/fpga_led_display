@@ -1,9 +1,28 @@
 `timescale 1ns/10ps
 module tb_control_module;
-// iverilog -vvvv -o blah.vvp t//b_control_module.v clock_divider.v control_module.v syncore_ram.v /home/awhite/lscc/iCEcube2.2017.08/LSE/cae_library/synthesis/verilog/sb_ice40.v
-// vvp blah.vvp
-    // iverilog -s tb_control_module -vvvv -o blah.vvp tb_uart_rx.v tb_control_module.v uart_rx.v timeout.v clock_divider.v control_module.v syncore_ram.v /home/awhite/lscc/iCEcube2.2017.08/LSE/cae_library/synthesis/verilog/sb_ice40.v
+	// RX image data @ 2.44Mbaud
+	// 50MHz / 2444444 = 20.454549 -> 50Mhz/21 -> 2380952
+	parameter CTRLR_CLK_TICKS_PER_BIT = 5'd21;
+	parameter CTRLR_CLK_TICKS_WIDTH = 3'd5;
 
+	// Debug TX @ 115k baud
+	// 50MHz / 115183 = 434.02777
+	parameter DEBUG_TX_UART_TICKS_PER_BIT = 9'd434;
+	parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd9;
+	//#10 clk <= !clk; // 50MHz (1/50000000./2 = 10 EE-8)
+
+	// 50MHz / 22 = 2272727.27272
+	// log2(6045455) = 21.1159929 -> 22
+	parameter DEBUG_MSGS_PER_SEC_TICKS = 22'd2272727;
+	parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd22;
+
+`ifdef SIM
+	// use smaller value in testbench so we don't infinitely sim
+	parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
+	parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
+
+    parameter SIM_HALF_PERIOD_NS = 10; // 50MHz (1/50000000./2 = 10 EE-8)
+`endif
 reg clk;
 reg reset;
 reg local_reset;
@@ -34,10 +53,9 @@ reg [1071:0] mystring = "brR L-7766554433221188776655443322118877665544332211887
 
 
 control_module #(
-    	// we want 22MHz / 2,430,000 = 9.0534
-	    // 22MHz / 9 = 2,444,444 baud 2444444
-		.UART_CLK_TICKS_PER_BIT(4'd9),
-		.UART_CLK_TICKS_WIDTH(4)
+		// Picture/Video data RX baud rate
+		.UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+		.UART_CLK_TICKS_WIDTH(CTRLR_CLK_TICKS_WIDTH)
 	) control_module_instance (
 		.reset(reset),
 		.clk_in(clk),
@@ -59,18 +77,18 @@ control_module #(
 	);
 
 	debugger #(
-		// 22MHz / 1000000 = 22
-		//.DIVIDER_TICKS_WIDTH(20),
-		//.DIVIDER_TICKS(1000000),
-        // use smaller than normal so it doesn't require us to simulate to
-        // infinity to see results
-		.DIVIDER_TICKS_WIDTH(4),
-		.DIVIDER_TICKS(15),
 		.DATA_WIDTH_BASE2(11),
 		.DATA_WIDTH(1072),
-        // override the below params to override the default transmit speeds
-        .UART_TICKS_PER_BIT(4'd9),
-        .UART_TICKS_PER_BIT_SIZE(4)
+        // use smaller than normal so it doesn't require us to simulate to
+        // infinity to see results
+		.DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM),
+		.DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+
+		// We're using the debugger here as a data transmitter only. Need
+		// to transmit at the same speed as the controller is expecting to
+		// receive at
+        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+        .UART_TICKS_PER_BIT_SIZE(CTRLR_CLK_TICKS_WIDTH)
 	) mydebug (
 		.clk_in(clk),
 		.reset(local_reset),
@@ -111,7 +129,7 @@ control_module #(
   end
 
 always begin
-    #22.72727  clk <= ! clk; // 2 of these make a period, 22MHz
+	#SIM_HALF_PERIOD_NS clk <= !clk;
 end
 
 endmodule

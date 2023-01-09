@@ -1,14 +1,28 @@
-`timescale 1ns/10ps
-/*
-iverilog -s tb_main -vvvv -o  blah.vvp tb_main.v control_module.v tb_control_module.v tb_debugger.v \
-    debugger.v tb_uart_rx.v uart_rx.v timeout.v clock_divider.v syncore_ram.v \
-    /home/awhite/lscc/iCEcube2.2017.08/LSE/cae_library/synthesis/verilog/sb_ice40.v uart_tx.v \
-    debug_uart_rx.v main.v framebuffer_fetch.v matrix_scan.v newram2.v pixel_split.v brightness.v \
-    rgb565.v Multiported-RAM/mpram_gen.v Multiported-RAM/mpram.v Multiported-RAM/mpram_xor.v \
-    Multiported-RAM/mrram.v Multiported-RAM/dpram.v Multiported-RAM/utils.vh && vvp blah.vvp
-    */
+`timescale 1ns/100ps
 module tb_main;
+	// RX image data @ 2.44Mbaud
+	// 50MHz / 2444444 = 20.454549 -> 50Mhz/21 -> 2380952
+	parameter CTRLR_CLK_TICKS_PER_BIT = 5'd21;
+	parameter CTRLR_CLK_TICKS_WIDTH = 3'd5;
 
+	// Debug TX @ 115k baud
+	// 50MHz / 115183 = 434.02777
+	parameter DEBUG_TX_UART_TICKS_PER_BIT = 9'd434;
+	parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd9;
+	//#10 clk <= !clk; // 50MHz (1/50000000./2 = 10 EE-8)
+
+	// 50MHz / 22 = 2272727.27272
+	// log2(6045455) = 21.1159929 -> 22
+	parameter DEBUG_MSGS_PER_SEC_TICKS = 22'd2272727;
+	parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd22;
+
+`ifdef SIM
+	// use smaller value in testbench so we don't infinitely sim
+	parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
+	parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
+
+    parameter SIM_HALF_PERIOD_NS = 10.000; // 50MHz (1/50000000./2 = 10 EE-8)
+`endif
     reg pin3_clk;
     wire pin3_ROA0;
     wire pin4_ROA1;
@@ -28,7 +42,6 @@ module tb_main;
     reg  pin24_debug_rx_in;
 
     reg clk;
-    reg clk_22mhz;
     reg reset;
     reg local_reset;
 
@@ -63,22 +76,19 @@ module tb_main;
     );
     reg mask;
     debugger #(
-		// 22MHz / 1000000 = 22
-		//.DIVIDER_TICKS_WIDTH(20),
-		//.DIVIDER_TICKS(1000000),
+		.DATA_WIDTH_BASE2(4'd12),
+		.DATA_WIDTH(12'd2112),
+
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-		.DIVIDER_TICKS_WIDTH(9),
-		.DIVIDER_TICKS(500),
-		.DATA_WIDTH_BASE2('d12),
-		.DATA_WIDTH('d2112),
-        // override the below params to override the default transmit speeds
-        // 2444444 baud @ 22mhZ
-        .UART_TICKS_PER_BIT(4'd9),
-        .UART_TICKS_PER_BIT_SIZE(4)
-        // 22MHz / 1222222 = 18
-        //.UART_TICKS_PER_BIT(5'd18),
-        //.UART_TICKS_PER_BIT_SIZE(5)
+		.DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM),
+		.DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+
+		// We're using the debugger here as a data transmitter only. Need
+		// to transmit at the same speed as the controller is expecting to
+		// receive at
+        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+        .UART_TICKS_PER_BIT_SIZE(CTRLR_CLK_TICKS_WIDTH)
 	) mydebug (
         .clk_in(clk && mask),
 		.reset(local_reset),
@@ -90,7 +100,6 @@ module tb_main;
 		.tx_out(pin7_uart_rx)
 	);
 
-    integer j;
     initial begin
         $dumpfile(`DUMP_FILE_NAME);
         $dumpvars(0, tb_main);
@@ -133,14 +142,9 @@ module tb_main;
         //    local_reset = ! local_reset;
         //    reset = ! reset;
         //$finish;
-        #10000000 $finish;
+        #5000000 $finish;
     end
     always begin
-        //#222.72727  clk_22mhz <= ! clk_22mhz; // 2 of these make a period, 22MHz
-        #31.25000  clk <=  ! clk; // 2 of these make a period, 16MHz
-        //#204.545   tb_clk_baudrate <= ! tb_clk_baudrate; // 2444444hz
+        #SIM_HALF_PERIOD_NS clk <= !clk;
     end
-    // always begin
-    //     #400 reset <= ! reset;
-    // end
 endmodule
