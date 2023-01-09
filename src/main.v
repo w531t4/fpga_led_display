@@ -55,7 +55,7 @@ parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd22;
 `ifdef SIM
 // use smaller value in testbench so we don't infinitely sim
 parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
-parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 2'd4;
+parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
 
 
 // period = (1 / 50000000hz) / 2 = 10.00000
