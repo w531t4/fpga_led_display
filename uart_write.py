@@ -63,19 +63,15 @@ def main() -> None:
     ser = serial.Serial(serial_device, BAUDRATE, timeout=None)
     loop_number = 0
     while True:
-        d = build_raw_row(tdata[0], padding_amount=50, override_row_num=(loop_number % 256))
-        d = replace_last_byte(d, str((loop_number % 256)).encode("utf-8"))
+        d = build_raw_row(tdata[0], padding_amount=0, override_row_num=(loop_number % 32))
+        d = replace_last_byte(d, chr((loop_number % 32)).encode("utf-8"))
         #print("ln:%s writing row=%s alldata=%s" % (loop_number, tdata[0]['row'], d))
-        ser.write(d)
-        d = build_raw_row(tdata[1], padding_amount=50, override_row_num=(loop_number % 256))
-        d = replace_last_byte(d, str((loop_number % 256)).encode("utf-8"))
-        #print("ln:%s writing row=%s alldata=%s" % (loop_number, tdata[1]['row'], d))
         ser.write(d)
         loop_number += 1
         if MAX_ITERATIONS != 0:
             if loop_number > MAX_ITERATIONS+2:
                 break
-        time.sleep(.4)
+        time.sleep(.2)
         #ser.flush()
     print("done")
     ser.close()
