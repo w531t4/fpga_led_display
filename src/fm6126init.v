@@ -147,7 +147,8 @@ module fm6126init
 	output output_enable_out,
 	output [2:0] rgb1_out,
 	output [2:0] rgb2_out,
-	output latch_out
+	output latch_out,
+	output reg reset_notify
 	);
 
 	reg output_enable_reg;
@@ -187,6 +188,7 @@ module fm6126init
 			rgb2_reg <= 3'b0;
 			output_enable_reg <= 1'b0;
 			latch_reg <= 1'b0;
+			reset_notify <= 1'b0;
 		end
 		else begin
 			if (currentState == STATE1_BEGIN) begin
@@ -238,6 +240,7 @@ module fm6126init
 			else if (currentState == STATE2_END && (~ (| widthCounter))) begin
 				currentState <= STATE_FINISH;
 				latch_reg <= 1'b0;
+				reset_notify <= 1'b1;
 			end
 			else if (currentState == STATE2_END) begin
 				currentState <= STATE2_BEGIN;
@@ -248,6 +251,7 @@ module fm6126init
 				rgb1_reg <= rgb1_in;
 				rgb2_reg <= rgb2_in;
 				output_enable_reg <= output_enable_in;
+				reset_notify <= 1'b0;
 			end
 			else begin
 				currentState <= STATE1_BEGIN;

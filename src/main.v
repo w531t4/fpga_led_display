@@ -65,7 +65,10 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 	wire clk_root;
 	wire clk_matrix;
 
-	reg global_reset;
+	wire global_reset;
+	reg global_reset_init;
+	reg global_reset_debug;
+	wire init_reset_strobe;
 	wire buffered_global_reset;
 
 	wire clk_pixel_load;
@@ -175,10 +178,17 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 		.clock_out(clk_root)
 	) /* synthesis syn_noprune=1 */ ;
 
+	reg [5:0] reset_cnt = 6'b100111;
+	wire init_enable;
+	assign init_enable = &reset_cnt;
+	always @(posedge clk_root) begin
+			reset_cnt <= reset_cnt + !init_enable;
+	end
+
 fm6126init do_init (
 	.clk_in(clk_root),
 	//.reset(system_init_enable),
-	.reset(global_reset),
+	.reset(~init_enable),
 	.output_enable_in(output_enable_intermediary),
 	.rgb1_in(rgb1_intermediary),
 	.rgb2_in(rgb2_intermediary),
@@ -186,7 +196,8 @@ fm6126init do_init (
 	.output_enable_out(output_enable),
 	.rgb1_out(rgb1),
 	.rgb2_out(rgb2),
-	.latch_out(row_latch)
+	.latch_out(row_latch),
+	.reset_notify(init_reset_strobe)
 ) /* synthesis syn_noprune=1 */ ;
 
 	timeout #(
@@ -204,15 +215,18 @@ fm6126init do_init (
 
 	/* produce a clock for use on the LED matrix */
 	reg [1:0] sync_fifo;
+	//assign init_reset_strobe = 1'b0;
 	// this is a buffer to transfer global reset across clock domains
 	// TODO: Is this still needed?
 	always @(posedge clk_root) begin
-			{ global_reset, sync_fifo } <= { sync_fifo, buffered_global_reset };
-
+			{ global_reset_debug, sync_fifo } <= { sync_fifo, buffered_global_reset };
+			//{ global_reset_init, sync_fifo } <= { sync_fifo, init_reset_strobe };
 	//always @(posedge clk_root_logic)
 
 	end
 
+	assign global_reset = global_reset_debug;
+	//assign global_reset = global_reset_init || global_reset_debug;
 	/* produce signals to scan a 64x32 LED matrix, with 6-bit color */
 
 	clock_divider #(
