@@ -125,6 +125,7 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 
 	wire output_enable;
 	wire output_enable_intermediary;
+	wire fm6126mask_en;
 
 	wire [7:0] num_commands_processed;
 
@@ -185,21 +186,27 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 			reset_cnt <= reset_cnt + !init_enable;
 	end
 
+	wire [2:0] rgb1_fm6126init;
+	wire [2:0] rgb2_fm6126init;
+	wire row_latch_fm6126init;
 fm6126init do_init (
 	.clk_in(clk_root),
 	//.reset(system_init_enable),
 	.reset(~init_enable),
-	.output_enable_in(output_enable_intermediary),
-	.rgb1_in(rgb1_intermediary),
-	.rgb2_in(rgb2_intermediary),
-	.latch_in(row_latch_intermediary),
-	.output_enable_out(output_enable),
-	.rgb1_out(rgb1),
-	.rgb2_out(rgb2),
-	.latch_out(row_latch),
+	.rgb1_out(rgb1_fm6126init),
+	.rgb2_out(rgb2_fm6126init),
+	.latch_out(row_latch_fm6126init),
+	.mask_en(fm6126mask_en),
 	.reset_notify(init_reset_strobe)
 ) /* synthesis syn_noprune=1 */ ;
-
+	assign output_enable = output_enable_intermediary && fm6126mask_en;
+    assign rgb1[0] = (rgb1_intermediary[0] & fm6126mask_en) | (rgb1_fm6126init[0] & ~fm6126mask_en);
+    assign rgb1[1] = (rgb1_intermediary[1] & fm6126mask_en) | (rgb1_fm6126init[1] & ~fm6126mask_en);
+    assign rgb1[2] = (rgb1_intermediary[2] & fm6126mask_en) | (rgb1_fm6126init[2] & ~fm6126mask_en);
+    assign rgb2[0] = (rgb2_intermediary[0] & fm6126mask_en) | (rgb2_fm6126init[0] & ~fm6126mask_en);
+    assign rgb2[1] = (rgb2_intermediary[1] & fm6126mask_en) | (rgb2_fm6126init[1] & ~fm6126mask_en);
+    assign rgb2[2] = (rgb2_intermediary[2] & fm6126mask_en) | (rgb2_fm6126init[2] & ~fm6126mask_en);
+	assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
 	timeout #(
 		.COUNTER_WIDTH(4)
 	) timeout_global_reset (
