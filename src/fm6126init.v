@@ -191,7 +191,7 @@ module fm6126init
 				//					 it'll yield a 0, which we'll then invert and use as an indicator
 				//					 to set the latch
 				// (! see_above) <-- invert the result
-				latch_out <= (~ (| (widthState >> STAGE1_OFFSET)));
+				latch_out <= (~ (| widthState));
 				pixclock_out <= 1'b0;
 				// shift right one, regardless
 				widthState <= (widthState) >> 1;
@@ -221,7 +221,7 @@ module fm6126init
 				//					 it'll yield a 0, which we'll then invert and use as an indicator
 				//					 to set the latch
 				// (! see_above) <-- invert the result
-				latch_out <= (~ (| (widthState >> STAGE2_OFFSET)));
+				latch_out <= (~ (| widthState));
 				// shift right one, regardless
 				widthState <= (widthState) >> 1;
 				pixclock_out <= 1'b0;
