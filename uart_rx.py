@@ -253,15 +253,26 @@ def main(stdscr) -> None:
                 subsegment = binstring[position:position+bits_used]
                 subsegment = subsegment[::-1]
                 delta = len(subsegment) % 8
-                if delta > 0:
-                    subsegment = "0"*(8-delta) + subsegment
+                #if delta > 0:
+                #    subsegment = "0"*(8-delta) + subsegment
+                # if enable_debug and (vname == "ram_a_address"):
+                #     fw.write("\n====blah====\n")
+                #     fw.write("bits_used=%s\n" % bits_used)
+                #     fw.write("position=%s\n" % position)
+                #     fw.write("delta=%s\n" % delta)
+                #     fw.write("binstring[position:position+bits_used]=%s hex=%s\n" % (binstring[position:position+bits_used], hex(int(binstring[position:position+bits_used], 2))))
+                #     fw.write("subsegment=%s hex=%s \n" % ((binstring[position:position+bits_used])[::-1], hex(int((binstring[position:position+bits_used])[::-1],2))))
                 subsegment_numbytes = len(subsegment)/8
                 subsegment_bytestring = ""
-                for slice in [subsegment[k:k+8] for k in range(0, len(subsegment), 8)]:
-                    subsegment_bytestring = subsegment_bytestring + str(chr(int(slice,2)))
-
-                #reverse the order, since things are currently c[0] c[1], we want c[1], c[0]
-                subsegment_bytestring = subsegment_bytestring[::-1]
+                if (len(subsegment) % 8) != 0:
+                    gap = 8 - len(subsegment) % 8
+                    subsegment = ("0" * gap) + subsegment
+                temp_array = list()
+                for start_pos in range(0, len(subsegment), 8):
+                    val = subsegment[start_pos:start_pos+8]
+                    modval = str(chr(int(val,2)))
+                    temp_array.append(modval)
+                subsegment_bytestring = "".join(temp_array)
                 output_string  = do_debug(subsegment_bytestring, title=vname)
                 if enable_debug == True:
                     fw.write("bits_used:" + str(bits_used) + " position:" + str(position) + \
