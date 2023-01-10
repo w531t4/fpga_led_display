@@ -162,6 +162,7 @@ def main(stdscr) -> None:
     structure.append({ 'name': 'clk_pixel_load_en', 'size': 1 })
     structure.append({ 'name': 'pixel_load_counter2', 'size': 4 })
     structure.append({ 'name': 'debug_command', 'size': 8 })
+    structure.append({ 'name': 'num_commands_processed', 'size': 8 })
     structure.append({ 'name': 'whitespace', 'size': 3 })
 
     if enable_debug == True:
