@@ -126,6 +126,7 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 	wire output_enable;
 	wire output_enable_intermediary;
 	wire fm6126mask_en;
+	wire clk_pixel_intermediary;
 
 	wire [7:0] num_commands_processed;
 
@@ -189,6 +190,7 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 	wire [2:0] rgb1_fm6126init;
 	wire [2:0] rgb2_fm6126init;
 	wire row_latch_fm6126init;
+	wire pixclock_fm6126init;
 fm6126init do_init (
 	.clk_in(clk_root),
 	//.reset(system_init_enable),
@@ -197,6 +199,7 @@ fm6126init do_init (
 	.rgb2_out(rgb2_fm6126init),
 	.latch_out(row_latch_fm6126init),
 	.mask_en(fm6126mask_en),
+	.pixclock_out(pixclock_fm6126init),
 	.reset_notify(init_reset_strobe)
 ) /* synthesis syn_noprune=1 */ ;
 	assign output_enable = output_enable_intermediary && fm6126mask_en;
@@ -207,6 +210,7 @@ fm6126init do_init (
     assign rgb2[1] = (rgb2_intermediary[1] & fm6126mask_en) | (rgb2_fm6126init[1] & ~fm6126mask_en);
     assign rgb2[2] = (rgb2_intermediary[2] & fm6126mask_en) | (rgb2_fm6126init[2] & ~fm6126mask_en);
 	assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
+	assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
 	timeout #(
 		.COUNTER_WIDTH(4)
 	) timeout_global_reset (
@@ -252,7 +256,7 @@ fm6126init do_init (
 		.row_address(row_address),
 		.row_address_active(row_address_active),
 		.clk_pixel_load(clk_pixel_load),
-		.clk_pixel(clk_pixel),
+		.clk_pixel(clk_pixel_intermediary),
 		.row_latch(row_latch_intermediary),
 		.output_enable(output_enable_intermediary),
 		.brightness_mask(brightness_mask),

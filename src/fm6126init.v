@@ -142,6 +142,7 @@ module fm6126init
 	output reg [2:0] rgb2_out,
 	output reg latch_out,
 	output reg mask_en,
+	output reg pixclock_out,
 	output reg reset_notify
 	);
 
@@ -173,6 +174,7 @@ module fm6126init
 			rgb1_out <= 3'b0;
 			rgb2_out <= 3'b0;
 			latch_out <= 1'b0;
+			pixclock_out <= 1'b0;
 			reset_notify <= 1'b0;
 			mask_en <= 1'b1;
 		end
@@ -190,6 +192,7 @@ module fm6126init
 				//					 to set the latch
 				// (! see_above) <-- invert the result
 				latch_out <= (~ (| (widthState >> STAGE1_OFFSET)));
+				pixclock_out <= 1'b0;
 				// shift right one, regardless
 				widthState <= (widthState) >> 1;
 				rgb1_out <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
@@ -199,10 +202,12 @@ module fm6126init
 			else if (currentState == STATE1_END && (~ (| widthCounter))) begin
 				currentState <= STATE2_BEGIN;
 				latch_out <= 1'b0;
+				pixclock_out <= 1'b1;
 				widthState <= ({LED_WIDTH{1'b1}}) >> (STAGE2_OFFSET);
 			end
 			else if (currentState == STATE1_END) begin
 				currentState <= STATE1_BEGIN;
+				pixclock_out <= 1'b1;
 			end
 			else if (currentState == STATE2_BEGIN) begin
 				currentState <= STATE2_END;
@@ -219,6 +224,7 @@ module fm6126init
 				latch_out <= (~ (| (widthState >> STAGE2_OFFSET)));
 				// shift right one, regardless
 				widthState <= (widthState) >> 1;
+				pixclock_out <= 1'b0;
 				rgb1_out <= {C13[widthCounter % 'd16], C13[widthCounter % 'd16], C13[widthCounter % 'd16]};
 				rgb2_out <= {C13[widthCounter % 'd16], C13[widthCounter % 'd16], C13[widthCounter % 'd16]};
 			end
@@ -226,13 +232,16 @@ module fm6126init
 				currentState <= STATE_FINISH;
 				latch_out <= 1'b0;
 				reset_notify <= 1'b1;
+				pixclock_out <= 1'b1;
 			end
 			else if (currentState == STATE2_END) begin
 				currentState <= STATE2_BEGIN;
+				pixclock_out <= 1'b1;
 			end
 			else if (currentState == STATE_FINISH) begin
 				mask_en <= 1'b1;
 				reset_notify <= 1'b0;
+				pixclock_out <= 1'b0;
 			end
 			else begin
 				currentState <= STATE1_BEGIN;
