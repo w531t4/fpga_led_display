@@ -243,7 +243,7 @@ module fm6126init
 				reset_notify <= 1'b0;
 				pixclock_out <= 1'b0;
 			end
-			else begin
+			else if (currentState == STATE_INIT) begin
 				currentState <= STATE1_BEGIN;
 				// not setting clock low, because that happens automatically.
 				widthCounter <= 4'd0;
