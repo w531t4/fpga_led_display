@@ -14,7 +14,7 @@ module matrix_scan (
 	output reg [5:0] brightness_mask = 6'b100000, /* used to pick a bit from the sub-pixel's brightness */
 	output row_latch2,
 	output state_advance2,
-`ifndef FM6126A
+`ifndef USE_FM6126A
 	output [1:0] row_latch_state2,
 `else
 	output [3:0] row_latch_state2,
@@ -29,7 +29,7 @@ module matrix_scan (
 
 	wire clk_pixel_load_en;/* enables the pixel load clock */
 	reg  clk_pixel_en;    /* enables the pixel clock, delayed by one cycle from the load clock */
-`ifndef FM6126A
+`ifndef USE_FM6126A
 	reg  [1:0] row_latch_state = 2'b00 /* synthesis syn_preserve=1 */;
 `else
 	reg  [3:0] row_latch_state = 4'b0000 /* synthesis syn_preserve=1 */;
@@ -42,7 +42,7 @@ module matrix_scan (
 	wire [9:0] brightness_counter;     /* used to control the state advance overlap */
 
 	assign clk_pixel_load = clk_in && clk_pixel_load_en;
-`ifndef FM6126A
+`ifndef USE_FM6126A
 	assign clk_pixel = clk_in && clk_pixel_en;
 	assign row_latch = row_latch_state[1:0] == 2'b10;
 `else
@@ -87,7 +87,7 @@ module matrix_scan (
     always @(negedge clk_in, posedge reset) begin
 		if (reset) begin
 			clk_pixel_en <= 1'b1;
-`ifndef FM6126A
+`ifndef USE_FM6126A
 			row_latch_state <= 2'b1;
 `else
 			row_latch_state <= 4'b0001;
@@ -95,7 +95,7 @@ module matrix_scan (
 		end
 		else begin
 			clk_pixel_en <= clk_pixel_load_en;
-`ifndef FM6126A
+`ifndef USE_FM6126A
 			row_latch_state <= { row_latch_state[0], clk_pixel_load_en };
 `else
 			row_latch_state <= { row_latch_state[2], row_latch_state[1], row_latch_state[0], clk_pixel_load_en };
