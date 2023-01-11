@@ -202,7 +202,7 @@ fm6126init do_init (
 	.pixclock_out(pixclock_fm6126init),
 	.reset_notify(init_reset_strobe)
 ) /* synthesis syn_noprune=1 */ ;
-	assign output_enable = output_enable_intermediary && fm6126mask_en;
+	assign output_enable = output_enable_intermediary & fm6126mask_en;
     assign rgb1[0] = (rgb1_intermediary[0] & fm6126mask_en) | (rgb1_fm6126init[0] & ~fm6126mask_en);
     assign rgb1[1] = (rgb1_intermediary[1] & fm6126mask_en) | (rgb1_fm6126init[1] & ~fm6126mask_en);
     assign rgb1[2] = (rgb1_intermediary[2] & fm6126mask_en) | (rgb1_fm6126init[2] & ~fm6126mask_en);
