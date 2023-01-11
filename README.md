@@ -51,3 +51,5 @@ Based on suggestion from https://stackoverflow.com/questions/67923728/yosys-prod
 
 - talks about registers, though they aren't numbered the ssame https://github.com/hzeller/rpi-rgb-led-matrix/issues/964
 - seems to be like an analysis of registers for fm6126a - https://github.com/ironsheep/P2-HUB75-LED-Matrix-Driver/blob/a8b93c845d56180a9fe05f77ef0ed6c45102709d/driver/isp_hub75_rgb3bit.spin2#L341
+
+- https://community.pixelmatix.com/t/new-p2-1-32-scan-64-64-led-panel-with-different-ic-chip-controller/281/39

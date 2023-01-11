@@ -151,6 +151,43 @@ Shared
 		OR			   11 bits, yielding 4 bits at each location
 
 	12 bit addressing = 4096 addresses and it yields at most 4 bits frim
+
+	[__ __ A1 __ __ A0 __ __]0x00
+	[__ A1 __ __ A0 __ __.__]0x08
+	[A1 __ __ A0 __ __.__ __]0x10
+	[__ __ A0 __ __.__ __ A1]0x18
+	[__ A0 __ __.__ __ A1 __]0x20
+	[A0 __ __.__ __ A1 __ __]0x28
+	[__ __.__ __ A1 __ __ A0]0x30
+
+addresses
+	  000X = 0
+	  001X = 2
+	  010X = 4
+	  011X = 6
+	  100X = 8
+	  101X = 10
+	  110X = 12
+	  111X = 14
+
+	  00XX = 0
+	  01XX = 4
+	  10XX = 8
+	  11XX = 12
+
+	[_4A1 _4A0 _3A1 _3A0 _2A1 _2A0 Y1A1 Y1A0]0x00
+	[_8A1 _8A0 _7A1 _7A0 _6A1 _6A0 Y5A1 Y5A0]0x08
+	[____ ____ ____ ____ ____ ____ ____ ____]0x10
+	[____ ____ ____ ____ ____ ____ ____ ____]0x18
+
+
+	[__ __ A1 __ __ A0 __ __]0x00
+	[__ A1 __ __ A0 __ __.__]0x08
+	[A1 __ __ A0 __ __.__ __]0x10
+	[__ __ A0 __ __.__ __ A1]0x18
+	[__ A0 __ __.__ __ A1 __]0x20
+	[A0 __ __.__ __ A1 __ __]0x28
+	[__ __.__ __ A1 __ __ A0]0x30
 DP8KC framebuffer_0_0_3
 	DIA: {LO, LO, LO, DataInA[1], LO, LO, DataInA[0], LO, LO} # 9 bits
 	DIB: {LO, LO, LO, LO, LO, DataInB[9], DataInB[8], DataInB[1], DataInB[0]} # 9 bits <-- these don't matter, we always write 0
