@@ -6,33 +6,33 @@
 
 #project files
 add_file -fpga_constraint "template_syn_1.fdc"
-add_file -verilog "src/main.v"
-add_file -verilog "src/brightness.v"
-add_file -verilog "src/clock_divider.v"
-add_file -verilog "src/control_module.v"
-add_file -verilog "src/debug_uart_rx.v"
-add_file -verilog "src/debugger.v"
-add_file -verilog "src/framebuffer.v"
-add_file -verilog "src/framebuffer_fetch.v"
-add_file -verilog "src/matrix_scan.v"
-add_file -verilog "src/pixel_split.v"
-add_file -verilog "src/rgb565.v"
-add_file -verilog "src/timeout.v"
-add_file -verilog "src/uart_tx.v"
-add_file -verilog "src/new_pll.v"
-add_file -verilog "src/fm6126init.v"
-add_file -verilog "src/newram2.v"
-add_file -verilog "src/Multiported-RAM/mrram.v"
-add_file -verilog "src/Multiported-RAM/mpram_xor.v"
-add_file -verilog "src/Multiported-RAM/mpram.v"
-add_file -verilog "src/Multiported-RAM/mpram_gen.v"
-add_file -verilog "src/Multiported-RAM/dpram.v"
-add_file -verilog "src/multimem.v"
-add_file -verilog "src/mem_core/newram3.v"
-add_file -verilog "src/mem_core/syncore_ram.v"
 
 
 
+add_file -verilog -lib work "src/main.v" 
+add_file -verilog -lib work "src/brightness.v" 
+add_file -verilog -lib work "src/clock_divider.v" 
+add_file -verilog -lib work "src/control_module.v" 
+add_file -verilog -lib work "src/debug_uart_rx.v" 
+add_file -verilog -lib work "src/debugger.v" 
+add_file -verilog -lib work "src/framebuffer.v" 
+add_file -verilog -lib work "src/framebuffer_fetch.v" 
+add_file -verilog -lib work "src/matrix_scan.v" 
+add_file -verilog -lib work "src/pixel_split.v" 
+add_file -verilog -lib work "src/rgb565.v" 
+add_file -verilog -lib work "src/timeout.v" 
+add_file -verilog -lib work "src/uart_tx.v" 
+add_file -verilog -lib work "src/new_pll.v" 
+add_file -verilog -lib work "src/fm6126init.v" 
+add_file -verilog -lib work "src/newram2.v" 
+add_file -verilog -lib work "src/Multiported-RAM/mrram.v" 
+add_file -verilog -lib work "src/Multiported-RAM/mpram_xor.v" 
+add_file -verilog -lib work "src/Multiported-RAM/mpram.v" 
+add_file -verilog -lib work "src/Multiported-RAM/mpram_gen.v" 
+add_file -verilog -lib work "src/Multiported-RAM/dpram.v" 
+add_file -verilog -lib work "src/multimem.v" 
+add_file -verilog -lib work "src/mem_core/newram3.v" 
+add_file -verilog -lib work "src/mem_core/syncore_ram.v" 
 #implementation: "template_Implmnt"
 impl -add template_Implmnt -type fpga
 
@@ -48,7 +48,7 @@ set_option -project_relative_includes 1
 set_option -technology SBTiCE40
 set_option -part iCE40LP8K
 set_option -package CM81
-set_option -speed_grade ""
+set_option -speed_grade 
 set_option -part_companion ""
 
 #compilation/mapping options
@@ -101,4 +101,5 @@ set_option -write_apr_constraint 1
 
 #set result format/file last
 project -result_file "template_Implmnt/template.edf"
-impl -active "template_Implmnt"
+impl -active template_Implmnt
+project -run synthesis -clean

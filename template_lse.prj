@@ -1,5 +1,5 @@
 #-- Lattice, Inc.
-#-- Project file /home/awhite/CLionProjects/led_display/fpga/template_lse.prj
+#-- Project file /home/awhite/Documents/Projects/fpga_led_display/template_lse.prj
 
 #device
 -a SBTiCE40
@@ -28,30 +28,31 @@
 -top main
 -loop_limit 1950
 
--ver "brightness.v"
--ver "clock_divider.v"
--ver "control_module.v"
--ver "framebuffer.v"
--ver "framebuffer_fetch.v"
--ver "main.v"
--ver "matrix_scan.v"
--ver "pixel_split.v"
--ver "rgb565.v"
--ver "timeout.v"
--ver "uart_rx.v"
--ver "newram.v"
--ver "syncore_ram.v"
--ver "newram2.v"
--ver "Multiported-RAM/mpram.v"
--ver "Multiported-RAM/mrram.v"
--ver "Multiported-RAM/dpram.v"
--ver "Multiported-RAM/mpram_gen.v"
--ver "Multiported-RAM/mpram_xor.v"
--ver "uart_tx.v"
--ver "debugger.v"
--ver "debug_uart_rx.v"
--ver "Multiported-RAM/utils.v"
--p "/home/awhite/CLionProjects/led_display/fpga"
+-ver "src/main.v"
+-ver "src/brightness.v"
+-ver "src/clock_divider.v"
+-ver "src/control_module.v"
+-ver "src/debug_uart_rx.v"
+-ver "src/debugger.v"
+-ver "src/framebuffer.v"
+-ver "src/framebuffer_fetch.v"
+-ver "src/matrix_scan.v"
+-ver "src/pixel_split.v"
+-ver "src/rgb565.v"
+-ver "src/timeout.v"
+-ver "src/uart_tx.v"
+-ver "src/new_pll.v"
+-ver "src/fm6126init.v"
+-ver "src/newram2.v"
+-ver "src/Multiported-RAM/mrram.v"
+-ver "src/Multiported-RAM/mpram_xor.v"
+-ver "src/Multiported-RAM/mpram.v"
+-ver "src/Multiported-RAM/mpram_gen.v"
+-ver "src/Multiported-RAM/dpram.v"
+-ver "src/multimem.v"
+-ver "src/mem_core/newram3.v"
+-ver "src/mem_core/syncore_ram.v"
+-p "/home/awhite/Documents/Projects/fpga_led_display"
 
 #set result format/file last
 -output_edif template_Implmnt/template.edf

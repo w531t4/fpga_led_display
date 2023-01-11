@@ -13,6 +13,13 @@ VSOURCES=src/brightness.v \
 		 src/uart_tx.v \
 		 src/debugger.v \
 		 src/debug_uart_rx.v \
+		 src/Multiported-RAM/mpram.v \
+		 src/Multiported-RAM/mrram.v \
+		 src/Multiported-RAM/dpram.v \
+		 src/Multiported-RAM/mpram_gen.v \
+		 src/Multiported-RAM/mpram_xor.v \
+		 src/newram.v \
+		 src/newram2.v \
 		 src/fm6126init.v \
 		 src/new_pll.v \
 		 src/multimem.v \
@@ -68,26 +75,34 @@ $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
 $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	${IVERILOG_BIN} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
+	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
 
 $(SIMULATION_DIR)/main.vvp: $(foreach file, \
+											utils.vh \
+		 									Multiported-RAM/mpram.v \
+		 									Multiported-RAM/mrram.v \
+		 									Multiported-RAM/dpram.v \
+		 									Multiported-RAM/mpram_gen.v \
+		 									Multiported-RAM/mpram_xor.v \
 											fm6126init.v \
 										    new_pll.v \
 											timeout.v \
 											matrix_scan.v \
 											framebuffer_fetch.v \
 											control_module.v \
+											mem_core/syncore_ram.v \
+											mem_core/newram3.v \
 											multimem.v \
+		 									newram.v \
+		 									newram2.v \
 											pixel_split.v \
 											debugger.v \
 											clock_divider.v \
 											platform/sb_ice40.v \
 											debug_uart_rx.v \
-											mem_core/newram3.v \
 											brightness.v \
 											rgb565.v \
 											uart_tx.v \
-											mem_core/syncore_ram.v \
 											, $(SRC_DIR)/$(file))
 #$(SIMULATION_DIR)/newram2.vvp: $(SRC_DIR)/newram2.v $(TB_DIR)/tb_newram2.v $(foreach file, mpram.v mpram_lvt_1ht.v lvt_1ht.v mrram.v dpram.v mpram_gen.#v, $(SRC_DIR)/Multiported-RAM/$(file))
 #	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
