@@ -11,3 +11,15 @@ fm tc72583n OK
 fm6126A
 8292290    x24 (24pin 2x12)
 https://github.com/hzeller/rpi-rgb-led-matrix/issues/823
+
+```
+from https://bobdavis321.blogspot.com/2019/02/p3-64x32-hub75e-led-matrix-panels-with.html
+
+Instruction          LE      Instruction Description
+---------------        ---        ----------------------------
+RESET_OEN      0-1      Soft reset signal
+DATA_LATCH    3          latches 16 bit data to the output
+--                         4~10    Reserved
+WR_REG1         11        Write configuration register 1
+WR_REG2         12        Write configuration register 2
+```

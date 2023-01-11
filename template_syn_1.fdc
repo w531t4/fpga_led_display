@@ -2,7 +2,7 @@
 
 # Synopsys, Inc. constraint file
 # /home/awhite/Documents/Projects/fpga_led_display/template_syn_1.fdc
-# Written on Wed Jan  4 11:25:52 2023
+# Written on Sun Jan  8 19:35:26 2023
 # by Synplify Pro, L-2016.09L+ice40 FDC Constraint Editor
 
 # Custom constraint commands may be added outside of the SCOPE tab sections bounded with BEGIN/END.
@@ -15,17 +15,15 @@
 ###==== END Collections
 
 ###==== BEGIN Clocks - (Populated from tab in SCOPE, do not edit)
-create_clock  -name {clk_root} {n:new_pll_inst.clock_out} -period {45.4545454545} -add
+create_clock  -name {clk_root} {n:new_pll_inst.clock_out} -period {20} -add
+
+
 create_clock  -name {my16mhzclk} {p:pin3_clk_16mhz} -period {62.5} -add
 
 ###==== END Clocks
 
 ###==== BEGIN "Generated Clocks" - (Populated from tab in SCOPE, do not edit)
-create_generated_clock  -name {myclk_matrix} -source {n:clk_root_logic} {n:clkdiv_matrix.clk_out} -divide_by {3} -add
-create_generated_clock  -disable -name {myclk_debug} -source {n:clk_root_logic} {n:mydebug.debug_start} -divide_by {13200000} -add
-create_generated_clock  -disable -name {myclk_uart_rx_baudrate} -source {n:clk_root_logic} {n:ctrl.urx.clkdiv_baudrate.clk_out} -divide_by {25} -add
-create_generated_clock  -disable -name {myctrl.timeout_cmd_line_write.un68_running} -source {n:clk_root_logic} {n:ctrl.timeout_cmd_line_write.un68_running} -multiply_by {1} -add
-create_generated_clock  -disable -name {myrow_latch} -source {n:clk_root} {n:matscan1.row_latch_1} -divide_by {2} -add
+create_generated_clock  -name {clk_matrix} -source {n:new_pll_inst.clock_out} {n:new_pll_inst.clock_out} -master_clock {c:clk_root} -divide_by {3} -add
 ###==== END "Generated Clocks"
 
 ###==== BEGIN Inputs/Outputs - (Populated from tab in SCOPE, do not edit)
@@ -36,6 +34,7 @@ set_input_delay  {p:pin3_clk_16mhz} -disable -clock {c:my16mhzclk} {0}
 ###==== END Registers
 
 ###==== BEGIN "Delay Paths" - (Populated from tab in SCOPE, do not edit)
+set_multicycle_path  -disable
 ###==== END "Delay Paths"
 
 ###==== BEGIN Attributes - (Populated from tab in SCOPE, do not edit)
@@ -48,6 +47,7 @@ define_io_standard   -default_output syn_pad_type {SB_LVCMOS} -delay_type {outpu
 
 ###==== BEGIN "Compile Points" - (Populated from tab in SCOPE, do not edit)
 ###==== END "Compile Points"
+
 
 
 

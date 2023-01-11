@@ -1,13 +1,42 @@
 `timescale 1ns/10ps
 module tb_control_module;
-// iverilog -vvvv -o blah.vvp t//b_control_module.v clock_divider.v control_module.v syncore_ram.v /home/awhite/lscc/iCEcube2.2017.08/LSE/cae_library/synthesis/verilog/sb_ice40.v
-// vvp blah.vvp
-    // iverilog -s tb_control_module -vvvv -o blah.vvp tb_uart_rx.v tb_control_module.v uart_rx.v timeout.v clock_divider.v control_module.v syncore_ram.v /home/awhite/lscc/iCEcube2.2017.08/LSE/cae_library/synthesis/verilog/sb_ice40.v
+// context: RX DATA baud
+// 50000000hz / 2444444hz = 20.4545 ticks width=5
+// tgt_hz variation (after rounding): 2.27%
+// 50000000hz / 2500000hz = 20 ticks width=5
+parameter CTRLR_CLK_TICKS_PER_BIT = 5'd20;
+parameter CTRLR_CLK_TICKS_WIDTH = 3'd5;
 
+
+// context: TX DEBUG baud
+// 50000000hz / 115200hz = 434.0278 ticks width=9
+// tgt_hz variation (after rounding): 0.01%
+// 50000000hz / 115207hz = 434 ticks width=9
+parameter DEBUG_TX_UART_TICKS_PER_BIT = 9'd434;
+parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd9;
+
+
+// context: Debug msg rate
+// 50000000hz / 22hz = 2272727.2727 ticks width=22
+// tgt_hz variation (after rounding): 0.00%
+// 50000000hz / 22hz = 2272727 ticks width=22
+parameter DEBUG_MSGS_PER_SEC_TICKS = 22'd2272727;
+parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd22;
+
+
+`ifdef SIM
+// use smaller value in testbench so we don't infinitely sim
+parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
+parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
+
+
+// period = (1 / 50000000hz) / 2 = 10.00000
+parameter SIM_HALF_PERIOD_NS = 10.00000;
+`endif
 reg clk;
 reg reset;
 reg local_reset;
-reg rx_line;
+wire rx_line;
 //20220106
 //reg [7:0] ram_data_in = 8'b01100101;
 wire rx_running;
@@ -16,35 +45,27 @@ wire [5:0] brightness_enable;
 wire [7:0] ram_data_out;
 wire [11:0] ram_address;
 wire ram_write_enable;
+wire [7:0] num_commands_processed;
 wire ram_clk_enable;
 wire ram_reset;
-wire [1:0 ] cmd_line_state2;
-//20220106
-//wire rx_invalid;
+wire [1:0] cmd_line_state2;
 
 
-//reg [9:0] mycustom_uart_rx = 9'b1011001010;
-//reg [1023:0] mycustom_uart_rx = "L0111223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788";
-reg [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
-//reg [1054:0] mystring = "0111223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667710L Rrb";
+// debugger stuff
+wire debug_command_busy;
+wire debug_command_pulse;
+wire [7:0] debug_command;
 
-//reg [7:0] mycustom_ram_data_in = ;
-wire tb_clk_baudrate;
-reg start = 1'b0;
-reg baudclock = 1'b0;
+//>>> "".join([a[i] for i in range(len(a)-1, -1, -1)])
+//'brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110'
+reg [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
+//reg tb_clk_baudrate;
 
-clock_divider #(
-		.CLK_DIV_COUNT(25),
-		.CLK_DIV_WIDTH(8)
-	) clkdiv_baudrate (
-		.reset(local_reset),
-		.clk_in(clk),
-		.clk_out(tb_clk_baudrate)
-	);
 
 control_module #(
-		.UART_CLK_DIV_COUNT(25),
-		.UART_CLK_DIV_WIDTH(8)
+		// Picture/Video data RX baud rate
+		.UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+		.UART_CLK_TICKS_WIDTH(CTRLR_CLK_TICKS_WIDTH)
 	) control_module_instance (
 		.reset(reset),
 		.clk_in(clk),
@@ -61,7 +82,32 @@ control_module #(
 		.ram_reset(ram_reset),
         //20220106
 		//.rx_invalid(rx_invalid),
-		.cmd_line_state2(cmd_line_state2)
+		.cmd_line_state2(cmd_line_state2),
+        .num_commands_processed(num_commands_processed)
+	);
+
+	debugger #(
+		.DATA_WIDTH_BASE2(11),
+		.DATA_WIDTH(1072),
+        // use smaller than normal so it doesn't require us to simulate to
+        // infinity to see results
+		.DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM),
+		.DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+
+		// We're using the debugger here as a data transmitter only. Need
+		// to transmit at the same speed as the controller is expecting to
+		// receive at
+        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+        .UART_TICKS_PER_BIT_SIZE(CTRLR_CLK_TICKS_WIDTH)
+	) mydebug (
+		.clk_in(clk),
+		.reset(local_reset),
+		.data_in(mystring),
+		.debug_uart_rx_in(1'b0),
+		.debug_command(debug_command),
+		.debug_command_pulse(debug_command_pulse),
+		.debug_command_busy(debug_command_busy),
+		.tx_out(rx_line)
 	);
 
   initial
@@ -71,59 +117,29 @@ control_module #(
       clk = 0;
       reset = 0;
       local_reset = 0;
+    repeat (20) begin
+        @(posedge clk);
+    end
+    @(posedge clk)
+        local_reset = ! local_reset;
+        reset = ! reset;
+    @(posedge clk)
+        local_reset = ! local_reset;
+        reset = ! reset;
+    repeat (20000) begin
+        @(posedge clk);
+    end
+    @(posedge clk)
+        local_reset = ! local_reset;
+        reset = ! reset;
+    @(posedge clk)
+        local_reset = ! local_reset;
+        reset = ! reset;
+    $finish;
   end
-reg [3:0] i = 'd0;
-reg [10:0] j = 'd0;
-
-always @(posedge tb_clk_baudrate) begin
-
-    if (i == 'd10) begin
-        rx_line <= 1'b0;
-        if (j >= ($bits(mystring)-8)) begin
-            j <= 'd0;
-        end
-        else begin
-            j <= j + 'd8;
-        end
-        i <= 'd0;
-    end
-    else if (i == 'd9) begin
-        rx_line <= 1'b1;
-        i <= i+1;
-    end
-    else if (i == 'd8) begin
-        rx_line <= 1'b1;
-        i <= i+1;
-    end
-    else begin
-        rx_line <= mystring[i + j];
-        i <= i+1;
-    end
-end
-
-initial begin
-    #2 local_reset = ! local_reset;
-    #2 reset = ! reset;
-end
-
-initial begin
-    #3 local_reset = ! local_reset;
-    #3 reset = !reset;
-end
-
-initial begin
-    #4000 local_reset = !local_reset;
-    #4000 reset = !reset;
-end
-initial begin
-    #4001 local_reset = !local_reset;
-    #4001 reset = !reset;
-end
-initial
-    #10000000 $finish;
 
 always begin
-    #7.52  clk <=  ! clk;  // produces ~133MHz
+	#SIM_HALF_PERIOD_NS clk <= !clk;
 end
 
 endmodule

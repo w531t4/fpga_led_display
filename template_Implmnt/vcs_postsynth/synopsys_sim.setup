@@ -1,0 +1,7 @@
+
+work>DEFAULT
+DEFAULT:./work
+
+synplify>synplify
+synplify:./synplify
+
