@@ -45,3 +45,9 @@ Based on suggestion from https://stackoverflow.com/questions/67923728/yosys-prod
     @K:CKID0002       new_pll_inst.clock_out_keep     clock definition on keepbuf     515        reset_cnt[0]
     ```
 - a good amount of info on IPCORE SYNCORE stuff - https://www.microchip.com/content/dam/mchp/documents/FPGA/core-docs/synnplifypro-me/synplify_s202109m/fpga_reference.pdf
+
+- more info on teh specific type of chip in use FM6126A - https://github.com/Galaxy-Man/FM6126-FM6124-LED-DMD
+- https://bobdavis321.blogspot.com/2019/02/p3-64x32-hub75e-led-matrix-panels-with.html
+
+- talks about registers, though they aren't numbered the ssame https://github.com/hzeller/rpi-rgb-led-matrix/issues/964
+- seems to be like an analysis of registers for fm6126a - https://github.com/ironsheep/P2-HUB75-LED-Matrix-Driver/blob/a8b93c845d56180a9fe05f77ef0ed6c45102709d/driver/isp_hub75_rgb3bit.spin2#L341
