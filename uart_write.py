@@ -1,44 +1,79 @@
 import serial
 import sys
-from typing import IO
+import binascii
+import time
+from typing import IO, Dict, List, Union
+BAUDRATE = 2464444
+
 def reset_state(ser: IO[bytes]) -> None:
     ser.write(b" "*64)
     ser.write(b" "*64)
     ser.write(b"9"*64)
 
+def build_raw_row(data: Dict[str, Union[str, int]], padding_amount: int = 0, padding_char: str = " ", override_row_num: int = None) -> bytes:
+    output = b""
+    if padding_amount != 0:
+        output += (padding_char * padding_amount).encode("utf-8")
+
+    if "preargs" in list(data.keys()):
+        output += data['preargs'].encode("utf-8")
+
+    output += b"L"
+    if "hex" in list(data.keys()):
+        if override_row_num is not None:
+            row_raw = bytes((override_row_num,))
+        else:
+            row_raw = bytes((data['row'],))
+        # print("row_raw=%s" % row_raw)
+        output += row_raw
+        d = binascii.unhexlify(data['hex'])
+        assert len(d) == 128, "len(d)==%s" % len(d)
+        output += d
+        # print("d=%s" % d)
+    else:
+        raise NotImplementedError
+    # print("padding_amount=%s" % padding_amount)
+    # print("padding=%s" % (padding_char * padding_amount).encode("utf-8"))
+    # print("output=%s" % output)
+    return output
+
+def replace_last_byte(data: bytes, new_byte: bytes) -> bytes:
+    return data[:-1] + new_byte
+
 def main() -> None:
     serial_device = "/dev/ttyAMA0"
     targetfile = "images/blah565.raw"
-    chunksize = 128
     f = open(targetfile, 'rb')
-    fw = f.read()
-    index = 0
-    row = 0
-    print("len(sys.argv)={argv_length}".format(argv_length=len(sys.argv)))
-    if (len(sys.argv) > 1):
-        scan = False
-        baudrate = int(sys.argv[1])
+    tdata = [
+                dict(row=10,
+                     hex="3737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313130",
+                     preargs="BrG9",
+                ),
+                dict(row=42,
+                     hex="3737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313130",
+                     preargs="BrG9",
+                ),
+             ]
+    if (len(sys.argv) < 2):
+        MAX_ITERATIONS = 0
     else:
-        scan = True
-        baudrate=2670000
-    ser = serial.Serial(serial_device, baudrate)
-    iteration = 0
-    s = b""
-    while baudrate < 2800000:
-        if (index >= len(fw)):
-            print("iteration={iteration} baudrate={baudrate}".format(iteration=iteration/32,
-                                                                     baudrate=baudrate))
-            s = b"BRG9L"
-            index=0
-            row=0
-        ser.write(s)
-        if (scan == True and (iteration % 800 == 0)):
-            ser = serial.Serial(serial_device, baudrate)
-            baudrate += 100
-        s = s + b"L" +chr(int(row)).encode("utf-8") + fw[index:index+chunksize]
-        index += chunksize
-        row += 1
-        iteration += 1
+        MAX_ITERATIONS = int(sys.argv[1])
+
+    print("len(sys.argv)={argv_length}".format(argv_length=len(sys.argv)))
+    ser = serial.Serial(serial_device, BAUDRATE, timeout=None)
+    loop_number = 0
+    while True:
+        d = build_raw_row(tdata[0], padding_amount=0, override_row_num=(loop_number % 32))
+        d = replace_last_byte(d, chr((loop_number % 32)).encode("utf-8"))
+        #print("ln:%s writing row=%s alldata=%s" % (loop_number, tdata[0]['row'], d))
+        ser.write(d)
+        loop_number += 1
+        if MAX_ITERATIONS != 0:
+            if loop_number > MAX_ITERATIONS+2:
+                break
+        time.sleep(.2)
+        #ser.flush()
+    print("done")
     ser.close()
 
 if (__name__ == "__main__"):
