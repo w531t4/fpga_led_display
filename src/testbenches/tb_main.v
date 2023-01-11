@@ -48,6 +48,7 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
     wire pin19_rgb1_0;
     wire pin20_rgb1_1;
     wire pin21_rgb1_2;
+    wire pin22;
     wire pin23_txout;
     reg  pin24_debug_rx_in;
 
@@ -81,6 +82,7 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
         .pin19(pin19_rgb1_0),
         .pin20(pin20_rgb1_1),
         .pin21(pin21_rgb1_2),
+        .pin22(pin22),
         .pin23(pin23_txout),
         .pin24(pin24_debug_rx_in)
     );
