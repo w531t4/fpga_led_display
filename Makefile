@@ -53,7 +53,7 @@ diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
 $(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
 	$(shell mkdir -p $(ARTIFACT_DIR))
 #	${YOSYS} -p "read_verilog ${VSOURCES}; proc; write_json -compat-int $@.json; proc"
-	${YOSYS} -p "prep -top main ; write_json $@" $^
+	${YOSYS} -DUSE_FM6126A -p "prep -top main ; write_json $@" $^
 #	${YOSYS} -p "prep -top main -flatten; write_json $@.json" ${VSOURCES}
 
 $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
@@ -75,7 +75,7 @@ $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
 $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
+	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -DUSE_FM6216A -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
 
 $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											utils.vh \
@@ -131,7 +131,7 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 
 
 $(SIMULATION_DIR)/newram3.vvp: $(SRC_DIR)/mem_core/newram3.v $(TB_DIR)/tb_newram3.v $(SRC_DIR)/mem_core/syncore_ram.v
-	${IVERILOG_BIN} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+	${IVERILOG_BIN} -DUSE_FM6216A -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/control_module.vvp: $(SRC_DIR)/control_module.v \
 									  $(TB_DIR)/tb_control_module.v \
 									  $(foreach file, timeout.v debug_uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))

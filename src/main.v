@@ -78,7 +78,12 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 
 	wire row_latch;
 	wire row_latch_intermediary;
+`ifndef FM6126A
 	wire [1:0] row_latch_state;
+`else
+	// TODO: Need to update bytes in python script and wire below.
+	wire [3:0] row_latch_state;
+`endif
 
 	wire [7:0] ram_a_data_in;
 	wire [7:0] ram_a_data_out;
