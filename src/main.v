@@ -192,7 +192,7 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 	wire row_latch_fm6126init;
 	wire pixclock_fm6126init;
 fm6126init do_init (
-	.clk_in(clk_root),
+	.clk_in(clk_matrix),
 	//.reset(system_init_enable),
 	.reset(~init_enable),
 	.rgb1_out(rgb1_fm6126init),
