@@ -24,6 +24,8 @@ template_syn.ta
 synlog.tcl
 main_rtl.vdb
 main.arearep
+template_syn.szr
+template_syn.ta
 template_Implmnt/template.fse
 template_Implmnt/template.sap
 template_Implmnt/backup
@@ -35,6 +37,9 @@ template_Implmnt/sbt/netlist/oadb-main
 template_Implmnt/post_ram_dissolve.srm
 template_Implmnt/scratchproject.prs
 template_Implmnt/rpt_main.areasrr
+template_Implmnt/layer0.fdep
+template_Implmnt/layer0.srs
+template_Implmnt/layer0.tlg
 template_Implmnt/template.edf
 template_Implmnt/template.scf
 template_Implmnt/template.srd
@@ -43,8 +48,10 @@ template_Implmnt/template.srr
 template_Implmnt/template.lsedata
 template_Implmnt/template.srs
 template_Implmnt/template_cck.rpt
+template_Implmnt/template_cck.srr
 template_Implmnt/template_scck.rpt
 template_Implmnt/template_synplify.fdc
+template_Implmnt/template_ta.srm
 template_Implmnt/template_XXXXX*
 template_Implmnt/run_options.txt
 template_Implmnt/*.log
