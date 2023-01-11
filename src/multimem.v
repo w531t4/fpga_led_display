@@ -80,8 +80,8 @@ DP8KC framebuffer_0_3_0
 	wire [8:0] num3_portb_out;
 
 	newram3 num0 (
-		.PortAClk(ClockA),
-		.PortBClk(ClockB),
+		.PortAClk(ClockA & ClockEnA),
+		.PortBClk(ClockB & ClockEnB),
 		.PortAAddr(translatedAddressA),
 		.PortADataIn({ 1'b0, 1'b0, 1'b0, DataInA[1], 1'b0, 1'b0, DataInA[0], 1'b0, 1'b0 }),
 		.PortAWriteEnable(WrA),
@@ -92,8 +92,8 @@ DP8KC framebuffer_0_3_0
 		.PortBDataOut(num0_portb_out)
 	);
 	newram3 num1 (
-		.PortAClk(ClockA),
-		.PortBClk(ClockB),
+		.PortAClk(ClockA & ClockEnA),
+		.PortBClk(ClockB & ClockEnB),
 		.PortAAddr(translatedAddressA),
 		.PortADataIn({ 1'b0, 1'b0, 1'b0, DataInA[3], 1'b0, 1'b0, DataInA[2], 1'b0, 1'b0 }),
 		.PortAWriteEnable(WrA),
@@ -105,8 +105,8 @@ DP8KC framebuffer_0_3_0
 	);
 
 	newram3 num2 (
-		.PortAClk(ClockA),
-		.PortBClk(ClockB),
+		.PortAClk(ClockA & ClockEnA),
+		.PortBClk(ClockB & ClockEnB),
 		.PortAAddr(translatedAddressA),
 		.PortADataIn({ 1'b0, 1'b0, 1'b0, DataInA[5], 1'b0, 1'b0, DataInA[4], 1'b0, 1'b0 }),
 		.PortAWriteEnable(WrA),
@@ -118,8 +118,8 @@ DP8KC framebuffer_0_3_0
 	);
 
 	newram3 num3 (
-		.PortAClk(ClockA),
-		.PortBClk(ClockB),
+		.PortAClk(ClockA & ClockEnA),
+		.PortBClk(ClockB & ClockEnB),
 		.PortAAddr(translatedAddressA),
 		.PortADataIn({ 1'b0, 1'b0, 1'b0, DataInA[7], 1'b0, 1'b0, DataInA[6], 1'b0, 1'b0 }),
 		.PortAWriteEnable(WrA),
