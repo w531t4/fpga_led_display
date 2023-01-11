@@ -32,6 +32,7 @@
 	,PortAWriteEnable
 	,PortAReset
 	,PortBAddr
+  ,PortBClk
 	,PortBReset
 	,PortADataOut
 	,PortBDataOut
@@ -86,7 +87,7 @@
   wire  PortAReadEnable;
   wire  PortAReset;
 
-  wire  PortBClk;
+  input  PortBClk;
   wire  [DATAWIDTH-1:0] PortBDataIn;
   wire  PortBWriteEnable;
   wire  [ADDRWIDTH-1:0] PortBAddr;
@@ -117,7 +118,7 @@
 				,.RESET_OUTPUT_REG_PORTB(RESET_OUTPUT_REG_PORTB)
 				)
 			U1(
-				.PortClk({PortAClk, PortAClk})
+				.PortClk({PortBClk, PortAClk})
 				,.PortReset({PortBReset, PortAReset})
 				,.PortWriteEnable({PortBWriteEnable, PortAWriteEnable})
 				,.PortReadEnable({PortBReadEnable, PortAReadEnable})
