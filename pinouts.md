@@ -9,7 +9,7 @@
 |B row_address_active[1]|          |4          |10       |            |          |pin4       |C2    |5
 |C row_address_active[2]|          |5          |11       |            |          |pin5       |C1    |6
 |D row_address_active[3]|          |6          |12       |            |          |pin6       |D2    |7
-|uart rx                |          |7          |         |            |TX        |pin7       |D1    |13
+|uart rx                |          |7          |         |uart tx     |          |pin7       |D1    |13
 |row latch              |          |8          |14       |            |          |pin8       |E2    |3
 |~output_enable         |          |9          |15       |            |          |pin9       |E1    |1
 |clk_pixel              |          |10         |13       |            |          |pin10      |G2    |2
@@ -25,8 +25,8 @@
 |Green 2 Rgb2[1]        |          |20         |6        |            |          |pin20      |A8    |11
 |Blue 2 Rgb2[2]         |          |21         |7        |            |          |pin21      |B7    |12
 |rx_running             |          |22         |         |            |          |pin22      |A7    |15          |15
-|out_tx                 |rx_data[0]|23         |         |10 (UART RX)|          |pin23      |B6    |
-|rx_invalid             |rx_data[1]|24         |         |            |RX        |pin24      |A6    |
+|out_tx                 |rx_data[0]|23         |         |            |RX        |pin23      |B6    |
+|rx_invalid             |rx_data[1]|24         |         |            |TX        |pin24      |A6    |
 |                       |          |3.3v
 |                       |          |GND
 |                       |          |Vin(5v)
