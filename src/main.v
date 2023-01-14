@@ -8,6 +8,8 @@ module main (
 	// lessons
 	// 1. Ensure that all unused IO are set to no pullup
 
+  output pin1,
+  output pin2,
   input pin3_clk_16mhz,
   output pin3,
   output pin4,
@@ -395,8 +397,12 @@ fm6126init do_init (
 
 	/* use this signal for insight! */
 
-	// A/ Row[0]
-	assign pin3 = row_address_active[0];
+	// Pixel Clk
+	assign pin1 = clk_pixel;
+	// Row Latch
+	assign pin2 = row_latch;
+	// #OE
+	assign pin3 = ~output_enable;
 	// B / Row[1]
 	assign pin4 = row_address_active[1];
 	// C / Row[2]
@@ -405,12 +411,10 @@ fm6126init do_init (
 	assign pin6 = row_address_active[3];
 	// Uart Rx
 	assign uart_rx = pin7;
-	// Row Latch [don't use for debugging]
-	assign pin8 = row_latch;
-	// #OE
-	assign pin9 = ~output_enable;
-	// Pixel Clk
-	assign pin10 = clk_pixel;
+	//  A/ Row[0] [don't use for debugging]
+	assign pin8 = row_address_active[0];
+	assign pin9 = 1'b1;
+	assign pin10 = 1'b1;
 	assign pin11 = ram_a_clk_enable;
 	// Red   1
 	assign pin12 = rgb1[0];
