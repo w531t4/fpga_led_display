@@ -13,17 +13,17 @@
 |row latch              |RGB1[0]  |          |8          |1        |14       |            |          |pin8       |E2    |0        |3
 |~output_enable         |RGB1[1]  |          |9          |2        |15       |            |          |pin9       |E1    |8        |1
 |clk_pixel              |RGB1[2]  |          |10         |3        |13       |            |          |pin10      |G2    |9        |2
-|uartclk                |         |          |11         |         |         |            |          |pin11      |H1    |undef    |14         |14
-|Red 1 Rgb1[0]          |undef    |          |12         |undef    |1        |            |          |pin12      |J1    |undef    |0
-|Green 1 Rgb1[1]        |undef    |          |13         |undef    |2        |            |          |           |H2    |undef    |8
+|uartclk                |RGB2[0]  |          |11         |5        |         |            |          |pin11      |H1    |10       |14         |14
+|Red 1 Rgb1[0]          |RGB2[1]  |          |12         |6        |1        |            |          |pin12      |J1    |11       |0
+|Green 1 Rgb1[1]        |RGB2[2]  |          |13         |7        |2        |            |          |           |H2    |12       |8
 |                       |         |rx_data[4]|14         |         |         |            |          |           |H9    |         |
 |                       |         |rx_data[5]|15         |         |         |            |          |           |D9    |         |
 |                       |         |rx_data[6]|16         |         |         |            |          |           |D8    |         |
 |                       |         |rx_data[7]|17         |         |         |            |          |           |C9    |         |
 |Blue 1 Rgb1[2]         |undef    |          |18         |undef    |3        |            |          |pin18      |A9    |undef    |9
-|Red 2 Rgb2[0]          |         |          |19         |         |5        |            |          |pin19      |B8    |         |10
-|Green 2 Rgb2[1]        |         |          |20         |         |6        |            |          |pin20      |A8    |         |11
-|Blue 2 Rgb2[2]         |         |          |21         |         |7        |            |          |pin21      |B7    |         |12
+|Red 2 Rgb2[0]          |undef    |          |19         |undef    |5        |            |          |pin19      |B8    |undef    |10
+|Green 2 Rgb2[1]        |undef    |          |20         |undef    |6        |            |          |pin20      |A8    |undef    |11
+|Blue 2 Rgb2[2]         |undef    |          |21         |undef    |7        |            |          |pin21      |B7    |undef    |12
 |rx_running             |uart rx  |          |22         |undef    |         |8 (UART TX) |          |pin22      |A7    |undef    |15          |15
 |out_tx                 |         |rx_data[0]|23         |         |         |            |RX        |pin23      |B6    |         |
 |rx_invalid             |         |rx_data[1]|24         |         |         |            |TX        |pin24      |A6    |         |
