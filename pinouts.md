@@ -11,7 +11,7 @@
 |D row_address_active[3]|RAA[2]   |          |6          |11       |12       |            |          |pin6       |D2    |6        |7
 |uart rx                |RAA[3]   |          |7          |12       |         |            |          |pin7       |D1    |7        |13
 |row latch              |undef    |          |8          |undef    |14       |            |          |pin8       |E2    |         |3
-|~output_enable         |uart rx  |          |9          |undef    |15       |uart tx     |          |pin9       |E1    |undef    |1
+|~output_enable         |undef    |          |9          |undef    |15       |            |          |pin9       |E1    |undef    |1
 |clk_pixel              |undef    |          |10         |undef    |13       |            |          |pin10      |G2    |undef    |2
 |uartclk                |         |          |11         |         |         |            |          |pin11      |H1    |         |14         |14
 |Red 1 Rgb1[0]          |         |          |12         |         |1        |            |          |pin12      |J1    |         |0
@@ -24,14 +24,14 @@
 |Red 2 Rgb2[0]          |         |          |19         |         |5        |            |          |pin19      |B8    |         |10
 |Green 2 Rgb2[1]        |         |          |20         |         |6        |            |          |pin20      |A8    |         |11
 |Blue 2 Rgb2[2]         |         |          |21         |         |7        |            |          |pin21      |B7    |         |12
-|rx_running             |         |          |22         |         |         |            |          |pin22      |A7    |         |15          |15
+|rx_running             |uart rx  |          |22         |undef    |         |8 (UART TX) |          |pin22      |A7    |undef    |15          |15
 |out_tx                 |         |rx_data[0]|23         |         |         |            |RX        |pin23      |B6    |         |
 |rx_invalid             |         |rx_data[1]|24         |         |         |            |TX        |pin24      |A6    |         |
 |                       |         |          |3.3v         |
 |                       |         |          |GND         |
 |                       |         |          |Vin(5v)         |
          |
-unassigned waveforms - pin13
+unassigned waveforms - pin13, pin15
 - rx_data is an effort to expose what is being received at the fpga on its uart_rx pin (7)
 
 # HUB75

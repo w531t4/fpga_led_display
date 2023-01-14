@@ -17,7 +17,7 @@ module main (
   output pin6,
   output pin7,
   output pin8,
-  input pin9,
+  output pin9,
   output pin10,
   output pin11,
   output pin12,
@@ -26,7 +26,7 @@ module main (
   output pin19,
   output pin20,
   output pin21,
-  output pin22,
+  input pin22,
   output pin23,
   input pin24
 );
@@ -412,8 +412,7 @@ fm6126init do_init (
 	// D / Row[3]
 	assign pin7 = row_address_active[3];
 	assign pin8 = 1'b1;
-	// Uart Rx [don't use for debugging]
-	assign uart_rx = pin9;
+	assign pin9 = 1'b1;
 
 	assign pin10 = 1'b1;
 	assign pin11 = ram_a_clk_enable;
@@ -432,7 +431,7 @@ fm6126init do_init (
 	assign pin20 = rgb2[1];
 	// Blue  2
 	assign pin21 = rgb2[2];
-	assign pin22 = 1'b1;
+	assign uart_rx = pin22;
 	assign pin23 = tx_out;
 	assign debug_uart_rx = pin24;
 
