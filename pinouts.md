@@ -10,17 +10,17 @@
 |C row_address_active[2]|RAA[1]   |          |5          |10       |11       |            |          |pin5       |C1    |5        |6
 |D row_address_active[3]|RAA[2]   |          |6          |11       |12       |            |          |pin6       |D2    |6        |7
 |uart rx                |RAA[3]   |          |7          |12       |         |            |          |pin7       |D1    |7        |13
-|row latch              |undef    |          |8          |undef    |14       |            |          |pin8       |E2    |         |3
-|~output_enable         |undef    |          |9          |undef    |15       |            |          |pin9       |E1    |undef    |1
-|clk_pixel              |undef    |          |10         |undef    |13       |            |          |pin10      |G2    |undef    |2
-|uartclk                |         |          |11         |         |         |            |          |pin11      |H1    |         |14         |14
-|Red 1 Rgb1[0]          |         |          |12         |         |1        |            |          |pin12      |J1    |         |0
-|Green 1 Rgb1[1]        |         |          |13         |         |2        |            |          |           |H2    |         |8
+|row latch              |RGB1[0]  |          |8          |1        |14       |            |          |pin8       |E2    |0        |3
+|~output_enable         |RGB1[1]  |          |9          |2        |15       |            |          |pin9       |E1    |8        |1
+|clk_pixel              |RGB1[2]  |          |10         |3        |13       |            |          |pin10      |G2    |9        |2
+|uartclk                |         |          |11         |         |         |            |          |pin11      |H1    |undef    |14         |14
+|Red 1 Rgb1[0]          |undef    |          |12         |undef    |1        |            |          |pin12      |J1    |undef    |0
+|Green 1 Rgb1[1]        |undef    |          |13         |undef    |2        |            |          |           |H2    |undef    |8
 |                       |         |rx_data[4]|14         |         |         |            |          |           |H9    |         |
 |                       |         |rx_data[5]|15         |         |         |            |          |           |D9    |         |
 |                       |         |rx_data[6]|16         |         |         |            |          |           |D8    |         |
 |                       |         |rx_data[7]|17         |         |         |            |          |           |C9    |         |
-|Blue 1 Rgb1[2]         |         |          |18         |         |3        |            |          |pin18      |A9    |         |9
+|Blue 1 Rgb1[2]         |undef    |          |18         |undef    |3        |            |          |pin18      |A9    |undef    |9
 |Red 2 Rgb2[0]          |         |          |19         |         |5        |            |          |pin19      |B8    |         |10
 |Green 2 Rgb2[1]        |         |          |20         |         |6        |            |          |pin20      |A8    |         |11
 |Blue 2 Rgb2[2]         |         |          |21         |         |7        |            |          |pin21      |B7    |         |12
@@ -31,7 +31,7 @@
 |                       |         |          |GND         |
 |                       |         |          |Vin(5v)         |
          |
-unassigned waveforms - pin13, pin15
+unassigned waveforms - pin13, pin14, pin15,
 - rx_data is an effort to expose what is being received at the fpga on its uart_rx pin (7)
 
 # HUB75

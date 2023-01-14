@@ -411,20 +411,17 @@ fm6126init do_init (
 	assign pin6 = row_address_active[2];
 	// D / Row[3]
 	assign pin7 = row_address_active[3];
-	assign pin8 = 1'b1;
-	assign pin9 = 1'b1;
-
-	assign pin10 = 1'b1;
-	assign pin11 = ram_a_clk_enable;
 	// Red   1
-	assign pin12 = rgb1[0];
-	// Green 1 [don't use for debugging]
-	assign pin13 = rgb1[1];
+	assign pin8 = rgb1[0];
+	// Green 1
+	assign pin9 = rgb1[1];
 	// Blue  1
+	assign pin10 = rgb1[2];
+	assign pin11 = 1'b1;
 
-	assign pin18 = rgb1[2];
-
-
+	assign pin12 = 1'b1;
+	assign pin13 = 1'b1;
+	assign pin18 = 1'b1;
 	// Red   2
 	assign pin19 = rgb2[0];
 	// Green 2
