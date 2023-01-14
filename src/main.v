@@ -413,20 +413,20 @@ fm6126init do_init (
 	assign pin10 = clk_pixel;
 	assign pin11 = ram_a_clk_enable;
 	// Red   1
-	assign pin12 = rgb2[0];
+	assign pin12 = rgb1[0];
 	// Green 1 [don't use for debugging]
-	assign pin13 = rgb2[1];
+	assign pin13 = rgb1[1];
 	// Blue  1
 
-	assign pin18 = rgb2[2];
+	assign pin18 = rgb1[2];
 
 
 	// Red   2
-	assign pin19 = rgb1[0];
+	assign pin19 = rgb2[0];
 	// Green 2
-	assign pin20 = rgb1[1];
+	assign pin20 = rgb2[1];
 	// Blue  2
-	assign pin21 = rgb1[2];
+	assign pin21 = rgb2[2];
 	assign pin22 = 1'b1;
 	assign pin23 = tx_out;
 	assign debug_uart_rx = pin24;
