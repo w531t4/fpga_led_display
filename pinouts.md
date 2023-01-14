@@ -6,12 +6,12 @@
 |baudrate_reset         |clk_pixel|          |1          |13       |         |            |          |           |A2    |2        |
 |timeout_word           |row latch|          |2          |14       |         |            |          |           |A1    |3        |
 |A row_address_active[0]|~oe      |rx_data[2]|3          |15       |9        |            |          |pin3       |B1    |1        |4
-|B row_address_active[1]|         |          |4          |         |10       |            |          |pin4       |C2    |         |5
-|C row_address_active[2]|         |          |5          |         |11       |            |          |pin5       |C1    |         |6
-|D row_address_active[3]|         |          |6          |         |12       |            |          |pin6       |D2    |         |7
-|uart rx                |         |          |7          |         |         |uart tx     |          |pin7       |D1    |         |13
-|row latch              |RAA[0]   |          |8          |9        |14       |            |          |pin8       |E2    |4        |3
-|~output_enable         |undef    |          |9          |undef    |15       |            |          |pin9       |E1    |undef    |1
+|B row_address_active[1]|RAA[0]   |          |4          |9        |10       |            |          |pin4       |C2    |4        |5
+|C row_address_active[2]|RAA[1]   |          |5          |10       |11       |            |          |pin5       |C1    |5        |6
+|D row_address_active[3]|RAA[2]   |          |6          |11       |12       |            |          |pin6       |D2    |6        |7
+|uart rx                |RAA[3]   |          |7          |12       |         |            |          |pin7       |D1    |7        |13
+|row latch              |undef    |          |8          |undef    |14       |            |          |pin8       |E2    |         |3
+|~output_enable         |uart rx  |          |9          |undef    |15       |uart tx     |          |pin9       |E1    |undef    |1
 |clk_pixel              |undef    |          |10         |undef    |13       |            |          |pin10      |G2    |undef    |2
 |uartclk                |         |          |11         |         |         |            |          |pin11      |H1    |         |14         |14
 |Red 1 Rgb1[0]          |         |          |12         |         |1        |            |          |pin12      |J1    |         |0
