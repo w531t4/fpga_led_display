@@ -1,35 +1,35 @@
 # Pinout table
 
-|description            |new      |subdesc   |TinyFPGA BX|newhub75 |HUB75 pin|RPI PIN     |USB UART  |Icecube pin|IC PIN|new wf   |Waveforms|tempmove|
-|-----------------------|---------|----------|-----------|---------|---------|------------|----------|-----------|------|---------|---------|--------|
-|                       |gnd      |          |GND        |16       |4,8,16   |6           |          |           |      |         |         |        |
-|baudrate_reset         |clk_pixel|          |1          |13       |         |            |          |           |A2    |2        |
-|timeout_word           |row latch|          |2          |14       |         |            |          |           |A1    |3        |
-|A row_address_active[0]|~oe      |rx_data[2]|3          |15       |9        |            |          |pin3       |B1    |1        |4
-|B row_address_active[1]|RAA[0]   |          |4          |9        |10       |            |          |pin4       |C2    |4        |5
-|C row_address_active[2]|RAA[1]   |          |5          |10       |11       |            |          |pin5       |C1    |5        |6
-|D row_address_active[3]|RAA[2]   |          |6          |11       |12       |            |          |pin6       |D2    |6        |7
-|uart rx                |RAA[3]   |          |7          |12       |         |            |          |pin7       |D1    |7        |13
-|row latch              |RGB1[0]  |          |8          |1        |14       |            |          |pin8       |E2    |0        |3
-|~output_enable         |RGB1[1]  |          |9          |2        |15       |            |          |pin9       |E1    |8        |1
-|clk_pixel              |RGB1[2]  |          |10         |3        |13       |            |          |pin10      |G2    |9        |2
-|uartclk                |DEAD     |          |11         |5        |         |            |          |pin11      |H1    |10       |14         |14
-|Red 1 Rgb1[0]          |DEAD     |          |12         |6        |1        |            |          |pin12      |J1    |undef    |0
-|Green 1 Rgb1[1]        |RGB2[2]  |          |13         |7        |2        |            |          |           |H2    |undef    |8
-|                       |         |rx_data[4]|14         |         |         |            |          |           |H9    |         |
-|                       |         |rx_data[5]|15         |         |         |            |          |           |D9    |         |
-|                       |         |rx_data[6]|16         |         |         |            |          |           |D8    |         |
-|                       |         |rx_data[7]|17         |         |         |            |          |           |C9    |         |
-|Blue 1 Rgb1[2]         |undef    |          |18         |undef    |3        |            |          |pin18      |A9    |13       |9
-|Red 2 Rgb2[0]          |RGB2[0]  |          |19         |undef    |5        |            |          |pin19      |B8    |11      |10
-|Green 2 Rgb2[1]        |RGB2[1]  |          |20         |undef    |6        |            |          |pin20      |A8    |12       |11
-|Blue 2 Rgb2[2]         |undef    |          |21         |undef    |7        |            |          |pin21      |B7    |undef    |12
-|rx_running             |uart rx  |          |22         |undef    |         |8 (UART TX) |          |pin22      |A7    |undef    |15          |15
-|out_tx                 |         |rx_data[0]|23         |         |         |            |RX        |pin23      |B6    |         |
-|rx_invalid             |         |rx_data[1]|24         |         |         |            |TX        |pin24      |A6    |         |
-|                       |         |          |3.3v         |
-|                       |         |          |GND         |
-|                       |         |          |Vin(5v)         |
+|description  |TinyFPGA BX|HUB75 pin|RPI PIN    |USB UART|Adafruit Hat|Icecube pin|IC PIN|Waveforms|
+|-------------|-----------|---------|-----------|--------|------------|-----------|------|---------|
+|gnd          |GND        |16       |6          |        |            |           |      |         |
+|clk_pixel    |1          |13       |           |        |GPIO#17     |           |A2    |2        |
+|row latch    |2          |14       |           |        |GPIO#21     |           |A1    |3        |
+|~oe          |3          |15       |           |        |GPIO#04     |pin3       |B1    |1        |
+|RAA[0]       |4          |9        |           |        |GPIO#22     |pin4       |C2    |4        |
+|RAA[1]       |5          |10       |           |        |GPIO#26     |pin5       |C1    |5        |
+|RAA[2]       |6          |11       |           |        |GPIO#27     |pin6       |D2    |6        |
+|RAA[3]       |7          |12       |           |        |GPIO#20     |pin7       |D1    |7        |
+|RGB1[0]      |8          |1        |           |        |GPIO#05     |pin8       |E2    |0        |
+|RGB1[1]      |9          |2        |           |        |GPIO#06     |pin9       |E1    |8        |
+|RGB1[2]      |10         |3        |           |        |GPIO#13     |pin10      |G2    |9        |
+|DEAD         |11         |5        |           |        |            |pin11      |H1    |10       |
+|DEAD         |12         |6        |           |        |            |pin12      |J1    |undef    |
+|RGB2[2]      |13         |7        |           |        |GPIO#16     |           |H2    |undef    |
+|             |14         |         |           |        |            |           |H9    |         |
+|             |15         |         |           |        |            |           |D9    |         |
+|             |16         |         |           |        |            |           |D8    |         |
+|             |17         |         |           |        |            |           |C9    |         |
+|undef        |18         |undef    |           |        |            |pin18      |A9    |13       |
+|RGB2[0]      |19         |undef    |           |        |GPIO#12     |pin19      |B8    |11       |
+|RGB2[1]      |20         |undef    |           |        |GPIO#23     |pin20      |A8    |12       |
+|undef        |21         |undef    |           |        |            |pin21      |B7    |undef    |
+|uart rx      |22         |undef    |8 (UART TX)|        |            |pin22      |A7    |undef    |
+|             |23         |         |           |RX      |            |pin23      |B6    |         |
+|             |24         |         |           |TX      |            |pin24      |A6    |         |
+|             |3.3v       |                              |3.3v
+|             |GND        |                              |GND
+|             |Vin(5v)    |                              |5v
          |
 unassigned waveforms - pin13, pin14, pin15,
 - rx_data is an effort to expose what is being received at the fpga on its uart_rx pin (7)
