@@ -424,8 +424,8 @@ fm6126init do_init (
 	// Blue  2
 	assign pin13 = rgb2[2];
 	assign pin18 = 1'b1;
-	assign pin19 = 1'b1;
-	assign pin20 = 1'b1;
+	assign pin19 = rgb2[0];
+	assign pin20 = rgb2[1];
 	assign pin21 = 1'b1;
 	assign uart_rx = pin22;
 	assign pin23 = tx_out;
