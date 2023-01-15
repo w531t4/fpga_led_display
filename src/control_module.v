@@ -210,6 +210,7 @@ module control_module #(
 				end
 				default: begin
 					cmd_line_state <= 2'd0;
+					ram_write_enable <= 1'b0;
 				end
 			endcase
 		end
