@@ -31,27 +31,27 @@ module main (
   input pin24
 );
 // context: RX DATA baud
-// 50000000hz / 2444444hz = 20.4545 ticks width=5
-// tgt_hz variation (after rounding): 2.27%
-// 50000000hz / 2500000hz = 20 ticks width=5
-parameter CTRLR_CLK_TICKS_PER_BIT = 5'd20;
-parameter CTRLR_CLK_TICKS_WIDTH = 3'd5;
+// 16000000hz / 244444hz = 65.4547 ticks width=7
+// tgt_hz variation (after rounding): 0.70%
+// 16000000hz / 246154hz = 65 ticks width=7
+parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65;
+parameter CTRLR_CLK_TICKS_WIDTH = 3'd7;
 
 
 // context: TX DEBUG baud
-// 50000000hz / 115200hz = 434.0278 ticks width=9
-// tgt_hz variation (after rounding): 0.01%
-// 50000000hz / 115207hz = 434 ticks width=9
-parameter DEBUG_TX_UART_TICKS_PER_BIT = 9'd434;
-parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd9;
+// 16000000hz / 115200hz = 138.8889 ticks width=8
+// tgt_hz variation (after rounding): -0.08%
+// 16000000hz / 115108hz = 139 ticks width=8
+parameter DEBUG_TX_UART_TICKS_PER_BIT = 8'd139;
+parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd8;
 
 
 // context: Debug msg rate
-// 50000000hz / 22hz = 2272727.2727 ticks width=22
-// tgt_hz variation (after rounding): 0.00%
-// 50000000hz / 22hz = 2272727 ticks width=22
-parameter DEBUG_MSGS_PER_SEC_TICKS = 22'd2272727;
-parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd22;
+// 16000000hz / 22hz = 727272.7273 ticks width=20
+// tgt_hz variation (after rounding): -0.00%
+// 16000000hz / 22hz = 727273 ticks width=20
+parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273;
+parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd20;
 
 
 `ifdef SIM
@@ -60,8 +60,8 @@ parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
 parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
 
 
-// period = (1 / 50000000hz) / 2 = 10.00000
-parameter SIM_HALF_PERIOD_NS = 10.00000;
+// period = (1 / 16000000hz) / 2 = 31.25000
+parameter SIM_HALF_PERIOD_NS = 31.25000;
 `endif
 
 	wire clk_root;
@@ -132,7 +132,9 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 
 	wire output_enable;
 	wire output_enable_intermediary;
+`ifdef USE_FM6126A
 	wire fm6126mask_en;
+`endif
 	wire clk_pixel_intermediary;
 
 	wire [7:0] num_commands_processed;
@@ -194,14 +196,21 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 			reset_cnt <= reset_cnt + !init_enable;
 	end
 
+	reg last_init_enable = 2'b0;
+	wire init_trigger = last_init_enable ^ init_enable;
+
+    always @(posedge clk_matrix) begin
+		last_init_enable <= init_enable;
+    end
+
+`ifdef USE_FM6126A
 	wire [2:0] rgb1_fm6126init;
 	wire [2:0] rgb2_fm6126init;
 	wire row_latch_fm6126init;
 	wire pixclock_fm6126init;
 fm6126init do_init (
 	.clk_in(clk_matrix),
-	//.reset(system_init_enable),
-	.reset(~init_enable),
+	.reset(init_trigger),
 	.rgb1_out(rgb1_fm6126init),
 	.rgb2_out(rgb2_fm6126init),
 	.latch_out(row_latch_fm6126init),
@@ -218,6 +227,18 @@ fm6126init do_init (
     assign rgb2[2] = (rgb2_intermediary[2] & fm6126mask_en) | (rgb2_fm6126init[2] & ~fm6126mask_en);
 	assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
 	assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
+`else
+	assign output_enable = output_enable_intermediary;
+    assign rgb1[0] = rgb1_intermediary[0];
+    assign rgb1[1] = rgb1_intermediary[1];
+    assign rgb1[2] = rgb1_intermediary[2];
+    assign rgb2[0] = rgb2_intermediary[0];
+    assign rgb2[1] = rgb2_intermediary[1];
+    assign rgb2[2] = rgb2_intermediary[2];
+	assign row_latch = row_latch_intermediary;
+	assign clk_pixel = clk_pixel_intermediary;
+`endif
+
 	timeout #(
 		.COUNTER_WIDTH(4)
 	) timeout_global_reset (
@@ -324,24 +345,6 @@ fm6126init do_init (
 
 	) /* synthesis syn_noprune=1 */ ;
 
-`ifdef BLAH
-	newram2 fb (
-		.PortAClk(clk_root),
-		.PortAAddr(ram_a_address),
-		.PortADataIn(ram_a_data_in),
-		.PortAWriteEnable(ram_a_write_enable),
-		.PortAReset(global_reset),
-		.PortBClk(clk_root),
-		.PortBDataIn(16'b0),
-		.PortBAddr(ram_b_address),
-		.PortBWriteEnable(1'b0),
-		.PortBReset(ram_b_reset),
-		.PortADataOut(ram_a_data_out),
-		.PortBDataOut(ram_b_data_out),
-		.PortAClkEnable(ram_a_clk_enable),
-		.PortBClkEnable(ram_b_clk_enable)
-	) /* synthesis syn_noprune=1 */ ;
-`else
 	multimem fb (
 		.ClockA(clk_root),
 		.AddressA(ram_a_address),
@@ -358,7 +361,7 @@ fm6126init do_init (
 		.ClockEnA(ram_a_clk_enable),
 		.ClockEnB(ram_b_clk_enable)
 	) /* synthesis syn_noprune=1 */ ;
-`endif
+
 	/* split the pixels and get the current brightness' bit */
 	pixel_split px_top (
 		.pixel_rgb565(pixel_rgb565_top),
@@ -424,8 +427,8 @@ fm6126init do_init (
 	// Blue  2
 	assign pin13 = rgb2[2];
 	assign pin18 = 1'b1;
-	assign pin19 = 1'b1;
-	assign pin20 = 1'b1;
+	assign pin19 = rgb2[0];
+	assign pin20 = rgb2[1];
 	assign pin21 = 1'b1;
 	assign uart_rx = pin22;
 	assign pin23 = tx_out;

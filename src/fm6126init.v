@@ -183,7 +183,6 @@ module fm6126init
 		else begin
 			if (currentState == STATE1_BEGIN) begin
 				currentState <= STATE1_END;
-				widthCounter <= widthCounter + 1'b1;
 				// ({LED_WIDTH{1'b1}}) <-- create LED_WIDTH bit register prefilled with 1's
 				// (see_above >> (LED_WIDTH - STAGE1_OFFSET)) <-- shift right STAGE1_OFFSET bits
 				//												  thereby leaving 0's at the left side
@@ -194,26 +193,27 @@ module fm6126init
 				//					 to set the latch
 				// (! see_above) <-- invert the result
 				latch_out <= (~ (| widthState));
-				pixclock_out <= 1'b1;
+				pixclock_out <= 1'b0;
 				// shift right one, regardless
-				widthState <= (widthState) >> 1;
-				rgb1_out <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
-				rgb2_out <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
+				rgb1_out[2:0] <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
+				rgb2_out[2:0] <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
 			end
 			// reached STATE1_END and we've counted all the pixels, move to stage 2
-			else if (currentState == STATE1_END && (~ (| widthCounter))) begin
+			else if (currentState == STATE1_END && (~ (| (widthCounter + 1'b1)))) begin
 				currentState <= STATE2_BEGIN;
 				latch_out <= 1'b0;
-				pixclock_out <= 1'b0;
+				pixclock_out <= 1'b1;
 				widthState <= ({LED_WIDTH{1'b1}}) >> (STAGE2_OFFSET + 1'b1);
+				widthCounter <= 'd0;
 			end
 			else if (currentState == STATE1_END) begin
 				currentState <= STATE1_BEGIN;
-				pixclock_out <= 1'b0;
+				pixclock_out <= 1'b1;
+				widthState <= (widthState) >> 1;
+				widthCounter <= widthCounter + 1'b1;
 			end
 			else if (currentState == STATE2_BEGIN) begin
 				currentState <= STATE2_END;
-				widthCounter <= widthCounter + 1'b1;
 				// ({LED_WIDTH{1'b1}}) <-- create LED_WIDTH bit register prefilled with 1's
 				// (see_above >> (LED_WIDTH - STAGE1_OFFSET)) <-- shift right STAGE1_OFFSET bits
 				//												  thereby leaving 0's at the left side
@@ -225,24 +225,25 @@ module fm6126init
 				// (! see_above) <-- invert the result
 				latch_out <= (~ (| widthState));
 				// shift right one, regardless
-				widthState <= (widthState) >> 1;
-				pixclock_out <= 1'b1;
+				pixclock_out <= 1'b0;
 				rgb1_out <= {C13[widthCounter % 'd16], C13[widthCounter % 'd16], C13[widthCounter % 'd16]};
 				rgb2_out <= {C13[widthCounter % 'd16], C13[widthCounter % 'd16], C13[widthCounter % 'd16]};
 			end
-			else if (currentState == STATE2_END && (~ (| widthCounter))) begin
+			else if (currentState == STATE2_END && (~ (| (widthCounter + 1'b1)))) begin
 				currentState <= STATE_FINISH;
 				latch_out <= 1'b0;
 				reset_notify <= 1'b1;
-				pixclock_out <= 1'b0;
+				widthCounter <= 'd0;
 			end
 			else if (currentState == STATE2_END) begin
 				currentState <= STATE2_BEGIN;
-				pixclock_out <= 1'b0;
+				pixclock_out <= 1'b1;
+				widthState <= (widthState) >> 1;
+				widthCounter <= widthCounter + 1'b1;
 			end
 			else if (currentState == STATE_FINISH) begin
 				currentState <= STATE_FINISH2;
-				pixclock_out <= 1'b1;
+				pixclock_out <= 1'b0;
 			end
 			else if (currentState == STATE_FINISH2) begin
 				mask_en <= 1'b1;
@@ -256,6 +257,7 @@ module fm6126init
 				// grow 1'b1 to LED_WIDTH bits in length. See description below
 				widthState <= ({LED_WIDTH{1'b1}}) >> (STAGE1_OFFSET + 1'b1);
 				mask_en <= 1'b0;
+				pixclock_out <= 1'b1;
 			end
         end
 	end

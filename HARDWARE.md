@@ -23,3 +23,11 @@ DATA_LATCH    3          latches 16 bit data to the output
 WR_REG1         11        Write configuration register 1
 WR_REG2         12        Write configuration register 2
 ```
+
+# p2.5 display
+p2.5-16s-v1.0
+
+
+TC7258EN
+74HC245C
+FM6126A

@@ -4,7 +4,7 @@
 
 # Version:            2020.12.27943
 
-# File Generated:     Jan 10 2023 17:58:16
+# File Generated:     Jan 15 2023 07:11:09
 
 # Family & Device:    iCE40LP8K
 
@@ -12,13 +12,15 @@
 
 # ##############################################################################
 
-###IOSet List 19
+###IOSet List 21
+set_io pin1 A2
 set_io pin10 G2
 set_io pin11 H1
 set_io pin12 J1
 set_io pin13 H2
 set_io pin18 A9
 set_io pin19 B8
+set_io pin2 A1
 set_io pin20 A8
 set_io pin21 B7
 set_io pin22 A7
