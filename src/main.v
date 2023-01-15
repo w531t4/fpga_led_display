@@ -8,12 +8,14 @@ module main (
 	// lessons
 	// 1. Ensure that all unused IO are set to no pullup
 
+  output pin1,
+  output pin2,
   input pin3_clk_16mhz,
   output pin3,
   output pin4,
   output pin5,
   output pin6,
-  input pin7,
+  output pin7,
   output pin8,
   output pin9,
   output pin10,
@@ -24,7 +26,7 @@ module main (
   output pin19,
   output pin20,
   output pin21,
-  output pin22,
+  input pin22,
   output pin23,
   input pin24
 );
@@ -395,39 +397,37 @@ fm6126init do_init (
 
 	/* use this signal for insight! */
 
-	// A/ Row[0]
-	assign pin3 = row_address_active[0];
-	// B / Row[1]
-	assign pin4 = row_address_active[1];
-	// C / Row[2]
-	assign pin5 = row_address_active[2];
-	// D / Row[3]
-	assign pin6 = row_address_active[3];
-	// Uart Rx
-	assign uart_rx = pin7;
-	// Row Latch [don't use for debugging]
-	assign pin8 = row_latch;
-	// #OE
-	assign pin9 = ~output_enable;
 	// Pixel Clk
-	assign pin10 = clk_pixel;
-	assign pin11 = pixel_rgb565_top;
+	assign pin1 = clk_pixel;
+	// Row Latch
+	assign pin2 = row_latch;
+	// #OE
+	assign pin3 = ~output_enable;
+	// A / Row[0]
+	assign pin4 = row_address_active[0];
+	// B / Row[1]
+	assign pin5 = row_address_active[1];
+	// C / Row[2]
+	assign pin6 = row_address_active[2];
+	// D / Row[3]
+	assign pin7 = row_address_active[3];
 	// Red   1
-	assign pin12 = rgb2[0];
-	// Green 1 [don't use for debugging]
-	assign pin13 = rgb2[1];
+	assign pin8 = rgb1[0];
+	// Green 1
+	assign pin9 = rgb1[1];
 	// Blue  1
-
-	assign pin18 = rgb2[2];
-
-
+	assign pin10 = rgb1[2];
 	// Red   2
-	assign pin19 = rgb1[0];
+	assign pin11 = rgb2[0];
 	// Green 2
-	assign pin20 = rgb1[1];
+	assign pin12 = rgb2[1];
 	// Blue  2
-	assign pin21 = rgb1[2];
-	assign pin22 = clk_pixel_load;
+	assign pin13 = rgb2[2];
+	assign pin18 = 1'b1;
+	assign pin19 = 1'b1;
+	assign pin20 = 1'b1;
+	assign pin21 = 1'b1;
+	assign uart_rx = pin22;
 	assign pin23 = tx_out;
 	assign debug_uart_rx = pin24;
 
