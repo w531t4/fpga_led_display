@@ -13,28 +13,17 @@ VSOURCES=src/brightness.v \
 		 src/uart_tx.v \
 		 src/debugger.v \
 		 src/debug_uart_rx.v \
-		 src/Multiported-RAM/mpram.v \
-		 src/Multiported-RAM/mrram.v \
-		 src/Multiported-RAM/dpram.v \
-		 src/Multiported-RAM/mpram_gen.v \
-		 src/Multiported-RAM/mpram_xor.v \
-		 src/newram.v \
-		 src/newram2.v \
+		 src/newram4.v \
 		 src/fm6126init.v \
 		 src/new_pll.v \
 		 src/multimem.v \
-		 src/mem_core/syncore_ram.v \
-		 src/mem_core/newram3.v \
-		 src/platform/sb_ice40.v
-
-#		 src/Multiported-RAM/mpram.v
-#		 src/Multiported-RAM/mrram.v
-#		 src/Multiported-RAM/dpram.v
-#		 src/Multiported-RAM/mpram_gen.v
-#		 src/Multiported-RAM/mpram_xor.v
-#		 src/newram.v
-#		 src/newram2.v
-
+		 ../ice40_toolchain/yosys/share/ice40/cells_sim.v
+##
+# == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
+# USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
+# SIM - disable use of PLL in simulations
+BUILD_FLAGS=-DUSE_FM6126A -DSIM
+#BUILD_FLAGS=-DSIM
 ARTIFACT_DIR=build_artifacts
 YOSYS=../ice40_toolchain/yosys/yosys
 NETLISTSVG=nenv/bin/netlistsvg
@@ -53,7 +42,7 @@ diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
 $(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
 	$(shell mkdir -p $(ARTIFACT_DIR))
 #	${YOSYS} -p "read_verilog ${VSOURCES}; proc; write_json -compat-int $@.json; proc"
-	${YOSYS} -DUSE_FM6126A -p "prep -top main ; write_json $@" $^
+	${YOSYS} ${BUILD_FLAGS} -p "prep -top main ; write_json $@" $^
 #	${YOSYS} -p "prep -top main -flatten; write_json $@.json" ${VSOURCES}
 
 $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
@@ -75,26 +64,16 @@ $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
 $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -DUSE_FM6126A -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
-
+	${IVERILOG_BIN} ${BUILD_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/main.vvp: $(foreach file, \
-											utils.vh \
-		 									Multiported-RAM/mpram.v \
-		 									Multiported-RAM/mrram.v \
-		 									Multiported-RAM/dpram.v \
-		 									Multiported-RAM/mpram_gen.v \
-		 									Multiported-RAM/mpram_xor.v \
 											fm6126init.v \
 										    new_pll.v \
 											timeout.v \
 											matrix_scan.v \
 											framebuffer_fetch.v \
 											control_module.v \
-											mem_core/syncore_ram.v \
-											mem_core/newram3.v \
 											multimem.v \
-		 									newram.v \
-		 									newram2.v \
+		 									newram4.v \
 											pixel_split.v \
 											debugger.v \
 											clock_divider.v \
@@ -130,8 +109,9 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 #	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
 
 
-$(SIMULATION_DIR)/newram3.vvp: $(SRC_DIR)/mem_core/newram3.v $(TB_DIR)/tb_newram3.v $(SRC_DIR)/mem_core/syncore_ram.v
-	${IVERILOG_BIN} -DUSE_FM6126A -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+$(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/sb_ice40.v
+$(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(SRC_DIR)/newram4.v $(SRC_DIR)/platform/sb_ice40.v
+	${IVERILOG_BIN} ${BUILD_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/control_module.vvp: $(SRC_DIR)/control_module.v \
 									  $(TB_DIR)/tb_control_module.v \
 									  $(foreach file, timeout.v debug_uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))

@@ -324,24 +324,6 @@ fm6126init do_init (
 
 	) /* synthesis syn_noprune=1 */ ;
 
-`ifdef BLAH
-	newram2 fb (
-		.PortAClk(clk_root),
-		.PortAAddr(ram_a_address),
-		.PortADataIn(ram_a_data_in),
-		.PortAWriteEnable(ram_a_write_enable),
-		.PortAReset(global_reset),
-		.PortBClk(clk_root),
-		.PortBDataIn(16'b0),
-		.PortBAddr(ram_b_address),
-		.PortBWriteEnable(1'b0),
-		.PortBReset(ram_b_reset),
-		.PortADataOut(ram_a_data_out),
-		.PortBDataOut(ram_b_data_out),
-		.PortAClkEnable(ram_a_clk_enable),
-		.PortBClkEnable(ram_b_clk_enable)
-	) /* synthesis syn_noprune=1 */ ;
-`else
 	multimem fb (
 		.ClockA(clk_root),
 		.AddressA(ram_a_address),
@@ -358,7 +340,7 @@ fm6126init do_init (
 		.ClockEnA(ram_a_clk_enable),
 		.ClockEnB(ram_b_clk_enable)
 	) /* synthesis syn_noprune=1 */ ;
-`endif
+
 	/* split the pixels and get the current brightness' bit */
 	pixel_split px_top (
 		.pixel_rgb565(pixel_rgb565_top),
