@@ -20,8 +20,13 @@ module framebuffer_fetch (
 	assign ram_clk_enable = ram_clk_enable_real;
 	/* grab data on falling edge of pixel clock */
 	//wire pixel_load_running;
+`ifdef USE_FM6126A
+	wire pixel_load_counter;
+	assign pixel_load_counter2[3:0] = { 3'b0, pixel_load_counter };
+`else
 	wire [1:0] pixel_load_counter;
 	assign pixel_load_counter2[3:0] = { 2'b0, pixel_load_counter[1:0] };
+`endif
 
 	reg half_address;
 	assign ram_address = { half_address, row_address[3:0], ~column_address[5:0] };
@@ -29,14 +34,20 @@ module framebuffer_fetch (
 	assign ram_reset = reset;
 
 	timeout #(
+`ifdef USE_FM6126A
+		.COUNTER_WIDTH(1)
+`else
 		.COUNTER_WIDTH(2)
-		//.COUNTER_WIDTH(1)
+`endif
 	) timeout_pixel_load (
 		.reset(reset),
 		.clk_in(clk_in),
 		.start(pixel_load_start),
+`ifdef USE_FM6126A
+		.value(1'd1),
+`else
 		.value(2'd3),
-		//.value(1'd1),
+`endif
 		.counter(pixel_load_counter),
 		.running(ram_clk_enable_real)
 	)  /* synthesis syn_noprune=1 */  ;
@@ -49,6 +60,16 @@ module framebuffer_fetch (
 			rgb565_bottom <= 16'd0;
 		end
 		else begin
+`ifdef USE_FM6126A
+			if (pixel_load_counter == 'd1) begin
+				rgb565_top <= ram_data_in;
+				half_address <= 1'b0;
+			end
+			else if (pixel_load_counter == 'd0) begin
+				rgb565_bottom <= ram_data_in;
+				half_address <= 1'b1;
+			end
+`else
 			if (pixel_load_counter == 'd3) begin
 				half_address <= 1'b0;
 			end
@@ -61,6 +82,7 @@ module framebuffer_fetch (
 			else if (pixel_load_counter == 'd0) begin
 				rgb565_bottom <= ram_data_in;
 			end
+`endif
 /*
 
 			// the RAM requires _two_ clock cycles to read...
