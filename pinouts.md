@@ -3,8 +3,8 @@
 |description  |TinyFPGA BX|HUB75 pin|RPI PIN    |USB UART|Adafruit Hat|Icecube pin|IC PIN|Waveforms|
 |-------------|-----------|---------|-----------|--------|------------|-----------|------|---------|
 |gnd          |GND        |16       |6          |        |            |           |      |         |
-|clk_pixel    |1          |13       |           |        |GPIO#17     |           |A2    |2        |
-|row latch    |2          |14       |           |        |GPIO#21     |           |A1    |3        |
+|clk_pixel    |1          |13       |           |        |GPIO#17     |pin1       |A2    |2        |
+|row latch    |2          |14       |           |        |GPIO#21     |pin2       |A1    |3        |
 |~oe          |3          |15       |           |        |GPIO#04     |pin3       |B1    |1        |
 |RAA[0]       |4          |9        |           |        |GPIO#22     |pin4       |C2    |4        |
 |RAA[1]       |5          |10       |           |        |GPIO#26     |pin5       |C1    |5        |
@@ -25,8 +25,8 @@
 |RGB2[1]      |20         |undef    |           |        |GPIO#23     |pin20      |A8    |12       |
 |undef        |21         |undef    |           |        |            |pin21      |B7    |undef    |
 |uart rx      |22         |undef    |8 (UART TX)|        |            |pin22      |A7    |undef    |
-|             |23         |         |           |RX      |            |pin23      |B6    |         |
-|             |24         |         |           |TX      |            |pin24      |A6    |         |
+|debug_txout  |23         |         |           |RX      |            |pin23      |B6    |         |
+|debug_rxin   |24         |         |           |TX      |            |pin24      |A6    |         |
 |             |3.3v       |                              |3.3v
 |             |GND        |                              |GND
 |             |Vin(5v)    |                              |5v
