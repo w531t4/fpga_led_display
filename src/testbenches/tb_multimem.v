@@ -113,6 +113,25 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
 			do_read_end();
 
 
+		// test "half_address"
+		@(negedge clk_a)
+			do_write_start(12'b0111_1111_1111, "Z");
+		@(posedge clk_a)
+		@(negedge clk_a)
+		//do_write_end();
+			do_write_start(12'b0111_1111_1110, "Y");
+			do_read_start(11'b0111_1111_111);
+		@(posedge clk_a)
+		@(negedge clk_a)
+		//do_write_end();
+			do_write_start(12'b0111_1111_1110, "R");
+			do_read_start(11'b0111_1111_111);
+		@(posedge clk_a)
+		@(negedge clk_a)
+			do_read_start(11'b0111_1111_111);
+			do_write_end();
+		@(posedge clk_a)
+			do_read_end();
 		//@(posedge clk_a)
 
 		// end padding
