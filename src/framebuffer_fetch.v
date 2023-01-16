@@ -30,7 +30,6 @@ module framebuffer_fetch (
 
 	timeout #(
 		.COUNTER_WIDTH(2)
-`endif
 	) timeout_pixel_load (
 		.reset(reset),
 		.clk_in(clk_in),
