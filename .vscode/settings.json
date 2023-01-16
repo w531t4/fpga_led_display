@@ -17,5 +17,6 @@
         "xxx_lse_cp_file_list": true,
         "xxx_lse_sign_file": true,
         "main_drc.log": true,
+        ".vdbs": true,
     }
 }
