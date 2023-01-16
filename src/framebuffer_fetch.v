@@ -20,13 +20,8 @@ module framebuffer_fetch (
 	assign ram_clk_enable = ram_clk_enable_real;
 	/* grab data on falling edge of pixel clock */
 	//wire pixel_load_running;
-`ifdef USE_FM6126A
-	wire pixel_load_counter;
-	assign pixel_load_counter2[3:0] = { 3'b0, pixel_load_counter };
-`else
 	wire [1:0] pixel_load_counter;
-	assign pixel_load_counter2[3:0] = { 2'b0, pixel_load_counter[1:0] };
-`endif
+	assign pixel_load_counter2[3:0] = { 1'b0, pixel_load_counter[1:0] };
 
 	reg half_address;
 	assign ram_address = { half_address, row_address[3:0], ~column_address[5:0] };
@@ -34,9 +29,6 @@ module framebuffer_fetch (
 	assign ram_reset = reset;
 
 	timeout #(
-`ifdef USE_FM6126A
-		.COUNTER_WIDTH(1)
-`else
 		.COUNTER_WIDTH(2)
 `endif
 	) timeout_pixel_load (
@@ -44,7 +36,7 @@ module framebuffer_fetch (
 		.clk_in(clk_in),
 		.start(pixel_load_start),
 `ifdef USE_FM6126A
-		.value(1'd1),
+		.value(2'd2),
 `else
 		.value(2'd3),
 `endif
@@ -61,13 +53,22 @@ module framebuffer_fetch (
 		end
 		else begin
 `ifdef USE_FM6126A
-			if (pixel_load_counter == 'd1) begin
-				rgb565_top <= ram_data_in;
+			// the frequency of pixel_load_start must contain enough clk_root
+			// cycles such that the top/bottom data can be loaded prior to next posedge
+			// of pixel_load_start
+			// for TinyFPGA BX - We can do this in 3 cycles (ram reads are one cycle long)
+			// cycle 1 - change address to half 0
+			// cycle 2 - read half 0, change half to 1
+			// cycle 3 - read half 1
+			if (pixel_load_counter == 'd2) begin
 				half_address <= 1'b0;
+			end
+			else if (pixel_load_counter == 'd1) begin
+				rgb565_top <= ram_data_in;
+				half_address <= 1'b1;
 			end
 			else if (pixel_load_counter == 'd0) begin
 				rgb565_bottom <= ram_data_in;
-				half_address <= 1'b1;
 			end
 `else
 			if (pixel_load_counter == 'd3) begin
