@@ -34,7 +34,7 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 	.ClockA(ClockA),
 	.ClockEnA(ClockEnA),
 	.DataInA(DataInA[1:0]),
-	.WrA(WrA & AddressA[0])
+	.WrA(WrA & ~AddressA[0])
 	);
 
 	newram4 M1 (
@@ -46,7 +46,7 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 	.ClockA(ClockA),
 	.ClockEnA(ClockEnA),
 	.DataInA(DataInA[3:2]),
-	.WrA(WrA & AddressA[0])
+	.WrA(WrA & ~AddressA[0])
 	);
 
 	newram4 M2 (
@@ -58,7 +58,7 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 	.ClockA(ClockA),
 	.ClockEnA(ClockEnA),
 	.DataInA(DataInA[5:4]),
-	.WrA(WrA & AddressA[0])
+	.WrA(WrA & ~AddressA[0])
 	);
 
 	newram4 M3 (
@@ -70,7 +70,7 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 	.ClockA(ClockA),
 	.ClockEnA(ClockEnA),
 	.DataInA(DataInA[7:6]),
-	.WrA(WrA & AddressA[0])
+	.WrA(WrA & ~AddressA[0])
 	);
 
 	newram4 M4 (
@@ -82,7 +82,7 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 	.ClockA(ClockA),
 	.ClockEnA(ClockEnA),
 	.DataInA(DataInA[1:0]),
-	.WrA(WrA & ~AddressA[0])
+	.WrA(WrA & AddressA[0])
 	);
 
 	newram4 M5 (
@@ -94,7 +94,7 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 	.ClockA(ClockA),
 	.ClockEnA(ClockEnA),
 	.DataInA(DataInA[3:2]),
-	.WrA(WrA & ~AddressA[0])
+	.WrA(WrA & AddressA[0])
 	);
 
 	newram4 M6 (
@@ -106,7 +106,7 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 	.ClockA(ClockA),
 	.ClockEnA(ClockEnA),
 	.DataInA(DataInA[5:4]),
-	.WrA(WrA & ~AddressA[0])
+	.WrA(WrA & AddressA[0])
 	);
 
 	newram4 M7 (
@@ -118,7 +118,7 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 	.ClockA(ClockA),
 	.ClockEnA(ClockEnA),
 	.DataInA(DataInA[7:6]),
-	.WrA(WrA & ~AddressA[0])
+	.WrA(WrA & AddressA[0])
 	);
 
 	assign QA = 8'b0;
