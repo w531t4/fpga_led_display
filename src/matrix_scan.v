@@ -33,6 +33,8 @@ module matrix_scan (
 	reg  [1:0] row_latch_state = 2'b00 /* synthesis syn_preserve=1 */;
 `else
 	reg  [3:0] row_latch_state = 4'b0000 /* synthesis syn_preserve=1 */;
+	wire [6:0] clk_pixel_load_en_counter;
+	localparam LATCH_WIDTH = 'd3;
 `endif
 
 	//wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
@@ -42,12 +44,11 @@ module matrix_scan (
 	wire [9:0] brightness_counter;     /* used to control the state advance overlap */
 
 	assign clk_pixel_load = clk_in && clk_pixel_load_en;
-`ifndef USE_FM6126A
 	assign clk_pixel = clk_in && clk_pixel_en;
+`ifndef USE_FM6126A
 	assign row_latch = row_latch_state[1:0] == 2'b10;
 `else
-	assign clk_pixel = clk_in && (clk_pixel_en || row_latch);
-	assign row_latch = (row_latch_state[3:0] == 4'b1110) || (row_latch_state[3:0] == 4'b1100) || (row_latch_state[3:0] == 4'b1000);
+	assign row_latch = (row_latch_state[3:0] == 4'b0010) || (row_latch_state[3:0] == 4'b0100) || (row_latch_state[3:0] == 4'b1000);
 `endif
 	assign clk_state = state == 2'b10;
 
@@ -64,7 +65,11 @@ module matrix_scan (
 		.clk_in(clk_in),
 		.start(clk_state),
 		.value(7'd64),
+`ifndef USE_FM6126A
 		.counter(),
+`else
+		.counter(clk_pixel_load_en_counter),
+`endif
 		.running(clk_pixel_load_en)
 	) /* synthesis syn_noprune=1 syn_preserve=1*/ ;
 
@@ -98,7 +103,7 @@ module matrix_scan (
 `ifndef USE_FM6126A
 			row_latch_state <= { row_latch_state[0], clk_pixel_load_en };
 `else
-			row_latch_state <= { row_latch_state[2], row_latch_state[1], row_latch_state[0], clk_pixel_load_en };
+			row_latch_state <= { row_latch_state[2], row_latch_state[1], row_latch_state[0], clk_pixel_load_en_counter == ('d1 + LATCH_WIDTH) };
 `endif
 		end
     end
@@ -134,7 +139,7 @@ module matrix_scan (
 
 	/* we want to overlap the pixel clock out with the previous output
 	   enable... but we do not want to start too early... */
-	assign state_advance = !output_enable || (state_timeout_overlap < brightness_counter);
+	assign state_advance = !output_enable || (state_timeout_overlap < (brightness_counter + LATCH_WIDTH));
 
 	/* shift the state advance signal into the bitfield */
 	always @(posedge clk_in, posedge reset) begin
