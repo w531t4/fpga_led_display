@@ -7,28 +7,33 @@ module main (
 
 	// lessons
 	// 1. Ensure that all unused IO are set to no pullup
+  output gp1,
+  output gp2,
+  output gp3,
+  output gp4,
+  output gp5,
+  output gp6,
+  output gp7,
+  output gp8,
+  output gp9,
+  output gp10,
+  output gp11,
+  output gp12,
+  output gp13,
+  output gp14,
+  output gp15,
+  output gp16,
+  output gp17,
+  output gp18,
+  output gp19,
+  output gp20,
+  output gp21,
+  output gp22,
+  output gp23,
+  input gp24,
+  input gp25,
+  input clk_25mhz
 
-  output pin1,
-  output pin2,
-  input pin3_clk_16mhz,
-  output pin3,
-  output pin4,
-  output pin5,
-  output pin6,
-  output pin7,
-  output pin8,
-  output pin9,
-  output pin10,
-  output pin11,
-  output pin12,
-  output pin13,
-  output pin18,
-  output pin19,
-  output pin20,
-  output pin21,
-  input pin22,
-  output pin23,
-  input pin24
 );
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7
@@ -185,7 +190,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 	// No wires past here
 
 	pll new_pll_inst (
-		.clock_in(pin3_clk_16mhz),
+		.clock_in(clk_25mhz),
 		.clock_out(clk_root)
 	) /* synthesis syn_noprune=1 */ ;
 
@@ -401,37 +406,37 @@ fm6126init do_init (
 	/* use this signal for insight! */
 
 	// Pixel Clk
-	assign pin1 = clk_pixel;
+	assign gp1 = clk_pixel;
 	// Row Latch
-	assign pin2 = row_latch;
+	assign gp2 = row_latch;
 	// #OE
-	assign pin3 = ~output_enable;
+	assign gp3 = ~output_enable;
 	// A / Row[0]
-	assign pin4 = row_address_active[0];
+	assign gp4 = row_address_active[0];
 	// B / Row[1]
-	assign pin5 = row_address_active[1];
+	assign gp5 = row_address_active[1];
 	// C / Row[2]
-	assign pin6 = row_address_active[2];
+	assign gp6 = row_address_active[2];
 	// D / Row[3]
-	assign pin7 = row_address_active[3];
+	assign gp7 = row_address_active[3];
 	// Red   1
-	assign pin8 = rgb1[0];
+	assign gp8 = rgb1[0];
 	// Green 1
-	assign pin9 = rgb1[1];
+	assign gp9 = rgb1[1];
 	// Blue  1
-	assign pin10 = rgb1[2];
+	assign gp10 = rgb1[2];
 	// Red   2
-	assign pin11 = rgb2[0];
+	assign gp11 = rgb2[0];
 	// Green 2
-	assign pin12 = rgb2[1];
+	assign gp12 = rgb2[1];
 	// Blue  2
-	assign pin13 = rgb2[2];
-	assign pin18 = 1'b1;
-	assign pin19 = rgb2[0];
-	assign pin20 = rgb2[1];
-	assign pin21 = 1'b1;
-	assign uart_rx = pin22;
-	assign pin23 = tx_out;
-	assign debug_uart_rx = pin24;
+	assign gp13 = rgb2[2];
+	assign gp18 = 1'b1;
+	assign gp19 = rgb2[0];
+	assign gp20 = rgb2[1];
+	assign gp21 = 1'b1;
+	assign uart_rx = gp25;
+	assign gp23 = tx_out;
+	assign debug_uart_rx = gp24;
 
 endmodule

@@ -24,6 +24,7 @@ VSOURCES=src/brightness.v \
 BUILD_FLAGS=-DUSE_FM6126A -DSIM
 #BUILD_FLAGS=-DSIM
 ARTIFACT_DIR=build_artifacts
+TOOLPATH=oss-cad-suite/bin
 YOSYS=../ice40_toolchain/yosys/yosys
 NETLISTSVG=nenv/bin/netlistsvg
 IVERILOG_BIN=iverilog
@@ -33,7 +34,7 @@ VVP_FLAGS=
 GTKWAVE_BIN=gtkwave
 GTKWAVE_FLAGS=
 
-.PHONY: all diagram simulation clean
+.PHONY: all diagram simulation clean compile
 all: diagram simulation
 
 diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
@@ -137,3 +138,29 @@ clean:
 ##	$(GTKWAVE_BIN) ${GTKWAVE_FLAGS} ${SIMULATION_DIR}/main.vcd
 #
 #
+
+ulx3s.bit: ulx3s_out.config
+	$(TOOLPATH)/ecppack ulx3s_out.config ulx3s.bit
+# E	$(TOOLPATH)/ecppack ulx3s_out.config --bit ulx3s.bit --input mydesign.json --spibin mydesign.bin
+# 	$(TOOLPATH)/ecppack ulx3s_out.config --input mydesign.json --spibin mydesign.bin
+compile: ulx3s_out.config
+
+ulx3s_out.config: mydesign.json
+	$(TOOLPATH)/nextpnr-ecp5 --85k --json mydesign.json \
+		--lpf constraints/ulx3s_v316.lpf \
+		--textcfg ulx3s_out.config
+
+# blinky.json: blinky.ys blinky.v
+# 	yosys blinky.ys
+mydesign.json: ${VSOURCES}
+	rm -f mydesign.ys
+	echo -e "read_verilog \\" > mydesign.ys
+	for file in $^ ; do \
+		echo -e "    $${file} \\" >> mydesign.ys; \
+	done
+	echo -e "\n" >> mydesign.ys
+	echo -e "synth_ecp5 -json mydesign.json" >> mydesign.ys
+	$(TOOLPATH)/yosys -DUSE_FM6126A mydesign.ys
+
+memprog: ulx3s.bit
+	$(TOOLPATH)/fujprog ulx3s.bit

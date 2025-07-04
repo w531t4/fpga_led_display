@@ -1,40 +1,60 @@
-/**
- * PLL configuration
- *
- * This Verilog module was generated automatically
- * using the icepll tool from the IceStorm project.
- * Use at your own risk.
- *
- * Given input frequency:        16.000 MHz
- * Requested output frequency:   16.000 MHz
- * Achieved output frequency:    16.000 MHz
-
- */
-
+// diamond 3.7 accepts this PLL
+// diamond 3.8-3.9 is untested
+// diamond 3.10 or higher is likely to abort with error about unable to use feedback signal
+// cause of this could be from wrong CPHASE/FPHASE parameters
+// oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 16 -n pll --highres --file abc
 `ifdef SIM
 `timescale 1ns/10ps
 `endif
-module pll(
-        input  clock_in,
-        output clock_out,
-        output locked
-        );
+module pll
+(
+    input clock_in, // 25 MHz, 0 deg
+    output clock_out, // 16 MHz, 0 deg
+    output locked
+);
 `ifdef SIM
         assign clock_out = clock_in;
 `else
-SB_PLL40_CORE #(
-                .FEEDBACK_PATH("SIMPLE"),
-                .DIVR(4'b0000),         // DIVR =  0
-                .DIVF(7'b0111111),      // DIVF = 63
-                .DIVQ(3'b110),          // DIVQ =  6
-                .FILTER_RANGE(3'b001)   // FILTER_RANGE = 1
-        ) uut (
-                .LOCK(locked),
-                .RESETB(1'b1),
-                .BYPASS(1'b0),
-                .REFERENCECLK(clock_in),
-                .PLLOUTCORE(clock_out)
-                );
+wire clkfb;
+(* FREQUENCY_PIN_CLKI="25" *)
+(* FREQUENCY_PIN_CLKOS="16" *)
+(* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
+EHXPLLL #(
+        .PLLRST_ENA("DISABLED"),
+        .INTFB_WAKE("DISABLED"),
+        .STDBY_ENABLE("DISABLED"),
+        .DPHASE_SOURCE("DISABLED"),
+        .OUTDIVIDER_MUXA("DIVA"),
+        .OUTDIVIDER_MUXB("DIVB"),
+        .OUTDIVIDER_MUXC("DIVC"),
+        .OUTDIVIDER_MUXD("DIVD"),
+        .CLKI_DIV(5),
+        .CLKOP_ENABLE("ENABLED"),
+        .CLKOP_DIV(56),
+        .CLKOP_CPHASE(9),
+        .CLKOP_FPHASE(0),
+        .CLKOS_ENABLE("ENABLED"),
+        .CLKOS_DIV(35),
+        .CLKOS_CPHASE(0),
+        .CLKOS_FPHASE(0),
+        .FEEDBK_PATH("CLKOP"),
+        .CLKFB_DIV(2)
+    ) pll_i (
+        .RST(1'b0),
+        .STDBY(1'b0),
+        .CLKI(clock_in),
+        .CLKOP(clkfb),
+        .CLKOS(clock_out),
+        .CLKFB(clkfb),
+        .CLKINTFB(),
+        .PHASESEL0(1'b0),
+        .PHASESEL1(1'b0),
+        .PHASEDIR(1'b1),
+        .PHASESTEP(1'b1),
+        .PHASELOADREG(1'b1),
+        .PLLWAKESYNC(1'b0),
+        .ENCLKOP(1'b0),
+        .LOCK(locked)
+	);
 `endif
 endmodule
-
