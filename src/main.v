@@ -13,7 +13,6 @@ module main (
   output gp3,
   output gp4,
   output gp5,
-  output gp6,
   output gp7,
   output gp8,
   output gp9,
