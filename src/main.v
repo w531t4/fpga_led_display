@@ -7,6 +7,7 @@ module main (
 
 	// lessons
 	// 1. Ensure that all unused IO are set to no pullup
+  output gp0,
   output gp1,
   output gp2,
   output gp3,
@@ -20,18 +21,9 @@ module main (
   output gp11,
   output gp12,
   output gp13,
-  output gp14,
-  output gp15,
+  input gp14,
+  input gp15,
   output gp16,
-  output gp17,
-  output gp18,
-  output gp19,
-  output gp20,
-  output gp21,
-  output gp22,
-  output gp23,
-  input gp24,
-  input gp25,
   input clk_25mhz
 
 );
@@ -406,37 +398,33 @@ fm6126init do_init (
 	/* use this signal for insight! */
 
 	// Pixel Clk
-	assign gp1 = clk_pixel;
+	assign gp11 = clk_pixel;
 	// Row Latch
-	assign gp2 = row_latch;
+	assign gp12 = row_latch;
 	// #OE
-	assign gp3 = ~output_enable;
+	assign gp13 = ~output_enable;
 	// A / Row[0]
-	assign gp4 = row_address_active[0];
+	assign gp7 = row_address_active[0];
 	// B / Row[1]
-	assign gp5 = row_address_active[1];
+	assign gp8 = row_address_active[1];
 	// C / Row[2]
-	assign gp6 = row_address_active[2];
+	assign gp9 = row_address_active[2];
 	// D / Row[3]
-	assign gp7 = row_address_active[3];
+	assign gp10 = row_address_active[3];
 	// Red   1
-	assign gp8 = rgb1[0];
+	assign gp0 = rgb1[0];
 	// Green 1
-	assign gp9 = rgb1[1];
+	assign gp1 = rgb1[1];
 	// Blue  1
-	assign gp10 = rgb1[2];
+	assign gp2 = rgb1[2];
 	// Red   2
-	assign gp11 = rgb2[0];
+	assign gp3 = rgb2[0];
 	// Green 2
-	assign gp12 = rgb2[1];
+	assign gp4 = rgb2[1];
 	// Blue  2
-	assign gp13 = rgb2[2];
-	assign gp18 = 1'b1;
-	assign gp19 = rgb2[0];
-	assign gp20 = rgb2[1];
-	assign gp21 = 1'b1;
-	assign uart_rx = gp25;
-	assign gp23 = tx_out;
-	assign debug_uart_rx = gp24;
+	assign gp5 = rgb2[2];
+	assign uart_rx = gp14;
+	assign gp16 = tx_out;
+	assign debug_uart_rx = gp15;
 
 endmodule
