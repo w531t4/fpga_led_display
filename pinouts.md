@@ -1,3 +1,17 @@
+# HUB75
+```
+   !   P   R   R    B   R   B   R
+   O   X   W   W    L   D   L   D
+   E   C   2   0    2   2   1   1
+|----------------   --------------|
+|  15  13  11   9   7   5   3   1 | (perspective: facing male socket on board)
+|  16  14  12  10   8   6   4   2 |
+|---------------------------------|
+   G   R   R   R    G   G   G   G
+   N   W   W   W    N   N   N   N
+   D   L   3   1    D   2   D   1
+```
+
 # Pinout table
 
 |description  |TinyFPGA BX|HUB75 pin|RPI PIN    |USB UART|Adafruit Hat|Icecube pin|IC PIN|Waveforms|
@@ -34,19 +48,7 @@
 unassigned waveforms - pin13, pin14, pin15,
 - rx_data is an effort to expose what is being received at the fpga on its uart_rx pin (7)
 
-# HUB75
-```
-   !   P   R   R    B   R   B   R
-   O   X   W   W    L   D   L   D
-   E   C   2   0    2   2   1   1
-|----------------   --------------|
-|  15  13  11   9   7   5   3   1 |
-|  16  14  12  10   8   6   4   2 |
-|---------------------------------|
-   G   R   R   R    G   G   G   G
-   N   W   W   W    N   N   N   N
-   D   L   3   1    D   2   D   1
-```
+
 
 # raspberry pi
 
