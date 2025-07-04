@@ -3,7 +3,6 @@ PROJ=this
 VSOURCES=src/brightness.v \
 		 src/clock_divider.v \
 		 src/control_module.v \
-		 src/framebuffer.v \
 		 src/framebuffer_fetch.v \
 		 src/main.v \
 		 src/matrix_scan.v \
