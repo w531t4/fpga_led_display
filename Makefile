@@ -16,7 +16,7 @@ VSOURCES=src/brightness.v \
 		 src/fm6126init.v \
 		 src/new_pll.v \
 		 src/multimem.v \
-		 ../ice40_toolchain/yosys/share/ice40/cells_sim.v
+		 src/platform/tiny_cells_sim.v
 ##
 # == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
