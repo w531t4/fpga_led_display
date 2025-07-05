@@ -41,7 +41,7 @@ def replace_last_byte(data: bytes, new_byte: bytes) -> bytes:
     return data[:-1] + new_byte
 
 def main() -> None:
-    serial_device = "/dev/ttyAMA0"
+    serial_device = "/dev/ttyAMA3"
     targetfile = "images/blah565.raw"
     f = open(targetfile, 'rb')
     tdata = [

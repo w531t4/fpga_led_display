@@ -3,7 +3,7 @@ from uart_write import reset_state
 import sys
 
 def main():
-    serial_device = "/dev/ttyAMA0"
+    serial_device = "/dev/ttyAMA3"
     if len(sys.argv) == 1:
         targetfile = "../uart/alphabet.uart"
     else:

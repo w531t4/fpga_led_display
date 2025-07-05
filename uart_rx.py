@@ -123,7 +123,7 @@ def main(stdscr) -> None:
     global BAUDSET_DATA_INIT
     stdscr.clear()
     stdscr.nodelay(1)
-    serial_device = "/dev/ttyUSB0"
+    serial_device = "/dev/ttyAMA2"
     baudrate=BAUDRATE
     ser = serial.Serial(serial_device, baudrate, timeout=None)
     structure = []
@@ -295,7 +295,7 @@ def main(stdscr) -> None:
         if BAUDSET_DATA_STATE != -1 and BAUDSET_DATA_STATE != 3:
             stdscr.addstr(MAX_LINES+3,0, "uart_rx_data:"+ uart_rx_data)
             findbaud(stdscr, uart_rx_data)
-            testval("/dev/ttyAMA0", BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE])
+            testval("/dev/ttyAMA3", BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE])
         if (k != -1):
             if (chr(k) == 'H'):
                 writeser(ser, 'H')
@@ -318,7 +318,7 @@ def main(stdscr) -> None:
                 BAUDSET_DATA = BAUDSET_DATA_INIT
                 BAUDSET_DATA_STATE = 1
             elif (chr(k) in literals):
-                testval("/dev/ttyAMA0", BAUDSET_DATA, chr(k))
+                testval("/dev/ttyAMA3", BAUDSET_DATA, chr(k))
                 writeser(ser, chr(k))
             else:
                 writeser(ser, chr(k))
