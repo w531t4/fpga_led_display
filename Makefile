@@ -83,31 +83,6 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											rgb565.v \
 											uart_tx.v \
 											, $(SRC_DIR)/$(file))
-#$(SIMULATION_DIR)/newram2.vvp: $(SRC_DIR)/newram2.v $(TB_DIR)/tb_newram2.v $(foreach file, mpram.v mpram_lvt_1ht.v lvt_1ht.v mrram.v dpram.v mpram_gen.#v, $(SRC_DIR)/Multiported-RAM/$(file))
-#	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
-#$(SIMULATION_DIR)/main.vvp: $(SRC_DIR)/main.v \
-#						    $(TB_DIR)/tb_main.v \
-#							$(foreach file, mpram.v mpram_lvt_1ht.v lvt_1ht.v mrram.v dpram.v mpram_gen.v, $(SRC_DIR)/Multiported-RAM/$(file)) \
-#							$(foreach file, \
-#											fm6126init.v \
-#										    new_pll.v \
-#											timeout.v \
-#											matrix_scan.v \
-#											framebuffer_fetch.v \
-#											control_module.v \
-#											pixel_split.v \
-#											debugger.v \
-#											clock_divider.v \
-#											platform/sb_ice40.v \
-#											debug_uart_rx.v \
-#											brightness.v \
-#											rgb565.v \
-#											uart_tx.v \
-#											newram2.v \
-#											mem_core/syncore_ram.v \
-#											, $(SRC_DIR)/$(file))
-#	${IVERILOG_BIN} -I $(SRC_DIR)/Multiported-RAM -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -DSIM -o $@ $^
-
 
 $(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/sb_ice40.v
 $(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(SRC_DIR)/newram4.v $(SRC_DIR)/platform/sb_ice40.v
