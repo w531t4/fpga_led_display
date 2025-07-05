@@ -38,9 +38,9 @@ module control_module #(
 	assign ram_access_start2 = ram_access_start;
 	assign ram_access_start_latch2 = ram_access_start_latch;
 	assign ram_reset = reset;
-	reg  [1:0]  cmd_line_state = 2'b0;
-	reg  [4:0]  cmd_line_addr_row = 5'd0;
-	reg  [7:0]  cmd_line_addr_col = 7'd0 /* synthesis syn_preserve=1 */ ; // why is this written as 8 bits?
+	reg  [1:0]  cmd_line_state;
+	reg  [4:0]  cmd_line_addr_row;
+	reg  [7:0]  cmd_line_addr_col /* synthesis syn_preserve=1 */ ; // why is this written as 8 bits?
 	wire [11:0] cmd_line_addr = { cmd_line_addr_row[4:0], ~cmd_line_addr_col[6:1], cmd_line_addr_col[0] };
 
 	assign cmd_line_addr2 = cmd_line_addr[11:0];

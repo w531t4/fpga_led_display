@@ -36,8 +36,8 @@ module debugger	#(
 );
 
 
-    reg [7:0] debug_bits = 8'bz;
-    reg [DIVIDER_TICKS_WIDTH-1:0] count = 0;
+    reg [7:0] debug_bits;
+    reg [DIVIDER_TICKS_WIDTH-1:0] count;
 
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in, posedge reset) begin

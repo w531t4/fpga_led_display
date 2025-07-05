@@ -18,7 +18,7 @@ module timeout #(
 
 	output running
 );
-	reg start_latch = 1'b0;
+	reg start_latch;
 
 	assign running = counter != 0;
 

@@ -11,7 +11,7 @@ module matrix_scan (
 	output row_latch,
 	output output_enable, /* the minimum output enable pulse should not be shorter than 1us... */
 
-	output reg [5:0] brightness_mask = 6'b100000, /* used to pick a bit from the sub-pixel's brightness */
+	output reg [5:0] brightness_mask, /* used to pick a bit from the sub-pixel's brightness */
 	output row_latch2,
 	output state_advance2,
 `ifndef USE_FM6126A
@@ -23,16 +23,16 @@ module matrix_scan (
 
 	localparam state_timeout_overlap = 'd67;
 
-	reg [1:0] state = 2'b00;
+	reg [1:0] state;
 	wire clk_state;
 	wire state_advance;
 
 	wire clk_pixel_load_en;/* enables the pixel load clock */
 	reg  clk_pixel_en;    /* enables the pixel clock, delayed by one cycle from the load clock */
 `ifndef USE_FM6126A
-	reg  [1:0] row_latch_state = 2'b00 /* synthesis syn_preserve=1 */;
+	reg  [1:0] row_latch_state /* synthesis syn_preserve=1 */;
 `else
-	reg  [3:0] row_latch_state = 4'b0000 /* synthesis syn_preserve=1 */;
+	reg  [3:0] row_latch_state /* synthesis syn_preserve=1 */;
 	wire [6:0] clk_pixel_load_en_counter;
 	localparam LATCH_WIDTH = 'd3;
 `endif
@@ -154,7 +154,7 @@ module matrix_scan (
 	/* on completion of the row_latch, we advanced the brightness mask to generate the next row of pixels */
 	always @(posedge row_latch, posedge reset) begin
 		if (reset) begin
-			brightness_mask <= 6'd0;
+			brightness_mask <= 6'b100000;
 			brightness_mask_active <= 6'd0;
 			row_address <= 4'd0;
 			row_address_active <= 4'd0;

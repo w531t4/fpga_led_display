@@ -146,10 +146,10 @@ module fm6126init
 	output reg reset_notify
 	);
 
-	reg [15:0] C12 = 16'b0111111111111111;
-	reg [15:0] C13 = 16'b0000000001000000;
+	reg [15:0] C12;
+	reg [15:0] C13;
     reg [7:0] currentState;
-	reg [5:0] widthCounter = 6'd0; // 16 bits
+	reg [5:0] widthCounter; // 16 bits
 
 	//TODO: how do i not manually specify 64 here?
 	localparam LED_WIDTH = 'd64; // 64 pixel width led display
@@ -170,6 +170,8 @@ module fm6126init
 // End of default setup for RGB Matrix 64x32 panel
 	always @(posedge clk_in, posedge reset) begin
 		if (reset) begin
+			C12 <= 16'b0111111111111111;
+			C13 <= 16'b0000000001000000;
 			currentState <= STATE_INIT;
 			widthState <= {LED_WIDTH{1'b0}};
 			widthCounter <= 6'd0;
