@@ -19,22 +19,8 @@ module debugger	#(
     output reg [DATA_WIDTH_BASE2:0] current_position,
     output [7:0] debug_command,
     output debug_command_pulse,
-    output debug_command_busy    /*,
-
-
-    output [UART_TICKS_PER_BIT_SIZE-1:0] bit_ticks_counter2,
-    output [UART_TICKS_PER_BIT_SIZE-1:0] bit_ticks_comparator2,
-    output [4:0] currentState2,
-    output bit_ticks_ovf_signal2,
-    output bit_counter_ovf_signal2,
-    output din_buff2,
-    output [4:0] nextState2
-    */
-    //output reg [$clog2(DATA_WIDTH)-1:0] current_position
-    //output reg [DATA_WIDTH-1:0] current_position
-
+    output debug_command_busy
 );
-
 
     reg [7:0] debug_bits;
     reg [DIVIDER_TICKS_WIDTH-1:0] count;
@@ -56,7 +42,6 @@ module debugger	#(
             end
         end
     end
-
 
     wire tx_busy;
     wire tx_done;
@@ -134,7 +119,7 @@ module debugger	#(
             end
         end
     end
-    //wire [7:0] debug_command_prelatch;
+
     debug_uart_rx #(
         .TICKS_PER_BIT(UART_TICKS_PER_BIT),
         .TICKS_PER_BIT_SIZE(UART_TICKS_PER_BIT_SIZE)
@@ -146,7 +131,6 @@ module debugger	#(
         .o_rxdata(debug_command),
         .o_recvdata(debug_command_pulse),
         .o_busy(debug_command_busy)
-
     );
 
     uart_tx  #(

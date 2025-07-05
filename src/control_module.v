@@ -30,9 +30,6 @@ module control_module #(
     wire [7:0] uart_rx_data;
     wire uart_rx_running;
     wire ram_clk_enable_real;
-
-    //assign rx_data[7:0] = uart_rx_data[7:0];
-
     reg ram_access_start = 1'b0;
     reg ram_access_start_latch = 1'b0;
     assign ram_access_start2 = ram_access_start;
@@ -62,26 +59,6 @@ module control_module #(
     .o_busy(uart_rx_running)
     );
 
-    /*
-    uart_rx #(
-        .CLK_DIV_COUNT(UART_CLK_DIV_COUNT),
-        .CLK_DIV_WIDTH(UART_CLK_DIV_WIDTH)
-    ) urx (
-        .reset(reset),
-        .clk_in(clk_in),
-        // in DIV_COUNT=25 DIV_WIDTH=8 clk_in=133MHz //
-        .rx_line(uart_rx),
-        //.rx_line_beforesync(uart_rx),
-        .rx_data(uart_rx_data),
-        .rx_running(uart_rx_running),
-        .rx_invalid(uart_rx_invalid),
-
-        .uartclk(test),
-        .clkdiv_baudrate_reset2(clkdiv_baudrate_reset),
-        .timeout_word_start2(timeout_word_start),
-        .rx_running2(out_rx_running2)
-    );
-*/
     // ^ is exclusive or
     timeout #(
         .COUNTER_WIDTH(2)
@@ -111,8 +88,6 @@ module control_module #(
     end
 
     always @(negedge uart_rx_running, posedge reset) begin
-    //always @(negedge do_read, posedge reset) begin
-
         if (reset) begin
             rgb_enable <= 3'b111;
             brightness_enable <= 6'b111111;
@@ -158,7 +133,6 @@ module control_module #(
 
         /* CMD: Main */
         else if (cmd_line_state != 2'd2 && !uart_rx_running) begin
-        //else if (!uart_rx_invalid) begin
             //2650000
             case (uart_rx_data)
                 "R": begin
@@ -179,7 +153,6 @@ module control_module #(
                 "b": begin
                     rgb_enable[2] <= 1'b0;
                 end
-
                 "1": begin
                     brightness_enable[5] <= ~brightness_enable[5];
                 end
@@ -198,14 +171,12 @@ module control_module #(
                 "6": begin
                     brightness_enable[0] <= ~brightness_enable[0];
                 end
-
                 "0": begin
                     brightness_enable <= 6'b000000;
                 end
                 "9": begin
                     brightness_enable <= 6'b111111;
                 end
-
                 "L": begin
                     cmd_line_state <= 2'd2;
                 end

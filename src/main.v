@@ -1,6 +1,4 @@
-//`include "/home/awhite/lscc/iCEcube2.2017.08/synpbase/lib/syncore/models/memories/ram/syncore_ram.v"
 module main (
-//while true; do for each in `seq -s " " -f %02g 0 31`; do echo L${each}11223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788 > /dev/ttyAMA0; done; done
     // DP74HC245 710401
     // FM TC7258E. 5B855300 2X
     // CHIPONE ICN2028BP A06631HA
@@ -24,7 +22,6 @@ module main (
   input gp15,
   output gp16,
   input clk_25mhz
-
 );
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7
@@ -33,7 +30,6 @@ module main (
 parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65;
 parameter CTRLR_CLK_TICKS_WIDTH = 3'd7;
 
-
 // context: TX DEBUG baud
 // 16000000hz / 115200hz = 138.8889 ticks width=8
 // tgt_hz variation (after rounding): -0.08%
@@ -41,14 +37,12 @@ parameter CTRLR_CLK_TICKS_WIDTH = 3'd7;
 parameter DEBUG_TX_UART_TICKS_PER_BIT = 8'd139;
 parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd8;
 
-
 // context: Debug msg rate
 // 16000000hz / 22hz = 727272.7273 ticks width=20
 // tgt_hz variation (after rounding): -0.00%
 // 16000000hz / 22hz = 727273 ticks width=20
 parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273;
 parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd20;
-
 
 `ifdef SIM
 // use smaller value in testbench so we don't infinitely sim
@@ -270,9 +264,7 @@ fm6126init do_init (
         .COUNTER_WIDTH(1)
     ) timeout_global_reset (
         .reset(global_reset),
-        //.reset(debug_command == "H"),
         .clk_in(clk_root),
-        //.start(1'b1),
         .start(~((debug_command == "H") && debug_command_pulse)),
         .value(1'd2),
         .counter(),
@@ -281,20 +273,13 @@ fm6126init do_init (
 
     /* produce a clock for use on the LED matrix */
     reg [1:0] sync_fifo;
-    //assign init_reset_strobe = 1'b0;
     // this is a buffer to transfer global reset across clock domains
-    // TODO: Is this still needed?
     always @(posedge clk_root) begin
             { global_reset_debug, sync_fifo } <= { sync_fifo, buffered_global_reset };
-            //{ global_reset_init, sync_fifo } <= { sync_fifo, init_reset_strobe };
-    //always @(posedge clk_root_logic)
-
     end
 
     assign global_reset = alt_reset || (global_reset_debug & ~buffered_global_reset);
-    //assign global_reset = global_reset_init || global_reset_debug;
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
-
     clock_divider #(
         .CLK_DIV_COUNT(2'd3),
         .CLK_DIV_WIDTH(2'd3)
@@ -356,7 +341,6 @@ fm6126init do_init (
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
 
-        //.ram_data_in(ram_a_data_out),
         .ram_data_out(ram_a_data_in),
         .ram_address(ram_a_address),
         .ram_write_enable(ram_a_write_enable),
@@ -369,7 +353,6 @@ fm6126init do_init (
         .ram_access_start_latch2(ram_access_start_latch),
         .cmd_line_addr2(cmd_line_addr2),
         .num_commands_processed(num_commands_processed)
-
     );
 
     multimem fb (
@@ -403,8 +386,6 @@ fm6126init do_init (
         .rgb_output(rgb2_intermediary)
     );
 
-
-
     debugger #(
         // Describes the sample rate of messages sent to debugger client
         .DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH),
@@ -425,36 +406,20 @@ fm6126init do_init (
         .tx_out(tx_out)
     );
 
-    /* use this signal for insight! */
-
-    // Pixel Clk
-    assign gp11 = clk_pixel;
-    // Row Latch
-    assign gp12 = row_latch;
-    // #OE
-    assign gp13 = ~output_enable;
-    // A / Row[0]
-    assign gp7 = row_address_active[0];
-    // B / Row[1]
-    assign gp8 = row_address_active[1];
-    // C / Row[2]
-    assign gp9 = row_address_active[2];
-    // D / Row[3]
-    assign gp10 = row_address_active[3];
-    // Red   1
-    assign gp0 = rgb1[0];
-    // Green 1
-    assign gp1 = rgb1[1];
-    // Blue  1
-    assign gp2 = rgb1[2];
-    // Red   2
-    assign gp3 = rgb2[0];
-    // Green 2
-    assign gp4 = rgb2[1];
-    // Blue  2
-    assign gp5 = rgb2[2];
+    assign gp11 = clk_pixel; // Pixel Clk
+    assign gp12 = row_latch; // Row Latch
+    assign gp13 = ~output_enable; // #OE
+    assign gp7 = row_address_active[0]; // A / Row[0]
+    assign gp8 = row_address_active[1]; // B / Row[1]
+    assign gp9 = row_address_active[2]; // C / Row[2]
+    assign gp10 = row_address_active[3]; // D / Row[3]
+    assign gp0 = rgb1[0]; // Red   1
+    assign gp1 = rgb1[1]; // Green 1
+    assign gp2 = rgb1[2]; // Blue  1
+    assign gp3 = rgb2[0]; // Red   2
+    assign gp4 = rgb2[1]; // Green 2
+    assign gp5 = rgb2[2]; // Blue  2
     assign uart_rx = gp14;
     assign gp16 = tx_out;
     assign debug_uart_rx = gp15;
-
 endmodule

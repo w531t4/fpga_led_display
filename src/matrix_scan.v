@@ -108,7 +108,6 @@ module matrix_scan (
         end
     end
 
-
     /* decide how long to enable the LEDs for... we probably need some gamma correction here */
     assign brightness_timeout =
         (brightness_mask_active == 6'b000001) ? 10'd23 :
@@ -134,8 +133,6 @@ module matrix_scan (
         .counter(brightness_counter),
         .running(output_enable)
     );
-
-
 
     /* we want to overlap the pixel clock out with the previous output
        enable... but we do not want to start too early... */
