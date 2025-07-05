@@ -15,7 +15,7 @@ module pixel_split (
         .red(red),
         .green(green),
         .blue(blue)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
     /* apply the brightness mask to the calculated sub-pixel value */
     brightness b_red (
@@ -23,17 +23,17 @@ module pixel_split (
         .mask(brightness_mask),
         .enable(rgb_enable[0]),
         .out(rgb_output[0])
-    ) /* synthesis syn_noprune=1 */ ;
+    );
     brightness b_green (
         .value(green),
         .mask(brightness_mask),
         .enable(rgb_enable[1]),
         .out(rgb_output[1])
-    ) /* synthesis syn_noprune=1 */ ;
+    );
     brightness b_blue(
         .value(blue),
         .mask(brightness_mask),
         .enable(rgb_enable[2]),
         .out(rgb_output[2])
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 endmodule

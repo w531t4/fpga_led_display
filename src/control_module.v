@@ -17,7 +17,7 @@ module control_module #(
     output reg [7:0] ram_data_out,
     output reg [11:0] ram_address,
     output reg ram_write_enable,
-    output ram_clk_enable /* synthesis syn_preserve = 1 */,
+    output ram_clk_enable,
     output ram_reset,
     output [1:0] cmd_line_state2,
     output [7:0] rx_data,
@@ -29,18 +29,18 @@ module control_module #(
 
     wire [7:0] uart_rx_data;
     wire uart_rx_running;
-    wire ram_clk_enable_real /* synthesis syn_noprune=1 syn_preserve=1 */;
+    wire ram_clk_enable_real;
 
     //assign rx_data[7:0] = uart_rx_data[7:0];
 
-    reg ram_access_start = 1'b0 /* synthesis syn_noprune=1 syn_preserve=1 */;
-    reg ram_access_start_latch = 1'b0 /* synthesis syn_noprune=1 syn_preserve=1 */;
+    reg ram_access_start = 1'b0;
+    reg ram_access_start_latch = 1'b0;
     assign ram_access_start2 = ram_access_start;
     assign ram_access_start_latch2 = ram_access_start_latch;
     assign ram_reset = reset;
     reg  [1:0]  cmd_line_state;
     reg  [4:0]  cmd_line_addr_row;
-    reg  [7:0]  cmd_line_addr_col /* synthesis syn_preserve=1 */ ; // why is this written as 8 bits?
+    reg  [7:0]  cmd_line_addr_col; // why is this written as 8 bits?
     wire [11:0] cmd_line_addr = { cmd_line_addr_row[4:0], ~cmd_line_addr_col[6:1], cmd_line_addr_col[0] };
 
     assign cmd_line_state2[1:0] = cmd_line_state[1:0];
@@ -60,7 +60,7 @@ module control_module #(
     .o_rxdata(uart_rx_data),
     .o_recvdata(uart_rx_dataready),
     .o_busy(uart_rx_running)
-    ) /* synthesis syn_noprune=1 */;
+    );
 
     /*
     uart_rx #(
@@ -80,7 +80,7 @@ module control_module #(
         .clkdiv_baudrate_reset2(clkdiv_baudrate_reset),
         .timeout_word_start2(timeout_word_start),
         .rx_running2(out_rx_running2)
-    ) // synthesis syn_noprune=1 // ;
+    );
 */
     // ^ is exclusive or
     timeout #(
@@ -92,7 +92,7 @@ module control_module #(
         .value(2'b10),
         .counter(),
         .running(ram_clk_enable_real)
-    ) /* synthesis syn_noprune=1 syn_preserve=1  */ ;
+    );
     assign ram_clk_enable = ram_clk_enable_real;
     assign rx_running = uart_rx_running;
     assign rx_data[7:0] = uart_rx_data[7:0];

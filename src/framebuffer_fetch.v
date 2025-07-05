@@ -41,7 +41,7 @@ module framebuffer_fetch (
 `endif
         .counter(pixel_load_counter),
         .running(ram_clk_enable_real)
-    )  /* synthesis syn_noprune=1 */  ;
+    );
 
     always @(negedge clk_in, posedge reset) begin
         if (reset) begin

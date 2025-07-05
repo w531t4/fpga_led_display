@@ -1,6 +1,6 @@
 `timescale 1 ns / 1 ps
 module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
-    ClockEnA, ClockEnB, WrA, WrB, ResetA, ResetB, QA, QB)/* synthesis NGD_DRC_MASK=1 */;
+    ClockEnA, ClockEnB, WrA, WrB, ResetA, ResetB, QA, QB);
     input wire [7:0] DataInA;
     input wire [15:0] DataInB;
     input wire [11:0] AddressA;

@@ -176,14 +176,14 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         ram_a_clk_enable,
         ram_a_data_in[7:0],
         uart_rx_data[7:0]
-        }  /* synthesis syn_preserve = 1 */ ;
+        };
 
     // No wires past here
 
     pll new_pll_inst (
         .clock_in(clk_25mhz),
         .clock_out(clk_root)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
     reg [5:0] reset_cnt;
     reg last_init_enable;
@@ -224,7 +224,7 @@ fm6126init do_init (
     .mask_en(fm6126mask_en),
     .pixclock_out(pixclock_fm6126init),
     .reset_notify(init_reset_strobe)
-) /* synthesis syn_noprune=1 */ ;
+);
     assign output_enable = output_enable_intermediary & fm6126mask_en;
     assign rgb1[0] = (rgb1_intermediary[0] & fm6126mask_en) | (rgb1_fm6126init[0] & ~fm6126mask_en);
     assign rgb1[1] = (rgb1_intermediary[1] & fm6126mask_en) | (rgb1_fm6126init[1] & ~fm6126mask_en);
@@ -265,7 +265,7 @@ fm6126init do_init (
         .value(4'd15),
         .counter(),
         .running(alt_reset)
-    ) /* synthesis syn_noprune=1 */;
+    );
 
     timeout #(
         .COUNTER_WIDTH(1)
@@ -278,7 +278,7 @@ fm6126init do_init (
         .value(1'd2),
         .counter(),
         .running(buffered_global_reset)
-    ) /* synthesis syn_noprune=1 */;
+    );
 
     /* produce a clock for use on the LED matrix */
     reg [1:0] sync_fifo;
@@ -319,7 +319,7 @@ fm6126init do_init (
         .state_advance2(state_advance),
         .row_latch_state2(row_latch_state),
         .clk_pixel_load_en2(clk_pixel_load_en)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
     /* the fetch controller */
     framebuffer_fetch fb_f (
@@ -339,7 +339,7 @@ fm6126init do_init (
         .rgb565_bottom(pixel_rgb565_bottom),
 
         .pixel_load_counter2(pixel_load_counter2)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
     /* the control module */
     control_module #(
@@ -371,7 +371,7 @@ fm6126init do_init (
         .cmd_line_addr2(cmd_line_addr2),
         .num_commands_processed(num_commands_processed)
 
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
     multimem fb (
         .ClockA(clk_root),
@@ -388,7 +388,7 @@ fm6126init do_init (
         .QB(ram_b_data_out),
         .ClockEnA(ram_a_clk_enable),
         .ClockEnB(ram_b_clk_enable)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
     /* split the pixels and get the current brightness' bit */
     pixel_split px_top (
@@ -396,13 +396,13 @@ fm6126init do_init (
         .brightness_mask(brightness_mask & brightness_enable),
         .rgb_enable(rgb_enable),
         .rgb_output(rgb1_intermediary)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
     pixel_split px_bottom (
         .pixel_rgb565(pixel_rgb565_bottom),
         .brightness_mask(brightness_mask & brightness_enable),
         .rgb_enable(rgb_enable),
         .rgb_output(rgb2_intermediary)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
 
 

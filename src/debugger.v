@@ -60,7 +60,7 @@ module debugger	#(
 
     wire tx_busy;
     wire tx_done;
-    reg [DATA_WIDTH-1:0] data_copy /* synthesis syn_preserve=1 */;
+    reg [DATA_WIDTH-1:0] data_copy;
 
     initial begin
 
@@ -147,7 +147,7 @@ module debugger	#(
         .o_recvdata(debug_command_pulse),
         .o_busy(debug_command_busy)
 
-    ) /* synthesis syn_noprune=1 */  ;
+    );
 
     uart_tx  #(
         .TICKS_PER_BIT(UART_TICKS_PER_BIT),
@@ -159,6 +159,6 @@ module debugger	#(
         .o_done(tx_done),
         .o_busy(tx_busy),
         .o_dout(tx_out)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
 endmodule

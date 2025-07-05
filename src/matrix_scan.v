@@ -30,16 +30,16 @@ module matrix_scan (
     wire clk_pixel_load_en;/* enables the pixel load clock */
     reg  clk_pixel_en;    /* enables the pixel clock, delayed by one cycle from the load clock */
 `ifndef USE_FM6126A
-    reg  [1:0] row_latch_state /* synthesis syn_preserve=1 */;
+    reg  [1:0] row_latch_state;
 `else
-    reg  [3:0] row_latch_state /* synthesis syn_preserve=1 */;
+    reg  [3:0] row_latch_state;
     wire [6:0] clk_pixel_load_en_counter;
     localparam LATCH_WIDTH = 'd3;
 `endif
 
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
-    reg  [5:0] brightness_mask_active /* synthesis syn_preserve=1 */; /* the active mask value (LEDs enabled)... from before the state advanced */
+    reg  [5:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
     wire [9:0] brightness_timeout;     /* used to time the output enable period */
     wire [9:0] brightness_counter;     /* used to control the state advance overlap */
 
@@ -71,7 +71,7 @@ module matrix_scan (
         .counter(clk_pixel_load_en_counter),
 `endif
         .running(clk_pixel_load_en)
-    ) /* synthesis syn_noprune=1 syn_preserve=1*/ ;
+    );
 
     /* produce the column address
        counts from 63 -> 0 and then stops
@@ -85,7 +85,7 @@ module matrix_scan (
         .value(6'd63),
         .counter(column_address),
         .running()
-    ) /* synthesis syn_noprune=1 syn_preserve=1 */ ;
+    );
 
     /* produces the pixel clock enable signal and row_latch_state
        there are 64 pixels per row, this starts immediately after a state advance */
@@ -133,7 +133,7 @@ module matrix_scan (
         .value(brightness_timeout),
         .counter(brightness_counter),
         .running(output_enable)
-    ) /* synthesis syn_noprune=1 */ ;
+    );
 
 
 
