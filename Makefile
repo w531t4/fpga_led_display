@@ -22,6 +22,7 @@ VSOURCES=src/brightness.v \
 # == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
 # SIM - disable use of PLL in simulations
+CONSTRAINTS_DIR=src/constraints
 BUILD_FLAGS=-DUSE_FM6126A -DSIM
 #BUILD_FLAGS=-DSIM
 ARTIFACT_DIR=build_artifacts
@@ -149,7 +150,7 @@ compile: $(ARTIFACT_DIR)/ulx3s_out.config
 
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
 	$(TOOLPATH)/nextpnr-ecp5 --85k --json $(ARTIFACT_DIR)/mydesign.json \
-		--lpf constraints/ulx3s_v316.lpf \
+		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
 		--package CABGA381 \
 		--textcfg $(ARTIFACT_DIR)/ulx3s_out.config
 
