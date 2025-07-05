@@ -24,7 +24,6 @@ VSOURCES=src/brightness.v \
 # SIM - disable use of PLL in simulations
 CONSTRAINTS_DIR=src/constraints
 BUILD_FLAGS=-DUSE_FM6126A -DSIM
-#BUILD_FLAGS=-DSIM
 ARTIFACT_DIR=build_artifacts
 TOOLPATH=oss-cad-suite/bin
 NETLISTSVG=nenv/node_modules/.bin/netlistsvg
@@ -105,22 +104,10 @@ clean:
 	rm -f $(ARTIFACT_DIR)/ulx3s.bit
 	rm -f $(ARTIFACT_DIR)/mydesign.json
 	rm -f $(ARTIFACT_DIR)/mydesign.ys
-#
-##iverilog: ${VSOURCES} ${VTESTBENCHES} Makefile
-##	$(IVEROLOG_BIN) ${VSOURCES} ${VTESTBENCHES} -o ${SIMULATION_DIR}/main.vvp
-##
-##vvp: ${ARTIFACT_DIR}/main.vvp
-##	$(VVP_BIN) ${VVP_FLAGS} ${SIMULATION_DIR}/main.vvp
-##
-##vsim: simulation gtkwave
-##	$(GTKWAVE_BIN) ${GTKWAVE_FLAGS} ${SIMULATION_DIR}/main.vcd
-#
-#
+
 
 $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
 	$(TOOLPATH)/ecppack $(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/ulx3s.bit
-# E	$(TOOLPATH)/ecppack ulx3s_out.config --bit ulx3s.bit --input mydesign.json --spibin mydesign.bin
-# 	$(TOOLPATH)/ecppack ulx3s_out.config --input mydesign.json --spibin mydesign.bin
 compile: $(ARTIFACT_DIR)/ulx3s_out.config
 
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
