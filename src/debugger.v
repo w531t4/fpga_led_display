@@ -62,10 +62,6 @@ module debugger	#(
     wire tx_done;
     reg [DATA_WIDTH-1:0] data_copy /* synthesis syn_preserve=1 */;
 
-    initial begin
-
-    end
-
     // i'm guessing we're doing this in an attempt to not spam negotiate on the
     // serial channel. we're looking roughly 22times a second?. It's been awhie since
     // i last looked at this.
