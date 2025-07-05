@@ -141,31 +141,29 @@ clean:
 #
 #
 
-ulx3s.bit: ulx3s_out.config
-	$(TOOLPATH)/ecppack ulx3s_out.config ulx3s.bit
+$(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
+	$(TOOLPATH)/ecppack $(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/ulx3s.bit
 # E	$(TOOLPATH)/ecppack ulx3s_out.config --bit ulx3s.bit --input mydesign.json --spibin mydesign.bin
 # 	$(TOOLPATH)/ecppack ulx3s_out.config --input mydesign.json --spibin mydesign.bin
-compile: ulx3s_out.config
+compile: $(ARTIFACT_DIR)/ulx3s_out.config
 
-ulx3s_out.config: mydesign.json
-	$(TOOLPATH)/nextpnr-ecp5 --85k --json mydesign.json \
+$(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
+	$(TOOLPATH)/nextpnr-ecp5 --85k --json $(ARTIFACT_DIR)/mydesign.json \
 		--lpf constraints/ulx3s_v316.lpf \
 		--package CABGA381 \
-		--textcfg ulx3s_out.config
+		--textcfg $(ARTIFACT_DIR)/ulx3s_out.config
 
-# blinky.json: blinky.ys blinky.v
-# 	yosys blinky.ys
-mydesign.json: ${VSOURCES}
-	rm -f mydesign.ys
-	# echo -e "echo on" >> mydesign.ys
-	echo -e "read_verilog \\" >> mydesign.ys
+$(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
+	rm -f $(ARTIFACT_DIR)/mydesign.ys
+	# echo -e "echo on" >> $(ARTIFACT_DIR)/mydesign.ys
+	echo -e "read_verilog \\" >> $(ARTIFACT_DIR)/mydesign.ys
 	for file in $^ ; do \
-		echo -e "    $${file} \\" >> mydesign.ys; \
+		echo -e "    $${file} \\" >> $(ARTIFACT_DIR)/mydesign.ys; \
 	done
-	echo -e "\n" >> mydesign.ys
-	# echo -e "synth_ecp5 -json mydesign.json -run :map_ffs" >> mydesign.ys
-	echo -e "synth_ecp5 -json mydesign.json" >> mydesign.ys
-	$(TOOLPATH)/yosys -DUSE_FM6126A -L out.log mydesign.ys
-	
-memprog: ulx3s.bit
-	$(TOOLPATH)/fujprog ulx3s.bit
+	echo -e "\n" >> $(ARTIFACT_DIR)/mydesign.ys
+	# echo -e "synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
+	echo -e "synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json" >> $(ARTIFACT_DIR)/mydesign.ys
+	$(TOOLPATH)/yosys -DUSE_FM6126A -L $(ARTIFACT_DIR)/yosys.log $(ARTIFACT_DIR)/mydesign.ys
+
+memprog: $(ARTIFACT_DIR)/ulx3s.bit
+	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/ulx3s.bit

@@ -1,8 +1,4 @@
 oss-cad-suite/*
-ulx3s.bit
-ulx3s_out.config
-mydesign.json
-mydesign.ys
 __pycache__
 .pytest_cache
 *.tgz
