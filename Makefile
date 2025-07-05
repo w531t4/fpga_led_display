@@ -150,19 +150,22 @@ compile: ulx3s_out.config
 ulx3s_out.config: mydesign.json
 	$(TOOLPATH)/nextpnr-ecp5 --85k --json mydesign.json \
 		--lpf constraints/ulx3s_v316.lpf \
+		--package CABGA381 \
 		--textcfg ulx3s_out.config
 
 # blinky.json: blinky.ys blinky.v
 # 	yosys blinky.ys
 mydesign.json: ${VSOURCES}
 	rm -f mydesign.ys
-	echo -e "read_verilog \\" > mydesign.ys
+	# echo -e "echo on" >> mydesign.ys
+	echo -e "read_verilog \\" >> mydesign.ys
 	for file in $^ ; do \
 		echo -e "    $${file} \\" >> mydesign.ys; \
 	done
 	echo -e "\n" >> mydesign.ys
+	# echo -e "synth_ecp5 -json mydesign.json -run :map_ffs" >> mydesign.ys
 	echo -e "synth_ecp5 -json mydesign.json" >> mydesign.ys
-	$(TOOLPATH)/yosys -DUSE_FM6126A mydesign.ys
-
+	$(TOOLPATH)/yosys -DUSE_FM6126A -L out.log mydesign.ys
+	
 memprog: ulx3s.bit
 	$(TOOLPATH)/fujprog ulx3s.bit
