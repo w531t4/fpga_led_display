@@ -101,7 +101,10 @@ clean:
 	rm -f $(SIMULATION_DIR)/*
 	rm -f $(ARTIFACT_DIR)/yosys.json
 	rm -f $(ARTIFACT_DIR)/netlist.svg
-
+	rm -f $(ARTIFACT_DIR)/ulx3s_out.config
+	rm -f $(ARTIFACT_DIR)/ulx3s.bit
+	rm -f $(ARTIFACT_DIR)/mydesign.json
+	rm -f $(ARTIFACT_DIR)/mydesign.ys
 #
 ##iverilog: ${VSOURCES} ${VTESTBENCHES} Makefile
 ##	$(IVEROLOG_BIN) ${VSOURCES} ${VTESTBENCHES} -o ${SIMULATION_DIR}/main.vvp
