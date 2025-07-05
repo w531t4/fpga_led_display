@@ -48,6 +48,9 @@ module debug_uart_rx
     reg [7:0] rx_data;
     assign o_rxdata = rx_data;
 
+    reg buffer;
+    reg i_din;
+
     //Falling edge detection logic
     reg din_buff;
     wire din_negedge_signal = ~i_din & din_buff;
@@ -63,6 +66,12 @@ module debug_uart_rx
     wire bit_counter_ovf_signal 		= (bit_counter[3]); // if equals >= 8
     reg [4:0] currentState, nextState;
 
+    localparam	STATE_IDLE			= 5'b00001,
+                  STATE_RECEIVE_START	= 5'b00010,
+                  STATE_RECEIVE_DATA	= 5'b00100,
+                  STATE_RECEIVE_STOP	= 5'b01000,
+                  STATE_DONE			= 5'b10000;
+
     //Init registers for testbench simulation
     initial begin
         currentState = STATE_IDLE;
@@ -73,12 +82,16 @@ module debug_uart_rx
         rx_data = 0;
     end
 
-    localparam	STATE_IDLE			= 5'b00001,
-                  STATE_RECEIVE_START	= 5'b00010,
-                  STATE_RECEIVE_DATA	= 5'b00100,
-                  STATE_RECEIVE_STOP	= 5'b01000,
-                  STATE_DONE			= 5'b10000;
-
+    always @(posedge i_clk, posedge reset) begin
+        if (reset) begin
+            i_din <= 1'b1;
+            buffer <= 1'b1;
+        end
+        else begin
+            // the following is necessary to cross the clock domain
+            { i_din , buffer } <= { buffer, i_din_priortobuffer };
+        end
+    end
 
     always@(*) begin
         case (currentState)
@@ -152,19 +165,6 @@ module debug_uart_rx
 
     assign bit_ticks_ovf_signal2 = bit_ticks_ovf_signal;
     assign bit_counter_ovf_signal2 = bit_counter_ovf_signal;
-    reg buffer;
-    reg i_din;
-
-    always @(posedge i_clk, posedge reset) begin
-        if (reset) begin
-            i_din <= 1'b1;
-            buffer <= 1'b1;
-        end
-        else begin
-            // the following is necessary to cross the clock domain
-            { i_din , buffer } <= { buffer, i_din_priortobuffer };
-        end
-    end
 
     always @(posedge i_clk, posedge reset) begin
         if (reset) begin

@@ -27,9 +27,9 @@ BUILD_FLAGS=-DUSE_FM6126A -DSIM
 ARTIFACT_DIR=build
 TOOLPATH=oss-cad-suite/bin
 NETLISTSVG=nenv/node_modules/.bin/netlistsvg
-IVERILOG_BIN=iverilog
+IVERILOG_BIN=$(TOOLPATH)/iverilog
 IVERILOG_FLAGS=
-VVP_BIN=vvp
+VVP_BIN=$(TOOLPATH)/vvp
 VVP_FLAGS=
 GTKWAVE_BIN=gtkwave
 GTKWAVE_FLAGS=
@@ -110,11 +110,16 @@ $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
 	$(TOOLPATH)/ecppack $(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/ulx3s.bit
 compile: $(ARTIFACT_DIR)/ulx3s_out.config
 
+# placer heap
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
 	$(TOOLPATH)/nextpnr-ecp5 --85k --json $(ARTIFACT_DIR)/mydesign.json \
 		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
+		--log $(ARTIFACT_DIR)/nextpnr.log \
 		--package CABGA381 \
 		--textcfg $(ARTIFACT_DIR)/ulx3s_out.config
+# --placer heap \
+# --parallel-refine \
+# --threads=5 \
 
 $(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
 	rm -f $(ARTIFACT_DIR)/mydesign.ys
