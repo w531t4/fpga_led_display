@@ -11,6 +11,7 @@ VSOURCES=src/brightness.v \
 		 src/timeout.v \
 		 src/uart_tx.v \
 		 src/debugger.v \
+		 src/timeout_sync.v \
 		 src/debug_uart_rx.v \
 		 src/newram4.v \
 		 src/fm6126init.v \
@@ -69,6 +70,7 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											fm6126init.v \
 										    new_pll.v \
 											timeout.v \
+											timeout_sync.v \
 											matrix_scan.v \
 											framebuffer_fetch.v \
 											control_module.v \

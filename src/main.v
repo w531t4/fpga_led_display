@@ -185,14 +185,25 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 		.clock_out(clk_root)
 	) /* synthesis syn_noprune=1 */ ;
 
-	reg [5:0] reset_cnt = 6'b100111;
+	reg [5:0] reset_cnt;
+	reg last_init_enable;
+
+    reg blah;
+    reg done;
+    initial begin
+        reset_cnt <= 6'b100111;
+        last_init_enable <= 2'b0;
+        blah <= 1'b0;
+        done <= 1'b0;
+    end
+
 	wire init_enable;
 	assign init_enable = &reset_cnt;
 	always @(posedge clk_root) begin
 			reset_cnt <= reset_cnt + !init_enable;
 	end
 
-	reg last_init_enable = 2'b0;
+
 	wire init_trigger = last_init_enable ^ init_enable;
 
     always @(posedge clk_matrix) begin
@@ -235,15 +246,36 @@ fm6126init do_init (
 	assign clk_pixel = clk_pixel_intermediary;
 `endif
 
-	timeout #(
+    always @(posedge clk_root) begin
+        if (done == 1'b0 && blah == 1'b0) begin
+            blah <= ~blah;
+        end else if (done == 1'b0 && blah == 1'b1) begin
+            done <= 1'b1;
+            blah <= ~blah;
+        end
+
+    end
+    wire alt_reset;
+	timeout_sync #(
 		.COUNTER_WIDTH(4)
+    ) timeout_global_reset_super (
+		.reset(blah),
+		.clk_in(clk_root),
+		.start(done),
+		.value(4'd15),
+		.counter(),
+		.running(alt_reset)
+	) /* synthesis syn_noprune=1 */;
+
+	timeout #(
+		.COUNTER_WIDTH(1)
 	) timeout_global_reset (
-		.reset(1'b0),
+		.reset(global_reset),
 		//.reset(debug_command == "H"),
 		.clk_in(clk_root),
 		//.start(1'b1),
 		.start(~((debug_command == "H") && debug_command_pulse)),
-		.value(4'd15),
+		.value(1'd2),
 		.counter(),
 		.running(buffered_global_reset)
 	) /* synthesis syn_noprune=1 */;
@@ -260,7 +292,7 @@ fm6126init do_init (
 
 	end
 
-	assign global_reset = global_reset_debug;
+	assign global_reset = alt_reset || (global_reset_debug & ~buffered_global_reset);
 	//assign global_reset = global_reset_init || global_reset_debug;
 	/* produce signals to scan a 64x32 LED matrix, with 6-bit color */
 
