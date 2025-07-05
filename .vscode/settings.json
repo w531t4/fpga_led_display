@@ -1,22 +1,9 @@
 {
     "files.exclude": {
         "waveforms_projects": true,
-        "__pycache__": true,
         "bitmaps": true,
-        "nenv": true,
-        "venv": true,
-        "src/testbenches/*.vcd": true,
-        "src/testbenches/*.vvp": true,
         "backup*.tgz": true,
-        "stdout.log*": true,
-        "synlog.tcl": true,
         "*.pyc": true,
-        "template_Implmnt/template.fse": true,
-        "template_Implmnt/template.sap": true,
         ".pytest_cache": true,
-        "xxx_lse_cp_file_list": true,
-        "xxx_lse_sign_file": true,
-        "main_drc.log": true,
-        ".vdbs": true,
     }
 }
