@@ -24,7 +24,7 @@ VSOURCES=src/brightness.v \
 # SIM - disable use of PLL in simulations
 CONSTRAINTS_DIR=src/constraints
 BUILD_FLAGS=-DUSE_FM6126A -DSIM
-ARTIFACT_DIR=build_artifacts
+ARTIFACT_DIR=build
 TOOLPATH=oss-cad-suite/bin
 NETLISTSVG=nenv/node_modules/.bin/netlistsvg
 IVERILOG_BIN=iverilog
