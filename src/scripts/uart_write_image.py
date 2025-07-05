@@ -5,7 +5,7 @@ import sys
 def main():
     serial_device = "/dev/ttyAMA3"
     if len(sys.argv) == 1:
-        targetfile = "uart/alphabet.uart"
+        targetfile = "../../alphabet.uart"
     else:
         targetfile = "%s" % sys.argv[1]
     baudrate=244444
