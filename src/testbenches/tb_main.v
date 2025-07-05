@@ -142,7 +142,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         end
         @(posedge clk)
             mask = 1;
-        #40000000 $finish;
+        #30000000 $finish;
     end
     always begin
         #SIM_HALF_PERIOD_NS clk <= !clk;
