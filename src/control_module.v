@@ -30,7 +30,7 @@ module control_module #(
     wire [7:0] uart_rx_data;
     wire uart_rx_running;
     wire ram_clk_enable_real /* synthesis syn_noprune=1 syn_preserve=1 */;
-
+    assign cmd_line_state2[1:0] = cmd_line_state[1:0];
     //assign rx_data[7:0] = uart_rx_data[7:0];
 
     reg ram_access_start = 1'b0 /* synthesis syn_noprune=1 syn_preserve=1 */;
@@ -43,7 +43,6 @@ module control_module #(
     reg  [7:0]  cmd_line_addr_col /* synthesis syn_preserve=1 */ ; // why is this written as 8 bits?
     wire [11:0] cmd_line_addr = { cmd_line_addr_row[4:0], ~cmd_line_addr_col[6:1], cmd_line_addr_col[0] };
 
-    assign cmd_line_state2[1:0] = cmd_line_state[1:0];
     assign cmd_line_addr2 = cmd_line_addr[11:0];
 
     wire uart_rx_dataready;
