@@ -77,6 +77,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     wire row_latch;
     wire row_latch_intermediary;
 `ifndef USE_FM6126A
+    wire fm6126mask_en;
     wire [1:0] row_latch_state;
 `else
     // TODO: Need to update bytes in python script and wire below.
@@ -128,9 +129,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 
     wire output_enable;
     wire output_enable_intermediary;
-`ifdef USE_FM6126A
-    wire fm6126mask_en;
-`endif
+
     wire clk_pixel_intermediary;
 
     wire [7:0] num_commands_processed;
