@@ -2,5 +2,6 @@ oss-cad-suite/*
 *.tgz
 bitmaps
 images
+nenv
 build_artifacts
 waveforms_projects

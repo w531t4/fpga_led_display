@@ -4,6 +4,7 @@
         "bitmaps": true,
         "backup*.tgz": true,
         "*.pyc": true,
+        "nenv": true,
         ".pytest_cache": true,
         "oss-cad-suite": true,
     }
