@@ -27,7 +27,6 @@ BUILD_FLAGS=-DUSE_FM6126A -DSIM
 #BUILD_FLAGS=-DSIM
 ARTIFACT_DIR=build_artifacts
 TOOLPATH=oss-cad-suite/bin
-YOSYS=../ice40_toolchain/yosys/yosys
 NETLISTSVG=nenv/node_modules/.bin/netlistsvg
 IVERILOG_BIN=iverilog
 IVERILOG_FLAGS=
@@ -43,9 +42,7 @@ diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
 
 $(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
 	$(shell mkdir -p $(ARTIFACT_DIR))
-#	${YOSYS} -p "read_verilog ${VSOURCES}; proc; write_json -compat-int $@.json; proc"
-	${YOSYS} ${BUILD_FLAGS} -p "prep -top main ; write_json $@" $^
-#	${YOSYS} -p "prep -top main -flatten; write_json $@.json" ${VSOURCES}
+	$(TOOLPATH)/yosys ${BUILD_FLAGS} -p "prep -top main ; write_json $@" $^
 
 $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
 	${NETLISTSVG} $< -o $@
