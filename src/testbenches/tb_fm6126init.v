@@ -1,10 +1,10 @@
 module fm6126init_tb;
     reg clk_root;
-	reg reset;
+    reg reset;
     wire mask_en;
-	wire output_enable_out;
-	wire [2:0] rgb1_out;
-	wire [2:0] rgb2_out;
+    wire output_enable_out;
+    wire [2:0] rgb1_out;
+    wire [2:0] rgb2_out;
    always #5 clk_root <= ~clk_root;
    initial begin
          $dumpfile(`DUMP_FILE_NAME);

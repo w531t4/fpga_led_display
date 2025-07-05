@@ -13,18 +13,18 @@ wire output_enable;
 wire [5:0] brightness_mask;
 
 matrix_scan  matrix_scan_instance
-	(
-		.clk_in(clk),
-		.reset(reset),
-		.column_address(column_address),
-		.row_address(row_address),
-		.row_address_active(row_address_active),
-		.clk_pixel_load(clk_pixel_load),
-		.clk_pixel(clk_pixel),
-		.row_latch(row_latch),
-		.output_enable(output_enable),
-		.brightness_mask(brightness_mask)
-	);
+  (
+    .clk_in(clk),
+    .reset(reset),
+    .column_address(column_address),
+    .row_address(row_address),
+    .row_address_active(row_address_active),
+    .clk_pixel_load(clk_pixel_load),
+    .clk_pixel(clk_pixel),
+    .row_latch(row_latch),
+    .output_enable(output_enable),
+    .brightness_mask(brightness_mask)
+  );
   initial
   begin
       $dumpfile(`DUMP_FILE_NAME);

@@ -63,52 +63,52 @@ reg [1071:0] mystring = "brR L-7766554433221188776655443322118877665544332211887
 
 
 control_module #(
-		// Picture/Video data RX baud rate
-		.UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
-		.UART_CLK_TICKS_WIDTH(CTRLR_CLK_TICKS_WIDTH)
-	) control_module_instance (
-		.reset(reset),
-		.clk_in(clk),
-		.uart_rx(rx_line),
-		.rx_running(rx_running),
-		.rgb_enable(rgb_enable),
-		.brightness_enable(brightness_enable),
+        // Picture/Video data RX baud rate
+        .UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+        .UART_CLK_TICKS_WIDTH(CTRLR_CLK_TICKS_WIDTH)
+    ) control_module_instance (
+        .reset(reset),
+        .clk_in(clk),
+        .uart_rx(rx_line),
+        .rx_running(rx_running),
+        .rgb_enable(rgb_enable),
+        .brightness_enable(brightness_enable),
         //20220106
-		//.ram_data_in(ram_data_in),
-		.ram_data_out(ram_data_out),
-		.ram_address(ram_address),
-		.ram_write_enable(ram_write_enable),
-		.ram_clk_enable(ram_clk_enable),
-		.ram_reset(ram_reset),
+        //.ram_data_in(ram_data_in),
+        .ram_data_out(ram_data_out),
+        .ram_address(ram_address),
+        .ram_write_enable(ram_write_enable),
+        .ram_clk_enable(ram_clk_enable),
+        .ram_reset(ram_reset),
         //20220106
-		//.rx_invalid(rx_invalid),
-		.cmd_line_state2(cmd_line_state2),
+        //.rx_invalid(rx_invalid),
+        .cmd_line_state2(cmd_line_state2),
         .num_commands_processed(num_commands_processed)
-	);
+    );
 
-	debugger #(
-		.DATA_WIDTH_BASE2(11),
-		.DATA_WIDTH(1072),
+    debugger #(
+        .DATA_WIDTH_BASE2(11),
+        .DATA_WIDTH(1072),
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-		.DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM),
-		.DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+        .DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM),
+        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
-		// We're using the debugger here as a data transmitter only. Need
-		// to transmit at the same speed as the controller is expecting to
-		// receive at
+        // We're using the debugger here as a data transmitter only. Need
+        // to transmit at the same speed as the controller is expecting to
+        // receive at
         .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
         .UART_TICKS_PER_BIT_SIZE(CTRLR_CLK_TICKS_WIDTH)
-	) mydebug (
-		.clk_in(clk),
-		.reset(local_reset),
-		.data_in(mystring),
-		.debug_uart_rx_in(1'b0),
-		.debug_command(debug_command),
-		.debug_command_pulse(debug_command_pulse),
-		.debug_command_busy(debug_command_busy),
-		.tx_out(rx_line)
-	);
+    ) mydebug (
+        .clk_in(clk),
+        .reset(local_reset),
+        .data_in(mystring),
+        .debug_uart_rx_in(1'b0),
+        .debug_command(debug_command),
+        .debug_command_pulse(debug_command_pulse),
+        .debug_command_busy(debug_command_busy),
+        .tx_out(rx_line)
+    );
 
   initial
   begin
@@ -139,7 +139,7 @@ control_module #(
   end
 
 always begin
-	#SIM_HALF_PERIOD_NS clk <= !clk;
+    #SIM_HALF_PERIOD_NS clk <= !clk;
 end
 
 endmodule

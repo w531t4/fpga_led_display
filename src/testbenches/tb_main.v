@@ -91,29 +91,29 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     );
     reg mask;
     debugger #(
-		.DATA_WIDTH_BASE2(4'd14),
-		.DATA_WIDTH(14'd8320),
+        .DATA_WIDTH_BASE2(4'd14),
+        .DATA_WIDTH(14'd8320),
 
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-		.DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM),
-		.DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+        .DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM),
+        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
-		// We're using the debugger here as a data transmitter only. Need
-		// to transmit at the same speed as the controller is expecting to
-		// receive at
+        // We're using the debugger here as a data transmitter only. Need
+        // to transmit at the same speed as the controller is expecting to
+        // receive at
         .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
         .UART_TICKS_PER_BIT_SIZE(CTRLR_CLK_TICKS_WIDTH)
-	) mydebug (
+    ) mydebug (
         .clk_in(clk && mask),
-		.reset(local_reset),
-		.data_in(mystring),
-		.debug_uart_rx_in(1'b0),
-		.debug_command(debug_command),
-		.debug_command_pulse(debug_command_pulse),
-		.debug_command_busy(debug_command_busy),
-		.tx_out(uart_rx)
-	);
+        .reset(local_reset),
+        .data_in(mystring),
+        .debug_uart_rx_in(1'b0),
+        .debug_command(debug_command),
+        .debug_command_pulse(debug_command_pulse),
+        .debug_command_busy(debug_command_busy),
+        .tx_out(uart_rx)
+    );
 
     initial begin
         $dumpfile(`DUMP_FILE_NAME);
