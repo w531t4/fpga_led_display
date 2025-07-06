@@ -53,7 +53,6 @@ $(SIMULATION_DIR)/main.vvp: ${VSOURCES}
 
 $(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
 $(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(SRC_DIR)/newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
-	${IVERILOG_BIN} ${SIM_FLAGS} $(IVERILOG_FLAGS) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/control_module.vvp: $(SRC_DIR)/control_module.v \
 									  $(TB_DIR)/tb_control_module.v \
 									  $(foreach file, timeout.v uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
