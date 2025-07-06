@@ -12,7 +12,7 @@ VSOURCES=src/brightness.v \
 		 src/uart_tx.v \
 		 src/debugger.v \
 		 src/timeout_sync.v \
-		 src/debug_uart_rx.v \
+		 src/uart_rx.v \
 		 src/newram4.v \
 		 src/fm6126init.v \
 		 src/new_pll.v \
@@ -78,7 +78,7 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											debugger.v \
 											clock_divider.v \
 											platform/sb_ice40.v \
-											debug_uart_rx.v \
+											uart_rx.v \
 											brightness.v \
 											reset_on_start.v \
 											rgb565.v \
@@ -90,10 +90,10 @@ $(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(
 	${IVERILOG_BIN} ${BUILD_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/control_module.vvp: $(SRC_DIR)/control_module.v \
 									  $(TB_DIR)/tb_control_module.v \
-									  $(foreach file, timeout.v debug_uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
+									  $(foreach file, timeout.v uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
 $(SIMULATION_DIR)/debugger.vvp: $(SRC_DIR)/debugger.v \
 							    $(TB_DIR)/tb_debugger.v \
-								$(foreach file, debug_uart_rx.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
+								$(foreach file, uart_rx.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
 $(SIMULATION_DIR)/matrix_scan.vvp: $(SRC_DIR)/matrix_scan.v \
 								   $(TB_DIR)/tb_matrix_scan.v \
 								   $(foreach file, timeout.v, $(SRC_DIR)/$(file))

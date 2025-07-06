@@ -120,7 +120,7 @@ module debugger	#(
         end
     end
 
-    debug_uart_rx #(
+    uart_rx #(
         .TICKS_PER_BIT(UART_TICKS_PER_BIT),
         .TICKS_PER_BIT_SIZE(UART_TICKS_PER_BIT_SIZE)
     ) mydebugrxuart (

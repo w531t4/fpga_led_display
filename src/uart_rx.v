@@ -22,7 +22,7 @@
     SOFTWARE.
 */
 
-module debug_uart_rx
+module uart_rx
     /* BEGIN PARAMETERS LIST */
     #(
         parameter TICKS_PER_BIT = 32,

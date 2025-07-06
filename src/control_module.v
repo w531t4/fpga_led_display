@@ -44,7 +44,7 @@ module control_module #(
     assign cmd_line_addr2 = cmd_line_addr[11:0];
 
     wire uart_rx_dataready;
-    debug_uart_rx #(
+    uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
         .TICKS_PER_BIT(UART_CLK_TICKS_PER_BIT),
