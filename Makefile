@@ -121,14 +121,14 @@ $(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
 
 compile: $(ARTIFACT_DIR)/ulx3s_out.config
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
-	$(TOOLPATH)/nextpnr-ecp5 --85k --json $(ARTIFACT_DIR)/mydesign.json \
+	$(TOOLPATH)/nextpnr-ecp5 --85k --json $< \
 		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
 		--log $(ARTIFACT_DIR)/nextpnr.log \
 		--package CABGA381 \
-		--textcfg $(ARTIFACT_DIR)/ulx3s_out.config
+		--textcfg $@
 
 $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
-	$(TOOLPATH)/ecppack $(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/ulx3s.bit
+	$(TOOLPATH)/ecppack $< $@
 
 memprog: $(ARTIFACT_DIR)/ulx3s.bit
-	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/ulx3s.bit
+	$(TOOLPATH)/fujprog $<
