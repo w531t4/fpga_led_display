@@ -21,7 +21,27 @@ VVP_FLAGS:=
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 
-VSOURCES := $(shell find $(SRC_DIR) -path '$(TB_DIR)' -prune -o -name '*.v' -print)
+SRCS := $(shell find $(SRC_DIR) -name '*.v')
+
+VSOURCES:=$(SRC_DIR)/brightness.v \
+		  $(SRC_DIR)/clock_divider.v \
+		  $(SRC_DIR)/control_module.v \
+		  $(SRC_DIR)/framebuffer_fetch.v \
+		  $(SRC_DIR)/main.v \
+		  $(SRC_DIR)/matrix_scan.v \
+		  $(SRC_DIR)/pixel_split.v \
+		  $(SRC_DIR)/rgb565.v \
+		  $(SRC_DIR)/timeout.v \
+		  $(SRC_DIR)/uart_tx.v \
+		  $(SRC_DIR)/debugger.v \
+		  $(SRC_DIR)/timeout_sync.v \
+		  $(SRC_DIR)/uart_rx.v \
+		  $(SRC_DIR)/newram4.v \
+		  $(SRC_DIR)/fm6126init.v \
+		  $(SRC_DIR)/new_pll.v \
+		  $(SRC_DIR)/reset_on_start.v \
+		  $(SRC_DIR)/multimem.v \
+		  $(SRC_DIR)/platform/tiny_cells_sim.v
 
 TBSRCS:=$(shell find $(TB_DIR) -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
@@ -49,7 +69,26 @@ $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
-$(SIMULATION_DIR)/main.vvp: ${VSOURCES}
+$(SIMULATION_DIR)/main.vvp: $(foreach file, \
+											fm6126init.v \
+										    new_pll.v \
+											timeout.v \
+											timeout_sync.v \
+											matrix_scan.v \
+											framebuffer_fetch.v \
+											control_module.v \
+											multimem.v \
+		 									newram4.v \
+											pixel_split.v \
+											debugger.v \
+											clock_divider.v \
+											platform/tiny_cells_sim.v \
+											uart_rx.v \
+											brightness.v \
+											reset_on_start.v \
+											rgb565.v \
+											uart_tx.v \
+											, $(SRC_DIR)/$(file))
 
 $(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
 $(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(SRC_DIR)/newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
