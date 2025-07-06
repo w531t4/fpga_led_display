@@ -434,7 +434,7 @@ fm6126init do_init (
     assign gn3 = rgb2[0]; // Red   2
     assign gn4 = rgb2[1]; // Green 2
     assign gn5 = rgb2[2]; // Blue  2
-    assign gn14 = clk_root;
+    assign gn14 = clk_matrix;
     assign gn15 = gp14;
     assign gn16 = clk_root; // 6
     assign gn17 = clk_root; // T1
