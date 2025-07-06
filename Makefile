@@ -35,19 +35,6 @@ VVP_BIN=$(TOOLPATH)/vvp
 VVP_FLAGS=
 GTKWAVE_BIN=gtkwave
 GTKWAVE_FLAGS=
-
-.PHONY: all diagram simulation clean compile
-all: diagram simulation
-
-diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
-
-$(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
-	$(shell mkdir -p $(ARTIFACT_DIR))
-	$(TOOLPATH)/yosys ${SIM_FLAGS} -p "prep -top main ; write_json $@" $^
-
-$(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
-	${NETLISTSVG} $< -o $@
-
 SIMULATION_DIR := $(ARTIFACT_DIR)/simulation
 SRC_DIR = src
 TB_DIR = src/testbenches
@@ -55,8 +42,21 @@ SRCS := $(shell find $(SRC_DIR) -name '*.v')
 TBSRCS := $(shell find $(TB_DIR) -name '*.v')
 VVPOBJS := $(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
 VCDOBJS := $(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vcd)))
-#$(warning In a command script $(VVPOBJS))
+
+.PHONY: all diagram simulation clean compile
+all: diagram simulation
+
 simulation: $(VCDOBJS)
+
+$(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
+	$(shell mkdir -p $(ARTIFACT_DIR))
+	$(TOOLPATH)/yosys ${SIM_FLAGS} -p "prep -top main ; write_json $@" $^
+
+diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
+$(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
+	${NETLISTSVG} $< -o $@
+
+#$(warning In a command script $(VVPOBJS))
 
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
 	$(VVP_BIN) ${VVP_FLAGS} $<
