@@ -108,28 +108,23 @@ clean:
 	rm -f $(ARTIFACT_DIR)/mydesign.json
 	rm -f $(ARTIFACT_DIR)/mydesign.ys
 
-
-$(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
-	$(TOOLPATH)/ecppack $(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/ulx3s.bit
-compile: $(ARTIFACT_DIR)/ulx3s_out.config
-
-# placer heap
-$(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
-	$(TOOLPATH)/nextpnr-ecp5 --85k --json $(ARTIFACT_DIR)/mydesign.json \
-		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
-		--log $(ARTIFACT_DIR)/nextpnr.log \
-		--package CABGA381 \
-		--textcfg $(ARTIFACT_DIR)/ulx3s_out.config
-# --placer heap \
-# --parallel-refine \
-# --threads=5 \
-
 # YOSYS_DEBUG:=echo on
 YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog ${VSOURCES}; synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json;
 $(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
 	# echo -e "synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys ${BUILD_FLAGS} -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
+
+compile: $(ARTIFACT_DIR)/ulx3s_out.config
+$(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
+	$(TOOLPATH)/nextpnr-ecp5 --85k --json $(ARTIFACT_DIR)/mydesign.json \
+		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
+		--log $(ARTIFACT_DIR)/nextpnr.log \
+		--package CABGA381 \
+		--textcfg $(ARTIFACT_DIR)/ulx3s_out.config
+
+$(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
+	$(TOOLPATH)/ecppack $(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/ulx3s.bit
 
 memprog: $(ARTIFACT_DIR)/ulx3s.bit
 	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/ulx3s.bit
