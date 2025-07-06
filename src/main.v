@@ -21,7 +21,25 @@ module main (
   input gp14,
   input gp15,
   output gp16,
-  input clk_25mhz
+  input clk_25mhz,
+  output gn0,
+  output gn1,
+  output gn2,
+  output gn3,
+  output gn4,
+  output gn5,
+  output gn7,
+  output gn8,
+  output gn9,
+  output gn10,
+  output gn11,
+  output gn12,
+  output gn13,
+    output gn14,
+    output gn15,
+    output gn16,
+    output gn17,
+    output gn18
 );
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7
@@ -419,7 +437,26 @@ fm6126init do_init (
     assign gp3 = rgb2[0]; // Red   2
     assign gp4 = rgb2[1]; // Green 2
     assign gp5 = rgb2[2]; // Blue  2
+
     assign uart_rx = gp14;
     assign gp16 = tx_out;
     assign debug_uart_rx = gp15;
+
+    assign gn11 = clk_pixel; // Pixel Clk
+    assign gn12 = row_latch; // Row Latch
+    assign gn13 = ~output_enable; // #OE
+    assign gn7 = row_address_active[0]; // A / Row[0]
+    assign gn8 = row_address_active[1]; // B / Row[1]
+    assign gn9 = row_address_active[2]; // C / Row[2]
+    assign gn10 = row_address_active[3]; // D / Row[3]
+    assign gn0 = rgb1[0]; // Red   1
+    assign gn1 = rgb1[1]; // Green 1
+    assign gn2 = rgb1[2]; // Blue  1
+    assign gn3 = rgb2[0]; // Red   2
+    assign gn4 = rgb2[1]; // Green 2
+    assign gn5 = rgb2[2]; // Blue  2
+    assign gn14 = clk_root;
+    assign gn15 = gp14;
+    assign gn16 = clk_root; // 6
+    assign gn17 = clk_root; // T1
 endmodule

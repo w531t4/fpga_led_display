@@ -87,7 +87,20 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         .gp5(rgb2_1),
         .gp14(uart_rx),
         .gp16(debugger_txout),
-        .gp15(debugger_rxin)
+        .gp15(debugger_rxin),
+        .gn11(),
+        .gn12(),
+        .gn13(),
+        .gn7(),
+        .gn8(),
+        .gn9(),
+        .gn10(),
+        .gn0(),
+        .gn1(),
+        .gn2(),
+        .gn3(),
+        .gn4(),
+        .gn5()
     );
     reg mask;
     debugger #(
