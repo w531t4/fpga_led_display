@@ -16,6 +16,7 @@ VSOURCES=src/brightness.v \
 		 src/newram4.v \
 		 src/fm6126init.v \
 		 src/new_pll.v \
+		 src/reset_on_start.v \
 		 src/multimem.v \
 		 src/platform/tiny_cells_sim.v
 ##
@@ -79,6 +80,7 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											platform/sb_ice40.v \
 											debug_uart_rx.v \
 											brightness.v \
+											reset_on_start.v \
 											rgb565.v \
 											uart_tx.v \
 											, $(SRC_DIR)/$(file))

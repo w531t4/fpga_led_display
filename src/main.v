@@ -198,14 +198,9 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 
     reg [5:0] reset_cnt;
     reg last_init_enable;
-
-    reg blah;
-    reg done;
     initial begin
         reset_cnt <= 6'b100111;
         last_init_enable <= 2'b0;
-        blah <= 1'b0;
-        done <= 1'b0;
     end
 
     wire init_enable;
@@ -213,7 +208,6 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     always @(posedge clk_root) begin
             reset_cnt <= reset_cnt + !init_enable;
     end
-
 
     wire init_trigger = last_init_enable ^ init_enable;
 
@@ -257,25 +251,10 @@ fm6126init do_init (
     assign clk_pixel = clk_pixel_intermediary;
 `endif
 
-    always @(posedge clk_root) begin
-        if (done == 1'b0 && blah == 1'b0) begin
-            blah <= ~blah;
-        end else if (done == 1'b0 && blah == 1'b1) begin
-            done <= 1'b1;
-            blah <= ~blah;
-        end
-
-    end
     wire alt_reset;
-    timeout_sync #(
-        .COUNTER_WIDTH(4)
-    ) timeout_global_reset_super (
-        .reset(blah),
-        .clk_in(clk_root),
-        .start(done),
-        .value(4'd15),
-        .counter(),
-        .running(alt_reset)
+    reset_on_start #() RoS_obj (
+        .clock_in(clk_root),
+        .reset(alt_reset)
     );
 
     timeout #(
