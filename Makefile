@@ -91,4 +91,10 @@ $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
 	$(TOOLPATH)/ecppack $< $@
 
 memprog: $(ARTIFACT_DIR)/ulx3s.bit
+	@echo ====YOSYS WARNINGS/ERRORS====
+	@-grep -i -e warning -e error $(ARTIFACT_DIR)/yosys.log
+	@echo
+	@echo ====NEXTPNR WARNINGS/ERRORS====
+	@-grep -i -e warning -e error $(ARTIFACT_DIR)/nextpnr.log
+	@echo
 	$(TOOLPATH)/fujprog $<
