@@ -1,51 +1,51 @@
-PROJ=this
+PROJ:=this
 
-##
+ARTIFACT_DIR:=build
+SIMULATION_DIR:=$(ARTIFACT_DIR)/simulation
+SRC_DIR:=src
+TB_DIR:=src/testbenches
+CONSTRAINTS_DIR:=src/constraints
+
 # == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
 # SIM - disable use of PLL in simulations
-ARTIFACT_DIR=build
-SIMULATION_DIR := $(ARTIFACT_DIR)/simulation
-SRC_DIR = src
-TB_DIR = src/testbenches
-CONSTRAINTS_DIR=src/constraints
 
-BUILD_FLAGS=-DUSE_FM6126A
-SIM_FLAGS=-DSIM $(BUILD_FLAGS)
-TOOLPATH=oss-cad-suite/bin
-NETLISTSVG=nenv/node_modules/.bin/netlistsvg
-IVERILOG_BIN=$(TOOLPATH)/iverilog
-IVERILOG_FLAGS=
-VVP_BIN=$(TOOLPATH)/vvp
-VVP_FLAGS=
-GTKWAVE_BIN=gtkwave
-GTKWAVE_FLAGS=
+BUILD_FLAGS:=-DUSE_FM6126A
+SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
+TOOLPATH:=oss-cad-suite/bin
+NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
+IVERILOG_BIN:=$(TOOLPATH)/iverilog
+IVERILOG_FLAGS:=
+VVP_BIN:=$(TOOLPATH)/vvp
+VVP_FLAGS:=
+GTKWAVE_BIN:=gtkwave
+GTKWAVE_FLAGS:=
 
 SRCS := $(shell find $(SRC_DIR) -name '*.v')
 
-VSOURCES=src/brightness.v \
-		 src/clock_divider.v \
-		 src/control_module.v \
-		 src/framebuffer_fetch.v \
-		 src/main.v \
-		 src/matrix_scan.v \
-		 src/pixel_split.v \
-		 src/rgb565.v \
-		 src/timeout.v \
-		 src/uart_tx.v \
-		 src/debugger.v \
-		 src/timeout_sync.v \
-		 src/uart_rx.v \
-		 src/newram4.v \
-		 src/fm6126init.v \
-		 src/new_pll.v \
-		 src/reset_on_start.v \
-		 src/multimem.v \
-		 src/platform/tiny_cells_sim.v
+VSOURCES:=src/brightness.v \
+		  src/clock_divider.v \
+		  src/control_module.v \
+		  src/framebuffer_fetch.v \
+		  src/main.v \
+		  src/matrix_scan.v \
+		  src/pixel_split.v \
+		  src/rgb565.v \
+		  src/timeout.v \
+		  src/uart_tx.v \
+		  src/debugger.v \
+		  src/timeout_sync.v \
+		  src/uart_rx.v \
+		  src/newram4.v \
+		  src/fm6126init.v \
+		  src/new_pll.v \
+		  src/reset_on_start.v \
+		  src/multimem.v \
+		  src/platform/tiny_cells_sim.v
 
-TBSRCS := $(shell find $(TB_DIR) -name '*.v')
-VVPOBJS := $(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
-VCDOBJS := $(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vcd)))
+TBSRCS:=$(shell find $(TB_DIR) -name '*.v')
+VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
+VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vcd)))
 
 .PHONY: all diagram simulation clean compile
 all: diagram simulation
