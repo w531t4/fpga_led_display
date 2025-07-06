@@ -125,7 +125,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     wire [7:0] debug_command;
     wire debug_command_pulse;
     wire debug_command_busy;
-    wire tx_out;
+    wire debug_uart_tx;
 
     wire [5:0] column_address;
     wire [3:0] row_address;
@@ -400,7 +400,7 @@ fm6126init do_init (
         .debug_command(debug_command),
         .debug_command_pulse(debug_command_pulse),
         .debug_command_busy(debug_command_busy),
-        .tx_out(tx_out)
+        .tx_out(debug_uart_tx)
     );
 
     assign gp11 = clk_pixel; // Pixel Clk
@@ -418,7 +418,7 @@ fm6126init do_init (
     assign gp5 = rgb2[2]; // Blue  2
 
     assign uart_rx = gp14;
-    assign gp16 = tx_out;
+    assign gp16 = debug_uart_tx;
     assign debug_uart_rx = gp15;
 
     assign gn11 = clk_pixel; // Pixel Clk
