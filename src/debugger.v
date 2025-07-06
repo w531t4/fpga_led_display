@@ -13,7 +13,7 @@ module debugger	#(
     input debug_uart_rx_in,
     output tx_out,
     output reg debug_start,
-    output reg [3:0] currentState,
+    output reg [4:0] currentState,
     output reg do_close,
     output reg tx_start,
     output reg [DATA_WIDTH_BASE2:0] current_position,
