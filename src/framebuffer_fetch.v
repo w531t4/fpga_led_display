@@ -21,7 +21,7 @@ module framebuffer_fetch (
     /* grab data on falling edge of pixel clock */
     //wire pixel_load_running;
     wire [1:0] pixel_load_counter;
-    assign pixel_load_counter2[3:0] = { 1'b0, pixel_load_counter[1:0] };
+    assign pixel_load_counter2[3:0] = { 2'b0, pixel_load_counter[1:0] };
 
     reg half_address;
     assign ram_address = { half_address, row_address[3:0], ~column_address[5:0] };
