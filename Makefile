@@ -15,7 +15,7 @@ SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
 IVERILOG_BIN:=$(TOOLPATH)/iverilog
-IVERILOG_FLAGS:=
+IVERILOG_FLAGS:=-g2012 # -g2012 solves issue where platform/tiny_cell_sim.v is detected as systemverilog
 VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=
 GTKWAVE_BIN:=gtkwave
@@ -68,7 +68,7 @@ $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
 $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	${IVERILOG_BIN} ${SIM_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+	${IVERILOG_BIN} ${SIM_FLAGS} $(IVERILOG_FLAGS) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											fm6126init.v \
 										    new_pll.v \
@@ -82,7 +82,7 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											pixel_split.v \
 											debugger.v \
 											clock_divider.v \
-											platform/sb_ice40.v \
+											platform/tiny_cells_sim.v \
 											uart_rx.v \
 											brightness.v \
 											reset_on_start.v \
@@ -90,9 +90,9 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											uart_tx.v \
 											, $(SRC_DIR)/$(file))
 
-$(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/sb_ice40.v
-$(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(SRC_DIR)/newram4.v $(SRC_DIR)/platform/sb_ice40.v
-	${IVERILOG_BIN} ${SIM_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+$(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
+$(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(SRC_DIR)/newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
+	${IVERILOG_BIN} ${SIM_FLAGS} $(IVERILOG_FLAGS) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/control_module.vvp: $(SRC_DIR)/control_module.v \
 									  $(TB_DIR)/tb_control_module.v \
 									  $(foreach file, timeout.v uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
