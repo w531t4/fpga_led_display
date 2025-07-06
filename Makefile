@@ -24,7 +24,8 @@ VSOURCES=src/brightness.v \
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
 # SIM - disable use of PLL in simulations
 CONSTRAINTS_DIR=src/constraints
-BUILD_FLAGS=-DUSE_FM6126A -DSIM
+BUILD_FLAGS=-DUSE_FM6126A
+SIM_FLAGS=-DSIM $(BUILD_FLAGS)
 ARTIFACT_DIR=build
 TOOLPATH=oss-cad-suite/bin
 NETLISTSVG=nenv/node_modules/.bin/netlistsvg
@@ -42,7 +43,7 @@ diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
 
 $(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
 	$(shell mkdir -p $(ARTIFACT_DIR))
-	$(TOOLPATH)/yosys ${BUILD_FLAGS} -p "prep -top main ; write_json $@" $^
+	$(TOOLPATH)/yosys ${SIM_FLAGS} -p "prep -top main ; write_json $@" $^
 
 $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
 	${NETLISTSVG} $< -o $@
@@ -63,7 +64,7 @@ $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
 $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	${IVERILOG_BIN} ${BUILD_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+	${IVERILOG_BIN} ${SIM_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 											fm6126init.v \
 										    new_pll.v \
@@ -87,7 +88,7 @@ $(SIMULATION_DIR)/main.vvp: $(foreach file, \
 
 $(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/sb_ice40.v
 $(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(SRC_DIR)/newram4.v $(SRC_DIR)/platform/sb_ice40.v
-	${IVERILOG_BIN} ${BUILD_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+	${IVERILOG_BIN} ${SIM_FLAGS} -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/control_module.vvp: $(SRC_DIR)/control_module.v \
 									  $(TB_DIR)/tb_control_module.v \
 									  $(foreach file, timeout.v uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
@@ -133,7 +134,7 @@ $(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
 	echo -e "\n" >> $(ARTIFACT_DIR)/mydesign.ys
 	# echo -e "synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo -e "synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json" >> $(ARTIFACT_DIR)/mydesign.ys
-	$(TOOLPATH)/yosys -DUSE_FM6126A -L $(ARTIFACT_DIR)/yosys.log $(ARTIFACT_DIR)/mydesign.ys
+	$(TOOLPATH)/yosys ${BUILD_FLAGS} -L $(ARTIFACT_DIR)/yosys.log $(ARTIFACT_DIR)/mydesign.ys
 
 memprog: $(ARTIFACT_DIR)/ulx3s.bit
 	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/ulx3s.bit
