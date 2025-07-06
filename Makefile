@@ -3,8 +3,8 @@ PROJ:=this
 ARTIFACT_DIR:=build
 SIMULATION_DIR:=$(ARTIFACT_DIR)/simulation
 SRC_DIR:=src
-TB_DIR:=src/testbenches
-CONSTRAINTS_DIR:=src/constraints
+TB_DIR:=$(SRC_DIR)/testbenches
+CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
 
 # == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
@@ -23,25 +23,25 @@ GTKWAVE_FLAGS:=
 
 SRCS := $(shell find $(SRC_DIR) -name '*.v')
 
-VSOURCES:=src/brightness.v \
-		  src/clock_divider.v \
-		  src/control_module.v \
-		  src/framebuffer_fetch.v \
-		  src/main.v \
-		  src/matrix_scan.v \
-		  src/pixel_split.v \
-		  src/rgb565.v \
-		  src/timeout.v \
-		  src/uart_tx.v \
-		  src/debugger.v \
-		  src/timeout_sync.v \
-		  src/uart_rx.v \
-		  src/newram4.v \
-		  src/fm6126init.v \
-		  src/new_pll.v \
-		  src/reset_on_start.v \
-		  src/multimem.v \
-		  src/platform/tiny_cells_sim.v
+VSOURCES:=$(SRC_DIR)/brightness.v \
+		  $(SRC_DIR)/clock_divider.v \
+		  $(SRC_DIR)/control_module.v \
+		  $(SRC_DIR)/framebuffer_fetch.v \
+		  $(SRC_DIR)/main.v \
+		  $(SRC_DIR)/matrix_scan.v \
+		  $(SRC_DIR)/pixel_split.v \
+		  $(SRC_DIR)/rgb565.v \
+		  $(SRC_DIR)/timeout.v \
+		  $(SRC_DIR)/uart_tx.v \
+		  $(SRC_DIR)/debugger.v \
+		  $(SRC_DIR)/timeout_sync.v \
+		  $(SRC_DIR)/uart_rx.v \
+		  $(SRC_DIR)/newram4.v \
+		  $(SRC_DIR)/fm6126init.v \
+		  $(SRC_DIR)/new_pll.v \
+		  $(SRC_DIR)/reset_on_start.v \
+		  $(SRC_DIR)/multimem.v \
+		  $(SRC_DIR)/platform/tiny_cells_sim.v
 
 TBSRCS:=$(shell find $(TB_DIR) -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
