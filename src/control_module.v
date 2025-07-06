@@ -100,7 +100,7 @@ module control_module #(
             cmd_line_state <= 2'd0;
             cmd_line_addr_row <= 5'd0;
             cmd_line_addr_col <= 8'd0;
-            num_commands_processed <= 7'b0;
+            num_commands_processed <= 8'b0;
         end
 
 

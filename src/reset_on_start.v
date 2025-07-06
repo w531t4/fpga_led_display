@@ -6,8 +6,8 @@ module reset_on_start (clock_in, reset);
     reg objective;
 
     initial begin
-        count <= 1'b0;
-        objective <= 1'b0;
+        count = 1'b0;
+        objective = 1'b0;
     end
 
     always @(posedge clock_in) begin
