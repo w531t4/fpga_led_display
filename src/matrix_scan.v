@@ -136,8 +136,11 @@ module matrix_scan (
 
     /* we want to overlap the pixel clock out with the previous output
        enable... but we do not want to start too early... */
+`ifndef USE_FM6126A
+    assign state_advance = !output_enable || (state_timeout_overlap < brightness_counter);
+`else
     assign state_advance = !output_enable || (state_timeout_overlap < (brightness_counter + LATCH_WIDTH));
-
+`endif
     /* shift the state advance signal into the bitfield */
     always @(posedge clk_in, posedge reset) begin
         if (reset) begin
