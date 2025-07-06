@@ -124,17 +124,12 @@ $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
 # --parallel-refine \
 # --threads=5 \
 
+# YOSYS_DEBUG:=echo on
+YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog ${VSOURCES}; synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json;
 $(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
-	rm -f $(ARTIFACT_DIR)/mydesign.ys
-	# echo -e "echo on" >> $(ARTIFACT_DIR)/mydesign.ys
-	echo -e "read_verilog \\" >> $(ARTIFACT_DIR)/mydesign.ys
-	for file in $^ ; do \
-		echo -e "    $${file} \\" >> $(ARTIFACT_DIR)/mydesign.ys; \
-	done
-	echo -e "\n" >> $(ARTIFACT_DIR)/mydesign.ys
 	# echo -e "synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
-	echo -e "synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json" >> $(ARTIFACT_DIR)/mydesign.ys
-	$(TOOLPATH)/yosys ${BUILD_FLAGS} -L $(ARTIFACT_DIR)/yosys.log $(ARTIFACT_DIR)/mydesign.ys
+	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
+	$(TOOLPATH)/yosys ${BUILD_FLAGS} -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
 
 memprog: $(ARTIFACT_DIR)/ulx3s.bit
 	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/ulx3s.bit
