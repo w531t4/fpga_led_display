@@ -113,9 +113,9 @@ clean:
 	rm -f $(ARTIFACT_DIR)/mydesign.ys
 
 # YOSYS_DEBUG:=echo on
-YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog ${VSOURCES}; synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json;
 $(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
-	# echo -e "synth_ecp5 -json $(ARTIFACT_DIR)/mydesign.json -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
+	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $^; synth_ecp5 -json $@)
+	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys ${BUILD_FLAGS} -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
 
