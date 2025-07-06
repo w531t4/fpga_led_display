@@ -38,17 +38,17 @@ $(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
 
 diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
 $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
-	${NETLISTSVG} $< -o $@
+	$(NETLISTSVG) $< -o $@
 
 #$(warning In a command script $(VVPOBJS))
 
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
-	$(VVP_BIN) ${VVP_FLAGS} $<
+	$(VVP_BIN) $(VVP_FLAGS) $<
 
 $(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	${IVERILOG_BIN} ${SIM_FLAGS} $(IVERILOG_FLAGS) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
 $(SIMULATION_DIR)/main.vvp: ${VSOURCES}
 
 $(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
@@ -77,7 +77,7 @@ $(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
 	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $^; synth_ecp5 -json $@)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
-	$(TOOLPATH)/yosys ${BUILD_FLAGS} -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
+	$(TOOLPATH)/yosys $(BUILD_FLAGS) -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
 
 compile: $(ARTIFACT_DIR)/ulx3s_out.config
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
