@@ -23,10 +23,14 @@ VSOURCES=src/brightness.v \
 # == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
 # SIM - disable use of PLL in simulations
+ARTIFACT_DIR=build
+SIMULATION_DIR := $(ARTIFACT_DIR)/simulation
+SRC_DIR = src
+TB_DIR = src/testbenches
 CONSTRAINTS_DIR=src/constraints
+
 BUILD_FLAGS=-DUSE_FM6126A
 SIM_FLAGS=-DSIM $(BUILD_FLAGS)
-ARTIFACT_DIR=build
 TOOLPATH=oss-cad-suite/bin
 NETLISTSVG=nenv/node_modules/.bin/netlistsvg
 IVERILOG_BIN=$(TOOLPATH)/iverilog
@@ -35,9 +39,7 @@ VVP_BIN=$(TOOLPATH)/vvp
 VVP_FLAGS=
 GTKWAVE_BIN=gtkwave
 GTKWAVE_FLAGS=
-SIMULATION_DIR := $(ARTIFACT_DIR)/simulation
-SRC_DIR = src
-TB_DIR = src/testbenches
+
 SRCS := $(shell find $(SRC_DIR) -name '*.v')
 TBSRCS := $(shell find $(TB_DIR) -name '*.v')
 VVPOBJS := $(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
