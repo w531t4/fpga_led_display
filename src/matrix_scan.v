@@ -1,4 +1,3 @@
-`default_nettype none
 module matrix_scan (
     input reset,
     input clk_in,

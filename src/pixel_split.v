@@ -1,4 +1,3 @@
-`default_nettype none
 module pixel_split (
     input [15:0] pixel_rgb565,
     input [5:0] brightness_mask,

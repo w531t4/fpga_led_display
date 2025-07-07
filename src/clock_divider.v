@@ -1,4 +1,3 @@
-`default_nettype none
 /* simple clock divider
    counts from zero to the given value, and then toggles clk_out
      counts on positive edge of clk_in

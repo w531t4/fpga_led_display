@@ -1,4 +1,3 @@
-`default_nettype none
 /* a timeout module... output is de-asserted after the counter expires
     clk_in        - input clock, keep it running
     start         - counter resets/begins when becomes high

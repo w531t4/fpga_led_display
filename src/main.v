@@ -1,4 +1,3 @@
-`default_nettype none
 module main (
     // DP74HC245 710401
     // FM TC7258E. 5B855300 2X

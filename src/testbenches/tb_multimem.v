@@ -1,4 +1,3 @@
-`default_nettype none
 `timescale 1ns/10ps
 module tb_multimem;
 // period = (1 / 50000000hz) / 2 = 10.00000

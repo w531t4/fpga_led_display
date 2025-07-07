@@ -1,4 +1,3 @@
-`default_nettype none
 /*
     MIT License
 

@@ -1,4 +1,3 @@
-`default_nettype none
 `timescale 1 ns / 1 ps
 module reset_on_start (clock_in, reset);
     input wire clock_in;

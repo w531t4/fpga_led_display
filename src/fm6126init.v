@@ -1,4 +1,3 @@
-`default_nettype none
     /* apply the brightness mask to the calculated sub-pixel value */
     /*
     wire masked_value = (value & mask) != 0;

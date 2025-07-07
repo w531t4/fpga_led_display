@@ -1,4 +1,3 @@
-`default_nettype none
 module debugger	#(
     parameter DIVIDER_TICKS_WIDTH = 28,
     parameter DIVIDER_TICKS = 28'd67000000,

@@ -1,4 +1,3 @@
-`default_nettype none
 `timescale 1ns/10ps
 module tb_control_module;
 // context: RX DATA baud
