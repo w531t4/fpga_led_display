@@ -122,7 +122,7 @@ $(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot: ${VSOURCES}
 
 loopviz: $(ARTIFACT_DIR)/mydesign_show.svg
 $(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot
-	$(TOOLPATH)/xdot -Ksfdp -Goverlap=prism -Gsep=1 -o $@ -Tsvg $<
+	$(TOOLPATH)/dot -Ksfdp -Goverlap=prism -Gsep=1 -o $@ -Tsvg $<
 
 compile: $(ARTIFACT_DIR)/ulx3s_out.config
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
