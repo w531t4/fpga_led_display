@@ -70,6 +70,9 @@ $(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.v $(SRC_DIR)/%.v
 	$(shell mkdir -p $(SIMULATION_DIR))
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ -y$(SRC_DIR) -l$(SRC_DIR)/platform/tiny_cells_sim.v $<
 
+$(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.v $(SRC_DIR)/main.v
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_main_uart -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ -y$(SRC_DIR) -l$(SRC_DIR)/platform/tiny_cells_sim.v $<
+
 clean:
 	rm -f $(SIMULATION_DIR)/*
 	rm -f $(ARTIFACT_DIR)/yosys.json
