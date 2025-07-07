@@ -47,7 +47,7 @@ TBSRCS:=$(shell find $(TB_DIR) -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vcd)))
 
-.PHONY: all diagram simulation clean compile
+.PHONY: all diagram simulation clean compile loopviz
 all: diagram simulation
 
 simulation: $(VCDOBJS)
@@ -110,13 +110,19 @@ clean:
 	rm -f $(ARTIFACT_DIR)/ulx3s.bit
 	rm -f $(ARTIFACT_DIR)/mydesign.json
 	rm -f $(ARTIFACT_DIR)/mydesign.ys
+	rm -f $(ARTIFACT_DIR)/mydesign_show.svg
+	rm -f $(ARTIFACT_DIR)/mydesign_show.dot
 
 # YOSYS_DEBUG:=echo on
-$(ARTIFACT_DIR)/mydesign.json: ${VSOURCES}
-	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $^; synth_ecp5 -json $@)
+$(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot: ${VSOURCES}
+	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $^; synth_ecp5 -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(BUILD_FLAGS) -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
+
+loopviz: $(ARTIFACT_DIR)/mydesign_show.svg
+$(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot
+	$(TOOLPATH)/xdot -Ksfdp -Goverlap=prism -Gsep=1 -o $@ -Tsvg $<
 
 compile: $(ARTIFACT_DIR)/ulx3s_out.config
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
