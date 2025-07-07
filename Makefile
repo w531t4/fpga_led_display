@@ -136,7 +136,7 @@ $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
 	$(TOOLPATH)/ecppack $< $@
 
 memprog: $(ARTIFACT_DIR)/ulx3s.bit
-	@echo ====YOSYS WARNINGS/ERRORS==== | tee -a $(ARTIFACT_DIR)/look_at_me.txt
+	@echo ====YOSYS WARNINGS/ERRORS==== | tee $(ARTIFACT_DIR)/look_at_me.txt
 	@-grep -i -e warning -e error $(ARTIFACT_DIR)/yosys.log | tee -a $(ARTIFACT_DIR)/look_at_me.txt
 	@echo | tee -a $(ARTIFACT_DIR)/look_at_me.txt
 	@echo ====YOSYS Removed Unused Modules==== | tee -a $(ARTIFACT_DIR)/look_at_me.txt
