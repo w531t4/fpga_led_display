@@ -47,7 +47,7 @@ TBSRCS:=$(shell find $(TB_DIR) -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vcd)))
 
-.PHONY: all diagram simulation clean compile loopviz
+.PHONY: all diagram simulation clean compile loopviz route
 all: diagram simulation
 
 simulation: $(VCDOBJS)
@@ -114,6 +114,7 @@ clean:
 	rm -f $(ARTIFACT_DIR)/mydesign_show.dot
 
 # YOSYS_DEBUG:=echo on
+compile: $(ARTIFACT_DIR)/mydesign.json
 $(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES}
 	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $^; synth_ecp5 -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
@@ -124,7 +125,7 @@ loopviz: $(ARTIFACT_DIR)/mydesign_show.svg
 $(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot
 	$(TOOLPATH)/dot -Ksfdp -Goverlap=prism -Gsep=1 -o $@ -Tsvg $<
 
-compile: $(ARTIFACT_DIR)/ulx3s_out.config
+route: $(ARTIFACT_DIR)/ulx3s_out.config
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
 	$(TOOLPATH)/nextpnr-ecp5 --85k --json $< \
 		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
