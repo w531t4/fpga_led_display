@@ -1,4 +1,4 @@
-`timescale 1ns/10ps
+`timescale 1ns/1ps
 module tb_newram4;
 // period = (1 / 50000000hz) / 2 = 10.00000
 parameter SIM_HALF_PERIOD_NS = 10.00000;

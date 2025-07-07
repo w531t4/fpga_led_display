@@ -1,4 +1,3 @@
-`timescale 1 ns / 1 ps
 module newram4 (DataInA, AddressA, AddressB, ClockA, ClockB,
     ClockEnA, ClockEnB, WrA, ResetA, ResetB, QB);
     input wire [1:0] DataInA;

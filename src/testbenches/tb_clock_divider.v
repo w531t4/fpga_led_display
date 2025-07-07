@@ -1,4 +1,4 @@
-`timescale 1ms/1ns
+`timescale 1ns/1ps
 module tb_clock_divider;
 
 reg clk;

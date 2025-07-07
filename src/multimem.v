@@ -1,4 +1,3 @@
-`timescale 1 ns / 1 ps
 module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     ClockEnA, ClockEnB, WrA, WrB, ResetA, ResetB, QA, QB);
     input wire [7:0] DataInA;
