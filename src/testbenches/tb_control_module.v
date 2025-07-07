@@ -1,4 +1,4 @@
-`timescale 1ns/1ps
+`timescale 1ns/1ns
 module tb_control_module;
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7

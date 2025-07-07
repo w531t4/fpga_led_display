@@ -1,4 +1,4 @@
-`timescale 1ns/1ps
+`timescale 1ns/1ns
 module fm6126init_tb;
     reg clk_root;
     reg reset;
