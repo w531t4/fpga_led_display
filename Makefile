@@ -15,7 +15,7 @@ SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
 IVERILOG_BIN:=$(TOOLPATH)/iverilog
-IVERILOG_FLAGS:=-g2012 # -g2012 solves issue where platform/tiny_cell_sim.v is detected as systemverilog
+IVERILOG_FLAGS:=-g2012 # -g2012 solves issue where platform/tiny_cell_sim.v is detected as systemverilog | tells iVerilog to read the source files as SystemVerilog (specifically the SystemVerilog defined in IEEE 1800-2012)
 VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=
 GTKWAVE_BIN:=gtkwave
@@ -87,7 +87,7 @@ clean:
 # YOSYS_DEBUG:=echo on
 compile: $(ARTIFACT_DIR)/mydesign.json
 $(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES}
-	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $^; synth_ecp5 -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
+	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog -sv $^; synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(BUILD_FLAGS) -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
