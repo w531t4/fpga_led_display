@@ -65,42 +65,10 @@ $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
 	$(VVP_BIN) $(VVP_FLAGS) $<
 
-$(SIMULATION_DIR)/%.vvp: $(SRC_DIR)/%.v $(TB_DIR)/tb_%.v
+$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.v $(SRC_DIR)/%.v
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $^
-$(SIMULATION_DIR)/main.vvp: $(foreach file, \
-											fm6126init.v \
-										    new_pll.v \
-											timeout.v \
-											timeout_sync.v \
-											matrix_scan.v \
-											framebuffer_fetch.v \
-											control_module.v \
-											multimem.v \
-		 									newram4.v \
-											pixel_split.v \
-											debugger.v \
-											clock_divider.v \
-											platform/tiny_cells_sim.v \
-											uart_rx.v \
-											brightness.v \
-											reset_on_start.v \
-											rgb565.v \
-											uart_tx.v \
-											, $(SRC_DIR)/$(file))
-
-$(SIMULATION_DIR)/newram4.vvp: $(SRC_DIR)/newram4.v $(TB_DIR)/tb_newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
-$(SIMULATION_DIR)/multimem.vvp: $(SRC_DIR)/multimem.v $(TB_DIR)/tb_multimem.v $(SRC_DIR)/newram4.v $(SRC_DIR)/platform/tiny_cells_sim.v
-$(SIMULATION_DIR)/control_module.vvp: $(SRC_DIR)/control_module.v \
-									  $(TB_DIR)/tb_control_module.v \
-									  $(foreach file, timeout.v uart_rx.v debugger.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
-$(SIMULATION_DIR)/debugger.vvp: $(SRC_DIR)/debugger.v \
-							    $(TB_DIR)/tb_debugger.v \
-								$(foreach file, uart_rx.v uart_tx.v clock_divider.v, $(SRC_DIR)/$(file))
-$(SIMULATION_DIR)/matrix_scan.vvp: $(SRC_DIR)/matrix_scan.v \
-								   $(TB_DIR)/tb_matrix_scan.v \
-								   $(foreach file, timeout.v, $(SRC_DIR)/$(file))
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ -y$(SRC_DIR) -l$(SRC_DIR)/platform/tiny_cells_sim.v $<
 
 clean:
 	rm -f $(SIMULATION_DIR)/*

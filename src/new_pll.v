@@ -6,7 +6,7 @@
 `ifdef SIM
 `timescale 1ns/10ps
 `endif
-module pll
+module new_pll
 (
     input clock_in, // 25 MHz, 0 deg
     output clock_out, // 16 MHz, 0 deg

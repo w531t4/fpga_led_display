@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-module fm6126init_tb;
+module tb_fm6126init;
     reg clk_root;
     reg reset;
     wire mask_en;
@@ -9,7 +9,7 @@ module fm6126init_tb;
    always #5 clk_root <= ~clk_root;
    initial begin
          $dumpfile(`DUMP_FILE_NAME);
-         $dumpvars(0, fm6126init_tb);
+         $dumpvars(0, tb_fm6126init);
          clk_root = 0;
          reset = 0;
          #5 reset = 1;

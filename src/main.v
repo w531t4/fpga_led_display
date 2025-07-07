@@ -191,7 +191,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 
     // No wires past here
 
-    pll new_pll_inst (
+    new_pll new_pll_inst (
         .clock_in(clk_25mhz),
         .clock_out(clk_root)
     );
