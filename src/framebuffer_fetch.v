@@ -1,3 +1,4 @@
+`default_nettype none
 module framebuffer_fetch (
     input reset,
     input clk_in,

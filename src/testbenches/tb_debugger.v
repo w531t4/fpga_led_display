@@ -1,3 +1,4 @@
+`default_nettype none
 `timescale 1ns/10ps
 module tb_debugger;
 

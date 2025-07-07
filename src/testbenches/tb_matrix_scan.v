@@ -1,3 +1,4 @@
+`default_nettype none
 `timescale 1ms/1ns
 module tb_matrix_scan;
 

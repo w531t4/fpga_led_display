@@ -1,3 +1,4 @@
+`default_nettype none
 `timescale 1 ns / 1 ps
 module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     ClockEnA, ClockEnB, WrA, WrB, ResetA, ResetB, QA, QB);

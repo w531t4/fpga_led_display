@@ -1,3 +1,4 @@
+`default_nettype none
 `timescale 1ns/100ps
 module tb_main;
 // context: RX DATA baud
@@ -44,7 +45,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     wire uart_rx;
     wire rgb2_0;
     wire rgb2_1;
-    wire rbg2_2;
+    wire rgb2_2;
     wire rgb1_0;
     wire rgb1_1;
     wire rgb1_2;

@@ -1,3 +1,4 @@
+`default_nettype none
 module control_module #(
     /* UART configuration */
     // we want 22MHz / 2,430,000 = 9.0534
