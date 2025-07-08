@@ -54,7 +54,7 @@ simulation: $(VCDOBJS)
 
 $(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
 	$(shell mkdir -p $(ARTIFACT_DIR))
-	$(TOOLPATH)/yosys ${SIM_FLAGS} -p "prep -top main ; write_json $@" $^
+	$(TOOLPATH)/yosys -p "read_verilog $(SIM_FLAGS) -sv $^; prep -top main ; write_json $@"
 
 diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
 $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
@@ -87,10 +87,10 @@ clean:
 # YOSYS_DEBUG:=echo on
 compile: $(ARTIFACT_DIR)/mydesign.json
 $(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES}
-	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog -sv $^; synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
+	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -sv $^; synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
-	$(TOOLPATH)/yosys $(BUILD_FLAGS) -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
+	$(TOOLPATH)/yosys -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
 
 loopviz: $(ARTIFACT_DIR)/mydesign_show.svg
 $(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot
