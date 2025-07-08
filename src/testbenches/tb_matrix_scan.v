@@ -12,6 +12,11 @@ wire row_latch;
 wire output_enable;
 wire [5:0] brightness_mask;
 
+`ifdef SIM
+// period = (1 / 16000000hz) / 2 = 31.25000
+parameter SIM_HALF_PERIOD_NS = 31.25000*6; // *6 to match current clock divider in main
+`endif
+
 matrix_scan  matrix_scan_instance
   (
     .clk_in(clk),
@@ -43,7 +48,7 @@ matrix_scan  matrix_scan_instance
   #10000000 $finish;
 
   always begin
-     #5  clk <=  ! clk;
+      #SIM_HALF_PERIOD_NS clk <= !clk;
   end
  // always begin
    // #700 reset <= ! reset;
