@@ -33,6 +33,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     .ClockA(ClockA),
     .ClockEnA(ClockEnA),
     .DataInA(DataInA[1:0]),
+    .ResetA(ResetA),
+    .ResetB(ResetB),
     .WrA(WrA & ~AddressA[0])
     );
 
@@ -45,6 +47,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     .ClockA(ClockA),
     .ClockEnA(ClockEnA),
     .DataInA(DataInA[3:2]),
+    .ResetA(ResetA),
+    .ResetB(ResetB),
     .WrA(WrA & ~AddressA[0])
     );
 
@@ -57,6 +61,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     .ClockA(ClockA),
     .ClockEnA(ClockEnA),
     .DataInA(DataInA[5:4]),
+    .ResetA(ResetA),
+    .ResetB(ResetB),
     .WrA(WrA & ~AddressA[0])
     );
 
@@ -69,6 +75,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     .ClockA(ClockA),
     .ClockEnA(ClockEnA),
     .DataInA(DataInA[7:6]),
+    .ResetA(ResetA),
+    .ResetB(ResetB),
     .WrA(WrA & ~AddressA[0])
     );
 
@@ -81,6 +89,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     .ClockA(ClockA),
     .ClockEnA(ClockEnA),
     .DataInA(DataInA[1:0]),
+    .ResetA(ResetA),
+    .ResetB(ResetB),
     .WrA(WrA & AddressA[0])
     );
 
@@ -93,6 +103,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     .ClockA(ClockA),
     .ClockEnA(ClockEnA),
     .DataInA(DataInA[3:2]),
+    .ResetA(ResetA),
+    .ResetB(ResetB),
     .WrA(WrA & AddressA[0])
     );
 
@@ -105,6 +117,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     .ClockA(ClockA),
     .ClockEnA(ClockEnA),
     .DataInA(DataInA[5:4]),
+    .ResetA(ResetA),
+    .ResetB(ResetB),
     .WrA(WrA & AddressA[0])
     );
 
@@ -117,6 +131,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     .ClockA(ClockA),
     .ClockEnA(ClockEnA),
     .DataInA(DataInA[7:6]),
+    .ResetA(ResetA),
+    .ResetB(ResetB),
     .WrA(WrA & AddressA[0])
     );
 
