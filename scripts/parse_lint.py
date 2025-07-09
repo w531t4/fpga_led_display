@@ -6,6 +6,7 @@ KEYWORD = "error"  # <-- Change this to whatever string you want to filter by
 in_grouping = False
 suppress_current_group = False
 grouping_text = list()
+issue_summary = list()
 
 issue_items = list()
 
@@ -24,7 +25,15 @@ def is_suppressed(line: str) -> bool:
         return False
 
     filter_files = ["src/platform/tiny_ecp5_sim.v","src/platform/tiny_cells_sim.v"]
+    if not file in filter_files:
+        issue_summary.append((atype, param, file,))
     return file in filter_files
+
+def print_summary(summary) -> None:
+    summary_set = set(summary)
+    for each in sorted(list(summary_set), key=lambda x: x[2]):
+        print(f"{len([x for x in summary if x == each])}: {each[2]} {each[0]} {each[1]}")
+
 has_started = False
 for line in sys.stdin:
     line = line.rstrip()
@@ -57,6 +66,8 @@ if in_grouping and len(grouping_text) > 0 and not suppress_current_group:
     print_grouping(grouping_text)
     grouping_text = list()
 
+
+print_summary(issue_summary)
 if len(issue_items) > 0:
     print(f"%Error: Exiting due to {len(issue_items)} warning(s)")
     # sys.exit(1)
