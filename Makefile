@@ -20,6 +20,8 @@ VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
+VERILATOR_BIN:=$(TOOLPATH)/verilator
+VERILATOR_FLAGS:=--lint-only -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -v $(SRC_DIR)/platform/tiny_cells_sim.v
 
 SRCS := $(shell find $(SRC_DIR) -name '*.v')
 
@@ -47,8 +49,8 @@ TBSRCS:=$(shell find $(TB_DIR) -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vcd)))
 
-.PHONY: all diagram simulation clean compile loopviz route
-all: diagram simulation
+.PHONY: all diagram simulation clean compile loopviz route lint
+all: diagram simulation lint
 
 simulation: $(VCDOBJS)
 
@@ -73,6 +75,9 @@ $(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.v $(SRC_DIR)/%.v
 $(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.v $(SRC_DIR)/main.v
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_main_uart -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ -y$(SRC_DIR) -l$(SRC_DIR)/platform/tiny_cells_sim.v $<
 
+lint:
+	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.v |& python3 scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+
 clean:
 	rm -f $(SIMULATION_DIR)/*
 	rm -f $(ARTIFACT_DIR)/yosys.json
@@ -85,7 +90,7 @@ clean:
 	rm -f $(ARTIFACT_DIR)/mydesign_show.dot
 
 # YOSYS_DEBUG:=echo on
-compile: $(ARTIFACT_DIR)/mydesign.json
+compile: lint $(ARTIFACT_DIR)/mydesign.json
 $(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES}
 	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -sv $^; synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
