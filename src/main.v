@@ -39,8 +39,7 @@ module main (
     output gn14,
     output gn15,
     output gn16,
-    output gn17,
-    output gn18
+    output gn17
 );
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7
@@ -147,6 +146,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 
     wire [7:0] num_commands_processed;
 
+`ifdef DEBUGGER
     wire [191:0] ddata =  {
         //
         3'b0,
@@ -189,7 +189,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         ram_a_data_in[7:0],
         uart_rx_data[7:0]
         };
-
+`endif
     // No wires past here
 
     new_pll new_pll_inst (
@@ -384,6 +384,7 @@ fm6126init do_init (
         .rgb_output(rgb2_intermediary)
     );
 
+`ifdef DEBUGGER
     debugger #(
         // Describes the sample rate of messages sent to debugger client
         .DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH),
@@ -403,7 +404,7 @@ fm6126init do_init (
         .debug_command_busy(debug_command_busy),
         .tx_out(debug_uart_tx)
     );
-
+`endif
     assign gp11 = clk_pixel; // Pixel Clk
     assign gp12 = row_latch; // Row Latch
     assign gp13 = ~output_enable; // #OE

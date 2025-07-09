@@ -12,8 +12,8 @@ module control_module #(
     input uart_rx,
     output rx_running,
 
-    output reg [2:0] rgb_enable = 3'b111,
-    output reg [5:0] brightness_enable = 6'b111111,
+    output reg [2:0] rgb_enable,
+    output reg [5:0] brightness_enable,
 
     output reg [7:0] ram_data_out,
     output reg [11:0] ram_address,
@@ -31,11 +31,12 @@ module control_module #(
     wire [7:0] uart_rx_data;
     wire uart_rx_running;
     wire ram_clk_enable_real;
-    reg ram_access_start = 1'b0;
+    reg ram_access_start;
     reg ram_access_start_latch;
     assign ram_access_start2 = ram_access_start;
     assign ram_access_start_latch2 = ram_access_start_latch;
     assign ram_reset = reset;
+    wire [1:0] timer_counter_unused;
     reg  [1:0]  cmd_line_state;
     reg  [4:0]  cmd_line_addr_row;
     reg  [7:0]  cmd_line_addr_col; // why is this written as 8 bits?
@@ -68,7 +69,7 @@ module control_module #(
         .clk_in(~clk_in),
         .start(ram_access_start ^ ram_access_start_latch),
         .value(2'b10),
-        .counter(),
+        .counter(timer_counter_unused),
         .running(ram_clk_enable_real)
     );
     assign ram_clk_enable = ram_clk_enable_real;
@@ -188,4 +189,8 @@ module control_module #(
             endcase
         end
     end
+    wire _unused_ok = &{1'b0,
+                        uart_rx_dataready,
+                        timer_counter_unused,
+                        1'b0};
 endmodule

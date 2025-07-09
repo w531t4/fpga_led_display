@@ -10,7 +10,7 @@ CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
 # SIM - disable use of PLL in simulations
 
-BUILD_FLAGS:=-DUSE_FM6126A
+BUILD_FLAGS:=
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
@@ -98,7 +98,7 @@ $(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/
 
 loopviz: $(ARTIFACT_DIR)/mydesign_show.svg
 $(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot | $(ARTIFACT_DIR)
-	$(TOOLPATH)/dot -Ksfdp -Goverlap=prism -Gsep=1 -o $@ -Tsvg $<
+	$(TOOLPATH)/dot -Ksfdp -o $@ -Tsvg $<
 
 route: $(ARTIFACT_DIR)/ulx3s_out.config
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)

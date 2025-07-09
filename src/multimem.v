@@ -142,4 +142,8 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
                   M5_portb_out[1:0], M4_portb_out[1:0],
                   M3_portb_out[1:0], M2_portb_out[1:0],
                   M1_portb_out[1:0], M0_portb_out[1:0] };
+    wire _unused_ok = &{1'b0,
+                        WrB,
+                        DataInB,
+                        1'b0};
 endmodule

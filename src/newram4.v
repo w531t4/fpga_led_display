@@ -60,4 +60,10 @@ module newram4 (DataInA, AddressA, AddressB, ClockA, ClockB,
     // mode 1, data width 8, pins used 14, 12, 10, 8, 6, 4, 2, 0
     // mode 2, data width 4, pins used 13, 9, 5, 1
     // mode 3, data width 2, pins used 11, 3
+    wire _unused_ok = &{1'b0,
+                        ResetA,
+                        ResetB,
+                        TransformedDataB[15:12],
+                        TransformedDataB[10:4],
+                        TransformedDataB[2:0]};
 endmodule

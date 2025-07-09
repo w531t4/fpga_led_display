@@ -47,6 +47,7 @@ module matrix_scan (
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
 `ifndef USE_FM6126A
+    wire [6:0] unused_7bit_counter;
     assign row_latch = row_latch_state[1:0] == 2'b10;
 `else
     assign row_latch = (row_latch_state[3:0] == 4'b0010) || (row_latch_state[3:0] == 4'b0100) || (row_latch_state[3:0] == 4'b1000);
@@ -57,6 +58,7 @@ module matrix_scan (
     assign row_latch_state2 = row_latch_state[1:0];
     assign row_latch2 = row_latch;
     assign state_advance2 = state_advance;
+    wire unused_timer_runpin;
     /* produce 64 load clocks per line...
        external logic should present the pixel value on the rising edge */
     timeout #(
@@ -67,7 +69,7 @@ module matrix_scan (
         .start(clk_state),
         .value(7'd64),
 `ifndef USE_FM6126A
-        .counter(),
+        .counter(unused_7bit_counter),
 `else
         .counter(clk_pixel_load_en_counter),
 `endif
@@ -85,7 +87,7 @@ module matrix_scan (
         .start(clk_state),
         .value(6'd63),
         .counter(column_address),
-        .running()
+        .running(unused_timer_runpin)
     );
 
     /* produces the pixel clock enable signal and row_latch_state
@@ -174,4 +176,10 @@ module matrix_scan (
             end
         end
     end
+    wire _unused_ok = &{1'b0,
+`ifndef USE_FM6126A
+                        unused_7bit_counter,
+`endif
+                        unused_timer_runpin,
+                        1'b0};
 endmodule

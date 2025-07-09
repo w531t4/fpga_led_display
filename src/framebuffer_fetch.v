@@ -52,7 +52,6 @@ module framebuffer_fetch (
             rgb565_bottom <= 16'd0;
         end
         else begin
-`ifdef USE_FM6126A
             // the frequency of pixel_load_start must contain enough clk_root
             // cycles such that the top/bottom data can be loaded prior to next posedge
             // of pixel_load_start
@@ -70,20 +69,6 @@ module framebuffer_fetch (
             else if (pixel_load_counter == 'd0) begin
                 rgb565_bottom <= ram_data_in;
             end
-`else
-            if (pixel_load_counter == 'd3) begin
-                half_address <= 1'b0;
-            end
-            else if (pixel_load_counter == 'd2) begin
-                half_address <= 1'b1;
-            end
-            else if (pixel_load_counter == 'd1) begin
-                rgb565_top <= ram_data_in;
-            end
-            else if (pixel_load_counter == 'd0) begin
-                rgb565_bottom <= ram_data_in;
-            end
-`endif
         end
     end
 endmodule

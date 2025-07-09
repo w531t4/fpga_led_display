@@ -5,6 +5,7 @@ module reset_on_start (clock_in, reset);
     reg count;
     reg objective;
 
+    wire [3:0] unused_timer_counter;
     initial begin
         count = 1'b0;
         objective = 1'b0;
@@ -25,8 +26,10 @@ module reset_on_start (clock_in, reset);
         .clk_in(clock_in),
         .start(objective),
         .value(4'd15),
-        .counter(),
+        .counter(unused_timer_counter),
         .running(reset)
     );
-
+    wire _unused_ok = &{1'b0,
+                        unused_timer_counter,
+                        1'b0};
 endmodule
