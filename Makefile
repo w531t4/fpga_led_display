@@ -54,62 +54,61 @@ all: diagram simulation lint
 
 simulation: $(VCDOBJS)
 
-$(ARTIFACT_DIR)/yosys.json: ${VSOURCES}
+$(ARTIFACT_DIR)/yosys.json: ${VSOURCES} | $(ARTIFACT_DIR)
 	$(shell mkdir -p $(ARTIFACT_DIR))
 	$(TOOLPATH)/yosys -p "read_verilog $(SIM_FLAGS) -sv $^; prep -top main ; write_json $@"
 
 diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
-$(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json
+$(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json  | $(ARTIFACT_DIR)
 	$(NETLISTSVG) $< -o $@
 
 #$(warning In a command script $(VVPOBJS))
 
-$(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp
+$(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp | $(SIMULATION_DIR)
 	$(VVP_BIN) $(VVP_FLAGS) $<
 
-$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.v $(SRC_DIR)/%.v
+$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.v $(SRC_DIR)/%.v | $(SIMULATION_DIR)
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ -y$(SRC_DIR) -l$(SRC_DIR)/platform/tiny_cells_sim.v $<
 
-$(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.v $(SRC_DIR)/main.v
+$(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.v $(SRC_DIR)/main.v | $(SIMULATION_DIR)
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_main_uart -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ -y$(SRC_DIR) -l$(SRC_DIR)/platform/tiny_cells_sim.v $<
 
 lint:
+	mkdir -p $(ARTIFACT_DIR)
 	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.v |& python3 scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
+$(ARTIFACT_DIR):
+	mkdir -p $(ARTIFACT_DIR)
+
+$(SIMULATION_DIR):
+	mkdir -p $(SIMULATION_DIR)
+
 clean:
-	rm -f $(SIMULATION_DIR)/*
-	rm -f $(ARTIFACT_DIR)/yosys.json
-	rm -f $(ARTIFACT_DIR)/netlist.svg
-	rm -f $(ARTIFACT_DIR)/ulx3s_out.config
-	rm -f $(ARTIFACT_DIR)/ulx3s.bit
-	rm -f $(ARTIFACT_DIR)/mydesign.json
-	rm -f $(ARTIFACT_DIR)/mydesign.ys
-	rm -f $(ARTIFACT_DIR)/mydesign_show.svg
-	rm -f $(ARTIFACT_DIR)/mydesign_show.dot
+	rm -rf ${ARTIFACT_DIR}
 
 # YOSYS_DEBUG:=echo on
 compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES}
+$(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES} | $(ARTIFACT_DIR)
 	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -sv $^; synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
 
 loopviz: $(ARTIFACT_DIR)/mydesign_show.svg
-$(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot
+$(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot | $(ARTIFACT_DIR)
 	$(TOOLPATH)/dot -Ksfdp -Goverlap=prism -Gsep=1 -o $@ -Tsvg $<
 
 route: $(ARTIFACT_DIR)/ulx3s_out.config
-$(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json
+$(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
 	$(TOOLPATH)/nextpnr-ecp5 --85k --json $< \
 		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
 		--log $(ARTIFACT_DIR)/nextpnr.log \
 		--package CABGA381 \
 		--textcfg $@
 
-$(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config
+$(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config | $(ARTIFACT_DIR)
 	$(TOOLPATH)/ecppack $< $@
 
 memprog: $(ARTIFACT_DIR)/ulx3s.bit
