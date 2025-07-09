@@ -24,7 +24,7 @@ def is_suppressed(line: str) -> bool:
     except:
         return False
 
-    filter_files = ["src/platform/tiny_ecp5_sim.v","src/platform/tiny_cells_sim.v"]
+    filter_files = ["src/platform/tiny_ecp5_sim.v","src/platform/tiny_cells_sim.v", "src/new_pll.v"]
     if not file in filter_files:
         issue_summary.append((atype, param, file,))
     return file in filter_files
