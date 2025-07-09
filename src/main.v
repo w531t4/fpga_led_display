@@ -199,8 +199,8 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     reg [5:0] reset_cnt;
     reg last_init_enable;
     initial begin
-        reset_cnt <= 6'b100111;
-        last_init_enable <= 2'b0;
+        reset_cnt = 6'b100111;
+        last_init_enable = 1'b0;
     end
 
     wire init_enable;
