@@ -1,3 +1,4 @@
+`default_nettype none
 (* blackbox *)
 module EHXPLLL (
         input CLKI, CLKFB,

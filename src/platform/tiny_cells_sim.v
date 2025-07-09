@@ -1,3 +1,4 @@
+`default_nettype none
 // subset of ../ice40_toolchain/yosys/share/ice40/cells_sim.v
 // `timescale 1ps / 1ps
 `define SB_DFF_INIT initial Q = 0;

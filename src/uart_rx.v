@@ -1,3 +1,4 @@
+`default_nettype none
 /*
     MIT License
 
@@ -163,8 +164,8 @@ module uart_rx
         endcase
     end
 
-    assign bit_ticks_ovf_signal2 = bit_ticks_ovf_signal;
-    assign bit_counter_ovf_signal2 = bit_counter_ovf_signal;
+    // assign bit_ticks_ovf_signal2 = bit_ticks_ovf_signal;
+    // assign bit_counter_ovf_signal2 = bit_counter_ovf_signal;
 
     always @(posedge i_clk, posedge reset) begin
         if (reset) begin

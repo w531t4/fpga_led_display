@@ -1,4 +1,5 @@
 `timescale 1ns/1ns
+`default_nettype none
 module tb_main_uart;
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7
@@ -44,7 +45,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     wire uart_rx;
     wire rgb2_0;
     wire rgb2_1;
-    wire rbg2_2;
+    wire rgb2_2;
     wire rgb1_0;
     wire rgb1_1;
     wire rgb1_2;

@@ -1,4 +1,5 @@
 `timescale 1ns/1ns
+`default_nettype none
 module tb_fm6126init;
     reg clk_root;
     reg reset;
@@ -6,6 +7,7 @@ module tb_fm6126init;
     wire output_enable_out;
     wire [2:0] rgb1_out;
     wire [2:0] rgb2_out;
+    wire latch_out;
    always #5 clk_root <= ~clk_root;
    initial begin
          $dumpfile(`DUMP_FILE_NAME);

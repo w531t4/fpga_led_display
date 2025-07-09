@@ -1,3 +1,4 @@
+`default_nettype none
 module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     ClockEnA, ClockEnB, WrA, WrB, ResetA, ResetB, QA, QB);
     input wire [7:0] DataInA;

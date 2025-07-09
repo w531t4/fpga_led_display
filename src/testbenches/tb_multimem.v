@@ -1,4 +1,5 @@
 `timescale 1ns/1ns
+`default_nettype none
 module tb_multimem;
 // period = (1 / 50000000hz) / 2 = 10.00000
 parameter SIM_HALF_PERIOD_NS = 10.00000;

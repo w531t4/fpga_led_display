@@ -1,3 +1,4 @@
+`default_nettype none
 module rgb565 (
     input [15:0] rgb565,
 
