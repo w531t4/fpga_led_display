@@ -31,7 +31,7 @@ module control_module #(
     wire uart_rx_running;
     wire ram_clk_enable_real;
     reg ram_access_start = 1'b0;
-    reg ram_access_start_latch = 1'b0;
+    reg ram_access_start_latch;
     assign ram_access_start2 = ram_access_start;
     assign ram_access_start_latch2 = ram_access_start_latch;
     assign ram_reset = reset;
