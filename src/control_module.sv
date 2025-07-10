@@ -3,8 +3,7 @@ module control_module #(
     /* UART configuration */
     // we want 22MHz / 2,430,000 = 9.0534
     // 22MHz / 9 = 2,444,444 baud 2444444
-    parameter UART_CLK_TICKS_PER_BIT = 6'd9,
-    parameter UART_CLK_TICKS_WIDTH = 4
+    parameter UART_CLK_TICKS_PER_BIT = 6'd9
 ) (
     input reset,
     input clk_in, /* clk_root =  133MHZ */
@@ -50,7 +49,7 @@ module control_module #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
         .TICKS_PER_BIT(UART_CLK_TICKS_PER_BIT),
-        .TICKS_PER_BIT_SIZE(UART_CLK_TICKS_WIDTH)
+        .TICKS_PER_BIT_SIZE($clog2(UART_CLK_TICKS_PER_BIT))
     ) mycontrol_rxuart (
     .reset(reset),
     .i_clk(clk_in),

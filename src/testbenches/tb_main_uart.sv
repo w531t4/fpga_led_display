@@ -6,30 +6,22 @@ module tb_main_uart;
 // tgt_hz variation (after rounding): 0.70%
 // 16000000hz / 246154hz = 65 ticks width=7
 parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65;
-parameter CTRLR_CLK_TICKS_WIDTH = 3'd7;
-
 
 // context: TX DEBUG baud
 // 16000000hz / 115200hz = 138.8889 ticks width=8
 // tgt_hz variation (after rounding): -0.08%
 // 16000000hz / 115108hz = 139 ticks width=8
 parameter DEBUG_TX_UART_TICKS_PER_BIT = 8'd139;
-parameter DEBUG_TX_UART_TICKS_PER_BIT_WIDTH = 4'd8;
-
 
 // context: Debug msg rate
 // 16000000hz / 22hz = 727272.7273 ticks width=20
 // tgt_hz variation (after rounding): -0.00%
 // 16000000hz / 22hz = 727273 ticks width=20
 parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273;
-parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH = 5'd20;
-
 
 `ifdef SIM
 // use smaller value in testbench so we don't infinitely sim
 parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
-parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
-
 
 // period = (1 / 16000000hz) / 2 = 31.25000
 parameter SIM_HALF_PERIOD_NS = 31.25000;
@@ -100,19 +92,16 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     );
     logic mask;
     debugger #(
-        .DATA_WIDTH_BASE2(4'd13),
         .DATA_WIDTH(13'd2080),
 
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-        .DIVIDER_TICKS_WIDTH(DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM),
         .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
         // receive at
-        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
-        .UART_TICKS_PER_BIT_SIZE(CTRLR_CLK_TICKS_WIDTH)
+        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk && mask),
         .reset(local_reset),

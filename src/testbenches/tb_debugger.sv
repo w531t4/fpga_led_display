@@ -28,7 +28,6 @@ module tb_debugger;
     );
 
     debugger #(
-        .DIVIDER_TICKS_WIDTH(10),
         .DIVIDER_TICKS(1023),
         .DATA_WIDTH(24)
     )

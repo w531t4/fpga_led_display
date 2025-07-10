@@ -1,12 +1,9 @@
 `default_nettype none
 module debugger	#(
-    parameter DIVIDER_TICKS_WIDTH = 28,
     parameter DIVIDER_TICKS = 28'd67000000,
     parameter DATA_WIDTH = 8,
-    parameter DATA_WIDTH_BASE2 = 4,
     // 22MHz / 191 = 115183 baud
-    parameter UART_TICKS_PER_BIT = 191,
-    parameter UART_TICKS_PER_BIT_SIZE = 8
+    parameter UART_TICKS_PER_BIT = 191
 ) (
     input clk_in,
     input reset,
@@ -17,14 +14,14 @@ module debugger	#(
     output logic [4:0] currentState,
     output logic do_close,
     output logic tx_start,
-    output logic [DATA_WIDTH_BASE2:0] current_position,
+    output logic [$clog2(DATA_WIDTH):0] current_position,
     output [7:0] debug_command,
     output debug_command_pulse,
     output debug_command_busy
 );
 
     logic [7:0] debug_bits;
-    logic [DIVIDER_TICKS_WIDTH-1:0] count;
+    logic [$clog2(DIVIDER_TICKS)-1:0] count;
 
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in) begin
@@ -123,7 +120,7 @@ module debugger	#(
 
     uart_rx #(
         .TICKS_PER_BIT(UART_TICKS_PER_BIT),
-        .TICKS_PER_BIT_SIZE(UART_TICKS_PER_BIT_SIZE)
+        .TICKS_PER_BIT_SIZE($clog2(UART_TICKS_PER_BIT))
     ) mydebugrxuart (
         .reset(reset),
         .i_clk(clk_in),
@@ -136,7 +133,7 @@ module debugger	#(
 
     uart_tx  #(
         .TICKS_PER_BIT(UART_TICKS_PER_BIT),
-        .TICKS_PER_BIT_SIZE(UART_TICKS_PER_BIT_SIZE)
+        .TICKS_PER_BIT_SIZE($clog2(UART_TICKS_PER_BIT))
     ) txuart (
         .i_clk(clk_in),
         .i_start(tx_start),
