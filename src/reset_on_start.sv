@@ -2,8 +2,8 @@
 module reset_on_start (clock_in, reset);
     input wire clock_in;
     output wire reset;
-    reg count;
-    reg objective;
+    logic count;
+    logic objective;
 
     wire [3:0] unused_timer_counter;
     initial begin

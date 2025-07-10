@@ -139,22 +139,22 @@ module fm6126init
 (
     input clk_in,
     input reset,
-    output reg [2:0] rgb1_out,
-    output reg [2:0] rgb2_out,
-    output reg latch_out,
-    output reg mask_en,
-    output reg pixclock_out,
-    output reg reset_notify
+    output logic [2:0] rgb1_out,
+    output logic [2:0] rgb2_out,
+    output logic latch_out,
+    output logic mask_en,
+    output logic pixclock_out,
+    output logic reset_notify
     );
 
-    reg [15:0] C12;
-    reg [15:0] C13;
-    reg [7:0] currentState;
-    reg [5:0] widthCounter; // 16 bits
+    logic [15:0] C12;
+    logic [15:0] C13;
+    logic [7:0] currentState;
+    logic [5:0] widthCounter; // 16 bits
 
     //TODO: how do i not manually specify 64 here?
     localparam LED_WIDTH = 'd64; // 64 pixel width led display
-    reg [LED_WIDTH - 1:0] widthState;
+    logic [LED_WIDTH - 1:0] widthState;
 
     localparam STAGE1_OFFSET = 'd12,
                STAGE2_OFFSET = 'd13;

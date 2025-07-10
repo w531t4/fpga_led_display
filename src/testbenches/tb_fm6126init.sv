@@ -1,8 +1,8 @@
 `timescale 1ns/1ns
 `default_nettype none
 module tb_fm6126init;
-    reg clk_root;
-    reg reset;
+    logic clk_root;
+    logic reset;
     wire mask_en;
     wire output_enable_out;
     wire [2:0] rgb1_out;

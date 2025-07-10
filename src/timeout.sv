@@ -15,11 +15,11 @@ module timeout #(
     input start,
 
     input [COUNTER_WIDTH - 1:0] value,
-    output reg [COUNTER_WIDTH - 1:0] counter,
+    output logic [COUNTER_WIDTH - 1:0] counter,
 
     output running
 );
-    reg start_latch;
+    logic start_latch;
 
     assign running = counter != 0;
 

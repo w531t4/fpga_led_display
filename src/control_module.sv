@@ -12,12 +12,12 @@ module control_module #(
     input uart_rx,
     output rx_running,
 
-    output reg [2:0] rgb_enable,
-    output reg [5:0] brightness_enable,
+    output logic [2:0] rgb_enable,
+    output logic [5:0] brightness_enable,
 
-    output reg [7:0] ram_data_out,
-    output reg [11:0] ram_address,
-    output reg ram_write_enable,
+    output logic [7:0] ram_data_out,
+    output logic [11:0] ram_address,
+    output logic ram_write_enable,
     output ram_clk_enable,
     output ram_reset,
     output [1:0] cmd_line_state2,
@@ -25,21 +25,21 @@ module control_module #(
     output ram_access_start2,
     output ram_access_start_latch2,
     output [11:0] cmd_line_addr2,
-    output reg [7:0] num_commands_processed
+    output logic [7:0] num_commands_processed
 );
 
     wire [7:0] uart_rx_data;
     wire uart_rx_running;
     wire ram_clk_enable_real;
-    reg ram_access_start;
-    reg ram_access_start_latch;
+    logic ram_access_start;
+    logic ram_access_start_latch;
     assign ram_access_start2 = ram_access_start;
     assign ram_access_start_latch2 = ram_access_start_latch;
     assign ram_reset = reset;
     wire [1:0] timer_counter_unused;
-    reg  [1:0]  cmd_line_state;
-    reg  [4:0]  cmd_line_addr_row;
-    reg  [7:0]  cmd_line_addr_col; // why is this written as 8 bits?
+    logic  [1:0]  cmd_line_state;
+    logic  [4:0]  cmd_line_addr_row;
+    logic  [7:0]  cmd_line_addr_col; // why is this written as 8 bits?
     wire [11:0] cmd_line_addr = { cmd_line_addr_row[4:0], ~cmd_line_addr_col[6:1], cmd_line_addr_col[0] };
 
     assign cmd_line_state2[1:0] = cmd_line_state[1:0];

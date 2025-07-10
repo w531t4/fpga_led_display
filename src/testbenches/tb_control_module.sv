@@ -34,12 +34,12 @@ parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
 // period = (1 / 16000000hz) / 2 = 31.25000
 parameter SIM_HALF_PERIOD_NS = 31.25000;
 `endif
-reg clk;
-reg reset;
-reg local_reset;
+logic clk;
+logic reset;
+logic local_reset;
 wire rx_line;
 //20220106
-//reg [7:0] ram_data_in = 8'b01100101;
+//logic [7:0] ram_data_in = 8'b01100101;
 wire rx_running;
 wire [2:0] rgb_enable;
 wire [5:0] brightness_enable;
@@ -59,8 +59,8 @@ wire [7:0] debug_command;
 
 //>>> "".join([a[i] for i in range(len(a)-1, -1, -1)])
 //'brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110'
-reg [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
-//reg tb_clk_baudrate;
+logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
+//logic tb_clk_baudrate;
 
 
 control_module #(

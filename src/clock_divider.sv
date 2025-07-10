@@ -11,9 +11,9 @@ module clock_divider #(
 ) (
     input reset,
     input clk_in,
-    output reg clk_out
+    output logic clk_out
 );
-    reg [CLK_DIV_WIDTH - 1:0] clk_count;
+    logic [CLK_DIV_WIDTH - 1:0] clk_count;
 
     always @(posedge clk_in) begin
         if (reset) begin

@@ -48,18 +48,18 @@ module uart_tx
                 STATE_SEND_STOP		= 5'b01000,
                 STATE_DONE			= 5'b10000;
 
-    reg [4:0] currentState, nextState;
-    reg done_flag;
-    reg busy_flag;
-    reg tx_output;
+    logic [4:0] currentState, nextState;
+    logic done_flag;
+    logic busy_flag;
+    logic tx_output;
 
     assign o_dout = tx_output;
     assign o_done = done_flag;
     assign o_busy = busy_flag;
 
-    reg [7:0] tx_reg;
-    reg [3:0] tx_bit_counter;
-    reg [TICKS_PER_BIT_SIZE-1:0] ticks_counter;
+    logic [7:0] tx_reg;
+    logic [3:0] tx_bit_counter;
+    logic [TICKS_PER_BIT_SIZE-1:0] ticks_counter;
 
     wire ticks_counter_ovf 		= (ticks_counter == TICKS_PER_BIT-1);
     wire tx_bit_counter_ovf 	= (tx_bit_counter[3]); // if equals >= 8

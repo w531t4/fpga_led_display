@@ -34,7 +34,7 @@ parameter DEBUG_MSGS_PER_SEC_TICKS_WIDTH_SIM = 3'd4;
 // period = (1 / 16000000hz) / 2 = 31.25000
 parameter SIM_HALF_PERIOD_NS = 31.25000;
 `endif
-    reg clk;
+    logic clk;
     wire clk_pixel;
     wire row_latch;
     wire OE;
@@ -50,10 +50,10 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     wire rgb1_1;
     wire rgb1_2;
     wire debugger_txout;
-    reg  debugger_rxin;
+    logic  debugger_rxin;
 
-    reg reset;
-    reg local_reset;
+    logic reset;
+    logic local_reset;
 
     // debugger stuff
     wire debug_command_busy;
@@ -65,7 +65,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 
 
     // 260 * 8 = 2080
-    reg [2079:0] myled_row = 'h4c040000000098000000000000009800000081a000000000000081a0000094c000000000000094c00000042000000000000004200000044f0000000000000000000002100000000000000000000000160000000000000016000040130000000000004013000000000000881100000000000000000000000098000000000000000000;
+    logic [2079:0] myled_row = 'h4c040000000098000000000000009800000081a000000000000081a0000094c000000000000094c00000042000000000000004200000044f0000000000000000000002100000000000000000000000160000000000000016000040130000000000004013000000000000881100000000000000000000000098000000000000000000;
     main tbi_main (
         .gp11(clk_pixel),
         .gp12(row_latch),
@@ -98,7 +98,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         .gn4(),
         .gn5()
     );
-    reg mask;
+    logic mask;
     debugger #(
         .DATA_WIDTH_BASE2(4'd13),
         .DATA_WIDTH(13'd2080),

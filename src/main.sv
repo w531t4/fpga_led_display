@@ -76,8 +76,8 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     wire clk_matrix;
 
     wire global_reset;
-    reg global_reset_init;
-    reg global_reset_debug;
+    logic global_reset_init;
+    logic global_reset_debug;
     wire init_reset_strobe;
     wire buffered_global_reset;
 
@@ -255,7 +255,7 @@ fm6126init do_init (
     );
 
     /* produce a clock for use on the LED matrix */
-    reg [1:0] sync_fifo;
+    logic [1:0] sync_fifo;
     // this is a buffer to transfer global reset across clock domains
     always @(posedge clk_root) begin
             { global_reset_debug, sync_fifo } <= { sync_fifo, buffered_global_reset };

@@ -13,18 +13,18 @@ module debugger	#(
     input [DATA_WIDTH-1:0] data_in,
     input debug_uart_rx_in,
     output tx_out,
-    output reg debug_start,
-    output reg [4:0] currentState,
-    output reg do_close,
-    output reg tx_start,
-    output reg [DATA_WIDTH_BASE2:0] current_position,
+    output logic debug_start,
+    output logic [4:0] currentState,
+    output logic do_close,
+    output logic tx_start,
+    output logic [DATA_WIDTH_BASE2:0] current_position,
     output [7:0] debug_command,
     output debug_command_pulse,
     output debug_command_busy
 );
 
-    reg [7:0] debug_bits;
-    reg [DIVIDER_TICKS_WIDTH-1:0] count;
+    logic [7:0] debug_bits;
+    logic [DIVIDER_TICKS_WIDTH-1:0] count;
 
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in) begin
@@ -46,7 +46,7 @@ module debugger	#(
 
     wire tx_busy;
     wire tx_done;
-    reg [DATA_WIDTH-1:0] data_copy;
+    logic [DATA_WIDTH-1:0] data_copy;
 
     initial begin
 

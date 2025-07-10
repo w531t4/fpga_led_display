@@ -2,8 +2,8 @@
 `default_nettype none
 module tb_clock_divider;
 
-reg clk;
-reg reset;
+logic clk;
+logic reset;
 wire clk_out;
 clock_divider  #(.CLK_DIV_COUNT(5))
   clock_divider_instance

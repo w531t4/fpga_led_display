@@ -4,19 +4,19 @@ module tb_newram4;
 // period = (1 / 50000000hz) / 2 = 10.00000
 parameter SIM_HALF_PERIOD_NS = 10.00000;
 
-    reg clk_a;
-    reg clk_b;
-    reg reset;
-    reg local_reset;
-    reg [11:0] ram_a_address;
-    reg [10:0] ram_b_address;
-    reg [1:0] ram_a_data_in;
-    reg ram_a_clk_enable;
-    reg ram_b_clk_enable;
-    reg ram_a_wr;
+    logic clk_a;
+    logic clk_b;
+    logic reset;
+    logic local_reset;
+    logic [11:0] ram_a_address;
+    logic [10:0] ram_b_address;
+    logic [1:0] ram_a_data_in;
+    logic ram_a_clk_enable;
+    logic ram_b_clk_enable;
+    logic ram_a_wr;
     wire [1:0] ram_b_data_out;
-    reg ram_a_reset;
-    reg ram_b_reset;
+    logic ram_a_reset;
+    logic ram_b_reset;
 
     newram4 num0 (
          .DataInA(ram_a_data_in)

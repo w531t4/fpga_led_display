@@ -2,8 +2,8 @@
 `default_nettype none
 module tb_matrix_scan;
 
-reg clk;
-reg reset;
+logic clk;
+logic reset;
 wire [5:0] column_address;
 wire [3:0] row_address;
 wire [3:0] row_address_active;

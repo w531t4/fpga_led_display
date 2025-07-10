@@ -39,33 +39,33 @@ module uart_rx
         input i_din_priortobuffer,
 
         output [7:0] o_rxdata,
-        output reg o_recvdata,
-        output reg o_busy
+        output logic o_recvdata,
+        output logic o_busy
     );
     /* END MODULE IO LIST */
     localparam TICKS_TO_BIT		= TICKS_PER_BIT-1;
     localparam TICKS_TO_MIDLE	= TICKS_TO_BIT/2;
 
-    reg [7:0] rx_data;
+    logic [7:0] rx_data;
     assign o_rxdata = rx_data;
 
-    reg buffer;
-    reg i_din;
+    logic buffer;
+    logic i_din;
 
     //Falling edge detection logic
-    reg din_buff;
+    logic din_buff;
     wire din_negedge_signal = ~i_din & din_buff;
 
     //Counters registers
-    reg [3:0] bit_counter;
-    reg [TICKS_PER_BIT_SIZE-1:0] bit_ticks_counter;
+    logic [3:0] bit_counter;
+    logic [TICKS_PER_BIT_SIZE-1:0] bit_ticks_counter;
 
     //Combinational comparator (depends of currentState)
-    reg [TICKS_PER_BIT_SIZE-1:0] bit_ticks_comparator;
+    logic [TICKS_PER_BIT_SIZE-1:0] bit_ticks_comparator;
 
     wire bit_ticks_ovf_signal			= (bit_ticks_counter == bit_ticks_comparator);
     wire bit_counter_ovf_signal 		= (bit_counter[3]); // if equals >= 8
-    reg [4:0] currentState, nextState;
+    logic [4:0] currentState, nextState;
 
     localparam	STATE_IDLE			= 5'b00001,
                   STATE_RECEIVE_START	= 5'b00010,

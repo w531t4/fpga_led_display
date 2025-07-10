@@ -13,8 +13,8 @@ module framebuffer_fetch (
     output ram_clk_enable,
     output ram_reset,
 
-    output reg [15:0] rgb565_top,
-    output reg [15:0] rgb565_bottom,
+    output logic [15:0] rgb565_top,
+    output logic [15:0] rgb565_bottom,
     output [3:0] pixel_load_counter2
 );
     wire ram_clk_enable_real;
@@ -24,7 +24,7 @@ module framebuffer_fetch (
     wire [1:0] pixel_load_counter;
     assign pixel_load_counter2[3:0] = { 2'b0, pixel_load_counter[1:0] };
 
-    reg half_address;
+    logic half_address;
     assign ram_address = { half_address, row_address[3:0], ~column_address[5:0] };
 
     assign ram_reset = reset;

@@ -4,15 +4,15 @@ module matrix_scan (
     input clk_in,
 
     output [5:0] column_address,         /* the current column (clocking out now) */
-    output reg [3:0] row_address,        /* the current row (clocking out now) */
-    output reg [3:0] row_address_active, /* the active row (LEDs enabled) */
+    output logic [3:0] row_address,        /* the current row (clocking out now) */
+    output logic [3:0] row_address_active, /* the active row (LEDs enabled) */
 
     output clk_pixel_load,
     output clk_pixel,
     output row_latch,
     output output_enable, /* the minimum output enable pulse should not be shorter than 1us... */
 
-    output reg [5:0] brightness_mask, /* used to pick a bit from the sub-pixel's brightness */
+    output logic [5:0] brightness_mask, /* used to pick a bit from the sub-pixel's brightness */
     output row_latch2,
     output state_advance2,
 `ifndef USE_FM6126A
@@ -24,23 +24,23 @@ module matrix_scan (
 
     localparam state_timeout_overlap = 'd67;
 
-    reg [1:0] state;
+    logic [1:0] state;
     wire clk_state;
     wire state_advance;
 
     wire clk_pixel_load_en;/* enables the pixel load clock */
-    reg  clk_pixel_en;    /* enables the pixel clock, delayed by one cycle from the load clock */
+    logic  clk_pixel_en;    /* enables the pixel clock, delayed by one cycle from the load clock */
 `ifndef USE_FM6126A
-    reg  [1:0] row_latch_state;
+    logic  [1:0] row_latch_state;
 `else
-    reg  [3:0] row_latch_state;
+    logic  [3:0] row_latch_state;
     wire [6:0] clk_pixel_load_en_counter;
     localparam LATCH_WIDTH = 'd3;
 `endif
 
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
-    reg  [5:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
+    logic  [5:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
     wire [9:0] brightness_timeout;     /* used to time the output enable period */
     wire [9:0] brightness_counter;     /* used to control the state advance overlap */
 

@@ -4,19 +4,19 @@ module tb_debugger;
 
 
 
-    reg clk;
-    reg reset;
-    reg local_reset;
-    reg [23:0] data_in;
+    logic clk;
+    logic reset;
+    logic local_reset;
+    logic [23:0] data_in;
     wire tx_out;
-    reg clk_out;
+    logic clk_out;
     wire debug_start;
-    reg debug_uart_rx_in;
-    reg [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
+    logic debug_uart_rx_in;
+    logic [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
     wire tb_clk_baudrate;
-    reg rx_line2;
-    reg [3:0] i = 'd0;
-    reg [10:0] j = 'd0;
+    logic rx_line2;
+    logic [3:0] i = 'd0;
+    logic [10:0] j = 'd0;
 
     clock_divider #(
         .CLK_DIV_COUNT(600),
