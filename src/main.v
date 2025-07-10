@@ -239,6 +239,7 @@ fm6126init do_init (
         .reset(alt_reset)
     );
 
+`ifdef DEBUGGER
     timeout #(
         .COUNTER_WIDTH(1)
     ) timeout_global_reset (
@@ -250,7 +251,6 @@ fm6126init do_init (
         .running(buffered_global_reset)
     );
 
-`ifdef DEBUGGER
     /* produce a clock for use on the LED matrix */
     reg [1:0] sync_fifo;
     // this is a buffer to transfer global reset across clock domains
