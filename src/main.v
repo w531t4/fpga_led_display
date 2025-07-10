@@ -35,11 +35,11 @@ module main (
   output gn10,
   output gn11,
   output gn12,
-  output gn13,
-    output gn14,
-    output gn15,
-    output gn16,
-    output gn17
+  output gn13
+    // output gn14,
+    // output gn15
+    // output gn16,
+    // output gn17
 );
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7
@@ -425,10 +425,10 @@ fm6126init do_init (
     assign gn3 = rgb2[0]; // Red   2
     assign gn4 = rgb2[1]; // Green 2
     assign gn5 = rgb2[2]; // Blue  2
-    assign gn14 = clk_matrix;
-    assign gn15 = gp14;
-    assign gn16 = clk_root; // 6
-    assign gn17 = clk_root; // T1
+    // assign gn14 = clk_matrix;
+    // assign gn15 = gp14;
+    // assign gn16 = clk_root; // 6
+    // assign gn17 = clk_root; // T1
 
     wire _unused_ok = &{1'b0,
                         pll_locked,
