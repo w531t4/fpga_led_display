@@ -1,0 +1,3 @@
+src/platform/tiny_ecp5_sim.v
+src/platform/tiny_cells_sim.v
+src/new_pll.v
