@@ -100,6 +100,10 @@ module matrix_scan (
 `else
             row_latch_state <= 4'b0001;
 `endif
+            brightness_mask <= 6'b100000;
+            brightness_mask_active <= 6'd0;
+            row_address <= 4'd0;
+            row_address_active <= 4'd0;
         end
         else begin
             clk_pixel_en <= clk_pixel_load_en;
@@ -108,6 +112,23 @@ module matrix_scan (
 `else
             row_latch_state <= { row_latch_state[2], row_latch_state[1], row_latch_state[0], clk_pixel_load_en_counter == ('d1 + LATCH_WIDTH) };
 `endif
+            /* on completion of the row_latch, we advanced the brightness mask to generate the next row of pixels */
+            if (row_latch) begin
+                brightness_mask_active <= brightness_mask;
+                row_address_active <= row_address;
+
+                if ((brightness_mask == 6'd0) || (brightness_mask == 6'b000001)) begin
+                    // catch the initial value / oopsy //
+                    brightness_mask <= 6'b100000;
+                    row_address <= row_address + 4'd1;
+                end
+                else begin
+                    brightness_mask <= brightness_mask >> 1;
+                end
+            end
+            else begin
+            end
+
         end
     end
 
@@ -154,28 +175,6 @@ module matrix_scan (
         end
     end
 
-    /* on completion of the row_latch, we advanced the brightness mask to generate the next row of pixels */
-    always @(posedge row_latch, posedge reset) begin
-        if (reset) begin
-            brightness_mask <= 6'b100000;
-            brightness_mask_active <= 6'd0;
-            row_address <= 4'd0;
-            row_address_active <= 4'd0;
-        end
-        else begin
-            brightness_mask_active <= brightness_mask;
-            row_address_active <= row_address;
-
-            if ((brightness_mask == 6'd0) || (brightness_mask == 6'b000001)) begin
-                // catch the initial value / oopsy //
-                brightness_mask <= 6'b100000;
-                row_address <= row_address + 4'd1;
-            end
-            else begin
-                brightness_mask <= brightness_mask >> 1;
-            end
-        end
-    end
     wire _unused_ok = &{1'b0,
 `ifndef USE_FM6126A
                         unused_7bit_counter,
