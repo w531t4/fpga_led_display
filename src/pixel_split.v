@@ -12,7 +12,7 @@ module pixel_split (
 
     /* split the RGB565 pixel into components */
     rgb565 rgb (
-        .rgb565(pixel_rgb565),
+        .data_in(pixel_rgb565),
         .red(red),
         .green(green),
         .blue(blue)
