@@ -145,7 +145,7 @@ module matrix_scan (
     assign state_advance = !output_enable || (state_timeout_overlap < (brightness_counter + LATCH_WIDTH));
 `endif
     /* shift the state advance signal into the bitfield */
-    always @(posedge clk_in, posedge reset) begin
+    always @(posedge clk_in) begin
         if (reset) begin
             state <= 2'b1;
         end

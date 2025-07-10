@@ -27,7 +27,7 @@ module debugger	#(
     reg [DIVIDER_TICKS_WIDTH-1:0] count;
 
     // This essentially shows to debug messages sent via TX per second
-    always @(posedge clk_in, posedge reset) begin
+    always @(posedge clk_in) begin
         if (reset) begin
             debug_start <= 0;
             count <= 0;

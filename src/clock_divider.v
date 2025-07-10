@@ -15,7 +15,7 @@ module clock_divider #(
 );
     reg [CLK_DIV_WIDTH - 1:0] clk_count;
 
-    always @(posedge clk_in, posedge reset) begin
+    always @(posedge clk_in) begin
         if (reset) begin
             clk_out <= 1'b0;
             clk_count <= 'b0;

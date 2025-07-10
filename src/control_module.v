@@ -76,7 +76,7 @@ module control_module #(
     assign rx_running = uart_rx_running;
     assign rx_data[7:0] = uart_rx_data[7:0];
 
-    always @(posedge clk_in, posedge reset) begin
+    always @(posedge clk_in) begin
         if (reset) begin
             ram_access_start_latch <= 1'b0;
         end

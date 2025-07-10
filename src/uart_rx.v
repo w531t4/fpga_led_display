@@ -83,7 +83,7 @@ module uart_rx
         rx_data = 0;
     end
 
-    always @(posedge i_clk, posedge reset) begin
+    always @(posedge i_clk) begin
         if (reset) begin
             i_din <= 1'b1;
             buffer <= 1'b1;
@@ -167,7 +167,7 @@ module uart_rx
     // assign bit_ticks_ovf_signal2 = bit_ticks_ovf_signal;
     // assign bit_counter_ovf_signal2 = bit_counter_ovf_signal;
 
-    always @(posedge i_clk, posedge reset) begin
+    always @(posedge i_clk) begin
         if (reset) begin
             currentState <= STATE_IDLE;
             bit_ticks_counter <= 0;
