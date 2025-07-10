@@ -38,7 +38,7 @@ module control_module #(
     wire [1:0] timer_counter_unused;
     logic  [1:0]  cmd_line_state;
     logic  [4:0]  cmd_line_addr_row;
-    logic  [7:0]  cmd_line_addr_col; // why is this written as 8 bits?
+    logic  [6:0]  cmd_line_addr_col;
     wire [11:0] cmd_line_addr = { cmd_line_addr_row[4:0], ~cmd_line_addr_col[6:1], cmd_line_addr_col[0] };
 
     assign cmd_line_state2[1:0] = cmd_line_state[1:0];
@@ -99,7 +99,7 @@ module control_module #(
 
             cmd_line_state <= 2'd0;
             cmd_line_addr_row <= 5'd0;
-            cmd_line_addr_col <= 8'd0;
+            cmd_line_addr_col <= 7'd0;
             num_commands_processed <= 8'b0;
         end
 
@@ -111,7 +111,7 @@ module control_module #(
 
             /* and start clocking in the column data
                64 pixels x 2 bytes each = 128 bytes */
-            cmd_line_addr_col[7:0] <= 8'd127;
+            cmd_line_addr_col[6:0] <= 7'd127;
             cmd_line_state <= 2'd1;
         end
         else if (cmd_line_state == 2'd1) begin
