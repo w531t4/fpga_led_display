@@ -146,6 +146,8 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 
     wire [7:0] num_commands_processed;
     wire alt_reset;
+    wire pll_locked;
+    wire matrix_row_latch2;
 
 `ifdef DEBUGGER
     wire [191:0] ddata =  {
@@ -195,7 +197,8 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
 
     new_pll new_pll_inst (
         .clock_in(clk_25mhz),
-        .clock_out(clk_root)
+        .clock_out(clk_root),
+        .locked(pll_locked)
     );
 
 `ifdef USE_FM6126A
@@ -285,7 +288,8 @@ fm6126init do_init (
         .brightness_mask(brightness_mask),
         .state_advance2(state_advance),
         .row_latch_state2(row_latch_state),
-        .clk_pixel_load_en2(clk_pixel_load_en)
+        .clk_pixel_load_en2(clk_pixel_load_en),
+        .row_latch2(matrix_row_latch2)
     );
 
     /* the fetch controller */
@@ -425,4 +429,9 @@ fm6126init do_init (
     assign gn15 = gp14;
     assign gn16 = clk_root; // 6
     assign gn17 = clk_root; // T1
+
+    wire _unused_ok = &{1'b0,
+                        pll_locked,
+                        matrix_row_latch2,
+                        1'b0};
 endmodule
