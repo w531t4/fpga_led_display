@@ -51,7 +51,6 @@ def print_summary(summary: List[LintTitle]) -> None:
     """emit a summary of the observed issues"""
     set()
     summary_set = set([(x.severity, x.category, x.file) for x in summary])
-    print(summary_set)
     for each in sorted(list(summary_set), key=lambda x: x[2]):
         # atype, param, file
         print(f"{len([x for x in summary if (x.severity, x.category, x.file) == each[0:3]])}: "
