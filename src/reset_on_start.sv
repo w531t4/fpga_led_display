@@ -1,7 +1,8 @@
 `default_nettype none
-module reset_on_start (clock_in, reset);
-    input wire clock_in;
-    output wire reset;
+module reset_on_start (
+    input wire clock_in,
+    output wire reset
+);
     logic count;
     logic objective;
 
