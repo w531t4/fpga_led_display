@@ -77,7 +77,7 @@ $(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.v $(SRC_DIR)/main.v | $(
 
 lint:
 	mkdir -p $(ARTIFACT_DIR)
-	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.v |& python3 scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.v |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
