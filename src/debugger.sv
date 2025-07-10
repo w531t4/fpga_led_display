@@ -119,8 +119,7 @@ module debugger	#(
     end
 
     uart_rx #(
-        .TICKS_PER_BIT(UART_TICKS_PER_BIT),
-        .TICKS_PER_BIT_SIZE($clog2(UART_TICKS_PER_BIT))
+        .TICKS_PER_BIT(UART_TICKS_PER_BIT)
     ) mydebugrxuart (
         .reset(reset),
         .i_clk(clk_in),
@@ -132,8 +131,7 @@ module debugger	#(
     );
 
     uart_tx  #(
-        .TICKS_PER_BIT(UART_TICKS_PER_BIT),
-        .TICKS_PER_BIT_SIZE($clog2(UART_TICKS_PER_BIT))
+        .TICKS_PER_BIT(UART_TICKS_PER_BIT)
     ) txuart (
         .i_clk(clk_in),
         .i_start(tx_start),

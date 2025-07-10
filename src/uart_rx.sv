@@ -26,8 +26,7 @@
 module uart_rx
     /* BEGIN PARAMETERS LIST */
     #(
-        parameter TICKS_PER_BIT = 32,
-        parameter TICKS_PER_BIT_SIZE = 6
+        parameter TICKS_PER_BIT = 32
     )
     /* END PARAMETERS LIST */
 
@@ -58,10 +57,10 @@ module uart_rx
 
     //Counters registers
     logic [3:0] bit_counter;
-    logic [TICKS_PER_BIT_SIZE-1:0] bit_ticks_counter;
+    logic [$clog2(TICKS_PER_BIT)-1:0] bit_ticks_counter;
 
     //Combinational comparator (depends of currentState)
-    logic [TICKS_PER_BIT_SIZE-1:0] bit_ticks_comparator;
+    logic [$clog2(TICKS_PER_BIT)-1:0] bit_ticks_comparator;
 
     wire bit_ticks_ovf_signal			= (bit_ticks_counter == bit_ticks_comparator);
     wire bit_counter_ovf_signal 		= (bit_counter[3]); // if equals >= 8

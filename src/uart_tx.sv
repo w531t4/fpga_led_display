@@ -26,8 +26,7 @@
 module uart_tx
     /* BEGIN PARAMETERS LIST */
     #(
-        parameter TICKS_PER_BIT = 32,
-        parameter TICKS_PER_BIT_SIZE = 6
+        parameter TICKS_PER_BIT = 32
     )
     /* END PARAMETERS LIST */
 
@@ -59,7 +58,7 @@ module uart_tx
 
     logic [7:0] tx_reg;
     logic [3:0] tx_bit_counter;
-    logic [TICKS_PER_BIT_SIZE-1:0] ticks_counter;
+    logic [$clog2(TICKS_PER_BIT)-1:0] ticks_counter;
 
     wire ticks_counter_ovf 		= (ticks_counter == TICKS_PER_BIT-1);
     wire tx_bit_counter_ovf 	= (tx_bit_counter[3]); // if equals >= 8

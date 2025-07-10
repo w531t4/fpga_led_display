@@ -48,8 +48,7 @@ module control_module #(
     uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(UART_CLK_TICKS_PER_BIT),
-        .TICKS_PER_BIT_SIZE($clog2(UART_CLK_TICKS_PER_BIT))
+        .TICKS_PER_BIT(UART_CLK_TICKS_PER_BIT)
     ) mycontrol_rxuart (
     .reset(reset),
     .i_clk(clk_in),
