@@ -23,31 +23,31 @@ GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_FLAGS:=--lint-only -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -v $(SRC_DIR)/platform/tiny_cells_sim.v
 
-SRCS := $(shell find $(SRC_DIR) -name '*.v')
+SRCS := $(shell find $(SRC_DIR) -name '*.sv' -or -name '*.v')
 
-VSOURCES:=$(SRC_DIR)/brightness.v \
-		  $(SRC_DIR)/clock_divider.v \
-		  $(SRC_DIR)/control_module.v \
-		  $(SRC_DIR)/framebuffer_fetch.v \
-		  $(SRC_DIR)/main.v \
-		  $(SRC_DIR)/matrix_scan.v \
-		  $(SRC_DIR)/pixel_split.v \
-		  $(SRC_DIR)/rgb565.v \
-		  $(SRC_DIR)/timeout.v \
-		  $(SRC_DIR)/uart_tx.v \
-		  $(SRC_DIR)/debugger.v \
-		  $(SRC_DIR)/timeout_sync.v \
-		  $(SRC_DIR)/uart_rx.v \
-		  $(SRC_DIR)/newram4.v \
-		  $(SRC_DIR)/fm6126init.v \
-		  $(SRC_DIR)/new_pll.v \
-		  $(SRC_DIR)/reset_on_start.v \
-		  $(SRC_DIR)/multimem.v \
+VSOURCES:=$(SRC_DIR)/brightness.sv \
+		  $(SRC_DIR)/clock_divider.sv \
+		  $(SRC_DIR)/control_module.sv \
+		  $(SRC_DIR)/framebuffer_fetch.sv \
+		  $(SRC_DIR)/main.sv \
+		  $(SRC_DIR)/matrix_scan.sv \
+		  $(SRC_DIR)/pixel_split.sv \
+		  $(SRC_DIR)/rgb565.sv \
+		  $(SRC_DIR)/timeout.sv \
+		  $(SRC_DIR)/uart_tx.sv \
+		  $(SRC_DIR)/debugger.sv \
+		  $(SRC_DIR)/timeout_sync.sv \
+		  $(SRC_DIR)/uart_rx.sv \
+		  $(SRC_DIR)/newram4.sv \
+		  $(SRC_DIR)/fm6126init.sv \
+		  $(SRC_DIR)/new_pll.sv \
+		  $(SRC_DIR)/reset_on_start.sv \
+		  $(SRC_DIR)/multimem.sv \
 		  $(SRC_DIR)/platform/tiny_cells_sim.v
 
-TBSRCS:=$(shell find $(TB_DIR) -name '*.v')
-VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vvp)))
-VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.v=%.vcd)))
+TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
+VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
+VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
 
 .PHONY: all diagram simulation clean compile loopviz route lint
 all: diagram simulation lint
@@ -67,17 +67,17 @@ $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json  | $(ARTIFACT_DIR)
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp | $(SIMULATION_DIR)
 	$(VVP_BIN) $(VVP_FLAGS) $<
 
-$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.v $(SRC_DIR)/%.v | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv | $(SIMULATION_DIR)
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ -y$(SRC_DIR) -l$(SRC_DIR)/platform/tiny_cells_sim.v $<
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 
-$(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.v $(SRC_DIR)/main.v | $(SIMULATION_DIR)
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_main_uart -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ -y$(SRC_DIR) -l$(SRC_DIR)/platform/tiny_cells_sim.v $<
+$(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.sv $(SRC_DIR)/main.sv | $(SIMULATION_DIR)
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_main_uart -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 
 lint:
 	mkdir -p $(ARTIFACT_DIR)
-	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.v |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
