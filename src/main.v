@@ -145,6 +145,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     wire clk_pixel_intermediary;
 
     wire [7:0] num_commands_processed;
+    wire alt_reset;
 
 `ifdef DEBUGGER
     wire [191:0] ddata =  {
@@ -197,25 +198,6 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         .clock_out(clk_root)
     );
 
-    reg [5:0] reset_cnt;
-    reg last_init_enable;
-    initial begin
-        reset_cnt = 6'b100111;
-        last_init_enable = 1'b0;
-    end
-
-    wire init_enable;
-    assign init_enable = &reset_cnt;
-    always @(posedge clk_root) begin
-            reset_cnt <= reset_cnt + !init_enable;
-    end
-
-    wire init_trigger = last_init_enable ^ init_enable;
-
-    always @(posedge clk_matrix) begin
-        last_init_enable <= init_enable;
-    end
-
 `ifdef USE_FM6126A
     wire [2:0] rgb1_fm6126init;
     wire [2:0] rgb2_fm6126init;
@@ -223,7 +205,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
     wire pixclock_fm6126init;
 fm6126init do_init (
     .clk_in(clk_matrix),
-    .reset(init_trigger),
+    .reset(alt_reset),
     .rgb1_out(rgb1_fm6126init),
     .rgb2_out(rgb2_fm6126init),
     .latch_out(row_latch_fm6126init),
@@ -252,7 +234,6 @@ fm6126init do_init (
     assign clk_pixel = clk_pixel_intermediary;
 `endif
 
-    wire alt_reset;
     reset_on_start #() RoS_obj (
         .clock_in(clk_root),
         .reset(alt_reset)
@@ -269,6 +250,7 @@ fm6126init do_init (
         .running(buffered_global_reset)
     );
 
+`ifdef DEBUGGER
     /* produce a clock for use on the LED matrix */
     reg [1:0] sync_fifo;
     // this is a buffer to transfer global reset across clock domains
@@ -277,6 +259,9 @@ fm6126init do_init (
     end
 
     assign global_reset = alt_reset || (global_reset_debug & ~buffered_global_reset);
+`else
+    assign global_reset = alt_reset;
+`endif
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
         .CLK_DIV_COUNT(2'd3),
