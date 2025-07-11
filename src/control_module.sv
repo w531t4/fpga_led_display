@@ -4,9 +4,9 @@ module control_module #(
     // we want 22MHz / 2,430,000 = 9.0534
     // 22MHz / 9 = 2,444,444 baud 2444444
     parameter UART_CLK_TICKS_PER_BIT = 6'd9,
-    parameter CTRL_PIXEL_WIDTH = 'd64,
-    parameter CTRL_PIXEL_HEIGHT = 'd32,
-    parameter CTRL_BYTES_PER_PIXEL = 'd2
+    parameter PIXEL_WIDTH = 'd64,
+    parameter PIXEL_HEIGHT = 'd32,
+    parameter BYTES_PER_PIXEL = 'd2
 ) (
     input reset,
     input clk_in, /* clk_root =  133MHZ */
@@ -19,7 +19,7 @@ module control_module #(
 
     output logic [7:0] ram_data_out,
     //      with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
-    output logic [$clog2(CTRL_PIXEL_HEIGHT)+$clog2((CTRL_PIXEL_WIDTH * CTRL_BYTES_PER_PIXEL) - 1)-1:0] ram_address,
+    output logic [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] ram_address,
     output logic ram_write_enable,
     output ram_clk_enable,
     output ram_reset,
@@ -27,7 +27,7 @@ module control_module #(
     output [7:0] rx_data,
     output ram_access_start2,
     output ram_access_start_latch2,
-    output [$clog2(CTRL_PIXEL_HEIGHT)+$clog2((CTRL_PIXEL_WIDTH * CTRL_BYTES_PER_PIXEL) - 1)-1:0] cmd_line_addr2,
+    output [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] cmd_line_addr2,
     output logic [7:0] num_commands_processed
 );
 
@@ -42,12 +42,12 @@ module control_module #(
     wire [1:0] timer_counter_unused;
     logic  [1:0]  cmd_line_state;
     // For 32 bit high displays, [4:0]
-    logic  [$clog2(CTRL_PIXEL_HEIGHT)-1:0]  cmd_line_addr_row;
+    logic  [$clog2(PIXEL_HEIGHT)-1:0]  cmd_line_addr_row;
     // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
-    logic  [$clog2((CTRL_PIXEL_WIDTH * CTRL_BYTES_PER_PIXEL) - 1)-1:0]  cmd_line_addr_col;
-    wire [$clog2(CTRL_PIXEL_HEIGHT)+$clog2((CTRL_PIXEL_WIDTH * CTRL_BYTES_PER_PIXEL) - 1)-1:0] cmd_line_addr =
-        {  cmd_line_addr_row[$clog2(CTRL_PIXEL_HEIGHT)-1:0],
-          ~cmd_line_addr_col[$clog2((CTRL_PIXEL_WIDTH * CTRL_BYTES_PER_PIXEL) - 1)-1:1],
+    logic  [$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0]  cmd_line_addr_col;
+    wire [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] cmd_line_addr =
+        {  cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0],
+          ~cmd_line_addr_col[$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:1],
            cmd_line_addr_col[0] };
 
     assign cmd_line_state2[1:0] = cmd_line_state[1:0];
@@ -107,8 +107,8 @@ module control_module #(
             ram_access_start <= 1'b0;
 
             cmd_line_state <= 2'd0;
-            cmd_line_addr_row <= {$clog2(CTRL_PIXEL_HEIGHT){1'b0}};
-            cmd_line_addr_col <= {$clog2((CTRL_PIXEL_WIDTH * CTRL_BYTES_PER_PIXEL) - 1){1'b0}};
+            cmd_line_addr_row <= {$clog2(PIXEL_HEIGHT){1'b0}};
+            cmd_line_addr_col <= {$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1){1'b0}};
             num_commands_processed <= 8'b0;
         end
 
@@ -116,14 +116,14 @@ module control_module #(
         /* CMD: Line */
         else if (cmd_line_state == 2'd2 && uart_rx_data != "L" ) begin
             /* first, get the row to write to */
-            cmd_line_addr_row[$clog2(CTRL_PIXEL_HEIGHT)-1:0] <= uart_rx_data[4:0];
+            cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0] <= uart_rx_data[4:0];
 
             /* and start clocking in the column data
                64 pixels x 2 bytes each = 128 bytes */
-            // parameter CTRL_PIXEL_WIDTH = 'd64,
-            // parameter CTRL_BYTES_PER_PIXEL = 'd2
+            // parameter PIXEL_WIDTH = 'd64,
+            // parameter BYTES_PER_PIXEL = 'd2
             // cmd_line_addr_col[6:0] <= 7'd127;
-            cmd_line_addr_col[$clog2((CTRL_PIXEL_WIDTH * CTRL_BYTES_PER_PIXEL) - 1)-1:0] <= (CTRL_PIXEL_WIDTH * CTRL_BYTES_PER_PIXEL) - 1;
+            cmd_line_addr_col[$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] <= (PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
             cmd_line_state <= 2'd1;
         end
         else if (cmd_line_state == 2'd1) begin

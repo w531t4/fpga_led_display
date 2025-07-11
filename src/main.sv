@@ -313,7 +313,10 @@ fm6126init do_init (
     /* the control module */
     control_module #(
         // The baudrate that we will receive image data over
-        .UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+        .PIXEL_WIDTH(64),
+        .PIXEL_HEIGHT(32),
+        .BYTES_PER_PIXEL(2)
     ) ctrl (
         .reset(global_reset),
         .clk_in(clk_root),
