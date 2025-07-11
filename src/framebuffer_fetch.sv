@@ -1,20 +1,31 @@
 `default_nettype none
-module framebuffer_fetch (
+module framebuffer_fetch #(
+    parameter FBFETCH_PIXEL_WIDTH = 'd64,
+    parameter FBFETCH_PIXEL_HEIGHT = 'd16,
+    parameter FBFETCH_BYTES_PER_PIXEL = 'd2
+) (
     input reset,
     input clk_in,
 
-    input [5:0] column_address,
-    input [3:0] row_address,
+
+    // appears that framebuffer fetch broke things, may have an issue here 20250710
+    // [5:0] 64 width
+    input [$clog2(FBFETCH_PIXEL_WIDTH)-1:0] column_address,
+    // [3:0] 16 height (top/bottom half)
+    input [$clog2(FBFETCH_PIXEL_HEIGHT)-1:0] row_address,
 
     input pixel_load_start,
 
-    input [15:0] ram_data_in,
-    output [10:0] ram_address,
+    // [15:0] each fetch is one pixel worth of data
+    input [(FBFETCH_BYTES_PER_PIXEL*8)-1:0] ram_data_in,
+    // [10:0]
+    output [$clog2(FBFETCH_PIXEL_WIDTH) + $clog2(FBFETCH_PIXEL_HEIGHT):0] ram_address,
     output ram_clk_enable,
     output ram_reset,
 
-    output logic [15:0] rgb565_top,
-    output logic [15:0] rgb565_bottom,
+    // [15:0]
+    output logic [(FBFETCH_BYTES_PER_PIXEL*8)-1:0] rgb565_top,
+    output logic [(FBFETCH_BYTES_PER_PIXEL*8)-1:0] rgb565_bottom,
     output [3:0] pixel_load_counter2
 );
     wire ram_clk_enable_real;
@@ -25,7 +36,10 @@ module framebuffer_fetch (
     assign pixel_load_counter2[3:0] = { 2'b0, pixel_load_counter[1:0] };
 
     logic half_address;
-    assign ram_address = { half_address, row_address[3:0], ~column_address[5:0] };
+    // [10:0]
+    assign ram_address = { half_address,
+                           row_address[$clog2(FBFETCH_PIXEL_HEIGHT)-1:0],
+                           ~column_address[$clog2(FBFETCH_PIXEL_WIDTH)-1:0] };
 
     assign ram_reset = reset;
 
@@ -48,8 +62,8 @@ module framebuffer_fetch (
         if (reset) begin
             half_address <= 1'b0;
 
-            rgb565_top    <= 16'd0;
-            rgb565_bottom <= 16'd0;
+            rgb565_top    <= {(FBFETCH_BYTES_PER_PIXEL*8){1'b0}};
+            rgb565_bottom <= {(FBFETCH_BYTES_PER_PIXEL*8){1'b0}};
         end
         else begin
             // the frequency of pixel_load_start must contain enough clk_root
