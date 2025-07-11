@@ -88,12 +88,15 @@ clean:
 	rm -rf ${ARTIFACT_DIR}
 
 # YOSYS_DEBUG:=echo on
+# YOSYS_DEBUG_PARAMS:=-d -v9
+# opt_expr appears to "fix things"
+YOSYS_EXTRA:=opt_expr
 compile: lint $(ARTIFACT_DIR)/mydesign.json
 $(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES} | $(ARTIFACT_DIR)
-	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -sv $^; synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
+	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -sv $^; $(YOSYS_EXTRA); synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
-	$(TOOLPATH)/yosys -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
+	$(TOOLPATH)/yosys $(YOSYS_DEBUG_PARAMS) -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
 
 loopviz: $(ARTIFACT_DIR)/mydesign_show.svg
 $(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot | $(ARTIFACT_DIR)
