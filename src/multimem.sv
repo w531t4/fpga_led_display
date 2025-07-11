@@ -18,10 +18,10 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
 
     // Underlying memory: 4K x 8-bit
     reg [7:0] mem [0:4095];  // 2^12 = 4096 entries
-
+    `ifdef SIM
     reg [11:0] init_index;
     reg        init_done;
-
+    `endif
     // Write Port A: 8-bit writes
     always @(posedge ClockA) begin
         if (ClockEnA) begin
@@ -33,11 +33,14 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
     // Read Port B: 16-bit reads from two consecutive 8-bit locations
     always @(posedge ClockB) begin
         if (ResetA || ResetB) begin
+            `ifdef SIM
             init_index <= 12'b0;
             init_done <= 1'b0;
+            `endif
             QB <= 16'b0;
         end
         else begin
+            `ifdef SIM
             if (!init_done) begin
                 mem[init_index] <= 8'h00;
                 init_index <= init_index + 1;
@@ -46,10 +49,13 @@ module multimem (DataInA, DataInB, AddressA, AddressB, ClockA, ClockB,
                 end
             end
             else begin
+            `endif
                 if (ClockEnB) begin
                     QB <= {mem[{AddressB, 1'b1}], mem[{AddressB, 1'b0}]};
                 end
+            `ifdef SIM
             end
+            `endif
         end
     end
     assign QA = 0;
