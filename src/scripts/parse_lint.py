@@ -26,13 +26,19 @@ def print_grouping(data: List[str]) -> None:
 
 def parse_lint_title(line: str) -> LintTitle:
     """ parse row into an object"""
-    # selects Warning-UNUSEDSIGNAL
-    atype_param = line[1:].split(": ")[0]
-    atype, param = atype_param.split("-")
+    try:
+        # selects Warning-UNUSEDSIGNAL
+        atype_param = line[1:].split(": ")[0]
+        atype, param = atype_param.split("-")
 
-    # selects src/main.v:147:16
-    file_row_col = line[1:].split(": ")[1]
-    file,row,col = file_row_col.split(":") # pylint: disable=unused-variable
+        # selects src/main.v:147:16
+        file_row_col = line[1:].split(": ")[1]
+        file,row,col = file_row_col.split(":") # pylint: disable=unused-variable
+    except ValueError as e:
+        print(f"had problem parsing row={line} e={e}")
+        raise
+
+
     return LintTitle(severity=atype,
                      category=param,
                      file=file,
@@ -71,7 +77,7 @@ def main() -> None:
         line = line.rstrip()
 
         # Emit lines that verilator emits preceeding the lint output section
-        if not has_started and len(line) > 0 and line[0] == "%":
+        if not has_started and len(line) > 0 and line[0] == "%" and "-" in line:
             has_started = True
         elif not has_started:
             print(line)
@@ -79,7 +85,7 @@ def main() -> None:
 
         # verilator prints a summary by default - don't emit it, as the output
         # doesn't take into account our filtering.
-        if "%Error: Exiting due to" in line and "warning(s)" in line:
+        if "%Error: Exiting due to" in line and ("warning(s)" in line or "error(s)" in line):
             continue
 
         if len(line) > 0 and line[0] == "%":
@@ -108,9 +114,16 @@ def main() -> None:
 
     print_summary(issue_summary)
     if len(issue_items) > 0:
-        print(f"%Error: Exiting due to {len(issue_items)} warning(s)")
-        # sys.exit(1)
-
+        num_warnings = len([x for x in issue_summary if x.severity == "Warning"])
+        num_errors = len([x for x in issue_summary if x.severity == "Error"])
+        if num_warnings > 0 and num_errors > 0:
+            print(f"%Error: Exiting due to {num_warnings} warning(s) and {num_errors} error(s)")
+        elif num_warnings > 0:
+            print(f"%Warning: Exiting due to {num_warnings} warning(s)")
+        elif num_errors > 0:
+            print(f"%Error: Exiting due to {num_errors} errors(s)")
+        if num_errors > 0:
+            sys.exit(1)
     sys.exit(0)
 
 if __name__ == "__main__":
