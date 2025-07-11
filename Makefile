@@ -66,7 +66,7 @@ $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json  | $(ARTIFACT_DIR)
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp | $(SIMULATION_DIR)
 	$(VVP_BIN) $(VVP_FLAGS) $<
 
-$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv $(SRC_DIR)/%.sv | $(SIMULATION_DIR)
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
