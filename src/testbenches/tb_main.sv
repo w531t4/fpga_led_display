@@ -133,9 +133,9 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         debugger_rxin = 0;
         reset = 0;
         local_reset = 0;
-        repeat (20) begin
-            @(posedge clk);
-        end
+        // repeat (20) begin
+        //     @(posedge clk);
+        // end
         @(posedge clk)
             local_reset = ! local_reset;
             reset = ! reset;

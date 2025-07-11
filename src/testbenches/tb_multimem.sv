@@ -51,10 +51,15 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
         @(posedge clk_a)
             local_reset = ! local_reset;
             reset = ! reset;
+            ram_a_reset = !ram_a_reset;
+            ram_b_reset = !ram_b_reset;
         @(posedge clk_a)
             local_reset = ! local_reset;
             reset = !reset;
-
+            ram_a_reset = !ram_a_reset;
+            ram_b_reset = !ram_b_reset;
+            #10 $dumpoff;
+          #190000 $dumpon;
         @(negedge clk_a)
             do_write_start(12'b1111_1111_1111, "A");
         @(posedge clk_a)
