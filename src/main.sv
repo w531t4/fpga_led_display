@@ -347,7 +347,11 @@ fm6126init do_init (
         .num_commands_processed(num_commands_processed)
     );
 
-    multimem fb (
+    multimem #(
+        .PIXEL_WIDTH(64),
+        .PIXEL_HEIGHT(32),
+        .BYTES_PER_PIXEL(2)
+    ) fb (
         .ClockA(clk_root),
         .AddressA(ram_a_address),
         .DataInA(ram_a_data_in),
