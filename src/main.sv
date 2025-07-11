@@ -24,7 +24,11 @@ module main #(
     // 16000000hz / 22hz = 727272.7273 ticks width=20
     // tgt_hz variation (after rounding): -0.00%
     // 16000000hz / 22hz = 727273 ticks width=20
-    parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273
+    parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273,
+
+    parameter PIXEL_WIDTH = 'd64,
+    parameter PIXEL_HEIGHT = 'd32,
+    parameter BYTES_PER_PIXEL = 'd2
 ) (
     // DP74HC245 710401
     // FM TC7258E. 5B855300 2X
@@ -273,8 +277,8 @@ fm6126init do_init (
     );
 
     matrix_scan #(
-        .PIXEL_WIDTH(64),
-        .PIXEL_HEIGHT(32)
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT)
     )  matscan1 (
         .reset(global_reset),
         .clk_in(clk_matrix),
@@ -295,9 +299,9 @@ fm6126init do_init (
     /* the fetch controller */
 
     framebuffer_fetch #(
-        .PIXEL_WIDTH(64),
-        .PIXEL_HALFHEIGHT(16),
-        .BYTES_PER_PIXEL(2)
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(PIXEL_HEIGHT/2),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) fb_f (
         .reset(global_reset),
         .clk_in(clk_root),
@@ -321,9 +325,9 @@ fm6126init do_init (
     control_module #(
         // The baudrate that we will receive image data over
         .UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
-        .PIXEL_WIDTH(64),
-        .PIXEL_HEIGHT(32),
-        .BYTES_PER_PIXEL(2)
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) ctrl (
         .reset(global_reset),
         .clk_in(clk_root),
@@ -350,9 +354,9 @@ fm6126init do_init (
     );
 
     multimem #(
-        .PIXEL_WIDTH(64),
-        .PIXEL_HEIGHT(32),
-        .BYTES_PER_PIXEL(2)
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) fb (
         .ClockA(clk_root),
         .AddressA(ram_a_address),
