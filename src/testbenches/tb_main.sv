@@ -127,7 +127,7 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         $dumpfile(`DUMP_FILE_NAME);
         $dumpvars(0, tb_main);
         clk = 0;
-        mask = 0;
+        mask = 1;
 
 
         debugger_rxin = 0;
@@ -142,12 +142,12 @@ parameter SIM_HALF_PERIOD_NS = 31.25000;
         @(posedge clk)
             local_reset = ! local_reset;
             reset = ! reset;
-        repeat (20) begin
-            @(posedge clk);
-        end
-        repeat (5) begin
-            @(posedge clk);
-        end
+        // repeat (20) begin
+        //     @(posedge clk);
+        // end
+        // repeat (5) begin
+        //     @(posedge clk);
+        // end
         @(posedge clk)
             mask = 1;
         #15000000 $finish;
