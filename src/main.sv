@@ -291,7 +291,12 @@ fm6126init do_init (
     );
 
     /* the fetch controller */
-    framebuffer_fetch fb_f (
+
+    framebuffer_fetch #(
+        .PIXEL_WIDTH(64),
+        .PIXEL_HALFHEIGHT(16),
+        .BYTES_PER_PIXEL(2)
+    ) fb_f (
         .reset(global_reset),
         .clk_in(clk_root),
 
