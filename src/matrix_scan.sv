@@ -1,11 +1,17 @@
 `default_nettype none
-module matrix_scan (
+module matrix_scan #(
+    parameter PIXEL_WIDTH = 'd64,
+    parameter PIXEL_HEIGHT = 'd32
+) (
     input reset,
     input clk_in,
 
-    output [5:0] column_address,         /* the current column (clocking out now) */
-    output logic [3:0] row_address,        /* the current row (clocking out now) */
-    output logic [3:0] row_address_active, /* the active row (LEDs enabled) */
+    // [5:0]  64 width
+    output [$clog2(PIXEL_WIDTH)-1:0] column_address,         /* the current column (clocking out now) */
+    // [3:0] 16 height rows (two of them)
+    output logic [$clog2(PIXEL_HEIGHT)-1:0] row_address,        /* the current row (clocking out now) */
+    // [3:0] 16 height rows (two of them)
+    output logic [$clog2(PIXEL_HEIGHT)-1:0] row_address_active, /* the active row (LEDs enabled) */
 
     output clk_pixel_load,
     output clk_pixel,
@@ -62,12 +68,14 @@ module matrix_scan (
     /* produce 64 load clocks per line...
        external logic should present the pixel value on the rising edge */
     timeout #(
-        .COUNTER_WIDTH(7)
+        // 7
+        .COUNTER_WIDTH($clog2(PIXEL_WIDTH)+1)
     ) timeout_clk_pixel_load_en (
         .reset(reset),
         .clk_in(clk_in),
         .start(clk_state),
-        .value(7'd64),
+        // 7'd64
+        .value(PIXEL_WIDTH),
 `ifndef USE_FM6126A
         .counter(unused_7bit_counter),
 `else
@@ -80,12 +88,14 @@ module matrix_scan (
        counts from 63 -> 0 and then stops
        advances out-of-phase with the pixel clock */
     timeout #(
-        .COUNTER_WIDTH(6)
+        // 6
+        .COUNTER_WIDTH($clog2(PIXEL_WIDTH-1))
     ) timeout_column_address (
         .reset(reset),
         .clk_in(clk_in),
         .start(clk_state),
-        .value(6'd63),
+        // 6'd63
+        .value(PIXEL_WIDTH-1),
         .counter(column_address),
         .running(unused_timer_runpin)
     );
@@ -102,8 +112,9 @@ module matrix_scan (
 `endif
             brightness_mask <= 6'b100000;
             brightness_mask_active <= 6'd0;
-            row_address <= 4'd0;
-            row_address_active <= 4'd0;
+            // 4'd0
+            row_address <= {PIXEL_HEIGHT{1'b0}};
+            row_address_active <= {PIXEL_HEIGHT{1'b0}};
         end
         else begin
             clk_pixel_en <= clk_pixel_load_en;
@@ -120,7 +131,8 @@ module matrix_scan (
                 if ((brightness_mask == 6'd0) || (brightness_mask == 6'b000001)) begin
                     // catch the initial value / oopsy //
                     brightness_mask <= 6'b100000;
-                    row_address <= row_address + 4'd1;
+                    // 4'd1
+                    row_address <= row_address + 1;
                 end
                 else begin
                     brightness_mask <= brightness_mask >> 1;

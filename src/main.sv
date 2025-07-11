@@ -270,7 +270,10 @@ fm6126init do_init (
         .clk_out(clk_matrix)
     );
 
-    matrix_scan matscan1 (
+    matrix_scan #(
+        .PIXEL_WIDTH(64),
+        .PIXEL_HEIGHT(32)
+    )  matscan1 (
         .reset(global_reset),
         .clk_in(clk_matrix),
         .column_address(column_address),
