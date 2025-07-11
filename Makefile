@@ -21,7 +21,7 @@ VVP_FLAGS:=
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_FLAGS:=--lint-only -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -v $(SRC_DIR)/platform/tiny_cells_sim.v
+VERILATOR_FLAGS:=--lint-only -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -v $(SRC_DIR)/platform/newram.v
 
 SRCS := $(shell find $(SRC_DIR) -name '*.sv' -or -name '*.v')
 
@@ -38,12 +38,12 @@ VSOURCES:=$(SRC_DIR)/brightness.sv \
 		  $(SRC_DIR)/debugger.sv \
 		  $(SRC_DIR)/timeout_sync.sv \
 		  $(SRC_DIR)/uart_rx.sv \
-		  $(SRC_DIR)/newram4.sv \
+		  $(SRC_DIR)/platform/newram.v \
 		  $(SRC_DIR)/fm6126init.sv \
 		  $(SRC_DIR)/new_pll.sv \
 		  $(SRC_DIR)/reset_on_start.sv \
 		  $(SRC_DIR)/multimem.sv \
-		  $(SRC_DIR)/platform/tiny_cells_sim.v
+		  $(SRC_DIR)/platform/tiny_ecp5_sim.v
 
 TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
