@@ -22,7 +22,7 @@ VVP_FLAGS:=-n
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_FLAGS:=--lint-only -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -I$(VINCLUDE_DIR)
+VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -I$(VINCLUDE_DIR)
 
 SRCS := $(shell find $(SRC_DIR) -name '*.sv' -or -name '*.v')
 
