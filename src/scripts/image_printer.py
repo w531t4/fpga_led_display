@@ -41,11 +41,11 @@ class UARTImage():
     def assemble(self) -> bytes:
         data = BytesIO()
         data.write(b"L")
+        mydata = BytesIO(self.data)
         for row in range(0, self.height + 1):
             data.write(self.encode_row(row))
-            for _ in range(0, self.width + 1):
-                data.write(self.data[self._position])
-                self._position += 1
+            # for _ in range(0, self.width + 1):
+            data.write(mydata.read(self.width*self.depth))
         return data.getvalue()
 
     def render(self, device: Path, baudrate: int) -> None:
