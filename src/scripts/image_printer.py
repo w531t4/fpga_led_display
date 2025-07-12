@@ -16,7 +16,8 @@ class UARTImage():
         self.height = height
         self.depth = depth
         self.data = data
-        assert len(self.data) == (self.height * self.width * self.depth)
+        dim_size = self.height * self.width * self.depth
+        assert len(self.data) == dim_size, f"len(self.data)={len(self.data)} dim_size={dim_size}"
         self._position = 0
 
     @classmethod
