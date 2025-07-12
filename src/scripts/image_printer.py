@@ -1,0 +1,122 @@
+from pathlib import Path
+from io import BytesIO
+from typing import List, Dict, Self
+import re
+import argparse
+import sys
+
+import serial
+
+
+class UARTImage():
+    """Handles emitting data in a format the FPGA understands"""
+    def __init__(self, width: int, height: int, depth: int, data: bytes) -> None:
+        assert height < 256, "only one byte is used to convey row information, thus max 255"
+        self.width = width
+        self.height = height
+        self.depth = depth
+        self.data = data
+        assert len(self.data) == (self.height * self.width * self.depth)
+        self._position = 0
+
+    @classmethod
+    def from_uartfile(cls, path: Path, width: int, height: int, depth: int) -> Self:
+        height, width, depth = None, None, None
+        data = BytesIO(path.read_bytes())
+        to_save = BytesIO()
+        for _ in range(0, height+1):
+            data.seek(data.tell()+2)
+            for _ in range(0, width+1):
+                to_save.write(data.read(depth*width))
+        return cls(width=width, height=height, depth=depth, data=to_save.getvalue())
+
+    @staticmethod
+    def encode_row(row: int) -> bytes:
+        return bytes((row,))
+
+    def assemble(self) -> bytes:
+        data = BytesIO()
+        data.write(b"L")
+        for row in range(0, self.height + 1):
+            data.write(self.encode_row(row))
+            for _ in range(0, self.width + 1):
+                data.write(self.data[self._position])
+                self._position += 1
+        return data.getvalue()
+
+    def render(self, device: Path, baudrate: int) -> None:
+        ser = serial.Serial(device, baudrate)
+        ser.write(self.assemble())
+        ser.close()
+
+def main(target: str,
+         target_freq: int,
+         source: Path,
+         target_width: int,
+         target_height: int,
+         source_width: int = None,
+         source_height: int = None,
+         source_depth: int = None,
+         ) -> None:
+    obj = None
+    if source.suffix == ".uart":
+        if not all(map(lambda x: x is not None, [source_width, source_height, source_depth])):
+            print("must provide source_width, source_height, source_depth when using .uart as source")
+            sys.exit(1)
+        obj = UARTImage.from_uartfile(path=source, width=source_width, height=source_height, depth=source_depth)
+    if obj:
+        obj.render(device=target, baudrate=target_freq)
+    print("done")
+
+
+if __name__ == "__main__":
+    PARSER = argparse.ArgumentParser(prog="image_printer",
+                                     description="i print images")
+
+    PARSER.add_argument("--src",
+                        "-s",
+                        dest="source",
+                        action="store",
+                        type=Path,
+                        help="Path to source file")
+    PARSER.add_argument("--src-width",
+                        dest="source_width",
+                        action="store",
+                        type=int,
+                        help="width of source file")
+    PARSER.add_argument("--src-height",
+                        dest="source_height",
+                        action="store",
+                        type=int,
+                        help="height of source file")
+    PARSER.add_argument("--src-depth",
+                        dest="source_depth",
+                        action="store",
+                        type=int,
+                        help="depth of source file")
+    PARSER.add_argument("--target",
+                        dest="target",
+                        action="store",
+                        type=str,
+                        help="uart device path")
+    PARSER.add_argument("--target-freq",
+                        dest="target_freq",
+                        action="store",
+                        default=244444,
+                        type=int,
+                        help="uart tx freq")
+    PARSER.add_argument("--target-width",
+                        dest="target_width",
+                        action="store",
+                        default=64,
+                        type=int,
+                        help="width in pixels")
+    PARSER.add_argument("--target-height",
+                        dest="target_height",
+                        action="store",
+                        default=32,
+                        type=int,
+                        help="height in pixels")
+    ARGS = PARSER.parse_args()
+
+    main(**vars(ARGS))
