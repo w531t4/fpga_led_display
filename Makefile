@@ -5,6 +5,7 @@ SIMULATION_DIR:=$(ARTIFACT_DIR)/simulation
 SRC_DIR:=src
 TB_DIR:=$(SRC_DIR)/testbenches
 CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
+VINCLUDE_DIR:=$(SRC_DIR)/include
 
 # == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
@@ -15,13 +16,13 @@ SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
 IVERILOG_BIN:=$(TOOLPATH)/iverilog
-IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement -Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector -Wsensitivity-entire-array # -g2012 solves issue where platform/tiny_cell_sim.v is detected as systemverilog | tells iVerilog to read the source files as SystemVerilog (specifically the SystemVerilog defined in IEEE 1800-2012)
+IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement -Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector -Wsensitivity-entire-array -I$(VINCLUDE_DIR) # -g2012 solves issue where platform/tiny_cell_sim.v is detected as systemverilog | tells iVerilog to read the source files as SystemVerilog (specifically the SystemVerilog defined in IEEE 1800-2012)
 VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_FLAGS:=--lint-only -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v
+VERILATOR_FLAGS:=--lint-only -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -I$(VINCLUDE_DIR)
 
 SRCS := $(shell find $(SRC_DIR) -name '*.sv' -or -name '*.v')
 
@@ -55,7 +56,7 @@ simulation: $(VCDOBJS)
 
 $(ARTIFACT_DIR)/yosys.json: ${VSOURCES} | $(ARTIFACT_DIR)
 	$(shell mkdir -p $(ARTIFACT_DIR))
-	$(TOOLPATH)/yosys -p "read_verilog $(SIM_FLAGS) -sv $^; prep -top main ; write_json $@"
+	$(TOOLPATH)/yosys -p "read_verilog $(SIM_FLAGS) -I$(VINCLUDE_DIR) -sv $^; prep -top main ; write_json $@"
 
 diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
 $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json  | $(ARTIFACT_DIR)
@@ -93,7 +94,7 @@ clean:
 YOSYS_EXTRA:=opt_expr
 compile: lint $(ARTIFACT_DIR)/mydesign.json
 $(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES} | $(ARTIFACT_DIR)
-	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -sv $^; $(YOSYS_EXTRA); synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
+	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -I$(VINCLUDE_DIR) -sv $^; $(YOSYS_EXTRA); synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_DEBUG_PARAMS) -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"

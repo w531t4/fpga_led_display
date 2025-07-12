@@ -26,9 +26,7 @@ module main #(
     // 16000000hz / 22hz = 727273 ticks width=20
     parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273,
 
-    parameter PIXEL_WIDTH = 'd64,
-    parameter PIXEL_HEIGHT = 'd32,
-    parameter BYTES_PER_PIXEL = 'd2,
+    `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -303,7 +301,7 @@ fm6126init do_init (
 
     framebuffer_fetch #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(PIXEL_HEIGHT/2),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) fb_f (
         .reset(global_reset),
