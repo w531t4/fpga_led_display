@@ -30,10 +30,24 @@ class UARTImage():
             # print(f"read orig_row = {self.width*self.depth}")
             temp = me.read(self.width*self.depth)
             # print(f"add half side = {len(b'0'*difference_side*self.depth)}")
-            new_data.write(b'0'*difference_side*self.depth)
+            new_data.write(b'\x00'*difference_side*self.depth)
             new_data.write(temp)
             # print(f"add half side = {len(b'0'*difference_side*self.depth)}")
-            new_data.write(b'0'*difference_side*self.depth)
+            new_data.write(b'\x00'*difference_side*self.depth)
+        return self.__class__(width=width,
+                              height=self.height,
+                              depth=self.depth,
+                              data=new_data.getvalue())
+
+    def transform_duplicate(self, width) -> Self:
+        new_data = BytesIO()
+        me = BytesIO(self.data)
+        for _ in range(0, self.height):
+            # print(f"read orig_row = {self.width*self.depth}")
+            temp = me.read(self.width*self.depth)
+            # print(f"add half side = {len(b'0'*difference_side*self.depth)}")
+            new_data.write(temp)
+            new_data.write(temp)
         return self.__class__(width=width,
                               height=self.height,
                               depth=self.depth,
@@ -44,13 +58,12 @@ class UARTImage():
         data = BytesIO(path.read_bytes())
         data.seek(0)
         to_save = BytesIO()
-        for _ in range(0, height):
-            # print(f"moving from {data.tell()} to {data.tell()+2}")
-            data.seek(data.tell()+2)
-            # for _ in range(0, width+1):
-            # print(f"reading size={depth*width} from file")
-            to_save.write(data.read(depth*width))
-            # print(f"data.tell={data.tell()}")
+        for i in range(0, height):
+            context = data.read(2)
+            # print(f"skipping load/row data={context}")
+            data_read = data.read(depth*width)
+            # print(f"read_data row={i} data={data_read}")
+            to_save.write(data_read)
         return cls(width=width, height=height, depth=depth, data=to_save.getvalue())
 
     @staticmethod
@@ -59,20 +72,41 @@ class UARTImage():
 
     def assemble(self) -> bytes:
         data = BytesIO()
-        data.write(b"L")
         mydata = BytesIO(self.data)
-        for row in range(0, self.height+1):
+        for row in range(0, self.height):
+            data.write(b"L")
             data.write(self.encode_row(row))
             # for _ in range(0, self.width + 1):
             data.write(mydata.read(self.width*self.depth))
         return data.getvalue()
 
+    def assemble_row(self, row_num: int) -> bytes:
+        """
+        @row_num: base0 row#
+        """
+        out = BytesIO()
+        out.write(b"L")
+        out.write(self.encode_row(row_num))
+        data = BytesIO(self.data)
+        data.seek(self.width*row_num*self.depth)
+        out.write(data.read(self.width*self.depth))
+        return out.getvalue()
+
     def render(self, device: Path, baudrate: int) -> None:
-        ser = serial.Serial(device, baudrate)
-        ser.write(self.assemble())
+        ser = serial.Serial(str(device), baudrate)
+        data = self.assemble()
+        print(f"writing count={len(data)} bytes to {device} at baud={baudrate}")
+        ser.write(data)
         ser.close()
 
-def main(target: str,
+    def render_row(self, row_num: int, device: Path, baudrate: int) -> None:
+        ser = serial.Serial(str(device), baudrate)
+        data = self.assemble_row(row_num)
+        ser.write(data)
+        print(f"render row#{row_num} data={data}")
+        ser.close()
+
+def main(target: Path,
          target_freq: int,
          source: Path,
          target_width: int,
@@ -88,9 +122,12 @@ def main(target: str,
             sys.exit(1)
         obj = UARTImage.from_uartfile(path=source, width=source_width, height=source_height, depth=source_depth)
     if obj:
-        if target_width != source_width:
+        if target_width and target_width != source_width:
+            print("transforming!")
             obj = obj.transform_middle(width=target_width)
         obj.render(device=target, baudrate=target_freq)
+        # for i in range(0, 32):
+        #     obj.render_row(row_num=i, device=target, baudrate=target_freq)
     print("done")
 
 
@@ -122,7 +159,7 @@ if __name__ == "__main__":
     PARSER.add_argument("--target",
                         dest="target",
                         action="store",
-                        type=str,
+                        type=Path,
                         help="uart device path")
     PARSER.add_argument("--target-freq",
                         dest="target_freq",
