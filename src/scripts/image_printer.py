@@ -20,6 +20,21 @@ class UARTImage():
         assert len(self.data) == dim_size, f"len(self.data)={len(self.data)} dim_size={dim_size}"
         self._position = 0
 
+    def transform_middle(self, width) -> Self:
+        assert width > self.width
+        difference_side = (width - self.width)/2
+        new_data = BytesIO()
+        me = BytesIO(self.data)
+        for _ in range(0, self.height+1):
+            temp = me.read(self.width*self.depth)
+            new_data.write(b'0'*difference_side)
+            new_data.write(temp)
+            new_data.write(b'0'*difference_side)
+        return self.__class__(width=width,
+                              height=self.height,
+                              depth=self.depth,
+                              data=new_data.getvalue())
+
     @classmethod
     def from_uartfile(cls, path: Path, width: int, height: int, depth: int) -> Self:
         data = BytesIO(path.read_bytes())
@@ -69,6 +84,8 @@ def main(target: str,
             sys.exit(1)
         obj = UARTImage.from_uartfile(path=source, width=source_width, height=source_height, depth=source_depth)
     if obj:
+        if target_width != source_width:
+            obj = obj.transform_middle(width=target_width)
         obj.render(device=target, baudrate=target_freq)
     print("done")
 
