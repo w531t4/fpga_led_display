@@ -23,6 +23,7 @@ class UARTImage():
     @classmethod
     def from_uartfile(cls, path: Path, width: int, height: int, depth: int) -> Self:
         data = BytesIO(path.read_bytes())
+        data.seek(0)
         to_save = BytesIO()
         for _ in range(0, height+1):
             data.seek(data.tell()+2)
