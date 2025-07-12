@@ -22,7 +22,7 @@ class UARTImage():
 
     def transform_middle(self, width) -> Self:
         assert width > self.width
-        difference_side = (width - self.width)/2
+        difference_side = int((width - self.width)/2)
         new_data = BytesIO()
         me = BytesIO(self.data)
         for _ in range(0, self.height+1):
