@@ -26,7 +26,7 @@ class UARTImage():
         assert width == (self.width + (difference_side * 2))
         new_data = BytesIO()
         me = BytesIO(self.data)
-        for _ in range(0, self.height+1):
+        for _ in range(0, self.height):
             print(f"read orig_row = {self.width*self.depth}")
             temp = me.read(self.width*self.depth)
             print(f"add half side = {len(b'0'*difference_side*self.depth)}")
@@ -44,7 +44,7 @@ class UARTImage():
         data = BytesIO(path.read_bytes())
         data.seek(0)
         to_save = BytesIO()
-        for _ in range(0, height+1):
+        for _ in range(0, height):
             # print(f"moving from {data.tell()} to {data.tell()+2}")
             data.seek(data.tell()+2)
             # for _ in range(0, width+1):
@@ -61,7 +61,7 @@ class UARTImage():
         data = BytesIO()
         data.write(b"L")
         mydata = BytesIO(self.data)
-        for row in range(0, self.height + 1):
+        for row in range(0, self.height+1):
             data.write(self.encode_row(row))
             # for _ in range(0, self.width + 1):
             data.write(mydata.read(self.width*self.depth))
