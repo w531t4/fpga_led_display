@@ -45,33 +45,35 @@ def main() -> None:
     targetfile = "images/blah565.raw"
     # f = open(targetfile, 'rb')
     tdata = [
-                dict(row=10,
-                     hex="3737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313130",
-                     preargs="BRG9",
+                dict(row=4,
+                     hex="0000000098000000000000009800000081a000000000000081a0000094c000000000000094c00000042000000000000004200000044f0000000000000000000002100000000000000000000000160000000000000016000040130000000000004013000000000000881100000000000000000000000098000000000000000000",
+                     preargs="",
                 ),
-                dict(row=42,
-                     hex="3737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313130",
-                     preargs="BRG9",
-                ),
+                #dict(row=42,
+                #     hex="3737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313838373736363535343433333232313138383737363635353434333332323131383837373636353534343333323231313130",
+                #     preargs="BRG9",
+                #),
              ]
     if (len(sys.argv) < 2):
         MAX_ITERATIONS = 0
     else:
         MAX_ITERATIONS = int(sys.argv[1])
-
+    print(f"MAX_ITERATIONS={MAX_ITERATIONS}")
     print("len(sys.argv)={argv_length}".format(argv_length=len(sys.argv)))
     ser = serial.Serial(serial_device, BAUDRATE, timeout=None)
     loop_number = 0
     while True:
-        d = build_raw_row(tdata[0], padding_amount=0, override_row_num=(loop_number % 32))
+        d = build_raw_row(tdata[0], padding_amount=0)
         d = replace_last_byte(d, chr((loop_number % 32)).encode("utf-8"))
         #print("ln:%s writing row=%s alldata=%s" % (loop_number, tdata[0]['row'], d))
         ser.write(d)
         loop_number += 1
         if MAX_ITERATIONS != 0:
+            break
             if loop_number > MAX_ITERATIONS+2:
                 break
-        time.sleep(.2)
+        print(f"loop={loop_number}")
+        time.sleep(1)
         #ser.flush()
     print("done")
     ser.close()
