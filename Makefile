@@ -45,6 +45,7 @@ VSOURCES:=$(SRC_DIR)/brightness.sv \
 		  $(SRC_DIR)/multimem.sv \
 		  $(SRC_DIR)/platform/tiny_ecp5_sim.v
 
+INCLUDESRCS=$(shell find $(VINCLUDE_DIR) -name '*.vh')
 TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
@@ -54,9 +55,9 @@ all: diagram simulation lint
 
 simulation: $(VCDOBJS)
 
-$(ARTIFACT_DIR)/yosys.json: ${VSOURCES} | $(ARTIFACT_DIR)
+$(ARTIFACT_DIR)/yosys.json: ${VSOURCES} $(INCLUDESRCS) | $(ARTIFACT_DIR)
 	$(shell mkdir -p $(ARTIFACT_DIR))
-	$(TOOLPATH)/yosys -p "read_verilog $(SIM_FLAGS) -I$(VINCLUDE_DIR) -sv $^; prep -top main ; write_json $@"
+	$(TOOLPATH)/yosys -p "read_verilog $(SIM_FLAGS) -I$(VINCLUDE_DIR) -sv ${VSOURCES}; prep -top main ; write_json $@"
 
 diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
 $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json  | $(ARTIFACT_DIR)
@@ -67,12 +68,12 @@ $(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json  | $(ARTIFACT_DIR)
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp | $(SIMULATION_DIR)
 	$(VVP_BIN) $(VVP_FLAGS) $<
 
-$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv $(SRC_DIR)/%.sv | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv $(SRC_DIR)/%.sv $(INCLUDESRCS) | $(SIMULATION_DIR)
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 
-$(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.sv $(SRC_DIR)/main.sv | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.sv $(SRC_DIR)/main.sv $(INCLUDESRCS) | $(SIMULATION_DIR)
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_main_uart -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 
 lint:
@@ -93,8 +94,8 @@ clean:
 # opt_expr appears to "fix things"
 YOSYS_EXTRA:=opt_expr
 compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES} | $(ARTIFACT_DIR)
-	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -I$(VINCLUDE_DIR) -sv $^; $(YOSYS_EXTRA); synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
+$(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES} $(INCLUDESRCS) | $(ARTIFACT_DIR)
+	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -I$(VINCLUDE_DIR) -sv ${VSOURCES}; $(YOSYS_EXTRA); synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
 	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
 	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_DEBUG_PARAMS) -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
