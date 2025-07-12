@@ -29,6 +29,7 @@ class UARTImage():
             print(f"moving from {data.tell()} to {data.tell()+2}")
             data.seek(data.tell()+2)
             for _ in range(0, width+1):
+                print(f"reading size={depth*width} from file")
                 to_save.write(data.read(depth*width))
             print(f"data.tell={data.tell()}")
         return cls(width=width, height=height, depth=depth, data=to_save.getvalue())
