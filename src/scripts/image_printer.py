@@ -59,7 +59,7 @@ def main(target: str,
          source_depth: int = None,
          ) -> None:
     obj = None
-    if source.suffix == ".uart":
+    if source and source.suffix == ".uart":
         if not all(map(lambda x: x is not None, [source_width, source_height, source_depth])):
             print("must provide source_width, source_height, source_depth when using .uart as source")
             sys.exit(1)
