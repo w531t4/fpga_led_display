@@ -1,32 +1,37 @@
 `timescale 1ns/1ns
 `default_nettype none
-module tb_control_module;
-// context: RX DATA baud
-// 16000000hz / 244444hz = 65.4547 ticks width=7
-// tgt_hz variation (after rounding): 0.70%
-// 16000000hz / 246154hz = 65 ticks width=7
-parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65;
+module tb_control_module #(
+    // context: RX DATA baud
+    // 16000000hz / 244444hz = 65.4547 ticks width=7
+    // tgt_hz variation (after rounding): 0.70%
+    // 16000000hz / 246154hz = 65 ticks width=7
+    parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65,
 
 
-// context: TX DEBUG baud
-// 16000000hz / 115200hz = 138.8889 ticks width=8
-// tgt_hz variation (after rounding): -0.08%
-// 16000000hz / 115108hz = 139 ticks width=8
-parameter DEBUG_TX_UART_TICKS_PER_BIT = 8'd139;
+    // context: TX DEBUG baud
+    // 16000000hz / 115200hz = 138.8889 ticks width=8
+    // tgt_hz variation (after rounding): -0.08%
+    // 16000000hz / 115108hz = 139 ticks width=8
+    parameter DEBUG_TX_UART_TICKS_PER_BIT = 8'd139,
 
-// context: Debug msg rate
-// 16000000hz / 22hz = 727272.7273 ticks width=20
-// tgt_hz variation (after rounding): -0.00%
-// 16000000hz / 22hz = 727273 ticks width=20
-parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273;
+    // context: Debug msg rate
+    // 16000000hz / 22hz = 727272.7273 ticks width=20
+    // tgt_hz variation (after rounding): -0.00%
+    // 16000000hz / 22hz = 727273 ticks width=20
+    parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273,
 
-`ifdef SIM
-// use smaller value in testbench so we don't infinitely sim
-parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
+    `ifdef SIM
+        // use smaller value in testbench so we don't infinitely sim
+        parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15,
 
-// period = (1 / 16000000hz) / 2 = 31.25000
-parameter SIM_HALF_PERIOD_NS = 31.25000;
-`endif
+        // period = (1 / 16000000hz) / 2 = 31.25000
+        parameter SIM_HALF_PERIOD_NS = 31.25000,
+    `endif
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
+
 logic clk;
 logic reset;
 logic local_reset;

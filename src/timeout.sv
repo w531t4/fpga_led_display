@@ -8,7 +8,10 @@
     running       - is the counter still running?
 */
 module timeout #(
-    parameter COUNTER_WIDTH = 8
+    parameter COUNTER_WIDTH = 8,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
 ) (
     input reset,
     input clk_in,

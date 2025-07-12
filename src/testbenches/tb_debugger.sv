@@ -1,6 +1,10 @@
 `timescale 1ns/1ns
 `default_nettype none
-module tb_debugger;
+module tb_debugger #(
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
 
 
 

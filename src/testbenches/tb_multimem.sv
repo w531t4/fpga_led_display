@@ -1,6 +1,10 @@
 `timescale 1ns/1ns
 `default_nettype none
-module tb_multimem;
+module tb_multimem #(
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
 // period = (1 / 50000000hz) / 2 = 10.00000
 parameter SIM_HALF_PERIOD_NS = 10.00000;
 

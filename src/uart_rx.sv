@@ -23,10 +23,12 @@
     SOFTWARE.
 */
 
-module uart_rx
+module uart_rx #(
     /* BEGIN PARAMETERS LIST */
-    #(
-        parameter TICKS_PER_BIT = 32
+    parameter TICKS_PER_BIT = 32,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
     )
     /* END PARAMETERS LIST */
 

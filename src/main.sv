@@ -28,7 +28,10 @@ module main #(
 
     parameter PIXEL_WIDTH = 'd64,
     parameter PIXEL_HEIGHT = 'd32,
-    parameter BYTES_PER_PIXEL = 'd2
+    parameter BYTES_PER_PIXEL = 'd2,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
 ) (
     // DP74HC245 710401
     // FM TC7258E. 5B855300 2X

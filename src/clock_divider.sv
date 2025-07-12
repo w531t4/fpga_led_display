@@ -7,7 +7,10 @@
      //so, essentially freq = clk_in / (clk_div_count * 2)
 module clock_divider #(
     parameter CLK_DIV_WIDTH = 8,
-    parameter CLK_DIV_COUNT = 0
+    parameter CLK_DIV_COUNT = 0,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
 ) (
     input reset,
     input clk_in,

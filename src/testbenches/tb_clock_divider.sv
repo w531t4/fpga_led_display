@@ -1,6 +1,10 @@
 `timescale 1ns/1ns
 `default_nettype none
-module tb_clock_divider;
+module tb_clock_divider #(
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
 
 logic clk;
 logic reset;

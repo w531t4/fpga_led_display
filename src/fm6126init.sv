@@ -131,7 +131,11 @@ void resetPanel()	{
 }
 */
 
-module fm6126init
+module fm6126init #(
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+)
 // (
 //	clk_in, reset, output_enable, rgb1, rgb2, latch, done
 //	//adopted from https://github.com/mrfaptastic/ESP32-HUB75-MatrixPanel-DMA/issues/23

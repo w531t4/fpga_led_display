@@ -1,5 +1,9 @@
 `default_nettype none
-module reset_on_start (
+module reset_on_start #(
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+    ) (
     input wire clock_in,
     output wire reset
 );

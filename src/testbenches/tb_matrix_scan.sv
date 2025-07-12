@@ -1,6 +1,14 @@
 `timescale 1ns/1ns
 `default_nettype none
-module tb_matrix_scan;
+module tb_matrix_scan #(
+  `ifdef SIM
+  // period = (1 / 16000000hz) / 2 = 31.25000
+    parameter SIM_HALF_PERIOD_NS = 31.25000*6, // *6 to match current clock divider in main
+  `endif
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
 
 logic clk;
 logic reset;
@@ -13,10 +21,6 @@ wire row_latch;
 wire output_enable;
 wire [5:0] brightness_mask;
 
-`ifdef SIM
-// period = (1 / 16000000hz) / 2 = 31.25000
-parameter SIM_HALF_PERIOD_NS = 31.25000*6; // *6 to match current clock divider in main
-`endif
 
 matrix_scan  matrix_scan_instance
   (

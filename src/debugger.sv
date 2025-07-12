@@ -3,7 +3,10 @@ module debugger	#(
     parameter DIVIDER_TICKS = 28'd67000000,
     parameter DATA_WIDTH = 8,
     // 22MHz / 191 = 115183 baud
-    parameter UART_TICKS_PER_BIT = 191
+    parameter UART_TICKS_PER_BIT = 191,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
 ) (
     input clk_in,
     input reset,

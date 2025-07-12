@@ -7,8 +7,11 @@
 `ifdef SIM
 `timescale 1ns/10ps
 `endif
-module new_pll
-(
+module new_pll #(
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+) (
     input clock_in, // 25 MHz, 0 deg
     output clock_out, // 16 MHz, 0 deg
     output locked

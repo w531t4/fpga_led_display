@@ -2,7 +2,10 @@
 module framebuffer_fetch #(
     parameter PIXEL_WIDTH = 'd64,
     parameter PIXEL_HALFHEIGHT = 'd16,
-    parameter BYTES_PER_PIXEL = 'd2
+    parameter BYTES_PER_PIXEL = 'd2,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
 ) (
     input reset,
     input clk_in,

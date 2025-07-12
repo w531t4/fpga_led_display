@@ -2,7 +2,10 @@
 module multimem #(
     parameter PIXEL_WIDTH = 'd64,
     parameter PIXEL_HEIGHT = 'd32,
-    parameter BYTES_PER_PIXEL = 'd2
+    parameter BYTES_PER_PIXEL = 'd2,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
     ) (
     input wire [7:0] DataInA,
     input wire [15:0] DataInB,

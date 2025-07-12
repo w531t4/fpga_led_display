@@ -1,7 +1,10 @@
 `default_nettype none
 module matrix_scan #(
     parameter PIXEL_WIDTH = 'd64,
-    parameter PIXEL_HEIGHT = 'd32
+    parameter PIXEL_HEIGHT = 'd32,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
 ) (
     input reset,
     input clk_in,

@@ -1,5 +1,9 @@
 `default_nettype none
-module pixel_split (
+module pixel_split #(
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+    ) (
     input [15:0] pixel_rgb565,
     input [5:0] brightness_mask,
     input [2:0] rgb_enable,
