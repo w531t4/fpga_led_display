@@ -26,6 +26,7 @@ class UARTImage():
         data.seek(0)
         to_save = BytesIO()
         for _ in range(0, height+1):
+            print(f"moving from {data.tell()} to {data.tell()+2}")
             data.seek(data.tell()+2)
             for _ in range(0, width+1):
                 to_save.write(data.read(depth*width))
