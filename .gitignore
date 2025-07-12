@@ -1,4 +1,5 @@
 oss-cad-suite/*
+**/__pycache__/**
 *.tgz
 bitmaps
 images

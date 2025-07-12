@@ -7,5 +7,6 @@
         "nenv": true,
         ".pytest_cache": true,
         "oss-cad-suite": true,
+        "**/__pycache__/**": true,
     }
 }
