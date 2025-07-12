@@ -27,12 +27,12 @@ class UARTImage():
         new_data = BytesIO()
         me = BytesIO(self.data)
         for _ in range(0, self.height):
-            print(f"read orig_row = {self.width*self.depth}")
+            # print(f"read orig_row = {self.width*self.depth}")
             temp = me.read(self.width*self.depth)
-            print(f"add half side = {len(b'0'*difference_side*self.depth)}")
+            # print(f"add half side = {len(b'0'*difference_side*self.depth)}")
             new_data.write(b'0'*difference_side*self.depth)
             new_data.write(temp)
-            print(f"add half side = {len(b'0'*difference_side*self.depth)}")
+            # print(f"add half side = {len(b'0'*difference_side*self.depth)}")
             new_data.write(b'0'*difference_side*self.depth)
         return self.__class__(width=width,
                               height=self.height,
