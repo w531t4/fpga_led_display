@@ -27,9 +27,9 @@ class UARTImage():
         me = BytesIO(self.data)
         for _ in range(0, self.height+1):
             temp = me.read(self.width*self.depth)
-            new_data.write(b'0'*difference_side*8)
+            new_data.write(b'0'*difference_side*self.depth)
             new_data.write(temp)
-            new_data.write(b'0'*difference_side*8)
+            new_data.write(b'0'*difference_side*self.depth)
         return self.__class__(width=width,
                               height=self.height,
                               depth=self.depth,
