@@ -36,7 +36,6 @@ VSOURCES:=$(SRC_DIR)/brightness.sv \
 		  $(SRC_DIR)/rgb565.sv \
 		  $(SRC_DIR)/timeout.sv \
 		  $(SRC_DIR)/uart_tx.sv \
-		  $(SRC_DIR)/debugger.sv \
 		  $(SRC_DIR)/timeout_sync.sv \
 		  $(SRC_DIR)/uart_rx.sv \
 		  $(SRC_DIR)/new_pll.sv \
@@ -44,16 +43,28 @@ VSOURCES:=$(SRC_DIR)/brightness.sv \
 		  $(SRC_DIR)/multimem.sv \
 		  $(SRC_DIR)/platform/tiny_ecp5_sim.v
 
-ifeq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
-VSOURCES += $(SRC_DIR)/fm6126init.sv
-endif
+
 
 INCLUDESRCS=$(shell find $(VINCLUDE_DIR) -name '*.vh')
 TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
 
-.PHONY: all diagram simulation clean compile loopviz route lint
+ifeq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
+VSOURCES += $(SRC_DIR)/fm6126init.sv
+else
+TBSRCS := $(filter-out $(TB_DIR)/tb_fm6126init.sv, $(TBSRCS))
+VVPOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vvp, $(VVPOBJS))
+VCDOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vcd, $(VCDOBJS))
+endif
+
+# ifeq ($(findstring -DDEBUGGER,$(BUILD_FLAGS)), -DDEBUGGER)
+VSOURCES += $(SRC_DIR)/debugger.sv
+# endif
+
+
+
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang
 all: diagram simulation lint
 
 simulation: $(VCDOBJS)
@@ -92,20 +103,67 @@ $(SIMULATION_DIR):
 clean:
 	rm -rf ${ARTIFACT_DIR}
 
-# YOSYS_DEBUG:=echo on
-# YOSYS_DEBUG_PARAMS:=-d -v9
-# opt_expr appears to "fix things"
-YOSYS_EXTRA:=opt_expr
+YOSYS_DEBUG ?= false
+YOSYS_INCLUDE_EXTRA ?= false
+
+YOSYS_TARGETS:=$(ARTIFACT_DIR)/mydesign.json \
+			   $(ARTIFACT_DIR)/mydesign.il \
+			   $(ARTIFACT_DIR)/mydesign_show.dot
+YOSYS_EXTRA:=hierarchy -check -top main;
+ifeq ($(YOSYS_INCLUDE_EXTRA),true)
+	YOSYS_EXTRA += show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show_pre main;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/mydesign_show_pre.dot
+	YOSYS_EXTRA += ls;
+	YOSYS_EXTRA += proc -noopt;
+	YOSYS_EXTRA += write_rtlil $(ARTIFACT_DIR)/mydesign_pre.il;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/mydesign_pre.il
+	YOSYS_EXTRA += write_json $(ARTIFACT_DIR)/mydesign_pre.json;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/mydesign_pre.json;
+	YOSYS_EXTRA += write_verilog $(ARTIFACT_DIR)/code_preopt.sv;
+	YOSYS_TARGETS +=  $(ARTIFACT_DIR)/code_preopt.sv;
+	YOSYS_EXTRA += write_verilog -selected $(ARTIFACT_DIR)/code_preopt_selected.sv;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_preopt_selected.sv;
+	YOSYS_EXTRA += opt_expr -full;
+	YOSYS_EXTRA += write_verilog $(ARTIFACT_DIR)/code_postopt.sv;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt.sv;
+	YOSYS_EXTRA += write_verilog -selected $(ARTIFACT_DIR)/code_postopt_selected.sv;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt_selected.sv;
+endif
+
+YOSYS_READVERILOG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) -sv ${VSOURCES}
+ifeq ($(YOSYS_DEBUG), true)
+	YOSYS_READVERILOG_ARGS:=-debug $(YOSYS_READVERILOG_ARGS)
+endif
+YOSYS_READVERILOG_CMD:=read_verilog $(YOSYS_READVERILOG_ARGS)
+YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top main -json $(ARTIFACT_DIR)/mydesign.json
+
+YOSYS_SCRIPT:=
+ifeq ($(YOSYS_DEBUG), true)
+	YOSYS_SCRIPT +=echo on;
+endif
+YOSYS_SCRIPT +=$(YOSYS_READVERILOG_CMD);
+YOSYS_SCRIPT +=$(YOSYS_EXTRA);
+YOSYS_SCRIPT +=$(YOSYS_SYNTHECP5_CMD);
+YOSYS_SCRIPT +=show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show;
+YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il
+
+YOSYS_CMD_ARGS:=-L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_SCRIPT)"
+ifeq ($(YOSYS_DEBUG), true)
+	YOSYS_CMD_ARGS :=-d -v9 -g $(YOSYS_CMD_ARGS)
+endif
+
 compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(ARTIFACT_DIR)/mydesign.json $(ARTIFACT_DIR)/mydesign_show.dot $(ARTIFACT_DIR)/yosys.il: ${VSOURCES} $(INCLUDESRCS) | $(ARTIFACT_DIR)
-	$(eval YOSYS_CMD:=$(YOSYS_DEBUG); read_verilog $(BUILD_FLAGS) -I$(VINCLUDE_DIR) -sv ${VSOURCES}; $(YOSYS_EXTRA); synth_ecp5 -top main -json $@; show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show; write_rtlil $(ARTIFACT_DIR)/yosys.il)
-	# echo -e "synth_ecp5 -json $@ -run :map_ffs" >> $(ARTIFACT_DIR)/mydesign.ys
-	echo "$(YOSYS_CMD)" > $(ARTIFACT_DIR)/mydesign.ys
-	$(TOOLPATH)/yosys $(YOSYS_DEBUG_PARAMS) -L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_CMD)"
+$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) | $(ARTIFACT_DIR)
+	echo "$(YOSYS_SCRIPT)" > $(ARTIFACT_DIR)/mydesign.ys
+	$(TOOLPATH)/yosys $(YOSYS_CMD_ARGS)
 
 loopviz: $(ARTIFACT_DIR)/mydesign_show.svg
 $(ARTIFACT_DIR)/mydesign_show.svg: $(ARTIFACT_DIR)/mydesign_show.dot | $(ARTIFACT_DIR)
-	$(TOOLPATH)/dot -Ksfdp -o $@ -Tsvg $<
+	$(TOOLPATH)/dot -Kdot -o $@ -Tsvg $<
+
+loopviz_pre: $(ARTIFACT_DIR)/mydesign_show_pre.svg
+$(ARTIFACT_DIR)/mydesign_show_pre.svg: $(ARTIFACT_DIR)/mydesign_show_pre.dot | $(ARTIFACT_DIR)
+	$(TOOLPATH)/dot -Kdot -o $@ -Tsvg $<
 
 route: $(ARTIFACT_DIR)/ulx3s_out.config
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
