@@ -39,11 +39,14 @@ VSOURCES:=$(SRC_DIR)/brightness.sv \
 		  $(SRC_DIR)/debugger.sv \
 		  $(SRC_DIR)/timeout_sync.sv \
 		  $(SRC_DIR)/uart_rx.sv \
-		  $(SRC_DIR)/fm6126init.sv \
 		  $(SRC_DIR)/new_pll.sv \
 		  $(SRC_DIR)/reset_on_start.sv \
 		  $(SRC_DIR)/multimem.sv \
 		  $(SRC_DIR)/platform/tiny_ecp5_sim.v
+
+ifeq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
+VSOURCES += $(SRC_DIR)/fm6126init.sv
+endif
 
 INCLUDESRCS=$(shell find $(VINCLUDE_DIR) -name '*.vh')
 TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
