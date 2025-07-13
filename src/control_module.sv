@@ -25,13 +25,16 @@ module control_module #(
     output logic [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] ram_address,
     output logic ram_write_enable,
     output ram_clk_enable,
-    output ram_reset,
-    output [1:0] cmd_line_state2,
-    output [7:0] rx_data,
-    output ram_access_start2,
-    output ram_access_start_latch2,
-    output [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] cmd_line_addr2,
-    output logic [7:0] num_commands_processed
+    output ram_reset
+    `ifdef DEBUGGER
+        ,
+        output [1:0] cmd_line_state2,
+        output [7:0] rx_data,
+        output ram_access_start2,
+        output ram_access_start_latch2,
+        output [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] cmd_line_addr2,
+        output logic [7:0] num_commands_processed
+    `endif
 );
 
     wire [7:0] uart_rx_data;
@@ -39,8 +42,10 @@ module control_module #(
     wire ram_clk_enable_real;
     logic ram_access_start;
     logic ram_access_start_latch;
-    assign ram_access_start2 = ram_access_start;
-    assign ram_access_start_latch2 = ram_access_start_latch;
+    `ifdef DEBUGGER
+        assign ram_access_start2 = ram_access_start;
+        assign ram_access_start_latch2 = ram_access_start_latch;
+    `endif
     assign ram_reset = reset;
     wire [1:0] timer_counter_unused;
     logic  [1:0]  cmd_line_state;
@@ -53,8 +58,10 @@ module control_module #(
           ~cmd_line_addr_col[$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:1],
            cmd_line_addr_col[0] };
 
-    assign cmd_line_state2[1:0] = cmd_line_state[1:0];
-    assign cmd_line_addr2 = cmd_line_addr;
+    `ifdef DEBUGGER
+        assign cmd_line_state2[1:0] = cmd_line_state[1:0];
+        assign cmd_line_addr2 = cmd_line_addr;
+    `endif
 
     wire uart_rx_dataready;
     uart_rx #(
@@ -84,7 +91,9 @@ module control_module #(
     );
     assign ram_clk_enable = ram_clk_enable_real;
     assign rx_running = uart_rx_running;
-    assign rx_data[7:0] = uart_rx_data[7:0];
+    `ifdef DEBUGGER
+        assign rx_data[7:0] = uart_rx_data[7:0];
+    `endif
 
     always @(posedge clk_in) begin
         if (reset) begin
@@ -124,7 +133,9 @@ module control_module #(
             cmd_line_state <= 2'd0;
             cmd_line_addr_row <= {$clog2(PIXEL_HEIGHT){1'b0}};
             cmd_line_addr_col <= {$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1){1'b0}};
-            num_commands_processed <= 8'b0;
+            `ifdef DEBUGGER
+                num_commands_processed <= 8'b0;
+            `endif
         end
 
 
@@ -148,7 +159,9 @@ module control_module #(
             end
             else begin
                 cmd_line_state <= 2'd0;
-                num_commands_processed <= num_commands_processed + 1'b1;
+                `ifdef DEBUGGER
+                    num_commands_processed <= num_commands_processed + 1'b1;
+                `endif
             end
 
             /* store this byte */

@@ -44,12 +44,13 @@ wire [5:0] brightness_enable;
 wire [7:0] ram_data_out;
 wire [11:0] ram_address;
 wire ram_write_enable;
-wire [7:0] num_commands_processed;
+
 wire ram_clk_enable;
 wire ram_reset;
-wire [1:0] cmd_line_state2;
-
-
+`ifdef DEBUGGER
+    wire [1:0] cmd_line_state2;
+    wire [7:0] num_commands_processed;
+`endif
 // debugger stuff
 wire debug_command_busy;
 wire debug_command_pulse;
@@ -77,11 +78,14 @@ control_module #(
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
         .ram_clk_enable(ram_clk_enable),
-        .ram_reset(ram_reset),
+        .ram_reset(ram_reset)
         //20220106
         //.rx_invalid(rx_invalid),
-        .cmd_line_state2(cmd_line_state2),
-        .num_commands_processed(num_commands_processed)
+        `ifdef DEBUGGER
+            ,
+            .cmd_line_state2(cmd_line_state2),
+            .num_commands_processed(num_commands_processed)
+        `endif
     );
 
     debugger #(

@@ -84,10 +84,6 @@ module main #(
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
     wire ram_a_reset;
-
-    wire ram_access_start;
-    wire ram_access_start_latch;
-
     wire [15:0] ram_b_data_out;
     wire [10:0] ram_b_address;
     wire ram_b_clk_enable;
@@ -97,13 +93,18 @@ module main #(
     wire [15:0] pixel_rgb565_bottom;
 
     wire state_advance;
-    wire [1:0] cmd_line_state;
-    wire [11:0] cmd_line_addr2;
+    `ifdef DEBUGGER
+        // from controller
+        wire [1:0] cmd_line_state;
+        wire [7:0] uart_rx_data;
+        wire ram_access_start;
+        wire ram_access_start_latch;
+        wire [11:0] cmd_line_addr2;
+        wire [7:0] num_commands_processed;
+        // end controller
+    `endif
     wire uart_rx;
-    wire [7:0] uart_rx_data;
     wire rx_running;
-
-
     wire [5:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
@@ -117,7 +118,6 @@ module main #(
 
 
     wire output_enable;
-    wire [7:0] num_commands_processed;
     wire alt_reset;
     wire pll_locked;
     wire matrix_row_latch2;
@@ -306,14 +306,16 @@ fm6126init do_init (
         .ram_address(ram_a_address),
         .ram_write_enable(ram_a_write_enable),
         .ram_clk_enable(ram_a_clk_enable),
-        .ram_reset(ram_a_reset),
-
-        .cmd_line_state2(cmd_line_state),
-        .rx_data(uart_rx_data),
-        .ram_access_start2(ram_access_start),
-        .ram_access_start_latch2(ram_access_start_latch),
-        .cmd_line_addr2(cmd_line_addr2),
-        .num_commands_processed(num_commands_processed)
+        .ram_reset(ram_a_reset)
+        `ifdef DEBUGGER
+            ,
+            .cmd_line_state2(cmd_line_state),
+            .rx_data(uart_rx_data),
+            .ram_access_start2(ram_access_start),
+            .ram_access_start_latch2(ram_access_start_latch),
+            .cmd_line_addr2(cmd_line_addr2),
+            .num_commands_processed(num_commands_processed)
+        `endif
     );
 
     multimem #(
@@ -423,14 +425,18 @@ fm6126init do_init (
     wire _unused_ok = &{1'b0,
                         pll_locked,
                         matrix_row_latch2,
-                        num_commands_processed,
                         rx_running,
-                        uart_rx_data,
-                        cmd_line_addr2,
-                        cmd_line_state,
+                        `ifdef DEBUGGER
+                            //from controller
+                            cmd_line_state,
+                            uart_rx_data,
+                            ram_access_start,
+                            ram_access_start_latch,
+                            cmd_line_addr2,
+                            num_commands_processed,
+                            //end controller
+                        `endif
                         state_advance,
-                        ram_access_start_latch,
-                        ram_access_start,
                         ram_a_reset,
                         ram_a_data_out,
                         row_latch_state,
