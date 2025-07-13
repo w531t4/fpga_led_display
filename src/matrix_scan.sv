@@ -24,10 +24,10 @@ module matrix_scan #(
     output logic [5:0] brightness_mask, /* used to pick a bit from the sub-pixel's brightness */
     output row_latch2,
     output state_advance2,
-`ifndef USE_FM6126A
-    output [1:0] row_latch_state2,
-`else
+`ifdef USE_FM6126A
     output [3:0] row_latch_state2,
+`else
+    output [1:0] row_latch_state2,
 `endif
     output clk_pixel_load_en2 );
 
@@ -39,12 +39,12 @@ module matrix_scan #(
 
     wire clk_pixel_load_en;/* enables the pixel load clock */
     logic  clk_pixel_en;    /* enables the pixel clock, delayed by one cycle from the load clock */
-`ifndef USE_FM6126A
-    logic  [1:0] row_latch_state;
-`else
+`ifdef USE_FM6126A
     logic  [3:0] row_latch_state;
     wire [6:0] clk_pixel_load_en_counter;
     localparam LATCH_WIDTH = 'd3;
+`else
+    logic  [1:0] row_latch_state;
 `endif
 
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
@@ -55,11 +55,11 @@ module matrix_scan #(
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
-`ifndef USE_FM6126A
+`ifdef USE_FM6126A
+    assign row_latch = (row_latch_state[3:0] == 4'b0010) || (row_latch_state[3:0] == 4'b0100) || (row_latch_state[3:0] == 4'b1000);
+`else
     wire [6:0] unused_7bit_counter;
     assign row_latch = row_latch_state[1:0] == 2'b10;
-`else
-    assign row_latch = (row_latch_state[3:0] == 4'b0010) || (row_latch_state[3:0] == 4'b0100) || (row_latch_state[3:0] == 4'b1000);
 `endif
     assign clk_state = state == 2'b10;
 
@@ -79,10 +79,10 @@ module matrix_scan #(
         .start(clk_state),
         // 7'd64
         .value(PIXEL_WIDTH),
-`ifndef USE_FM6126A
-        .counter(unused_7bit_counter),
-`else
+`ifdef USE_FM6126A
         .counter(clk_pixel_load_en_counter),
+`else
+        .counter(unused_7bit_counter),
 `endif
         .running(clk_pixel_load_en)
     );
@@ -108,10 +108,10 @@ module matrix_scan #(
     always @(negedge clk_in) begin
         if (reset) begin
             clk_pixel_en <= 1'b1;
-`ifndef USE_FM6126A
-            row_latch_state <= 2'b1;
-`else
+`ifdef USE_FM6126A
             row_latch_state <= 4'b0001;
+`else
+            row_latch_state <= 2'b1;
 `endif
             brightness_mask <= 6'b100000;
             brightness_mask_active <= 6'd0;
@@ -121,10 +121,10 @@ module matrix_scan #(
         end
         else begin
             clk_pixel_en <= clk_pixel_load_en;
-`ifndef USE_FM6126A
-            row_latch_state <= { row_latch_state[0], clk_pixel_load_en };
-`else
+`ifdef USE_FM6126A
             row_latch_state <= { row_latch_state[2], row_latch_state[1], row_latch_state[0], clk_pixel_load_en_counter == ('d1 + LATCH_WIDTH) };
+`else
+            row_latch_state <= { row_latch_state[0], clk_pixel_load_en };
 `endif
             /* on completion of the row_latch, we advanced the brightness mask to generate the next row of pixels */
             if (row_latch) begin
@@ -175,10 +175,10 @@ module matrix_scan #(
 
     /* we want to overlap the pixel clock out with the previous output
        enable... but we do not want to start too early... */
-`ifndef USE_FM6126A
-    assign state_advance = !output_enable || (state_timeout_overlap < brightness_counter);
-`else
+`ifdef USE_FM6126A
     assign state_advance = !output_enable || (state_timeout_overlap < (brightness_counter + LATCH_WIDTH));
+`else
+    assign state_advance = !output_enable || (state_timeout_overlap < brightness_counter);
 `endif
     /* shift the state advance signal into the bitfield */
     always @(posedge clk_in) begin
