@@ -78,15 +78,6 @@ module main #(
     wire [3:0] pixel_load_counter2;
 
     wire row_latch;
-    wire row_latch_intermediary;
-`ifdef USE_FM6126A
-    // TODO: Need to update bytes in python script and wire below.
-    wire init_reset_strobe;
-    wire fm6126mask_en;
-    wire [3:0] row_latch_state;
-`else
-    wire [1:0] row_latch_state;
-`endif
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out;
     wire [11:0] ram_a_address;
@@ -128,15 +119,11 @@ module main #(
     wire [2:0] rgb_enable;
     wire [5:0] brightness_enable;
     wire [2:0] rgb1; /* the current RGB value for the top-half of the display */
-    wire [2:0] rgb1_intermediary;
+
     wire [2:0] rgb2; /* the current RGB value for the bottom-half of the display */
-    wire [2:0] rgb2_intermediary;
+
 
     wire output_enable;
-    wire output_enable_intermediary;
-
-    wire clk_pixel_intermediary;
-
     wire [7:0] num_commands_processed;
     wire alt_reset;
     wire pll_locked;
@@ -199,6 +186,14 @@ module main #(
     wire [2:0] rgb2_fm6126init;
     wire row_latch_fm6126init;
     wire pixclock_fm6126init;
+    wire output_enable_intermediary;
+    wire [2:0] rgb2_intermediary;
+    wire clk_pixel_intermediary;
+    wire [2:0] rgb1_intermediary;
+    wire row_latch_intermediary;
+    wire init_reset_strobe;
+    wire fm6126mask_en;
+    wire [3:0] row_latch_state;
 fm6126init do_init (
     .clk_in(clk_matrix),
     .reset(alt_reset),
@@ -219,15 +214,7 @@ fm6126init do_init (
     assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
     assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
 `else
-    assign output_enable = output_enable_intermediary;
-    assign rgb1[0] = rgb1_intermediary[0];
-    assign rgb1[1] = rgb1_intermediary[1];
-    assign rgb1[2] = rgb1_intermediary[2];
-    assign rgb2[0] = rgb2_intermediary[0];
-    assign rgb2[1] = rgb2_intermediary[1];
-    assign rgb2[2] = rgb2_intermediary[2];
-    assign row_latch = row_latch_intermediary;
-    assign clk_pixel = clk_pixel_intermediary;
+    wire [1:0] row_latch_state;
 `endif
 
     reset_on_start #() RoS_obj (
@@ -257,9 +244,15 @@ fm6126init do_init (
         .row_address(row_address),
         .row_address_active(row_address_active),
         .clk_pixel_load(clk_pixel_load),
-        .clk_pixel(clk_pixel_intermediary),
-        .row_latch(row_latch_intermediary),
-        .output_enable(output_enable_intermediary),
+        `ifdef USE_FM6126A
+            .clk_pixel(clk_pixel_intermediary),
+            .row_latch(row_latch_intermediary),
+            .output_enable(output_enable_intermediary),
+        `else
+            .clk_pixel(clk_pixel),
+            .row_latch(row_latch),
+            .output_enable(output_enable),
+        `endif
         .brightness_mask(brightness_mask),
         .state_advance2(state_advance),
         .row_latch_state2(row_latch_state),
@@ -350,13 +343,21 @@ fm6126init do_init (
         .pixel_rgb565(pixel_rgb565_top),
         .brightness_mask(brightness_mask & brightness_enable),
         .rgb_enable(rgb_enable),
-        .rgb_output(rgb1_intermediary)
+        `ifdef USE_FM6126A
+            .rgb_output(rgb1_intermediary)
+        `else
+            .rgb_output(rgb1)
+        `endif
     );
     pixel_split px_bottom (
         .pixel_rgb565(pixel_rgb565_bottom),
         .brightness_mask(brightness_mask & brightness_enable),
         .rgb_enable(rgb_enable),
-        .rgb_output(rgb2_intermediary)
+        `ifdef USE_FM6126A
+            .rgb_output(rgb2_intermediary)
+        `else
+            .rgb_output(rgb2)
+        `endif
     );
 
 `ifdef DEBUGGER
