@@ -103,11 +103,7 @@ module main #(
         // end framebuffer_fetch
         // from matrix_scan
         wire state_advance;
-        `ifdef USE_FM6126A
-            wire [3:0] row_latch_state;
-        `else
-            wire [1:0] row_latch_state;
-        `endif
+        wire [1:0] row_latch_state;
         wire clk_pixel_load_en;
         wire matrix_row_latch2;
         // end matrix_scan
@@ -194,11 +190,7 @@ fm6126init do_init (
         rgb1[2:0],
         rx_running,
         row_latch,
-        `ifdef USE_FM6126A
-            row_latch_state[3:0],
-        `else
-            row_latch_state[1:0],
-        `endif
+        row_latch_state[1:0],
         ram_b_reset,
         cmd_line_state[1:0],
         uart_rx,
@@ -265,9 +257,7 @@ fm6126init do_init (
         `ifdef DEBUGGER
             ,
             .state_advance2(state_advance),
-            `ifdef USE_FM6126A
-                .row_latch_state2(row_latch_state),
-            `endif
+            .row_latch_state2(row_latch_state),
             .clk_pixel_load_en2(clk_pixel_load_en),
             .row_latch2(matrix_row_latch2)
         `endif
@@ -455,9 +445,7 @@ fm6126init do_init (
                             //end framebuffer_fetch
                             //from matrix_scan
                             state_advance,
-                            `ifdef USE_FM6126A
-                                row_latch_state,
-                            `endif
+                            row_latch_state,
                             clk_pixel_load_en,
                             matrix_row_latch2,
                             // end matrix_scan
