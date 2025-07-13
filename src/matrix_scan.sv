@@ -20,8 +20,6 @@ module matrix_scan #(
     output clk_pixel,
     output row_latch,
     output output_enable, /* the minimum output enable pulse should not be shorter than 1us... */
-
-    output logic [5:0] brightness_mask, /* used to pick a bit from the sub-pixel's brightness */
     output row_latch2,
     output state_advance2,
 `ifdef USE_FM6126A
@@ -29,8 +27,9 @@ module matrix_scan #(
 `else
     output [1:0] row_latch_state2,
 `endif
-    output clk_pixel_load_en2 );
-
+    output clk_pixel_load_en2,
+    output logic [5:0] brightness_mask /* used to pick a bit from the sub-pixel's brightness */
+ );
     localparam state_timeout_overlap = 'd67;
 
     logic [1:0] state;
