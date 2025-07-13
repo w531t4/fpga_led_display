@@ -74,7 +74,6 @@ module main #(
 
     wire clk_pixel_load;
     wire clk_pixel;
-    wire clk_pixel_load_en;
     wire row_latch;
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out;
@@ -90,7 +89,6 @@ module main #(
     wire [15:0] pixel_rgb565_top;
     wire [15:0] pixel_rgb565_bottom;
 
-    wire state_advance;
     `ifdef DEBUGGER
         // from controller
         wire [1:0] cmd_line_state;
@@ -103,6 +101,16 @@ module main #(
         // from framebuffer_fetch
         wire [3:0] pixel_load_counter2;
         // end framebuffer_fetch
+        // from matrix_scan
+        wire state_advance;
+        `ifdef USE_FM6126A
+            wire [3:0] row_latch_state;
+        `else
+            wire [1:0] row_latch_state;
+        `endif
+        wire clk_pixel_load_en;
+        wire matrix_row_latch2;
+        // end matrix_scan
     `endif
     wire uart_rx;
     wire rx_running;
@@ -121,7 +129,6 @@ module main #(
     wire output_enable;
     wire alt_reset;
     wire pll_locked;
-    wire matrix_row_latch2;
 
     // No wires past here
 
@@ -143,7 +150,6 @@ module main #(
     wire row_latch_intermediary;
     wire init_reset_strobe;
     wire fm6126mask_en;
-    wire [3:0] row_latch_state;
 fm6126init do_init (
     .clk_in(clk_matrix),
     .reset(alt_reset),
@@ -163,8 +169,6 @@ fm6126init do_init (
     assign rgb2[2] = (rgb2_intermediary[2] & fm6126mask_en) | (rgb2_fm6126init[2] & ~fm6126mask_en);
     assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
     assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
-`else
-    wire [1:0] row_latch_state;
 `endif
 
 `ifdef DEBUGGER
@@ -190,7 +194,11 @@ fm6126init do_init (
         rgb1[2:0],
         rx_running,
         row_latch,
-        row_latch_state[1:0],
+        `ifdef USE_FM6126A
+            row_latch_state[3:0],
+        `else
+            row_latch_state[1:0],
+        `endif
         ram_b_reset,
         cmd_line_state[1:0],
         uart_rx,
@@ -253,11 +261,16 @@ fm6126init do_init (
             .row_latch(row_latch),
             .output_enable(output_enable),
         `endif
-        .brightness_mask(brightness_mask),
-        .state_advance2(state_advance),
-        .row_latch_state2(row_latch_state),
-        .clk_pixel_load_en2(clk_pixel_load_en),
-        .row_latch2(matrix_row_latch2)
+        .brightness_mask(brightness_mask)
+        `ifdef DEBUGGER
+            ,
+            .state_advance2(state_advance),
+            `ifdef USE_FM6126A
+                .row_latch_state2(row_latch_state),
+            `endif
+            .clk_pixel_load_en2(clk_pixel_load_en),
+            .row_latch2(matrix_row_latch2)
+        `endif
     );
 
     /* the fetch controller */
@@ -427,7 +440,6 @@ fm6126init do_init (
 
     wire _unused_ok = &{1'b0,
                         pll_locked,
-                        matrix_row_latch2,
                         rx_running,
                         `ifdef DEBUGGER
                             //from controller
@@ -441,12 +453,17 @@ fm6126init do_init (
                             //from framebuffer_fetch
                             pixel_load_counter2,
                             //end framebuffer_fetch
+                            //from matrix_scan
+                            state_advance,
+                            `ifdef USE_FM6126A
+                                row_latch_state,
+                            `endif
+                            clk_pixel_load_en,
+                            matrix_row_latch2,
+                            // end matrix_scan
                         `endif
-                        state_advance,
                         ram_a_reset,
                         ram_a_data_out,
-                        row_latch_state,
-                        clk_pixel_load_en,
                         `ifdef DEBUGGER
                             debug_command_pulse,
                             debug_command_busy,

@@ -1,6 +1,11 @@
 `default_nettype none
+`ifdef USE_FM6126A
+    `ifdef DEBUGGER
+        `define FM6126A_AND_DEBUGGER
+    `endif
+`endif
 module matrix_scan #(
-    parameter PIXEL_WIDTH = 'd64,
+    parameter PIXEL_WIDTH = 7'd64,
     parameter PIXEL_HALFHEIGHT = 'd16,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
@@ -20,14 +25,18 @@ module matrix_scan #(
     output clk_pixel,
     output row_latch,
     output output_enable, /* the minimum output enable pulse should not be shorter than 1us... */
-    output row_latch2,
-    output state_advance2,
-`ifdef USE_FM6126A
-    output [3:0] row_latch_state2,
-`else
-    output [1:0] row_latch_state2,
-`endif
-    output clk_pixel_load_en2,
+    `ifdef FM6126A_AND_DEBUGGER
+        output [3:0] row_latch_state2,
+    `else
+        `ifdef DEBUGGER
+            output [1:0] row_latch_state2,
+        `endif
+    `endif
+    `ifdef DEBUGGER
+        output row_latch2,
+        output state_advance2,
+        output clk_pixel_load_en2,
+    `endif
     output logic [5:0] brightness_mask /* used to pick a bit from the sub-pixel's brightness */
  );
     localparam state_timeout_overlap = 'd67;
@@ -38,7 +47,7 @@ module matrix_scan #(
 
     wire clk_pixel_load_en;/* enables the pixel load clock */
     logic  clk_pixel_en;    /* enables the pixel clock, delayed by one cycle from the load clock */
-`ifdef USE_FM6126A
+`ifdef FM6126A_AND_DEBUGGER
     logic  [3:0] row_latch_state;
     wire [6:0] clk_pixel_load_en_counter;
     localparam LATCH_WIDTH = 'd3;
@@ -54,18 +63,21 @@ module matrix_scan #(
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
-`ifdef USE_FM6126A
+`ifdef FM6126A_AND_DEBUGGER
     assign row_latch = (row_latch_state[3:0] == 4'b0010) || (row_latch_state[3:0] == 4'b0100) || (row_latch_state[3:0] == 4'b1000);
 `else
+    `ifdef DEBUGGER
+        assign row_latch_state2 = row_latch_state[1:0];
+    `endif
     wire [6:0] unused_7bit_counter;
     assign row_latch = row_latch_state[1:0] == 2'b10;
 `endif
     assign clk_state = state == 2'b10;
-
-    assign clk_pixel_load_en2 = clk_pixel_load_en;
-    assign row_latch_state2 = row_latch_state[1:0];
-    assign row_latch2 = row_latch;
-    assign state_advance2 = state_advance;
+    `ifdef DEBUGGER
+        assign row_latch2 = row_latch;
+        assign clk_pixel_load_en2 = clk_pixel_load_en;
+        assign state_advance2 = state_advance;
+    `endif
     wire unused_timer_runpin;
     /* produce 64 load clocks per line...
        external logic should present the pixel value on the rising edge */
@@ -78,7 +90,7 @@ module matrix_scan #(
         .start(clk_state),
         // 7'd64
         .value(PIXEL_WIDTH),
-`ifdef USE_FM6126A
+`ifdef FM6126A_AND_DEBUGGER
         .counter(clk_pixel_load_en_counter),
 `else
         .counter(unused_7bit_counter),
@@ -107,7 +119,7 @@ module matrix_scan #(
     always @(negedge clk_in) begin
         if (reset) begin
             clk_pixel_en <= 1'b1;
-`ifdef USE_FM6126A
+`ifdef FM6126A_AND_DEBUGGER
             row_latch_state <= 4'b0001;
 `else
             row_latch_state <= 2'b1;
@@ -120,7 +132,7 @@ module matrix_scan #(
         end
         else begin
             clk_pixel_en <= clk_pixel_load_en;
-`ifdef USE_FM6126A
+`ifdef FM6126A_AND_DEBUGGER
             row_latch_state <= { row_latch_state[2], row_latch_state[1], row_latch_state[0], clk_pixel_load_en_counter == ('d1 + LATCH_WIDTH) };
 `else
             row_latch_state <= { row_latch_state[0], clk_pixel_load_en };
@@ -174,7 +186,7 @@ module matrix_scan #(
 
     /* we want to overlap the pixel clock out with the previous output
        enable... but we do not want to start too early... */
-`ifdef USE_FM6126A
+`ifdef FM6126A_AND_DEBUGGER
     assign state_advance = !output_enable || (state_timeout_overlap < (brightness_counter + LATCH_WIDTH));
 `else
     assign state_advance = !output_enable || (state_timeout_overlap < brightness_counter);
@@ -190,7 +202,7 @@ module matrix_scan #(
     end
 
     wire _unused_ok = &{1'b0,
-`ifndef USE_FM6126A
+`ifndef FM6126A_AND_DEBUGGER
                         unused_7bit_counter,
 `endif
                         unused_timer_runpin,
