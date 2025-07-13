@@ -75,8 +75,6 @@ module main #(
     wire clk_pixel_load;
     wire clk_pixel;
     wire clk_pixel_load_en;
-    wire [3:0] pixel_load_counter2;
-
     wire row_latch;
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out;
@@ -102,6 +100,9 @@ module main #(
         wire [11:0] cmd_line_addr2;
         wire [7:0] num_commands_processed;
         // end controller
+        // from framebuffer_fetch
+        wire [3:0] pixel_load_counter2;
+        // end framebuffer_fetch
     `endif
     wire uart_rx;
     wire rx_running;
@@ -279,9 +280,11 @@ fm6126init do_init (
         .ram_reset(ram_b_reset),
 
         .rgb565_top(pixel_rgb565_top),
-        .rgb565_bottom(pixel_rgb565_bottom),
-
-        .pixel_load_counter2(pixel_load_counter2)
+        .rgb565_bottom(pixel_rgb565_bottom)
+        `ifdef DEBUGGER
+        ,
+            .pixel_load_counter2(pixel_load_counter2)
+        `endif
     );
 
     /* the control module */
@@ -435,12 +438,14 @@ fm6126init do_init (
                             cmd_line_addr2,
                             num_commands_processed,
                             //end controller
+                            //from framebuffer_fetch
+                            pixel_load_counter2,
+                            //end framebuffer_fetch
                         `endif
                         state_advance,
                         ram_a_reset,
                         ram_a_data_out,
                         row_latch_state,
-                        pixel_load_counter2,
                         clk_pixel_load_en,
                         `ifdef DEBUGGER
                             debug_command_pulse,
