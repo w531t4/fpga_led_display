@@ -79,9 +79,7 @@ module main #(
 
     wire global_reset;
     logic global_reset_init;
-    logic global_reset_debug;
     wire init_reset_strobe;
-    wire buffered_global_reset;
 
     wire clk_pixel_load;
     wire clk_pixel;
@@ -244,29 +242,8 @@ fm6126init do_init (
         .reset(alt_reset)
     );
 
-`ifdef DEBUGGER
-    timeout #(
-        .COUNTER_WIDTH(1)
-    ) timeout_global_reset (
-        .reset(global_reset),
-        .clk_in(clk_root),
-        .start(~((debug_command == "H") && debug_command_pulse)),
-        .value(1'd2),
-        .counter(),
-        .running(buffered_global_reset)
-    );
-
-    /* produce a clock for use on the LED matrix */
-    logic [1:0] sync_fifo;
-    // this is a buffer to transfer global reset across clock domains
-    always @(posedge clk_root) begin
-            { global_reset_debug, sync_fifo } <= { sync_fifo, buffered_global_reset };
-    end
-
-    assign global_reset = alt_reset || (global_reset_debug & ~buffered_global_reset);
-`else
     assign global_reset = alt_reset;
-`endif
+
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
         .CLK_DIV_COUNT(2'd3),
@@ -465,8 +442,6 @@ fm6126init do_init (
                         row_latch_state,
                         pixel_load_counter2,
                         clk_pixel_load_en,
-                        buffered_global_reset,
-                        global_reset_debug,
                         global_reset_init,
                         1'b0};
 endmodule
