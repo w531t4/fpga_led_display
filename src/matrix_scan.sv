@@ -47,14 +47,12 @@ module matrix_scan #(
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
-    `ifdef DEBUGGER
-        assign row_latch_state2 = row_latch_state[1:0];
-    `endif
     wire [6:0] unused_7bit_counter;
     assign row_latch = row_latch_state[1:0] == 2'b10;
 
     assign clk_state = state == 2'b10;
     `ifdef DEBUGGER
+        assign row_latch_state2 = row_latch_state[1:0];
         assign row_latch2 = row_latch;
         assign clk_pixel_load_en2 = clk_pixel_load_en;
         assign state_advance2 = state_advance;
