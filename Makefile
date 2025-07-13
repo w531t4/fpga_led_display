@@ -118,16 +118,16 @@ ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 	YOSYS_EXTRA += write_rtlil $(ARTIFACT_DIR)/mydesign_pre.il;
 	YOSYS_TARGETS += $(ARTIFACT_DIR)/mydesign_pre.il
 	YOSYS_EXTRA += write_json $(ARTIFACT_DIR)/mydesign_pre.json;
-	YOSYS_TARGETS += $(ARTIFACT_DIR)/mydesign_pre.json;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/mydesign_pre.json
 	YOSYS_EXTRA += write_verilog $(ARTIFACT_DIR)/code_preopt.sv;
-	YOSYS_TARGETS +=  $(ARTIFACT_DIR)/code_preopt.sv;
+	YOSYS_TARGETS +=  $(ARTIFACT_DIR)/code_preopt.sv
 	YOSYS_EXTRA += write_verilog -selected $(ARTIFACT_DIR)/code_preopt_selected.sv;
-	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_preopt_selected.sv;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_preopt_selected.sv
 	YOSYS_EXTRA += opt_expr -full;
 	YOSYS_EXTRA += write_verilog $(ARTIFACT_DIR)/code_postopt.sv;
-	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt.sv;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt.sv
 	YOSYS_EXTRA += write_verilog -selected $(ARTIFACT_DIR)/code_postopt_selected.sv;
-	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt_selected.sv;
+	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt_selected.sv
 endif
 
 YOSYS_READVERILOG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) -sv ${VSOURCES}
@@ -145,7 +145,7 @@ YOSYS_SCRIPT +=$(YOSYS_READVERILOG_CMD);
 YOSYS_SCRIPT +=$(YOSYS_EXTRA);
 YOSYS_SCRIPT +=$(YOSYS_SYNTHECP5_CMD);
 YOSYS_SCRIPT +=show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show;
-YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il
+YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il;
 
 YOSYS_CMD_ARGS:=-L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_SCRIPT)"
 ifeq ($(YOSYS_DEBUG), true)
