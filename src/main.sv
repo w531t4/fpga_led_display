@@ -103,13 +103,6 @@ module main #(
     wire [7:0] uart_rx_data;
     wire rx_running;
 
-    `ifdef DEBUGGER
-        wire [7:0] debug_command;
-        wire debug_command_pulse;
-        wire debug_command_busy;
-        wire debug_uart_tx;
-        wire debug_uart_rx;
-    `endif
 
     wire [5:0] column_address;
     wire [3:0] row_address;
@@ -129,50 +122,6 @@ module main #(
     wire pll_locked;
     wire matrix_row_latch2;
 
-`ifdef DEBUGGER
-    wire [191:0] ddata =  {
-        //
-        3'b0,
-        //								181
-        num_commands_processed[7:0],
-        debug_command[7:0],
-        pixel_load_counter2[3:0],
-        clk_pixel_load_en,
-        clk_pixel_load,
-        cmd_line_addr2[11:7], 		// 5
-        ~cmd_line_addr2[6:1], cmd_line_addr2[0], //7
-        //								155
-        cmd_line_addr2[11:0],
-        rgb2[2:0],
-        rgb1[2:0],
-        rx_running,
-        row_latch,
-        row_latch_state[1:0],
-        ram_b_reset,
-        cmd_line_state[1:0],
-        uart_rx,
-        ram_access_start_latch,
-        ram_access_start,
-        //								127
-        pixel_rgb565_top[15:0],
-        pixel_rgb565_bottom[15:0],
-        brightness_mask[5:0],
-        brightness_enable[5:0],
-        rgb_enable[2:0],
-        column_address[5:0],
-        row_address[3:0],
-        row_address_active[3:0],
-        ram_b_address[10:0],
-        ram_b_clk_enable,
-        ram_b_data_out[15:0],
-        ram_a_write_enable,
-        ram_a_data_out[7:0],
-        ram_a_address[11:0],
-        ram_a_clk_enable,
-        ram_a_data_in[7:0],
-        uart_rx_data[7:0]
-        };
-`endif
     // No wires past here
 
     new_pll new_pll_inst (
@@ -215,6 +164,56 @@ fm6126init do_init (
     assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
 `else
     wire [1:0] row_latch_state;
+`endif
+
+`ifdef DEBUGGER
+    wire [7:0] debug_command;
+    wire debug_command_pulse;
+    wire debug_command_busy;
+    wire debug_uart_tx;
+    wire debug_uart_rx;
+    wire [191:0] ddata =  {
+        //
+        3'b0,
+        //								181
+        num_commands_processed[7:0],
+        debug_command[7:0],
+        pixel_load_counter2[3:0],
+        clk_pixel_load_en,
+        clk_pixel_load,
+        cmd_line_addr2[11:7], 		// 5
+        ~cmd_line_addr2[6:1], cmd_line_addr2[0], //7
+        //								155
+        cmd_line_addr2[11:0],
+        rgb2[2:0],
+        rgb1[2:0],
+        rx_running,
+        row_latch,
+        row_latch_state[1:0],
+        ram_b_reset,
+        cmd_line_state[1:0],
+        uart_rx,
+        ram_access_start_latch,
+        ram_access_start,
+        //								127
+        pixel_rgb565_top[15:0],
+        pixel_rgb565_bottom[15:0],
+        brightness_mask[5:0],
+        brightness_enable[5:0],
+        rgb_enable[2:0],
+        column_address[5:0],
+        row_address[3:0],
+        row_address_active[3:0],
+        ram_b_address[10:0],
+        ram_b_clk_enable,
+        ram_b_data_out[15:0],
+        ram_a_write_enable,
+        ram_a_data_out[7:0],
+        ram_a_address[11:0],
+        ram_a_clk_enable,
+        ram_a_data_in[7:0],
+        uart_rx_data[7:0]
+        };
 `endif
 
     reset_on_start #() RoS_obj (
