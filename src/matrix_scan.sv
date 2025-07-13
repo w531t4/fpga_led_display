@@ -1,7 +1,7 @@
 `default_nettype none
 module matrix_scan #(
     parameter PIXEL_WIDTH = 'd64,
-    parameter PIXEL_HEIGHT = 'd32,
+    parameter PIXEL_HALFHEIGHT = 'd16,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -12,9 +12,9 @@ module matrix_scan #(
     // [5:0]  64 width
     output [$clog2(PIXEL_WIDTH)-1:0] column_address,         /* the current column (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(PIXEL_HEIGHT)-1:0] row_address,        /* the current row (clocking out now) */
+    output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,        /* the current row (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(PIXEL_HEIGHT)-1:0] row_address_active, /* the active row (LEDs enabled) */
+    output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address_active, /* the active row (LEDs enabled) */
 
     output clk_pixel_load,
     output clk_pixel,
@@ -116,8 +116,8 @@ module matrix_scan #(
             brightness_mask <= 6'b100000;
             brightness_mask_active <= 6'd0;
             // 4'd0
-            row_address <= {PIXEL_HEIGHT{1'b0}};
-            row_address_active <= {PIXEL_HEIGHT{1'b0}};
+            row_address <= {PIXEL_HALFHEIGHT{1'b0}};
+            row_address_active <= {PIXEL_HALFHEIGHT{1'b0}};
         end
         else begin
             clk_pixel_en <= clk_pixel_load_en;

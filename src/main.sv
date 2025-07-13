@@ -279,7 +279,7 @@ fm6126init do_init (
 
     matrix_scan #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
     )  matscan1 (
         .reset(global_reset),
         .clk_in(clk_matrix),
