@@ -131,8 +131,8 @@ module tb_main_uart #(
         // $dumpvars(1, tb_main_uart.mydebug);
         // $dumpvars(1, tb_main_uart.mydebug.tx_out);
         $dumpvars(1, tb_main_uart.tbi_main.clk_root);
-        $dumpvars(1, tb_main_uart.tbi_main.debug_command_busy);
-        $dumpvars(1, tb_main_uart.tbi_main.debug_command_pulse);
+        $dumpvars(1, tb_main_uart.mydebug.debug_command_busy);
+        $dumpvars(1, tb_main_uart.mydebug.debug_command_pulse);
         $dumpvars(1, tb_main_uart.tbi_main.uart_rx);
         $dumpvars(1, tb_main_uart.tbi_main.ctrl);
         clk = 0;

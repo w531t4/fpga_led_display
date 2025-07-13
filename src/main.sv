@@ -6,26 +6,19 @@ module main #(
     // 16000000hz / 246154hz = 65 ticks width=7
     parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65,
 
-    // context: TX DEBUG baud
-    // 16000000hz / 115200hz = 138.8889 ticks width=8
-    // tgt_hz variation (after rounding): -0.08%
-    // 16000000hz / 115108hz = 139 ticks width=8
-    parameter DEBUG_TX_UART_TICKS_PER_BIT = 8'd139,
+    `ifdef DEBUGGER
+        // context: TX DEBUG baud
+        // 16000000hz / 115200hz = 138.8889 ticks width=8
+        // tgt_hz variation (after rounding): -0.08%
+        // 16000000hz / 115108hz = 139 ticks width=8
+        parameter DEBUG_TX_UART_TICKS_PER_BIT = 8'd139,
 
-    `ifdef SIM
-    // use smaller value in testbench so we don't infinitely sim
-    parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15,
-
-    // period = (1 / 16000000hz) / 2 = 31.25000
-    parameter SIM_HALF_PERIOD_NS = 31.25000,
+        // context: Debug msg rate
+        // 16000000hz / 22hz = 727272.7273 ticks width=20
+        // tgt_hz variation (after rounding): -0.00%
+        // 16000000hz / 22hz = 727273 ticks width=20
+        parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273,
     `endif
-
-    // context: Debug msg rate
-    // 16000000hz / 22hz = 727272.7273 ticks width=20
-    // tgt_hz variation (after rounding): -0.00%
-    // 16000000hz / 22hz = 727273 ticks width=20
-    parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273,
-
     `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
@@ -78,8 +71,6 @@ module main #(
     wire clk_matrix;
 
     wire global_reset;
-    logic global_reset_init;
-    wire init_reset_strobe;
 
     wire clk_pixel_load;
     wire clk_pixel;
@@ -88,14 +79,14 @@ module main #(
 
     wire row_latch;
     wire row_latch_intermediary;
-`ifndef USE_FM6126A
-    wire [1:0] row_latch_state;
-`else
+`ifdef USE_FM6126A
     // TODO: Need to update bytes in python script and wire below.
+    wire init_reset_strobe;
     wire fm6126mask_en;
     wire [3:0] row_latch_state;
+`else
+    wire [1:0] row_latch_state;
 `endif
-
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out;
     wire [11:0] ram_a_address;
@@ -121,11 +112,13 @@ module main #(
     wire [7:0] uart_rx_data;
     wire rx_running;
 
-    wire debug_uart_rx;
-    wire [7:0] debug_command;
-    wire debug_command_pulse;
-    wire debug_command_busy;
-    wire debug_uart_tx;
+    `ifdef DEBUGGER
+        wire [7:0] debug_command;
+        wire debug_command_pulse;
+        wire debug_command_busy;
+        wire debug_uart_tx;
+        wire debug_uart_rx;
+    `endif
 
     wire [5:0] column_address;
     wire [3:0] row_address;
@@ -383,6 +376,10 @@ fm6126init do_init (
         .debug_command_busy(debug_command_busy),
         .tx_out(debug_uart_tx)
     );
+    assign gp16 = debug_uart_tx;
+    assign debug_uart_rx = gp15;
+`else
+    assign gp16 = 1'b0;
 `endif
     assign gp11 = clk_pixel; // Pixel Clk
     assign gp12 = row_latch; // Row Latch
@@ -399,8 +396,6 @@ fm6126init do_init (
     assign gp5 = rgb2[2]; // Blue  2
 
     assign uart_rx = gp14;
-    assign gp16 = debug_uart_tx;
-    assign debug_uart_rx = gp15;
 
     assign gn11 = clk_pixel; // Pixel Clk
     assign gn12 = row_latch; // Row Latch
@@ -429,17 +424,11 @@ fm6126init do_init (
                         pll_locked,
                         matrix_row_latch2,
                         num_commands_processed,
-                        debug_uart_tx,
-                        debug_command_busy,
-                        debug_command_pulse,
-                        debug_command,
-                        debug_uart_rx,
                         rx_running,
                         uart_rx_data,
                         cmd_line_addr2,
                         cmd_line_state,
                         state_advance,
-                        init_reset_strobe,
                         ram_access_start_latch,
                         ram_access_start,
                         ram_a_reset,
@@ -447,6 +436,17 @@ fm6126init do_init (
                         row_latch_state,
                         pixel_load_counter2,
                         clk_pixel_load_en,
-                        global_reset_init,
+                        `ifdef DEBUGGER
+                            debug_command_pulse,
+                            debug_command_busy,
+                            debug_uart_tx,
+                            debug_uart_rx,
+                            debug_command,
+                        `else
+                            gp15,
+                        `endif
+                        `ifdef USE_FM6126A
+                            init_reset_strobe,
+                        `endif
                         1'b0};
 endmodule
