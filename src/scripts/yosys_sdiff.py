@@ -29,7 +29,7 @@ def open_sdiff(file1: Path, file2: Path, other_args: Optional[List[str]] = None)
     data = stdout.decode("utf-8")
     return data
 
-def format_yosys_log(data: str, masked_sections: Optional[List[str]] = None) -> str:
+def format_yosys_log(data: str) -> List[Union[Header,Section]]:
     new_data = []
     rex = re.compile(r"(\s*AST_\S+ <[^>]+> \[)[^\]]+(\].*?)")
     for each in data.split("\n"):
@@ -59,7 +59,7 @@ def format_yosys_log(data: str, masked_sections: Optional[List[str]] = None) -> 
         else:
             processed_sections.append(each)
 
-    return assemble_content(data=processed_sections, masked_sections=masked_sections)
+    return processed_sections
 
 def sectionize(data: str) -> List[Union[Section, Header]]:
     output = list()
@@ -98,9 +98,10 @@ def main(left: Path,
     masked_sections: List[str] = list()
     if hide_clean:
         masked_sections.append("clean")
-    sanitized_left = format_yosys_log(left_data, masked_sections=masked_sections)
-    sanitized_right = format_yosys_log(right_data, masked_sections=masked_sections)
-
+    sanitized_left_sections = format_yosys_log(left_data)
+    sanitized_right_sections = format_yosys_log(right_data)
+    sanitized_left = assemble_content(data=sanitized_left_sections, masked_sections=masked_sections)
+    sanitized_right = assemble_content(data=sanitized_right_sections, masked_sections=masked_sections)
     with tempfile.NamedTemporaryFile() as ntf_left_raw:
         ntf_left = Path(ntf_left_raw.name)
         ntf_left.write_text(sanitized_left, encoding="utf-8")
