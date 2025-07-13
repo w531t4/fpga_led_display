@@ -4,11 +4,12 @@ import sys
 
 def main():
     serial_device = "/dev/ttyAMA3"
+    targetfile = "../../uart/alphabet.uart"
     if len(sys.argv) == 1:
-        targetfile = "../../uart/alphabet.uart"
+        baudrate = 244444
     else:
-        targetfile = "%s" % sys.argv[1]
-    baudrate=244444
+        baudrate = int(sys.argv[1])
+    # baudrate=244444
     ser = serial.Serial(serial_device, baudrate)
     fw = open(targetfile, 'rb').read()
     ser.write(fw)
