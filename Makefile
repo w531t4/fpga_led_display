@@ -146,6 +146,7 @@ YOSYS_SCRIPT +=$(YOSYS_EXTRA);
 YOSYS_SCRIPT +=$(YOSYS_SYNTHECP5_CMD);
 YOSYS_SCRIPT +=show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show;
 YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il;
+YOSYS_SCRIPT +=write_verilog -selected $(ARTIFACT_DIR)/mydesign_final.sv;
 
 YOSYS_CMD_ARGS:=-L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_SCRIPT)"
 ifeq ($(YOSYS_DEBUG), true)
