@@ -16,7 +16,7 @@ def main() -> None:
     with Path(sys.argv[1]).open('rb') as f:
         while True:
             if frame_count > 0:
-                print(f"printing frame={frame_count} rate={(time.time()-start_time)/frame_count:.1f}")
+                print(f"printing frame={frame_count} frame_rate={(time.time()-start_time)/frame_count:.1f} bit_rate={f.tell()/(time.time()-start_time)}")
             start_time = time.time()
             for row in range(0, height):
                 ser.write(b"L" + bytes([row]) + f.read(row_size))
