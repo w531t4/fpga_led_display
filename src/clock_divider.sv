@@ -6,8 +6,7 @@
 
      //so, essentially freq = clk_in / (clk_div_count * 2)
 module clock_divider #(
-    parameter CLK_DIV_WIDTH = 8,
-    parameter CLK_DIV_COUNT = 0,
+    parameter CLK_DIV_COUNT = 3,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -16,7 +15,7 @@ module clock_divider #(
     input clk_in,
     output logic clk_out
 );
-    logic [CLK_DIV_WIDTH - 1:0] clk_count;
+    logic [$clog2(CLK_DIV_COUNT) - 1:0] clk_count;
 
     always @(posedge clk_in) begin
         if (reset) begin

@@ -213,8 +213,7 @@ fm6126init do_init (
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
-        .CLK_DIV_COUNT(2'd3),
-        .CLK_DIV_WIDTH(2'd3)
+        .CLK_DIV_COUNT(2'd3)
     ) clkdiv_baudrate (
         .reset(global_reset),
         .clk_in(clk_root),

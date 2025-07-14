@@ -23,8 +23,7 @@ module tb_debugger #(
     logic [10:0] j = 'd0;
 
     clock_divider #(
-        .CLK_DIV_COUNT(600),
-        .CLK_DIV_WIDTH(12)
+        .CLK_DIV_COUNT(600)
     ) clkdiv_baudrate (
         .reset(local_reset),
         .clk_in(clk),
