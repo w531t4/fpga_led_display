@@ -1,12 +1,6 @@
 `timescale 1ns/1ns
 `default_nettype none
 module tb_main_uart #(
-    // context: RX DATA baud
-    // 16000000hz / 244444hz = 65.4547 ticks width=7
-    // tgt_hz variation (after rounding): 0.70%
-    // 16000000hz / 246154hz = 65 ticks width=7
-    parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65,
-
     // context: TX DEBUG baud
     // 16000000hz / 115200hz = 138.8889 ticks width=8
     // tgt_hz variation (after rounding): -0.08%
