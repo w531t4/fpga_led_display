@@ -2,7 +2,12 @@
 // 16000000hz / 244444hz = 65.4547 ticks width=7
 // tgt_hz variation (after rounding): 0.70%
 // 16000000hz / 246154hz = 65 ticks width=7
+
+// Use this to determine what baudrate to require at ctrl/rx_in
 parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65,
+
+// Use this to tune what clock freq we expose to matrix_scan
+parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 3,
 
 `ifdef DEBUGGER
     // context: TX DEBUG baud
@@ -28,6 +33,7 @@ parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65,
 `else
     parameter PIXEL_WIDTH = 64,
 `endif
+
 parameter PIXEL_HEIGHT = 32,
 parameter PIXEL_HALFHEIGHT = 16,
 parameter BYTES_PER_PIXEL = 2,
