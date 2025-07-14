@@ -1,16 +1,12 @@
 `timescale 1ns/1ns
 `default_nettype none
 module tb_matrix_scan #(
-  `ifdef SIM
-  // period = (1 / 16000000hz) / 2 = 31.25000
-    parameter SIM_HALF_PERIOD_NS = 31.25000*6, // *6 to match current clock divider in main
-  `endif
-    // verilator lint_off UNUSEDPARAM
     `include "params.vh"
+    // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-
+localparam ADJUSTED_CLOCK = SIM_HALF_PERIOD_NS * DIVIDE_CLK_BY_X_FOR_MATRIX;
 logic clk;
 logic reset;
 wire [$clog2(PIXEL_WIDTH)-1:0] column_address;
@@ -58,7 +54,7 @@ matrix_scan  #(
   #10000000 $finish;
 
   always begin
-      #SIM_HALF_PERIOD_NS clk <= !clk;
+      #ADJUSTED_CLOCK clk <= !clk;
   end
  // always begin
    // #700 reset <= ! reset;

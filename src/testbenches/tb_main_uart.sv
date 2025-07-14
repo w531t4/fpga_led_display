@@ -1,10 +1,6 @@
 `timescale 1ns/1ns
 `default_nettype none
 module tb_main_uart #(
-    `ifdef SIM
-        // period = (1 / 16000000hz) / 2 = 31.25000
-        parameter SIM_HALF_PERIOD_NS = 31.25000,
-    `endif
     `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0

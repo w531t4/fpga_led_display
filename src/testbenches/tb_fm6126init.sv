@@ -1,6 +1,7 @@
 `timescale 1ns/1ns
 `default_nettype none
 module tb_fm6126init #(
+    `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

@@ -1,6 +1,7 @@
 `timescale 1ns/1ns
 `default_nettype none
 module tb_debugger #(
+    `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -97,7 +98,7 @@ end
         #1000000 $finish;
 
     always begin
-        #22.72727  clk <=  ! clk; // 2 of these make a period, 22MHz
+        #SIM_HALF_PERIOD_NS  clk <=  ! clk; // 2 of these make a period
     end
    // always begin
    //     #400 reset <= ! reset;

@@ -6,8 +6,6 @@ module tb_multimem #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-// period = (1 / 50000000hz) / 2 = 10.00000
-parameter SIM_HALF_PERIOD_NS = 10.00000;
 
     logic clk_a;
     logic clk_b;

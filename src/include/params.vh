@@ -30,6 +30,10 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 3,
 `ifdef SIM
     // use smaller value in testbench so we don't infinitely sim
     parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15,
+
+    // period = (1 / 16000000hz) / 2 = 31.25000 //31.25000*6, // *6 to match current clock divider in main
+    parameter SIM_HALF_PERIOD_NS = ((1.0/ROOT_CLOCK) * 1000000000)/2.0, //31.25,
+
 `endif
 
 `ifdef W128

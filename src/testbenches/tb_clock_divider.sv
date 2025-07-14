@@ -1,6 +1,7 @@
 `timescale 1ns/1ns
 `default_nettype none
 module tb_clock_divider #(
+    `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -37,7 +38,7 @@ clock_divider  #(.CLK_DIV_COUNT(5))
   #10000 $finish;
 
   always begin
-     #5  clk <=  ! clk;
+      #SIM_HALF_PERIOD_NS clk <= !clk;
   end
   always begin
     #400 reset <= ! reset;
