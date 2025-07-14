@@ -9,10 +9,10 @@ module multimem #(
     ) (
     input wire [7:0] DataInA,
     input wire [15:0] DataInB,
-    // 12 bits [11:0]
-    input wire [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] AddressA,
+    // 12 bits [11:0]      -5-                   -log( (64*2),2)=7-
+    input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] AddressA,
     // 11 bits [10:0] (-2, because this is 16bit, not 8bit)
-    input wire [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-2:0] AddressB,
+    input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-2:0] AddressB,
     input wire ClockA,
     input wire ClockB,
     input wire ClockEnA,
@@ -28,7 +28,7 @@ module multimem #(
     //  [7:0] mem [0:4095]
     reg [7:0] mem [0:(PIXEL_HEIGHT*PIXEL_WIDTH*BYTES_PER_PIXEL)-1];  // 2^12 = 4096 entries
     `ifdef SIM
-    reg [11:0] init_index;
+    reg [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] init_index;
     reg        init_done;
     `endif
     // Write Port A: 8-bit writes
@@ -43,7 +43,7 @@ module multimem #(
     always @(posedge ClockB) begin
         if (ResetA || ResetB) begin
             `ifdef SIM
-            init_index <= 12'b0;
+            init_index <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
             init_done <= 1'b0;
             `endif
             QB <= 16'b0;

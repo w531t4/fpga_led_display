@@ -48,6 +48,7 @@ module framebuffer_fetch #(
     // [10:0]
     assign ram_address = { half_address,
                            row_address[$clog2(PIXEL_HALFHEIGHT)-1:0],
+                           // log2(128)==7-1=6
                            ~column_address[$clog2(PIXEL_WIDTH)-1:0] };
 
     assign ram_reset = reset;

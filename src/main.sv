@@ -77,12 +77,14 @@ module main #(
     wire row_latch;
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out;
-    wire [11:0] ram_a_address;
+    //  [11:0]
+    wire [$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-1:0] ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
     wire ram_a_reset;
     wire [15:0] ram_b_data_out;
-    wire [10:0] ram_b_address;
+    //  [10:0]
+    wire [$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-2:0] ram_b_address;
     wire ram_b_clk_enable;
     wire ram_b_reset;
 
@@ -110,7 +112,8 @@ module main #(
     `endif
     wire uart_rx;
     wire rx_running;
-    wire [5:0] column_address;
+    // [5:0]
+    wire [$clog2(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
     wire [5:0] brightness_mask;
@@ -202,15 +205,18 @@ fm6126init do_init (
         brightness_mask[5:0],
         brightness_enable[5:0],
         rgb_enable[2:0],
-        column_address[5:0],
+        // [5:0]
+        column_address[$clog2(PIXEL_WIDTH)-1:0],
         row_address[3:0],
         row_address_active[3:0],
-        ram_b_address[10:0],
+        // [10:0]
+        ram_b_address[$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-2:0],
         ram_b_clk_enable,
         ram_b_data_out[15:0],
         ram_a_write_enable,
         ram_a_data_out[7:0],
-        ram_a_address[11:0],
+        //  [11:0]
+        ram_a_address[$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-1:0],
         ram_a_clk_enable,
         ram_a_data_in[7:0],
         uart_rx_data[7:0]
