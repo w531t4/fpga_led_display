@@ -2,9 +2,6 @@
 `default_nettype none
 module tb_control_module #(
     `ifdef SIM
-        // use smaller value in testbench so we don't infinitely sim
-        parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15,
-
         // period = (1 / 16000000hz) / 2 = 31.25000
         parameter SIM_HALF_PERIOD_NS = 31.25000,
     `endif

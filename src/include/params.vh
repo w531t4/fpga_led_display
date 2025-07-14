@@ -18,6 +18,11 @@ parameter CTRLR_CLK_TICKS_PER_BIT = 7'd65,
     parameter DEBUG_MSGS_PER_SEC_TICKS = 20'd727273,
 `endif
 
+`ifdef SIM
+    // use smaller value in testbench so we don't infinitely sim
+    parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15,
+`endif
+
 `ifdef W128
     parameter PIXEL_WIDTH = 128,
 `else
