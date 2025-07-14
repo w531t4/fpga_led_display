@@ -65,16 +65,21 @@ VSOURCES += $(SRC_DIR)/debugger.sv
 
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack
-all: diagram simulation lint
+all: simulation lint
 
 simulation: $(VCDOBJS)
+diagram: $(ARTIFACT_DIR)/netlist_pre.svg $(ARTIFACT_DIR)/netlist.svg
 
-$(ARTIFACT_DIR)/yosys.json: ${VSOURCES} $(INCLUDESRCS) | $(ARTIFACT_DIR)
-	$(shell mkdir -p $(ARTIFACT_DIR))
-	$(TOOLPATH)/yosys -p "read_verilog $(SIM_FLAGS) -I$(VINCLUDE_DIR) -sv ${VSOURCES}; prep -top main ; write_json $@"
+$(ARTIFACT_DIR)/mydesign_vizclean.json: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
+	jq 'del(.modules.BB, .modules.BBPU, .modules.BBPD, .modules.TRELLIS_IO)' $< > $@
 
-diagram: $(ARTIFACT_DIR)/netlist.svg $(ARTIFACT_DIR)/yosys.json
-$(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/yosys.json  | $(ARTIFACT_DIR)
+$(ARTIFACT_DIR)/mydesign_pre_vizclean.json: $(ARTIFACT_DIR)/mydesign_pre.json | $(ARTIFACT_DIR)
+	jq 'del(.modules.BB, .modules.BBPU, .modules.BBPD, .modules.TRELLIS_IO)' $< > $@
+
+$(ARTIFACT_DIR)/netlist.svg: $(ARTIFACT_DIR)/mydesign_vizclean.json | $(ARTIFACT_DIR)
+	$(NETLISTSVG) $< -o $@
+
+$(ARTIFACT_DIR)/netlist_pre.svg: $(ARTIFACT_DIR)/mydesign_pre_vizclean.json | $(ARTIFACT_DIR)
 	$(NETLISTSVG) $< -o $@
 
 #$(warning In a command script $(VVPOBJS))
