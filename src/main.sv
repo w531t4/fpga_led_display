@@ -61,7 +61,7 @@ module main #(
   output gn12,
   output gn13
     // output gn14,
-    // output gn15
+    // output gn15,
     // output gn16,
     // output gn17
 );
@@ -433,6 +433,8 @@ fm6126init do_init (
     // assign gn11 = rx_running;
     // assign {gn14, gn13} = cmd_line_state;
 
+    // template
+    //     assign {gn15, gn14, gn13, gn12, gn11, gn10, gn9, gn8, gn7, gn16, gn5, gn4, gn3, gn2, gn1, gn0}
 
     wire _unused_ok = &{1'b0,
                         pll_locked,
