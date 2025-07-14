@@ -112,6 +112,7 @@ def main(target: Path,
          source: Path,
          target_width: int,
          target_height: int,
+         transform_type: Optional[str] = None,
          only_row: Optional[int] = None,
          source_width: Optional[int] = None,
          source_height: Optional[int] = None,
@@ -126,7 +127,12 @@ def main(target: Path,
     if obj:
         if target_width and target_width != source_width:
             print("transforming!")
-            obj = obj.transform_duplicate(width=target_width)
+            if transform_type == "duplicate":
+                obj = obj.transform_duplicate(width=target_width)
+            elif transform_type == "middle":
+                obj = obj.transform_middle(width=target_width)
+            else:
+                obj = obj.transform_duplicate(width=target_width)
         if only_row:
             obj.render_row(only_row, device=target, baudrate=target_freq)
         else:
@@ -184,6 +190,12 @@ if __name__ == "__main__":
                         default=32,
                         type=int,
                         help="height in pixels")
+    PARSER.add_argument("--transform-type",
+                        dest="transform_type",
+                        action="store",
+                        default="duplicate",
+                        choices=["middle", "duplicate"],
+                        help="transform mechanism to use")
     PARSER.add_argument("--only-row",
                         dest="only_row",
                         action="store",
