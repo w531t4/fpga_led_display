@@ -115,7 +115,9 @@ control_module #(
 
   initial
   begin
-      $dumpfile(`DUMP_FILE_NAME);
+      `ifdef DUMP_FILE_NAME
+          $dumpfile(`DUMP_FILE_NAME);
+      `endif
       $dumpvars(0, tb_control_module);
       clk = 0;
       reset = 0;

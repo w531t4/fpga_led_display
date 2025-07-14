@@ -120,7 +120,9 @@ module tb_main_uart #(
     );
 
     initial begin
-        $dumpfile(`DUMP_FILE_NAME);
+        `ifdef DUMP_FILE_NAME
+            $dumpfile(`DUMP_FILE_NAME);
+        `endif
         // $dumpvars(0, tb_main_uart);
         $dumpvars(1, tb_main_uart.mydebug.data_in);
         $dumpvars(1, tb_main_uart.mydebug.debug_bits);

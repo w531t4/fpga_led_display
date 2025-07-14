@@ -46,7 +46,9 @@ module tb_debugger #(
 
     initial
         begin
-            $dumpfile(`DUMP_FILE_NAME);
+            `ifdef DUMP_FILE_NAME
+                $dumpfile(`DUMP_FILE_NAME);
+            `endif
             $dumpvars(0, tb_debugger);
             clk = 0;
             reset = 0;

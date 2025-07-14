@@ -14,7 +14,9 @@ module tb_fm6126init #(
     wire latch_out;
    always #5 clk_root <= ~clk_root;
    initial begin
-         $dumpfile(`DUMP_FILE_NAME);
+        `ifdef DUMP_FILE_NAME
+            $dumpfile(`DUMP_FILE_NAME);
+        `endif
          $dumpvars(0, tb_fm6126init);
          clk_root = 0;
          reset = 0;

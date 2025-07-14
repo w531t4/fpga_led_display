@@ -19,7 +19,9 @@ clock_divider  #(.CLK_DIV_COUNT(5))
 
   initial
   begin
-      $dumpfile(`DUMP_FILE_NAME);
+      `ifdef DUMP_FILE_NAME
+          $dumpfile(`DUMP_FILE_NAME);
+      `endif
       $dumpvars(0, tb_clock_divider);
     clk = 0;
     reset = 0;

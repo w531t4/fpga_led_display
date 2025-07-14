@@ -42,7 +42,9 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
     );
 
     initial begin
-        $dumpfile(`DUMP_FILE_NAME);
+        `ifdef DUMP_FILE_NAME
+            $dumpfile(`DUMP_FILE_NAME);
+        `endif
         $dumpvars(0, tb_multimem);
         clk_a = 0;
         clk_b = 0;

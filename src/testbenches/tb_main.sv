@@ -120,7 +120,9 @@ module tb_main #(
     );
 
     initial begin
-        $dumpfile(`DUMP_FILE_NAME);
+        `ifdef DUMP_FILE_NAME
+            $dumpfile(`DUMP_FILE_NAME);
+        `endif
         $dumpvars(0, tb_main);
         clk = 0;
         mask = 1;
