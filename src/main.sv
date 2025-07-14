@@ -415,10 +415,15 @@ fm6126init do_init (
     assign gn3 = rgb2[0]; // Red   2
     assign gn4 = rgb2[1]; // Green 2
     assign gn5 = rgb2[2]; // Blue  2
-    // assign gn14 = clk_matrix;
-    // assign gn15 = gp14;
-    // assign gn16 = clk_root; // 6
-    // assign gn17 = clk_root; // T1
+
+    // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
+    // assign gn1 = ram_access_start;
+    // assign {gn15, gn12, gn10, gn5, gn4, gn3, gn2 } = {~cmd_line_addr2[6:1], cmd_line_addr2[0]};
+    // assign {gn9, gn8, gn7, gn16} = ram_a_data_in[5:0];
+    // assign gn0 = ram_a_write_enable;
+    // assign gn11 = rx_running;
+    // assign {gn14, gn13} = cmd_line_state;
+
 
     wire _unused_ok = &{1'b0,
                         pll_locked,

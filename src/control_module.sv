@@ -99,7 +99,19 @@ module control_module #(
         end
     end
 
-    always @(negedge uart_rx_running, posedge reset) begin
+    logic uart_rx_sync1, uart_rx_running_sync;
+    // Double flip-flop synchronizer
+    always_ff @(posedge clk_in or posedge reset) begin
+        if (reset) begin
+            uart_rx_sync1 <= 1'b1;  // UART idle is logic high
+            uart_rx_running_sync <= 1'b1;
+        end else begin
+            uart_rx_sync1 <= uart_rx_running;
+            uart_rx_running_sync <= uart_rx_sync1;
+        end
+    end
+
+    always @(negedge uart_rx_running_sync, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;
             brightness_enable <= 6'b111111;
