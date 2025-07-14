@@ -26,6 +26,7 @@ module tb_main_uart #(
         // period = (1 / 16000000hz) / 2 = 31.25000
         parameter SIM_HALF_PERIOD_NS = 31.25000,
     `endif
+    `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -63,7 +64,12 @@ module tb_main_uart #(
 
     // 260 * 8 = 2080
     logic [2079:0] myled_row = 'h4c040000000098000000000000009800000081a000000000000081a0000094c000000000000094c00000042000000000000004200000044f0000000000000000000002100000000000000000000000160000000000000016000040130000000000004013000000000000881100000000000000000000000098000000000000000000;
-    main tbi_main (
+    main #(
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+    ) tbi_main (
         .gp11(clk_pixel),
         .gp12(row_latch),
         .gp13(OE),

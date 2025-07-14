@@ -6,13 +6,14 @@ module tb_matrix_scan #(
     parameter SIM_HALF_PERIOD_NS = 31.25000*6, // *6 to match current clock divider in main
   `endif
     // verilator lint_off UNUSEDPARAM
+    `include "params.vh"
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
 
 logic clk;
 logic reset;
-wire [5:0] column_address;
+wire [$clog2(PIXEL_WIDTH)-1:0] column_address;
 wire [3:0] row_address;
 wire [3:0] row_address_active;
 wire clk_pixel_load;
@@ -22,8 +23,10 @@ wire output_enable;
 wire [5:0] brightness_mask;
 
 
-matrix_scan  matrix_scan_instance
-  (
+matrix_scan  #(
+    .PIXEL_WIDTH(PIXEL_WIDTH),
+    .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
+) matrix_scan_instance (
     .clk_in(clk),
     .reset(reset),
     .column_address(column_address),

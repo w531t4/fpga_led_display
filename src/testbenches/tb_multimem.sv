@@ -1,6 +1,7 @@
 `timescale 1ns/1ns
 `default_nettype none
 module tb_multimem #(
+    `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -12,8 +13,8 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
     logic clk_b;
     logic reset;
     logic local_reset;
-    logic [11:0] ram_a_address;
-    logic [10:0] ram_b_address;
+    logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] ram_a_address;
+    logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-2:0] ram_b_address;
     logic [7:0] ram_a_data_in;
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
@@ -22,7 +23,11 @@ parameter SIM_HALF_PERIOD_NS = 10.00000;
     logic ram_a_reset;
     logic ram_b_reset;
 
-    multimem A (
+    multimem #(
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+    )A (
          .DataInA(ram_a_data_in)
         ,.AddressA(ram_a_address)
         ,.AddressB(ram_b_address)

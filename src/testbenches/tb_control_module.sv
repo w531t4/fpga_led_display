@@ -27,6 +27,7 @@ module tb_control_module #(
         // period = (1 / 16000000hz) / 2 = 31.25000
         parameter SIM_HALF_PERIOD_NS = 31.25000,
     `endif
+    `include "params.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -42,7 +43,7 @@ wire rx_running;
 wire [2:0] rgb_enable;
 wire [5:0] brightness_enable;
 wire [7:0] ram_data_out;
-wire [11:0] ram_address;
+wire [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] ram_address;
 wire ram_write_enable;
 
 wire ram_clk_enable;
@@ -64,7 +65,10 @@ logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118
 
 control_module #(
         // Picture/Video data RX baud rate
-        .UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) control_module_instance (
         .reset(reset),
         .clk_in(clk),
