@@ -58,12 +58,7 @@ module tb_main_uart #(
     wire debug_command_pulse;
     wire [7:0] debug_command;
 
-    //>>> "".join([a[i] for i in range(len(a)-1, -1, -1)])
-    //'brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110'
-
-
-    // 260 * 8 = 2080
-    logic [2079:0] myled_row = 'h4c040000000098000000000000009800000081a000000000000081a0000094c000000000000094c00000042000000000000004200000044f0000000000000000000002100000000000000000000000160000000000000016000040130000000000004013000000000000881100000000000000000000000098000000000000000000;
+    `include "row4.vh"
     main #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
@@ -103,7 +98,7 @@ module tb_main_uart #(
     );
     logic mask;
     debugger #(
-        .DATA_WIDTH(13'd2080),
+        .DATA_WIDTH(myled_row_size),
 
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results

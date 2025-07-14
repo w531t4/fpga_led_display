@@ -10,6 +10,8 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
 # SIM - disable use of PLL in simulations
+# DEBUGGER - enable UART TX debugger (for use with src/scripts/uart_rx.py)
+# W128 - enable 128 pixel width
 
 BUILD_FLAGS ?=
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
