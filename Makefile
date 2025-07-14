@@ -11,7 +11,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
 # SIM - disable use of PLL in simulations
 
-BUILD_FLAGS:=
+BUILD_FLAGS ?=
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
@@ -64,7 +64,7 @@ VSOURCES += $(SRC_DIR)/debugger.sv
 
 
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack
 all: diagram simulation lint
 
 simulation: $(VCDOBJS)
@@ -174,6 +174,7 @@ $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR
 		--package CABGA381 \
 		--textcfg $@
 
+pack: $(ARTIFACT_DIR)/ulx3s.bit | $(ARTIFACT_DIR)
 $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config | $(ARTIFACT_DIR)
 	$(TOOLPATH)/ecppack $< $@
 
