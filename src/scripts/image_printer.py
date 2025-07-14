@@ -1,6 +1,6 @@
 from pathlib import Path
 from io import BytesIO
-from typing import List, Dict, Self
+from typing import List, Dict, Self, Optional
 import re
 import argparse
 import sys
@@ -96,6 +96,7 @@ class UARTImage():
         ser = serial.Serial(str(device), baudrate)
         data = self.assemble()
         print(f"writing count={len(data)} bytes to {device} at baud={baudrate}")
+        # Path("uart/alphabet128_middle.uart").write_bytes(data)
         ser.write(data)
         ser.close()
 
@@ -111,9 +112,10 @@ def main(target: Path,
          source: Path,
          target_width: int,
          target_height: int,
-         source_width: int = None,
-         source_height: int = None,
-         source_depth: int = None,
+         only_row: Optional[int] = None,
+         source_width: Optional[int] = None,
+         source_height: Optional[int] = None,
+         source_depth: Optional[int] = None,
          ) -> None:
     obj = None
     if source and source.suffix == ".uart":
@@ -124,8 +126,11 @@ def main(target: Path,
     if obj:
         if target_width and target_width != source_width:
             print("transforming!")
-            obj = obj.transform_middle(width=target_width)
-        obj.render(device=target, baudrate=target_freq)
+            obj = obj.transform_duplicate(width=target_width)
+        if only_row:
+            obj.render_row(only_row, device=target, baudrate=target_freq)
+        else:
+            obj.render(device=target, baudrate=target_freq)
         # for i in range(0, 32):
         #     obj.render_row(row_num=i, device=target, baudrate=target_freq)
     print("done")
@@ -179,6 +184,11 @@ if __name__ == "__main__":
                         default=32,
                         type=int,
                         help="height in pixels")
+    PARSER.add_argument("--only-row",
+                        dest="only_row",
+                        action="store",
+                        type=int,
+                        help="only emit row x")
     ARGS = PARSER.parse_args()
 
     main(**vars(ARGS))
