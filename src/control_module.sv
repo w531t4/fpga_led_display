@@ -56,7 +56,9 @@ module control_module #(
     wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] cmd_line_addr =
         {  cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0],
           ~cmd_line_addr_col[$clog2(PIXEL_WIDTH * BYTES_PER_PIXEL)-1:1],
-           cmd_line_addr_col[0] };
+           ~cmd_line_addr_col[0] }; // <-- use this bit to toggle endainness. ~ == little endain
+                                    //                                          == bit endian
+                                    // NOTE: uart/alphabet.uart is BIG ENDIAN.
 
     `ifdef DEBUGGER
         assign cmd_line_state2[1:0] = cmd_line_state[1:0];
