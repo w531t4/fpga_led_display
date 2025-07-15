@@ -22,7 +22,7 @@ module control_module #(
 
     output logic [7:0] ram_data_out,
     //      with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
-    output logic [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] ram_address,
+    output logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] ram_address,
     output logic ram_write_enable,
     output ram_clk_enable,
     output ram_reset
@@ -32,7 +32,7 @@ module control_module #(
         output [7:0] rx_data,
         output ram_access_start2,
         output ram_access_start_latch2,
-        output [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] cmd_line_addr2,
+        output [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] cmd_line_addr2,
         output logic [7:0] num_commands_processed
     `endif
 );
@@ -52,10 +52,10 @@ module control_module #(
     // For 32 bit high displays, [4:0]
     logic  [$clog2(PIXEL_HEIGHT)-1:0]  cmd_line_addr_row;
     // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
-    logic  [$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0]  cmd_line_addr_col;
-    wire [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] cmd_line_addr =
+    logic  [$clog2(PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0]  cmd_line_addr_col;
+    wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] cmd_line_addr =
         {  cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0],
-          ~cmd_line_addr_col[$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:1],
+          ~cmd_line_addr_col[$clog2(PIXEL_WIDTH * BYTES_PER_PIXEL)-1:1],
            cmd_line_addr_col[0] };
 
     `ifdef DEBUGGER
@@ -126,13 +126,13 @@ module control_module #(
             brightness_enable <= 6'b111111;
 
             ram_data_out <= 8'd0;
-            ram_address <= 12'd0;
+            ram_address <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
 
             cmd_line_state <= 2'd0;
             cmd_line_addr_row <= {$clog2(PIXEL_HEIGHT){1'b0}};
-            cmd_line_addr_col <= {$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1){1'b0}};
+            cmd_line_addr_col <= {$clog2(PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
             `ifdef DEBUGGER
                 num_commands_processed <= 8'b0;
             `endif
