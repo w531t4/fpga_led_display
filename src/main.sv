@@ -375,6 +375,12 @@ fm6126init do_init (
 `else
     assign gp16 = 1'b0;
 `endif
+    assign gp0 = rgb1[0]; // Red   1
+    assign gp1 = rgb1[2]; // Green 1 // switched with blue for my display
+    assign gp2 = rgb1[1]; // Blue  1 // switched with green for my display
+    assign gp3 = rgb2[0]; // Red   2
+    assign gp4 = rgb2[2]; // Green 2 // switched with blue for my display
+    assign gp5 = rgb2[1]; // Blue  2 // switched with green for my display
     assign gp11 = clk_pixel; // Pixel Clk
     assign gp12 = row_latch; // Row Latch
     assign gp13 = ~output_enable; // #OE
@@ -382,12 +388,6 @@ fm6126init do_init (
     assign gp8 = row_address_active[1]; // B / Row[1]
     assign gp9 = row_address_active[2]; // C / Row[2]
     assign gp10 = row_address_active[3]; // D / Row[3]
-    assign gp0 = rgb1[0]; // Red   1
-    assign gp1 = rgb1[1]; // Green 1
-    assign gp2 = rgb1[2]; // Blue  1
-    assign gp3 = rgb2[0]; // Red   2
-    assign gp4 = rgb2[1]; // Green 2
-    assign gp5 = rgb2[2]; // Blue  2
 
     assign uart_rx = gp14;
 
