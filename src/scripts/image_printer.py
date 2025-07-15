@@ -17,7 +17,11 @@ class UARTImage():
         self.depth = depth
         self.data = data
         dim_size = self.height * self.width * self.depth
-        assert len(self.data) == dim_size, f"len(self.data)={len(self.data)} dim_size={dim_size}"
+        assert len(self.data) == dim_size, (f"len(self.data)={len(self.data)} "
+                                            f"dim_size={dim_size} "
+                                            f"height={height} "
+                                            f"width={width} "
+                                            f"depth={depth}")
         self._position = 0
 
     def transform_middle(self, width) -> Self:
@@ -104,7 +108,7 @@ class UARTImage():
         ser = serial.Serial(str(device), baudrate)
         data = self.assemble_row(row_num)
         ser.write(data)
-        print(f"render row#{row_num} data={data}")
+        print(f"render row#{row_num} data={data.hex()}")
         ser.close()
 
 def main(target: Path,
@@ -181,7 +185,6 @@ if __name__ == "__main__":
     PARSER.add_argument("--target-width",
                         dest="target_width",
                         action="store",
-                        default=64,
                         type=int,
                         help="width in pixels")
     PARSER.add_argument("--target-height",
