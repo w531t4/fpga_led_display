@@ -40,8 +40,8 @@ def main(height: int,
                 raw_frames.append(read_result)
 
             ser.write(b"".join(frames))
-            while True:
-                if step:
+            if step:
+                while True:
                     response = input(f"action frame={frame_count} [nothing for step, o (output myframe), O (output rawframe)")
                     if len(response) == 0 or response == "\n":
                         break
