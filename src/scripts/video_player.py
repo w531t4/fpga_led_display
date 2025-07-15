@@ -1,6 +1,6 @@
 """ Script to display videos over serial port """
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 import serial
 import argparse
 import time
@@ -12,6 +12,7 @@ def main(height: int,
          baudrate: int,
          device: Path,
          status_freq: int,
+         step: bool,
          start_frame: Optional[int] = None,
          ) -> None:
     row_size = width * depth
@@ -20,18 +21,41 @@ def main(height: int,
     start_time = time.time()
     last_print_time = start_time
     with source.open('rb') as f:
+        if start_frame and isinstance(start_frame, int) and start_frame > 0:
+            print(f"seeking to frame {start_frame}, skipping {row_size*start_frame} bytes...")
+            f.seek(row_size*start_frame*height)
+            frame_count = start_frame
         while True:
-            if start_frame and isinstance(start_frame, int) and start_frame > 0:
-                print(f"seeking to frame {start_frame}, skipping {row_size*start_frame} bytes...")
-                f.seek(row_size*start_frame)
             if frame_count > 0:
-                if (time.time() - last_print_time) > status_freq:
+                if (time.time() - last_print_time) > status_freq or step:
                     print(f"printing frame={frame_count} "
                         f"frame_rate={frame_count/(time.time()-start_time):.3f} "
                         f"bit_rate={(f.tell()/(time.time()-start_time))/1024:.3f}KBps")
                     last_print_time = time.time()
+            raw_frames: List[bytes] = list()
+            frames: List[bytes] = list()
             for row in range(0, height):
-                ser.write(b"L" + bytes([row]) + f.read(row_size))
+                read_result = f.read(row_size)
+                frames.append(b"L" + bytes([row]) + read_result)
+                raw_frames.append(read_result)
+
+            ser.write(b"".join(frames))
+            while True:
+                if step:
+                    response = input(f"action frame={frame_count} [nothing for step, o (output myframe), O (output rawframe)")
+                    if len(response) == 0 or response == "\n":
+                        break
+                    elif len(response) > 0 and response[0] in ["o", "O"]:
+                        cmd = response[0]
+                        data_frame = b"".join(frames if cmd == 'o' else raw_frames)
+                        print("outputting frame")
+                        print(data_frame.hex())
+                        if len(response) > 1:
+                            file = response[1:]
+
+                            print(f"outputting frame to file={file} bytes={len(data_frame)} bytes_per_row={len(data_frame)/height}")
+                            Path(file).write_bytes(data_frame)
+
             frame_count += 1
 
 if __name__ == "__main__":
@@ -90,9 +114,13 @@ if __name__ == "__main__":
                         type=int,
                         default=5,
                         help="display status every x secs")
+    PARSER.add_argument("--step",
+                        dest="step",
+                        action="store_true",
+                        help="cycle to next frame after pressing enter")
     ARGS = PARSER.parse_args()
 
     try:
         main(**vars(ARGS))
     except KeyboardInterrupt:
-        pass
+        print()
