@@ -40,8 +40,8 @@ module main #(
   output gn10,
   output gn11,
   output gn12,
-  output gn13
-    // output gn14,
+  output gn13,
+  output gn14
     // output gn15,
     // output gn16,
     // output gn17
@@ -404,6 +404,7 @@ fm6126init do_init (
     assign gn3 = rgb2[0]; // Red   2
     assign gn4 = rgb2[1]; // Green 2
     assign gn5 = rgb2[2]; // Blue  2
+    assign gn14 = gp14;   // ctrl serial port RX
 
     // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
     // assign gn1 = ram_access_start;
