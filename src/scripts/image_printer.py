@@ -1,12 +1,20 @@
 from pathlib import Path
 from io import BytesIO
-from typing import List, Dict, Self, Optional
+from typing import List, Dict, Self, Optional, Sequence
 import re
 import argparse
+import itertools
 import sys
 
 import serial
 
+def chunks(iterable: Sequence, size: int):
+    it = iter(iterable)
+    while True:
+        chunk = list(itertools.islice(it, size))
+        if not chunk:
+            break
+        yield chunk
 
 class UARTImage():
     """Handles emitting data in a format the FPGA understands"""
@@ -74,17 +82,14 @@ class UARTImage():
     def encode_row(row: int) -> bytes:
         return bytes((row,))
 
-    def assemble(self) -> bytes:
+    def assemble(self, swap_bytes: bool = False) -> bytes:
         data = BytesIO()
         mydata = BytesIO(self.data)
         for row in range(0, self.height):
-            data.write(b"L")
-            data.write(self.encode_row(row))
-            # for _ in range(0, self.width + 1):
-            data.write(mydata.read(self.width*self.depth))
+            data.write(self.assemble_row(row, swap_bytes=swap_bytes))
         return data.getvalue()
 
-    def assemble_row(self, row_num: int) -> bytes:
+    def assemble_row(self, row_num: int, swap_bytes: bool = False) -> bytes:
         """
         @row_num: base0 row#
         """
@@ -93,20 +98,31 @@ class UARTImage():
         out.write(self.encode_row(row_num))
         data = BytesIO(self.data)
         data.seek(self.width*row_num*self.depth)
-        out.write(data.read(self.width*self.depth))
+        indata = data.read(self.width*self.depth)
+        if swap_bytes:
+            outdata = list()
+            for each in chunks(indata, self.depth):
+                try:
+                    outdata.append(b"".join([bytes([x]) for x in each[::-1]]))
+                except TypeError:
+                    print(f"each={each}")
+                    sys.exit(1)
+            out.write(b"".join(outdata))
+        else:
+            out.write(indata)
         return out.getvalue()
 
-    def render(self, device: Path, baudrate: int) -> None:
+    def render(self, device: Path, baudrate: int, swap_bytes: bool) -> None:
         ser = serial.Serial(str(device), baudrate)
-        data = self.assemble()
+        data = self.assemble(swap_bytes=swap_bytes)
         print(f"writing count={len(data)} bytes to {device} at baud={baudrate}")
         # Path("uart/alphabet128_middle.uart").write_bytes(data)
         ser.write(data)
         ser.close()
 
-    def render_row(self, row_num: int, device: Path, baudrate: int) -> None:
+    def render_row(self, row_num: int, device: Path, baudrate: int, swap_bytes: bool) -> None:
         ser = serial.Serial(str(device), baudrate)
-        data = self.assemble_row(row_num)
+        data = self.assemble_row(row_num, swap_bytes=swap_bytes)
         ser.write(data)
         print(f"render row#{row_num} data={data.hex()}")
         ser.close()
@@ -116,6 +132,7 @@ def main(target: Path,
          source: Path,
          target_width: int,
          target_height: int,
+         swap_bytes: bool,
          transform_type: Optional[str] = None,
          only_row: Optional[int] = None,
          source_width: Optional[int] = None,
@@ -138,9 +155,9 @@ def main(target: Path,
             else:
                 obj = obj.transform_duplicate(width=target_width)
         if only_row:
-            obj.render_row(only_row, device=target, baudrate=target_freq)
+            obj.render_row(only_row, device=target, baudrate=target_freq, swap_bytes=swap_bytes)
         else:
-            obj.render(device=target, baudrate=target_freq)
+            obj.render(device=target, baudrate=target_freq, swap_bytes=swap_bytes)
         # for i in range(0, 32):
         #     obj.render_row(row_num=i, device=target, baudrate=target_freq)
     print("done")
@@ -204,6 +221,10 @@ if __name__ == "__main__":
                         action="store",
                         type=int,
                         help="only emit row x")
+    PARSER.add_argument("--swap-bytes",
+                        dest="swap_bytes",
+                        action="store_true",
+                        help="change endainness of image")
     ARGS = PARSER.parse_args()
 
     main(**vars(ARGS))
