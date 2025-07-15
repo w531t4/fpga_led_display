@@ -6,7 +6,7 @@ parameter ROOT_CLOCK = 16000000,
 // Use this to determine what baudrate to require at ctrl/rx_in
 
 parameter CTRLR_UART_RX_FREQ_GOAL = 244444,
-parameter CTRLR_CLK_TICKS_PER_BIT = ROOT_CLOCK / CTRLR_UART_RX_FREQ_GOAL,
+parameter CTRLR_CLK_TICKS_PER_BIT = $rtoi(ROOT_CLOCK / CTRLR_UART_RX_FREQ_GOAL * 1.0),
 
 // Use this to tune what clock freq we expose to matrix_scan
 parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 3,
