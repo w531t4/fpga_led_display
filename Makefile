@@ -43,6 +43,7 @@ VSOURCES:=$(SRC_DIR)/brightness.sv \
 		  $(SRC_DIR)/new_pll.sv \
 		  $(SRC_DIR)/reset_on_start.sv \
 		  $(SRC_DIR)/multimem.sv \
+		  $(SRC_DIR)/gamma565_correct.sv \
 		  $(SRC_DIR)/platform/tiny_ecp5_sim.v
 
 
