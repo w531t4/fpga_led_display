@@ -6,3 +6,7 @@
 1.`sudo cp uart-speed.dtbo /boot/firmware/overlays/`
 
 - verify changes by looking at `cat cat /sys/kernel/debug/clk/clk_summary`
+
+
+# Enabling SPI on RPI5
+1. add the following `dtoverlay=spi1-3cs` to `/boot/firmware/config.txt`
