@@ -3,4 +3,6 @@
 1. `cc -x assembler-with-cpp -E uart-speed-overlay.dts -o temp -I linux-pi5/include`
 1. `dtc temp -o uart-speed.dtbo`
 
-1. place in /boot/firmware/overlays/
+1.`sudo cp uart-speed.dtbo /boot/firmware/overlays/`
+
+- verify changes by looking at `cat cat /sys/kernel/debug/clk/clk_summary`

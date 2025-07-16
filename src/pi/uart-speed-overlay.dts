@@ -1,4 +1,6 @@
 #include <dt-bindings/clock/rp1.h>
+// from https://forums.raspberrypi.com/viewtopic.php?t=361321
+// in the end, allowed for moving 2.4mbaud to 4.4mbaud.
 // cc -x assembler-with-cpp -E uart-speed-overlay.dts -o temp -I ~/apps/rpi/linux-pi5/include
 // dtc temp -o uart-speed.dtbo
 
@@ -39,7 +41,7 @@
                              <1000000>, // RP1_CLK_SDIO_TIMER
                              <200000000>, // RP1_CLK_SDIO_ALT_SRC
                              <50000000>, // RP1_CLK_ETH_TSU
-                             <100000000>; // RP1_CLK_UART
+                             <122880000>; // RP1_CLK_UART
     };
   };
 };
