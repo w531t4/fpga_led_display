@@ -77,3 +77,8 @@ unassigned waveforms - pin13, pin14, pin15,
 - raspberry pi pinout - https://pinout.xyz/
 
 
+# pi5
+For example, UART1 can be enabled on GPIO pins 0 & 1.
+UART2 on GPIO pins 4 & 5.
+UART3 on GPIO pins 8 & 9.
+UART4 on GPIO pins 12 & 13. 

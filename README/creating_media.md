@@ -14,4 +14,7 @@ fontcolor=white: fontsize=100: box=1: \
 boxcolor=0x00000099"
 ```
 python3 video_player.py --width=128 --source=/home/pi/aly_file128.rgb565 -b 2444444 --step --start-frame=182
-python3 image_printer.py --src blahlocal.uart --src-width=128 --src-height=32 --src-depth=2 --target=/dev/ttyAMA3 --target-freq=2444444 
+python3 image_printer.py --src blahlocal.uart --src-width=128 --src-height=32 --src-depth=2 --target=/dev/ttyAMA3 --target-freq=2444444
+
+tool for showing rgb565 content
+https://www.kernellabs.com/rawpixels/index.html
