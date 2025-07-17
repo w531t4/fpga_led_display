@@ -164,8 +164,10 @@ $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR
 		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
 		--log $(ARTIFACT_DIR)/nextpnr.log \
 		--package CABGA381 \
+		--report $(ARTIFACT_DIR)/nextpnr-report.json \
+		--detailed-timing-report \
 		--textcfg $@
-
+	python3 -m json.tool $(ARTIFACT_DIR)/nextpnr-report.json > $(ARTIFACT_DIR)/nextpnr-report.pretty.json
 pack: $(ARTIFACT_DIR)/ulx3s.bit | $(ARTIFACT_DIR)
 $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config | $(ARTIFACT_DIR)
 	$(TOOLPATH)/ecppack $< $@
