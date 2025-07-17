@@ -174,7 +174,7 @@ module control_module #(
         end
 
         /* CMD: Main */
-        else if (cmd_line_state != 2'd2 && !uart_rx_running) begin
+        else if (cmd_line_state != 2'd2 && !uart_rx_running_sync) begin
             //2650000
             case (uart_rx_data)
                 "R": begin
