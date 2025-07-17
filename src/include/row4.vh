@@ -27,7 +27,7 @@
     // 260 * 8 = 2080 ;; 64 * 2 * 8
     // 128 bytes (64 pixels * 2) * 8 bits + (1bytes * 8bits [L]) + (1bytes * 8bits [row]) == (64*2*8) + 8 + 8 = 1040
     // i don't know how we got to 260... pretty sure it should be 258.
-    localparam myled_row_size = 1040;
+    localparam myled_row_size = 1024 + 16;
     // See row4 of uart/w64_f60.uart
     logic [myled_row_size-1:0] myled_row = 'h4c0449026b02cb0a6a02e7018701c701e801aa12d354345d5144cc1a4a02290a8b12c7016601850166016501450124012501440145014501450145014601650966016509660165014501440125012401250144010401e300040104014501c711c811a51971746c53a200c30082008200820061006200610062008200820082008300;
 ;
