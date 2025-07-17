@@ -25,7 +25,7 @@ def main(height: int,
             print(f"seeking to frame {start_frame}, skipping {row_size*start_frame} bytes...")
             f.seek(row_size*start_frame*height)
             frame_count = start_frame
-        while True:
+        while (frame_count * width * height * depth) < source.stat().st_size:
             if frame_count > 0:
                 if (time.time() - last_print_time) > status_freq or step:
                     print(f"printing frame={frame_count} "
