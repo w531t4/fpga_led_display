@@ -61,7 +61,7 @@ module tb_spi #(
     wire dout;
     wire Mdone;
     wire [7:0] Mrdata;
-	reg ten = 1'b0;
+    reg ten = 1'b0;
     reg [7:0] s_tdata = 8'b00000000;
     wire SLVdone;
     wire [7:0] SLVrdata;
@@ -83,7 +83,7 @@ module tb_spi #(
         end
     end
 // to end simulation
-	initial #10000 $stop;
+    initial #10000 $stop;
 
 //uut MASTER instantiation
     spi_master MAS (
@@ -100,7 +100,7 @@ module tb_spi #(
         .done(Mdone),
         .rdata(Mrdata));
 //uut SLAVE instantiation
-	spi_slave SLV (
+    spi_slave SLV (
         .rstb(rstb),
         .ten(ten),
         .tdata(s_tdata),
@@ -116,9 +116,9 @@ module tb_spi #(
 initial begin
         #10 rstb = 1'b0;
         #100;
-			rstb = 1'b1;start = 1'b0;
-			m_tdat = 8'b01111100;
-			cdiv = 2'b00;
+            rstb = 1'b1;start = 1'b0;
+            m_tdat = 8'b01111100;
+            cdiv = 2'b00;
 
         #100  start = 1'b1;ten=1; //s_tdata=8'hAC;
         #100  start = 1'b0;
@@ -126,17 +126,17 @@ initial begin
 
         #1800 mlb = 1'b1; cdiv=2'b01; m_tdat=8'b00011100;//s_tdata=8'h64;
         #100  start = 1'b1;
-		#100  start = 1'b0;
-		#2202;
+        #100  start = 1'b0;
+        #2202;
 
         #100  start = 1'b1;
-		#100  start = 1'b0;
-		#2000;
+        #100  start = 1'b0;
+        #2000;
 
         m_tdat=~m_tdat;
         #100  start = 1'b1;
-		#100  start = 1'b0;
-		#2000;
+        #100  start = 1'b0;
+        #2000;
 
    end
 

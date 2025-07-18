@@ -42,8 +42,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // project obtained from https://opencores.org/projects/spi_verilog_master_slave
 /* SPI MODE 3
-		CHANGE DATA (sdout) @ NEGEDGE SCK
-		read data (sdin) @posedge SCK
+        CHANGE DATA (sdout) @ NEGEDGE SCK
+        read data (sdin) @posedge SCK
 */
 module spi_slave #(
     // verilator lint_off UNUSEDPARAM
@@ -74,44 +74,44 @@ module spi_slave #(
 always @(posedge sck or negedge rstb)
   begin
     if (rstb==0)
-		begin rreg = 8'h00;  rdata = 8'h00; done = 0; nb = 0; end   //
-	else if (!ss) begin
-			if(mlb==0)  //LSB first, in@msb -> right shift
-				begin rreg ={sdin,rreg[7:1]}; end
-			else     //MSB first, in@lsb -> left shift
-				begin rreg ={rreg[6:0],sdin}; end
-		//increment bit count
-			nb=nb+1;
-			if(nb!=8) done=0;
-			else  begin rdata=rreg; done=1; nb=0; end
-		end	 //if(!ss)_END  if(nb==8)
+        begin rreg = 8'h00;  rdata = 8'h00; done = 0; nb = 0; end   //
+    else if (!ss) begin
+            if(mlb==0)  //LSB first, in@msb -> right shift
+                begin rreg ={sdin,rreg[7:1]}; end
+            else     //MSB first, in@lsb -> left shift
+                begin rreg ={rreg[6:0],sdin}; end
+        //increment bit count
+            nb=nb+1;
+            if(nb!=8) done=0;
+            else  begin rdata=rreg; done=1; nb=0; end
+        end	 //if(!ss)_END  if(nb==8)
   end
 
 //send to  sdout
 always @(negedge sck or negedge rstb)
   begin
-	if (rstb==0)
-		begin treg = 8'hFF; end
-	else begin
-		if(!ss) begin
-			if(nb==0) treg=tdata;
-			else begin
-			   if(mlb==0)  //LSB first, out=lsb -> right shift
-					begin treg = {1'b1,treg[7:1]}; end
-			   else     //MSB first, out=msb -> left shift
-					begin treg = {treg[6:0],1'b1}; end
-			end
-		end //!ss
-	 end //rstb
+    if (rstb==0)
+        begin treg = 8'hFF; end
+    else begin
+        if(!ss) begin
+            if(nb==0) treg=tdata;
+            else begin
+               if(mlb==0)  //LSB first, out=lsb -> right shift
+                    begin treg = {1'b1,treg[7:1]}; end
+               else     //MSB first, out=msb -> left shift
+                    begin treg = {treg[6:0],1'b1}; end
+            end
+        end //!ss
+     end //rstb
   end //always
 
 endmodule
 
 /*
-			if(mlb==0)  //LSB first, out=lsb -> right shift
-					begin treg = {treg[7],treg[7:1]}; end
-			else     //MSB first, out=msb -> left shift
-					begin treg = {treg[6:0],treg[0]}; end
+            if(mlb==0)  //LSB first, out=lsb -> right shift
+                    begin treg = {treg[7],treg[7:1]}; end
+            else     //MSB first, out=msb -> left shift
+                    begin treg = {treg[6:0],treg[0]}; end
 */
 
 
