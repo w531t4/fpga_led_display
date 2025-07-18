@@ -82,10 +82,10 @@ module tb_spi #(
             #(PERIOD*DUTY_CYCLE);
         end
     end
-// to end simulation
+    // to end simulation
     initial #10000 $stop;
 
-//uut MASTER instantiation
+    // uut MASTER instantiation
     spi_master MAS (
         .rstb(rstb),
         .clk(clk),
@@ -98,8 +98,9 @@ module tb_spi #(
         .sck(sck),
         .dout(dout),
         .done(Mdone),
-        .rdata(Mrdata));
-//uut SLAVE instantiation
+        .rdata(Mrdata)
+    );
+    // uut SLAVE instantiation
     spi_slave SLV (
         .rstb(rstb),
         .ten(ten),
@@ -110,44 +111,45 @@ module tb_spi #(
         .sdin(dout),
         .sdout(din),
         .done(SLVdone),
-        .rdata(SLVrdata));
+        .rdata(SLVrdata)
+    );
 
-// timed contrl signals
-initial begin
+    // timed contrl signals
+    initial begin
         #10 rstb = 1'b0;
         #100;
-            rstb = 1'b1;start = 1'b0;
+            rstb = 1'b1;
+            start = 1'b0;
             m_tdat = 8'b01111100;
             cdiv = 2'b00;
 
-        #100  start = 1'b1;ten=1; //s_tdata=8'hAC;
-        #100  start = 1'b0;
+        #100 start = 1'b1;
+             ten = 1; //s_tdata=8'hAC;
+        #100 start = 1'b0;
 
 
-        #1800 mlb = 1'b1; cdiv=2'b01; m_tdat=8'b00011100;//s_tdata=8'h64;
-        #100  start = 1'b1;
-        #100  start = 1'b0;
+        #1800 mlb = 1'b1;
+              cdiv = 2'b01;
+              m_tdat = 8'b00011100; //s_tdata=8'h64;
+        #100 start = 1'b1;
+        #100 start = 1'b0;
         #2202;
 
-        #100  start = 1'b1;
-        #100  start = 1'b0;
+        #100 start = 1'b1;
+        #100 start = 1'b0;
         #2000;
 
-        m_tdat=~m_tdat;
-        #100  start = 1'b1;
-        #100  start = 1'b0;
+        m_tdat = ~m_tdat;
+        #100 start = 1'b1;
+        #100 start = 1'b0;
         #2000;
+    end
 
-   end
-
-
- always @ (rstb or Mrdata) begin
-    if(rstb==0)
+    always @ (rstb or Mrdata) begin
+        if(rstb == 0)
             s_tdata = 8'hAA;
-    else
-     begin
+        else begin
             # 10 s_tdata = Mrdata;
-     end
- end
-
+        end
+    end
 endmodule
