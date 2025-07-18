@@ -43,7 +43,12 @@
 // project obtained from https://opencores.org/projects/spi_verilog_master_slave
 
 `timescale 1ns/10ps
-module tb_spi;
+module tb_spi #(
+    `include "params.vh"
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
     reg rstb;
     reg clk = 1'b0;
     reg mlb = 1'b0;
@@ -65,6 +70,10 @@ module tb_spi;
     parameter real DUTY_CYCLE = 0.5;
     parameter OFFSET = 100;
     initial begin  // Clock process for clk
+        `ifdef DUMP_FILE_NAME
+            $dumpfile(`DUMP_FILE_NAME);
+        `endif
+        $dumpvars(0, tb_spi);
         #OFFSET;
         forever
         begin

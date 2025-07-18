@@ -14,7 +14,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # W128 - enable 128 pixel width
 # FOCUS_TB_MAIN_UART - limit main testbench to include only signals applicable to uart debugging
 
-BUILD_FLAGS ?=
+BUILD_FLAGS ?=-DDEBUGGER -DSPI
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
@@ -55,6 +55,10 @@ TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
 
+ifeq ($(findstring -DSPI,$(BUILD_FLAGS)), -DSPI)
+VSOURCES += $(SRC_DIR)/spi_master.sv $(SRC_DIR)/spi_slave.sv
+endif
+
 ifeq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
 VSOURCES += $(SRC_DIR)/fm6126init.sv
 else
@@ -80,6 +84,13 @@ $(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv $(SRC_DIR)/%.sv $(INCLUDESRCS) | $(SI
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
+
+ifeq ($(findstring -DSPI,$(BUILD_FLAGS)), -DSPI)
+$(SIMULATION_DIR)/spi.vcd: $(SIMULATION_DIR)/spi.vvp | $(SIMULATION_DIR)
+	$(VVP_BIN) $(VVP_FLAGS) $<
+$(SIMULATION_DIR)/spi.vvp: $(TB_DIR)/tb_spi.sv $(SRC_DIR)/spi_slave.sv $(SRC_DIR)/spi_master.sv $(INCLUDESRCS) | $(SIMULATION_DIR)
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_spi -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
+endif
 
 lint:
 	mkdir -p $(ARTIFACT_DIR)
