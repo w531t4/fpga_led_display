@@ -45,12 +45,22 @@
 		CHANGE DATA (sdout) @ NEGEDGE SCK
 		read data (sdin) @posedge SCK
 */
-module spi_slave (rstb,ten,tdata,mlb,ss,sck,sdin, sdout,done,rdata);
-  input rstb,ss,sck,sdin,ten,mlb;
-  input [7:0] tdata;
-  output sdout;           //slave out   master in
-  output reg done;
-  output reg [7:0] rdata;
+module spi_slave #(
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+) (
+  input rstb,
+  input ss,
+  input sck,
+  input sdin,
+  input ten,
+  input mlb,
+  input [7:0] tdata,
+  output sdout,          //slave out   master in
+  output reg done,
+  output reg [7:0] rdata
+);
 
   reg [7:0] treg,rreg;
   reg [3:0] nb;

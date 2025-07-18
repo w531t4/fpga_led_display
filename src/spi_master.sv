@@ -49,20 +49,28 @@
  RSTB-active low asyn reset, CLK-clock, T_RB=0-rx  1-TX, mlb=0-LSB 1st 1-msb 1st
  START=1- starts data transmission cdiv 0=clk/4 1=/8   2=/16  3=/32
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-module spi_master(rstb,clk,mlb,start,tdat,cdiv,din, ss,sck,dout,done,rdata);
-    input rstb,clk,mlb,start;
-    input [7:0] tdat;  //transmit data
-    input [1:0] cdiv;  //clock divider
-	input din;
-	output reg ss;
-	output reg sck;
-	output reg dout;
-    output reg done;
-	output reg [7:0] rdata; //received data
+module spi_master #(
+    parameter idle=2'b00,
+    parameter send=2'b10,
+    parameter finish=2'b11,
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+) (
+    input rstb,
+    input clk,
+    input mlb,
+    input start,
+    input [7:0] tdat,      //transmit data
+    input [1:0] cdiv,      //clock divider
+	input din,
+	output reg ss,
+	output reg sck,
+	output reg dout,
+    output reg done,
+	output reg [7:0] rdata //received data
+);
 
-parameter idle=2'b00;
-parameter send=2'b10;
-parameter finish=2'b11;
 reg [1:0] cur,nxt;
 
 	reg [7:0] treg,rreg;
