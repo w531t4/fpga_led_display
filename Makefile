@@ -13,6 +13,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # DEBUGGER - enable UART TX debugger (for use with src/scripts/uart_rx.py)
 # W128 - enable 128 pixel width
 # FOCUS_TB_MAIN_UART - limit main testbench to include only signals applicable to uart debugging
+# SPI - use SPI for data ingress instead of a UART
 
 BUILD_FLAGS ?=-DDEBUGGER -DSPI
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
