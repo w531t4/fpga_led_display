@@ -13,7 +13,6 @@ logic local_reset;
 wire rx_line;
 //20220106
 //logic [7:0] ram_data_in = 8'b01100101;
-wire rx_running;
 wire [2:0] rgb_enable;
 wire [5:0] brightness_enable;
 wire [7:0] ram_data_out;
@@ -31,23 +30,49 @@ wire debug_command_busy;
 wire debug_command_pulse;
 wire [7:0] debug_command;
 
+wire [7:0] uart_rx_data;
+wire uart_rx_running_presync;
+wire uart_rx_running_sync;
+wire uart_rx_dataready;
+
 //>>> "".join([a[i] for i in range(len(a)-1, -1, -1)])
 //'brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110'
 logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
 //logic tb_clk_baudrate;
 
+    uart_rx #(
+        // we want 22MHz / 2,430,000 = 9.0534
+        // 22MHz / 9 = 2,444,444 baud 2444444
+        .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+    ) mycontrol_rxuart (
+        .reset(reset),
+        .i_clk(clk),
+        .i_enable(1'b1),
+        .i_din_priortobuffer(rx_line),
+        .o_rxdata(uart_rx_data),
+        .o_recvdata(uart_rx_dataready),
+        .o_busy(uart_rx_running_presync)
+    );
+
+    // bring uart-data into main clock domain
+    ff_sync #(
+    ) uart_sync (
+        .clk(clk),
+        .signal(uart_rx_running_presync),
+        .sync_signal(uart_rx_running_sync),
+        .reset(reset)
+    );
 
 control_module #(
         // Picture/Video data RX baud rate
-        .UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
         .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) control_module_instance (
         .reset(reset),
         .clk_in(clk),
-        .uart_rx(rx_line),
-        .rx_running(rx_running),
+        .data_rx(uart_rx_data),
+        .data_ready_n(uart_rx_running_sync),
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
         //20220106

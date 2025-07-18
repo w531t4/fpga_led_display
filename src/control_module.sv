@@ -1,9 +1,5 @@
 `default_nettype none
 module control_module #(
-    /* UART configuration */
-    // we want 22MHz / 2,430,000 = 9.0534
-    // 22MHz / 9 = 2,444,444 baud 2444444
-    parameter UART_CLK_TICKS_PER_BIT = 6'd9,
     parameter PIXEL_WIDTH = 'd64,
     parameter PIXEL_HEIGHT = 'd32,
     parameter BYTES_PER_PIXEL = 'd2,
@@ -14,9 +10,8 @@ module control_module #(
     input reset,
     input clk_in, /* clk_root =  133MHZ */
 
-    input uart_rx,
-    output rx_running,
-
+    input [7:0] data_rx,
+    input data_ready_n,
     output logic [2:0] rgb_enable,
     output logic [5:0] brightness_enable,
 
@@ -29,7 +24,6 @@ module control_module #(
     `ifdef DEBUGGER
         ,
         output [1:0] cmd_line_state2,
-        output [7:0] rx_data,
         output ram_access_start2,
         output ram_access_start_latch2,
         output [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] cmd_line_addr2,
@@ -37,9 +31,6 @@ module control_module #(
     `endif
 );
 
-    wire [7:0] uart_rx_data;
-    wire uart_rx_running;
-    wire uart_rx_running_sync;
     wire ram_clk_enable_real;
     logic ram_access_start;
     logic ram_access_start_latch;
@@ -66,20 +57,7 @@ module control_module #(
         assign cmd_line_addr2 = cmd_line_addr;
     `endif
 
-    wire uart_rx_dataready;
-    uart_rx #(
-        // we want 22MHz / 2,430,000 = 9.0534
-        // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(UART_CLK_TICKS_PER_BIT)
-    ) mycontrol_rxuart (
-    .reset(reset),
-    .i_clk(clk_in),
-    .i_enable(1'b1),
-    .i_din_priortobuffer(uart_rx),
-    .o_rxdata(uart_rx_data),
-    .o_recvdata(uart_rx_dataready),
-    .o_busy(uart_rx_running)
-    );
+
 
     // ^ is exclusive or
     timeout #(
@@ -93,11 +71,6 @@ module control_module #(
         .running(ram_clk_enable_real)
     );
     assign ram_clk_enable = ram_clk_enable_real;
-    assign rx_running = uart_rx_running;
-    `ifdef DEBUGGER
-        assign rx_data[7:0] = uart_rx_data[7:0];
-    `endif
-
     always @(posedge clk_in) begin
         if (reset) begin
             ram_access_start_latch <= 1'b0;
@@ -111,15 +84,7 @@ module control_module #(
         end
     end
 
-    ff_sync #(
-    ) uart_sync (
-        .clk(clk_in),
-        .signal(uart_rx_running),
-        .sync_signal(uart_rx_running_sync),
-        .reset(reset)
-    );
-
-    always @(negedge uart_rx_running_sync, posedge reset) begin
+    always @(negedge data_ready_n, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;
             brightness_enable <= 6'b111111;
@@ -139,9 +104,9 @@ module control_module #(
 
 
         /* CMD: Line */
-        else if (cmd_line_state == 2'd2 && uart_rx_data != "L" ) begin
+        else if (cmd_line_state == 2'd2 && data_rx != "L" ) begin
             /* first, get the row to write to */
-            cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0] <= uart_rx_data[4:0];
+            cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0] <= data_rx[4:0];
 
             /* and start clocking in the column data
                64 pixels x 2 bytes each = 128 bytes */
@@ -164,16 +129,16 @@ module control_module #(
             end
 
             /* store this byte */
-            ram_data_out <= uart_rx_data[7:0];
+            ram_data_out <= data_rx[7:0];
             ram_address <= cmd_line_addr;
             ram_write_enable <= 1'b1;
             ram_access_start <= !ram_access_start;
         end
 
         /* CMD: Main */
-        else if (cmd_line_state != 2'd2 && !uart_rx_running_sync) begin
+        else if (cmd_line_state != 2'd2 && !data_ready_n) begin
             //2650000
-            case (uart_rx_data)
+            case (data_rx)
                 "R": begin
                     rgb_enable[0] <= 1'b1;
                 end
@@ -227,7 +192,6 @@ module control_module #(
         end
     end
     wire _unused_ok = &{1'b0,
-                        uart_rx_dataready,
                         timer_counter_unused,
                         1'b0};
 endmodule

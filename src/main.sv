@@ -75,7 +75,6 @@ module main #(
     `ifdef DEBUGGER
         // from controller
         wire [1:0] cmd_line_state;
-        wire [7:0] uart_rx_data;
         wire ram_access_start;
         wire ram_access_start_latch;
         wire [11:0] cmd_line_addr2;
@@ -92,7 +91,6 @@ module main #(
         // end matrix_scan
     `endif
     wire uart_rx;
-    wire rx_running;
     // [5:0]
     wire [$clog2(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
@@ -109,6 +107,12 @@ module main #(
     wire output_enable;
     wire alt_reset;
     wire pll_locked;
+
+    // uart rx for controller
+    wire [7:0] uart_rx_data;
+    wire uart_rx_dataready;
+    wire uart_rx_running_presync;
+    logic uart_rx_running_buf, uart_rx_running_sync;
 
     // No wires past here
 
@@ -172,7 +176,7 @@ fm6126init do_init (
         cmd_line_addr2[11:0],
         rgb2[2:0],
         rgb1[2:0],
-        rx_running,
+        uart_rx_running_sync,
         row_latch,
         row_latch_state[1:0],
         ram_b_reset,
@@ -276,10 +280,32 @@ fm6126init do_init (
         `endif
     );
 
+    // for controller
+    uart_rx #(
+        // we want 22MHz / 2,430,000 = 9.0534
+        // 22MHz / 9 = 2,444,444 baud 2444444
+        .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+    ) mycontrol_rxuart (
+        .reset(global_reset),
+        .i_clk(clk_root),
+        .i_enable(1'b1),
+        .i_din_priortobuffer(uart_rx),
+        .o_rxdata(uart_rx_data),
+        .o_recvdata(uart_rx_dataready),
+        .o_busy(uart_rx_running_presync)
+    );
+
+    // bring uart-data into main clock domain
+    ff_sync #(
+    ) uart_sync (
+        .clk(clk_root),
+        .signal(uart_rx_running_presync),
+        .sync_signal(uart_rx_running_sync),
+        .reset(global_reset)
+    );
+
     /* the control module */
     control_module #(
-        // The baudrate that we will receive image data over
-        .UART_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
         .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
@@ -287,10 +313,8 @@ fm6126init do_init (
         .reset(global_reset),
         .clk_in(clk_root),
         /* clk_root =  133MHZ */
-
-        .uart_rx(uart_rx),
-        .rx_running(rx_running),
-
+        .data_rx(uart_rx_data),
+        .data_ready_n(uart_rx_running_sync),
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
 
@@ -302,7 +326,6 @@ fm6126init do_init (
         `ifdef DEBUGGER
             ,
             .cmd_line_state2(cmd_line_state),
-            .rx_data(uart_rx_data),
             .ram_access_start2(ram_access_start),
             .ram_access_start_latch2(ram_access_start_latch),
             .cmd_line_addr2(cmd_line_addr2),
@@ -419,11 +442,9 @@ fm6126init do_init (
 
     wire _unused_ok = &{1'b0,
                         pll_locked,
-                        rx_running,
                         `ifdef DEBUGGER
                             //from controller
                             cmd_line_state,
-                            uart_rx_data,
                             ram_access_start,
                             ram_access_start_latch,
                             cmd_line_addr2,
