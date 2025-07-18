@@ -39,6 +39,7 @@
 //// from http://www.opencores.org/lgpl.shtml                               ////
 ////                                                                        ////
 ////////////////////////////////////////////////////////////////////////////////
+// project obtained from https://opencores.org/projects/spi_verilog_master_slave
 
 `timescale 1ns/10ps
 module TB_SPI_MasSlv;

@@ -39,6 +39,7 @@
 //// from http://www.opencores.org/lgpl.shtml                               ////
 ////                                                                        ////
 ////////////////////////////////////////////////////////////////////////////////
+// project obtained from https://opencores.org/projects/spi_verilog_master_slave
 /* SPI MODE 3
 		CHANGE DATA (sdout) @ NEGEDGE SCK
 		read data (sdin) @posedge SCK
