@@ -1,3 +1,4 @@
+`default_nettype none
 ////////////////////////////////////////////////////////////////////////////////
 ////                                                                        ////
 //// Project Name: SPI (Verilog)                                            ////
@@ -42,7 +43,7 @@
 // project obtained from https://opencores.org/projects/spi_verilog_master_slave
 
 `timescale 1ns/10ps
-module TB_SPI_MasSlv;
+module tb_spi;
     reg rstb;
     reg clk = 1'b0;
     reg mlb = 1'b0;
