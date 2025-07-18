@@ -98,7 +98,25 @@ module tb_main #(
         `ifdef DUMP_FILE_NAME
             $dumpfile(`DUMP_FILE_NAME);
         `endif
-        $dumpvars(0, tb_main);
+        `ifdef FOCUS_TB_MAIN_UART
+            // $dumpvars(0, tb_main);
+            $dumpvars(1, tb_main.mydebug.data_in);
+            $dumpvars(1, tb_main.mydebug.debug_bits);
+            $dumpvars(1, tb_main.mydebug.currentState);
+            $dumpvars(1, tb_main.mydebug.tx_busy);
+            $dumpvars(1, tb_main.mydebug.tx_done);
+            $dumpvars(1, tb_main.mydebug.tx_out);
+            $dumpvars(1, tb_main.mydebug.tx_start);
+            // $dumpvars(1, tb_main.mydebug);
+            // $dumpvars(1, tb_main.mydebug.tx_out);
+            $dumpvars(1, tb_main.tbi_main.clk_root);
+            $dumpvars(1, tb_main.mydebug.debug_command_busy);
+            $dumpvars(1, tb_main.mydebug.debug_command_pulse);
+            $dumpvars(1, tb_main.tbi_main.uart_rx);
+            $dumpvars(1, tb_main.tbi_main.ctrl);
+        `else
+            $dumpvars(0, tb_main);
+        `endif
         clk = 0;
         mask = 1;
 

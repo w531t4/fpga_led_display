@@ -12,6 +12,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # SIM - disable use of PLL in simulations
 # DEBUGGER - enable UART TX debugger (for use with src/scripts/uart_rx.py)
 # W128 - enable 128 pixel width
+# FOCUS_TB_MAIN_UART - limit main testbench to include only signals applicable to uart debugging
 
 BUILD_FLAGS ?=
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
@@ -78,9 +79,6 @@ $(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv $(SRC_DIR)/%.sv $(INCLUDESRCS) | $(SI
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
-
-$(SIMULATION_DIR)/main_uart.vvp: $(TB_DIR)/tb_main_uart.sv $(SRC_DIR)/main.sv $(INCLUDESRCS) | $(SIMULATION_DIR)
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_main_uart -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 
 lint:
 	mkdir -p $(ARTIFACT_DIR)
