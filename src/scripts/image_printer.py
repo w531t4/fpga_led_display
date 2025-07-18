@@ -4,6 +4,7 @@ from typing import List, Dict, Self, Optional, Sequence
 import re
 import argparse
 import itertools
+import spidev
 import sys
 
 import serial
@@ -120,12 +121,25 @@ class UARTImage():
         ser.write(data)
         ser.close()
 
-    def render_row(self, row_num: int, device: Path, baudrate: int, swap_bytes: bool) -> None:
-        ser = serial.Serial(str(device), baudrate)
+    def render_row(self, row_num: int, device: Path, baudrate: int, swap_bytes: bool, use_spi: bool = False) -> None:
+        if use_spi:
+            d, p = str(device).split(",")
+            print(f"d={d} p={p}")
+            spi = spidev.SpiDev()
+            spi.open(int(d), int(p))                 # Use bus 1 (SPI1), device 0 (CE0)
+            spi.max_speed_hz = baudrate   # Set speed (10 MHz here)
+            spi.mode = 0
+        else:
+            ser = serial.Serial(str(device), baudrate)
         data = self.assemble_row(row_num, swap_bytes=swap_bytes)
-        ser.write(data)
+        if use_spi:
+            spi.xfer2(list(data))
+            spi.close()
+        else:
+            ser.write(data)
+            ser.close()
         print(f"render row#{row_num} data={data.hex()}")
-        ser.close()
+
 
 def main(target: Path,
          target_freq: int,
@@ -133,6 +147,7 @@ def main(target: Path,
          target_width: int,
          target_height: int,
          swap_bytes: bool,
+         use_spi: bool,
          transform_type: Optional[str] = None,
          only_row: Optional[int] = None,
          source_width: Optional[int] = None,
@@ -155,7 +170,7 @@ def main(target: Path,
             else:
                 obj = obj.transform_duplicate(width=target_width)
         if only_row:
-            obj.render_row(only_row, device=target, baudrate=target_freq, swap_bytes=swap_bytes)
+            obj.render_row(only_row, device=target, baudrate=target_freq, swap_bytes=swap_bytes, use_spi=use_spi)
         else:
             obj.render(device=target, baudrate=target_freq, swap_bytes=swap_bytes)
         # for i in range(0, 32):
@@ -225,6 +240,10 @@ if __name__ == "__main__":
                         dest="swap_bytes",
                         action="store_true",
                         help="change endainness of image")
+    PARSER.add_argument("--spi",
+                        dest="use_spi",
+                        action="store_true",
+                        help="use spi instead of uart")
     ARGS = PARSER.parse_args()
 
     main(**vars(ARGS))

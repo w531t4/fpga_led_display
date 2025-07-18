@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional, List
 import serial
 import argparse
+import spidev
 import time
 
 def main(height: int,
@@ -13,10 +14,18 @@ def main(height: int,
          device: Path,
          status_freq: int,
          step: bool,
+         use_spi: bool,
          start_frame: Optional[int] = None,
          ) -> None:
     row_size = width * depth
-    ser = serial.Serial(str(device), baudrate)
+    if use_spi:
+        d, p = str(device).split(",")
+        spi = spidev.SpiDev()
+        spi.open(int(d), int(p))                 # Use bus 1 (SPI1), device 0 (CE0)
+        spi.max_speed_hz = baudrate   # Set speed (10 MHz here)
+        spi.mode = 0
+    else:
+        ser = serial.Serial(str(device), baudrate)
     frame_count = 0
     start_time = time.time()
     last_print_time = start_time
@@ -39,7 +48,10 @@ def main(height: int,
                 frames.append(b"L" + bytes([row]) + read_result)
                 raw_frames.append(read_result)
 
-            ser.write(b"".join(frames))
+            if use_spi:
+                spi.xfer3(list(b"".join(frames)))
+            else:
+                ser.write(b"".join(frames))
             if step:
                 while True:
                     response = input(f"action frame={frame_count} [nothing for step, o (output myframe), O (output rawframe)")
@@ -118,6 +130,10 @@ if __name__ == "__main__":
                         dest="step",
                         action="store_true",
                         help="cycle to next frame after pressing enter")
+    PARSER.add_argument("--spi",
+                        dest="use_spi",
+                        action="store_true",
+                        help="use spi")
     ARGS = PARSER.parse_args()
 
     try:

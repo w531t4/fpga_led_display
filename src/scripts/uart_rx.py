@@ -1,4 +1,5 @@
 import serial
+import spidev
 from curses import wrapper
 from typing import IO
 BAUDRATE = 115200
@@ -13,13 +14,24 @@ global BAUDSET_TESTVALS
 global BAUDSET_DATA_INIT
 BAUDSET_TESTVALS = ["A", "-", "C", "!"]
 
-BAUDSET_DATA_INIT=244444
+BAUDSET_DATA_INIT=2444444
 BAUDSET_DATA = BAUDSET_DATA_INIT
 BAUDSET_DATA_SCALE=500
 BAUDSET_DATA_STATE=-1
 BAUDSET_DATA_MAX=2900000
 global enable_debug
 enable_debug = False
+spi = False
+
+def send_spi_bytes(data: bytes) -> None:
+    spi_dev = 1
+    spi_port = 0
+    spi_rate = 40000
+    spi = spidev.SpiDev()
+    spi.open(spi_dev, spi_port)                 # Use bus 1 (SPI1), device 0 (CE0)
+    spi.max_speed_hz = spi_rate   # Set speed (10 MHz here)
+    spi.mode = 0
+    spi.xfer3(list(data))
 
 def gen_bitstring(c: str) -> str:
     r_int = ord(c)
@@ -84,8 +96,11 @@ def do_debug(c: str, title: str = "", titlelength: int = 24) -> str:
     return rstring
 
 def writeser(ser: IO[bytes], s: str) -> None:
-    for each in s:
-        ser.write(each.encode("utf-8"))
+    if spi:
+        send_spi_bytes(list(s.encode("utf-8")))
+    else:
+        for each in s:
+            ser.write(each.encode("utf-8"))
 
 def findbaud(stdscr, curval: str) -> None:
     global BAUDSET_DATA_STATE
@@ -110,9 +125,12 @@ def findbaud(stdscr, curval: str) -> None:
     return
 
 def testval(dev: str, baud: int, val: str) -> None:
-    ser_data = serial.Serial(dev, baud, timeout=None)
-    ser_data.write(val.encode("utf-8"))
-    ser_data.close()
+    if spi:
+        send_spi_bytes(val.encode("utf-8"))
+    else:
+        ser_data = serial.Serial(dev, baud, timeout=None)
+        ser_data.write(val.encode("utf-8"))
+        ser_data.close()
 
 def main(stdscr) -> None:
     global BAUDSET_DATA
