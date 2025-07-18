@@ -50,16 +50,16 @@ module spi_slave #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-  input rstb,
-  input ss,
-  input sck,
-  input sdin,
-  input ten,
-  input mlb,
-  input [7:0] tdata,
-  output sdout,          //slave out   master in
-  output reg done,
-  output reg [7:0] rdata
+  input rstb,             // Active-low asynchronous reset. Resets internal registers like rreg, treg, nb, etc.
+  input ss,               // Slave Select (Active Low). When low, this slave is active and communicates with the master.
+  input sck,              // SPI Clock (from master). Rising edge captures incoming bit; falling edge shifts out data.
+  input sdin,             // Slave Data In. SPI MISO line — data coming from the master to this slave.
+  input ten,              // Transmit Enable. When high, this slave is allowed to drive sdout; otherwise, it's tri-stated (1'bz).
+  input mlb,              // MSB/LSB first selection: if 1 → MSB-first; if 0 → LSB-first. Affects both shifting directions.
+  input [7:0] tdata,      // Transmit Data. This is the byte that the slave will shift out to the master on sdout.
+  output sdout,           // Slave Data Out (to master). The outgoing bit from this slave (MISO). Tri-stated if ss is high or ten is low.
+  output reg done,        // Receive Done Flag. Pulses high when a full 8 bits have been received on sdin.
+  output reg [7:0] rdata  // Received Data Byte. This is the assembled byte from the incoming sdin bits. Updated when done == 1.
 );
 
   reg [7:0] treg;

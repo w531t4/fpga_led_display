@@ -57,18 +57,19 @@ module spi_master #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input rstb,            // active low async reset
-    input clk,             // clock
-    input mlb,
-    input start,
-    input [7:0] tdat,      //transmit data
-    input [1:0] cdiv,      //clock divider
-    input din,
-    output reg ss,
-    output reg sck,
-    output reg dout,
-    output reg done,
-    output reg [7:0] rdata //received data
+    input rstb,            // Asynchronous active-low reset — when 0, resets all internal state
+    input clk,             // System clock used to generate the SPI clock (sck) and time state machine transitions
+    input mlb,             // Bit order: 0 = LSB first, 1 = MSB first
+    input start,           // When 1, begins an SPI transaction (loads tdat, asserts ss, starts clocking)
+    input [7:0] tdat,      // The data byte to transmit to the slave
+    input [1:0] cdiv,      // Clock divider value that scales the system clock to generate sck.
+                           //       (00 = clk/4, 01 = /8, 10 = /16, 11 = /32)
+    input din,             // Data input from the slave (MISO) — captured by master on rising edge of sck
+    output reg ss,         // Slave select output (active-low). Asserted (0) during a transfer
+    output reg sck,        // SPI clock output (Mode 3 behavior: idles high, toggles every half-bit time)
+    output reg dout,       // Data output (MOSI) — changes on falling edge of sck
+    output reg done,       // Goes high for one cycle after 8 bits are transferred
+    output reg [7:0] rdata // Received byte from slave (din), valid when done is high
 );
 
     reg [1:0] cur;
