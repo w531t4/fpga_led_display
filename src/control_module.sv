@@ -39,6 +39,7 @@ module control_module #(
 
     wire [7:0] uart_rx_data;
     wire uart_rx_running;
+    wire uart_rx_running_sync;
     wire ram_clk_enable_real;
     logic ram_access_start;
     logic ram_access_start_latch;
@@ -110,17 +111,13 @@ module control_module #(
         end
     end
 
-    logic uart_rx_sync1, uart_rx_running_sync;
-    // Double flip-flop synchronizer
-    always_ff @(posedge clk_in or posedge reset) begin
-        if (reset) begin
-            uart_rx_sync1 <= 1'b1;  // UART idle is logic high
-            uart_rx_running_sync <= 1'b1;
-        end else begin
-            uart_rx_sync1 <= uart_rx_running;
-            uart_rx_running_sync <= uart_rx_sync1;
-        end
-    end
+    ff_sync #(
+    ) uart_sync (
+        .clk(clk_in),
+        .signal(uart_rx_running),
+        .sync_signal(uart_rx_running_sync),
+        .reset(reset)
+    );
 
     always @(negedge uart_rx_running_sync, posedge reset) begin
         if (reset) begin
