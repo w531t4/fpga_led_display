@@ -87,11 +87,11 @@ module framebuffer_fetch #(
                 half_address <= 1'b0;
             end
             else if (pixel_load_counter == 'd1) begin
-                rgb565_top <= ram_data_in;
+                rgb565_bottom <= ram_data_in;
                 half_address <= 1'b1;
             end
             else if (pixel_load_counter == 'd0) begin
-                rgb565_bottom <= ram_data_in;
+                rgb565_top <= ram_data_in;
             end
         end
     end

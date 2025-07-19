@@ -31,6 +31,7 @@ module multimem #(
         reg [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] init_index;
         reg        init_done;
     `endif
+    reg [15:0] QB_pre;
     // Write Port A: 8-bit writes
     always @(posedge ClockA) begin
         if (ClockEnA) begin
@@ -45,6 +46,7 @@ module multimem #(
             `ifdef SIM
                 init_index <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
                 init_done <= 1'b0;
+                QB_pre <= 16'b0;
             `endif
             QB <= 16'b0;
         end
@@ -60,7 +62,8 @@ module multimem #(
                 else begin
             `endif
                 if (ClockEnB) begin
-                    QB <= {mem[{AddressB, 1'b1}], mem[{AddressB, 1'b0}]};
+                    QB_pre <= {mem[{AddressB, 1'b1}], mem[{AddressB, 1'b0}]};
+                    QB <= QB_pre;
                 end
             `ifdef SIM
                 end
