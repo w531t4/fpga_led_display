@@ -59,8 +59,9 @@ def print_summary(summary: List[LintTitle]) -> None:
     summary_set = set([(x.severity, x.category, x.file) for x in summary])
     for each in sorted(list(summary_set), key=lambda x: x[2]):
         # atype, param, file
+        applicable_rows = sorted(set([x.row for x in summary if (x.severity, x.category, x.file) == each[0:3]]))
         print(f"{len([x for x in summary if (x.severity, x.category, x.file) == each[0:3]])}: "
-              f"{each[2]} {each[0]} {each[1]}")
+              f"{each[2]} {each[0]} {each[1]} lines={applicable_rows}")
 
 def main() -> None:
     """ main """
