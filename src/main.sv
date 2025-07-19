@@ -41,9 +41,9 @@ module main #(
     output gn11,
     output gn12,
     output gn13,
-    output gn14,
+    output gn14
     // output gn15,
-    output gn16
+    // output gn16
     `ifdef SPI
         ,
         input gp17,       // miso
