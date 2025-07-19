@@ -499,7 +499,7 @@ fm6126init do_init (
                         ram_a_reset,
                         ram_a_data_out,
                         `ifndef SPI
-                            uart_rx_dataready
+                            uart_rx_dataready,
                         `endif
                         `ifdef DEBUGGER
                             debug_command_pulse,
