@@ -28,8 +28,8 @@ module gamma565_correct #(
     assign green_out = green_gamma[7:2]; // truncate to 6 bits
     assign blue_out = blue_gamma[7:2];   // truncate to 6 bits
 
-    initial $readmemh("src/memory/gamma_rb_lut.mem", gamma_b_lut);
-    initial $readmemh("src/memory/gamma_rb_lut.mem", gamma_r_lut);
-    initial $readmemh("src/memory/gamma_g_lut.mem", gamma_g_lut);
+    initial $readmemh("src/memory/gamma_5bit.mem", gamma_b_lut);
+    initial $readmemh("src/memory/gamma_5bit.mem", gamma_r_lut);
+    initial $readmemh("src/memory/gamma_6bit.mem", gamma_g_lut);
 
 endmodule
