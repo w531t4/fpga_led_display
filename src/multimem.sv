@@ -25,11 +25,15 @@ module multimem #(
     output reg [7:0] QA,
     output reg [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] QB
 );
+    localparam PARALLEL_MEMS = ((PIXEL_HEIGHT / PIXEL_HALFHEIGHT)) * BYTES_PER_PIXEL;
+    localparam DEPTH_AFTER_PARALLEL = $rtoi((PIXEL_HEIGHT*PIXEL_WIDTH*BYTES_PER_PIXEL) / (((PIXEL_HEIGHT / PIXEL_HALFHEIGHT)) * BYTES_PER_PIXEL)*1.0);
+
     // Underlying memory: 4K x 8-bit
     //  [7:0] mem [0:4095]
-    reg [7:0] mem [0:(PIXEL_HEIGHT*PIXEL_WIDTH*BYTES_PER_PIXEL)-1];  // 2^12 = 4096 entries
+    reg [7:0] mem [0:PARALLEL_MEMS-1][0:DEPTH_AFTER_PARALLEL-1];  // 2^12 = 4096 entries
     `ifdef SIM
-        reg [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] init_index;
+        reg [$clog2(DEPTH_AFTER_PARALLEL)-1:0] init_index;
+        reg [$clog2(PARALLEL_MEMS)-1:0] init_mems;
         reg        init_done;
     `endif
     reg [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] QB_pre;
@@ -37,7 +41,9 @@ module multimem #(
     always @(posedge ClockA) begin
         if (ClockEnA) begin
             if (WrA)
-                mem[AddressA] <= DataInA;
+                mem[{AddressA[$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1],
+                     AddressA[0]}]
+                   [AddressA[$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-2:1]] <= DataInA;
         end
     end
 
@@ -45,7 +51,8 @@ module multimem #(
     always @(posedge ClockB) begin
         if (ResetA || ResetB) begin
             `ifdef SIM
-                init_index <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
+                init_index <= {$clog2(DEPTH_AFTER_PARALLEL){1'b0}};
+                init_mems <= {$clog2(PARALLEL_MEMS){1'b0}};
                 init_done <= 1'b0;
                 QB_pre <= {((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8){1'b0}};
             `endif
@@ -54,19 +61,24 @@ module multimem #(
         else begin
             `ifdef SIM
                 if (!init_done) begin
-                    mem[init_index] <= 8'h00;
+                    mem[init_mems][init_index] <= {$clog2(DEPTH_AFTER_PARALLEL){1'b0}};
                     init_index <= init_index + 1;
-                    if (init_index == ((PIXEL_HEIGHT*PIXEL_WIDTH*BYTES_PER_PIXEL)-1)) begin
-                        init_done <= 1;
+                    if (init_index == (DEPTH_AFTER_PARALLEL-1)) begin
+                        if (init_mems == (PARALLEL_MEMS-1)) init_done <= 1;
+                        else begin
+                            init_mems <= init_mems + 1;
+                            init_index <= 0;
+                        end
                     end
                 end
                 else begin
             `endif
                 if (ClockEnB) begin
-                    QB_pre <= {mem[{1'b1, AddressB, 1'b1}],
-                               mem[{1'b1, AddressB, 1'b0}],
-                               mem[{1'b0, AddressB, 1'b1}],
-                               mem[{1'b0, AddressB, 1'b0}]};
+                    QB_pre <= {mem[2'b11][AddressB],
+                               mem[2'b10][AddressB],
+                               mem[2'b01][AddressB],
+                               mem[2'b00][AddressB]
+                                };
                     QB <= QB_pre;
                 end
             `ifdef SIM
