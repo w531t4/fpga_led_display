@@ -30,7 +30,7 @@ module reset_on_start #(
         .reset(count),
         .clk_in(clock_in),
         .start(objective),
-        .value(4'd15),
+        .value(2'd2),
         .counter(unused_timer_counter),
         .running(reset)
     );
