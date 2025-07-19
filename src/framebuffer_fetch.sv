@@ -59,11 +59,11 @@ module framebuffer_fetch #(
         .reset(reset),
         .clk_in(clk_in),
         .start(pixel_load_start),
-`ifdef USE_FM6126A
-        .value(2'd2),
-`else
-        .value(2'd3),
-`endif
+        `ifdef USE_FM6126A
+            .value(2'd2),
+        `else
+            .value(2'd3),
+        `endif
         .counter(pixel_load_counter),
         .running(ram_clk_enable_real)
     );

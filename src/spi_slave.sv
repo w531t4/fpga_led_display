@@ -70,16 +70,15 @@ module spi_slave #(
   assign sout = mlb ? treg[7] : treg[0];
   assign sdout = ( (!ss) && ten ) ? sout : 1'bz; //if 1=> send data  else TRI-STATE sdout
 
-
-//read from  sdout
-always @(posedge sck or negedge rstb) begin
-    if (rstb == 0) begin
-         rreg = 8'h00;
-         rdata = 8'h00;
-         done = 0;
-         nb = 0;
-    end   //
-    else if (!ss) begin
+    //read from  sdout
+    always @(posedge sck or negedge rstb) begin
+        if (rstb == 0) begin
+            rreg = 8'h00;
+            rdata = 8'h00;
+            done = 0;
+            nb = 0;
+        end   //
+        else if (!ss) begin
             if (mlb == 0) begin //LSB first, in@msb -> right shift
                 rreg = {sdin, rreg[7:1]};
             end
@@ -94,28 +93,28 @@ always @(posedge sck or negedge rstb) begin
                 done = 1;
                 nb = 0;
             end
-    end	 //if(!ss)_END  if(nb==8)
-end
-
-//send to  sdout
-always @(negedge sck or negedge rstb) begin
-    if (rstb == 0) begin
-        treg = 8'hFF;
+        end	 //if(!ss)_END  if(nb==8)
     end
-    else begin
-        if (!ss) begin
-            if (nb == 0) treg = tdata;
-            else begin
-                if(mlb == 0) begin //LSB first, out=lsb -> right shift
-                    treg = {1'b1,treg[7:1]};
+
+    //send to  sdout
+    always @(negedge sck or negedge rstb) begin
+        if (rstb == 0) begin
+            treg = 8'hFF;
+        end
+        else begin
+            if (!ss) begin
+                if (nb == 0) treg = tdata;
+                else begin
+                    if(mlb == 0) begin //LSB first, out=lsb -> right shift
+                        treg = {1'b1,treg[7:1]};
+                    end
+                    else begin //MSB first, out=msb -> left shift
+                        treg = {treg[6:0],1'b1};
+                    end
                 end
-                else begin //MSB first, out=msb -> left shift
-                    treg = {treg[6:0],1'b1};
-                end
-            end
-        end //!ss
-     end //rstb
-  end //always
+            end //!ss
+        end //rstb
+    end //always
 
 endmodule
 

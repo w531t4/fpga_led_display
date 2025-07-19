@@ -7,8 +7,6 @@ module tb_debugger #(
     // verilator lint_on UNUSEDPARAM
 );
 
-
-
     logic clk;
     logic reset;
     logic local_reset;
@@ -44,24 +42,21 @@ module tb_debugger #(
         .debug_uart_rx_in(rx_line2)
     );
 
-    initial
-        begin
-            `ifdef DUMP_FILE_NAME
-                $dumpfile(`DUMP_FILE_NAME);
-            `endif
-            $dumpvars(0, tb_debugger);
-            clk = 0;
-            reset = 0;
-            local_reset = 0;
-            rx_line2 = 0;
-            clk_out = 0;
-            data_in = 24'b111100001010101000001101;
+    initial begin
+        `ifdef DUMP_FILE_NAME
+            $dumpfile(`DUMP_FILE_NAME);
+        `endif
+        $dumpvars(0, tb_debugger);
+        clk = 0;
+        reset = 0;
+        local_reset = 0;
+        rx_line2 = 0;
+        clk_out = 0;
+        data_in = 24'b111100001010101000001101;
 
-        end
-
+    end
 
     always @(posedge tb_clk_baudrate) begin
-
         if (i == 'd10) begin
             rx_line2 <= 1'b0;
             if (j >= ($bits(mystring)-8)) begin
@@ -87,20 +82,19 @@ module tb_debugger #(
     end
     initial begin
         #2 reset = ! reset;
-       #2 local_reset = ! local_reset;
-end
+        #2 local_reset = ! local_reset;
+    end
     initial begin
         #3 reset = ! reset;
-    #3 local_reset = ! local_reset;
-end
+        #3 local_reset = ! local_reset;
+    end
 
-    initial
-        #1000000 $finish;
+    initial #1000000 $finish;
 
     always begin
         #SIM_HALF_PERIOD_NS  clk <=  ! clk; // 2 of these make a period
     end
-   // always begin
-   //     #400 reset <= ! reset;
-   // end
+    // always begin
+    //     #400 reset <= ! reset;
+    // end
 endmodule

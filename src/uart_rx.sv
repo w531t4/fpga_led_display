@@ -29,20 +29,16 @@ module uart_rx #(
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
-    )
-    /* END PARAMETERS LIST */
+) (
+    input reset,
+    input i_clk,
+    input i_enable,
+    input i_din_priortobuffer,
 
-    /* BEGIN MODULE IO LIST */
-    (
-        input reset,
-        input i_clk,
-        input i_enable,
-        input i_din_priortobuffer,
-
-        output [7:0] o_rxdata,
-        output logic o_recvdata,
-        output logic o_busy
-    );
+    output [7:0] o_rxdata,
+    output logic o_recvdata,
+    output logic o_busy
+);
     /* END MODULE IO LIST */
     localparam TICKS_TO_BIT		= TICKS_PER_BIT-1;
     localparam TICKS_TO_MIDLE	= TICKS_TO_BIT/2;
@@ -95,9 +91,8 @@ module uart_rx #(
         end
     end
 
-    always@(*) begin
+    always @(*) begin
         case (currentState)
-
             default: begin
                 nextState = STATE_IDLE;
                 o_recvdata = 0;

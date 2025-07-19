@@ -16,10 +16,10 @@ module new_pll #(
     output clock_out, // 16 MHz, 0 deg
     output locked
 );
-`ifdef SIM
+    `ifdef SIM
         assign clock_out = clock_in;
-`else
-wire clkfb;
+    `else
+    wire clkfb;
 (* FREQUENCY_PIN_CLKI="25" *)
 (* FREQUENCY_PIN_CLKOS="16" *)
 (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)

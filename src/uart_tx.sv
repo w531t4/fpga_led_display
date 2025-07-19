@@ -29,18 +29,14 @@ module uart_tx #(
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
-    )
-    /* END PARAMETERS LIST */
-
-    /* BEGIN MODULE IO LIST */
-    (
-        input i_clk,
-        input i_start,
-        input [7:0] i_data,
-        output wire o_done,
-        output wire o_busy,
-        output wire o_dout
-    );
+) (
+    input i_clk,
+    input i_start,
+    input [7:0] i_data,
+    output wire o_done,
+    output wire o_busy,
+    output wire o_dout
+);
     /* END MODULE IO LIST */
 
     localparam	STATE_IDLE 			= 5'b00001,
@@ -75,7 +71,6 @@ module uart_tx #(
 
     always @(*) begin
         case(currentState)
-
             default: begin
                 nextState = STATE_IDLE;
                 done_flag = 0;
@@ -147,7 +142,7 @@ module uart_tx #(
             currentState == STATE_SEND_BITS ||
             currentState == STATE_SEND_STOP) begin
 
-            if(ticks_counter_ovf) begin
+            if (ticks_counter_ovf) begin
                 ticks_counter <= 0;
             end
             else
@@ -155,14 +150,14 @@ module uart_tx #(
         end
 
         if (currentState == STATE_SEND_BITS) begin
-            if(ticks_counter_ovf) begin
+            if (ticks_counter_ovf) begin
                 tx_bit_counter <= tx_bit_counter + 1;
                 tx_reg <= tx_reg >> 1; //LSB shift
             end
         end
 
-        if(currentState == STATE_IDLE) begin
-            if(i_start) begin
+        if (currentState == STATE_IDLE) begin
+            if (i_start) begin
                 tx_reg <= i_data;
                 tx_bit_counter <= 0;
             end

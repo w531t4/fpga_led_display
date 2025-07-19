@@ -13,23 +13,25 @@ module tb_fm6126init #(
     wire [2:0] rgb1_out;
     wire [2:0] rgb2_out;
     wire latch_out;
-   always #5 clk_root <= ~clk_root;
-   initial begin
+    always #5 clk_root <= ~clk_root;
+    initial begin
         `ifdef DUMP_FILE_NAME
             $dumpfile(`DUMP_FILE_NAME);
         `endif
-         $dumpvars(0, tb_fm6126init);
-         clk_root = 0;
-         reset = 0;
-         #5 reset = 1;
-         #6 reset = 0;
-         #100000 $finish;
-   end
-   fm6126init fm6126init(
-                .clk_in(clk_root),
-                .reset(reset),
-                .mask_en(mask_en),
-                .rgb1_out(rgb1_out),
-                .rgb2_out(rgb2_out),
-                .latch_out(latch_out));
+        $dumpvars(0, tb_fm6126init);
+        clk_root = 0;
+        reset = 0;
+        #5 reset = 1;
+        #6 reset = 0;
+        #100000 $finish;
+    end
+    fm6126init #(
+    ) fm6126init (
+        .clk_in(clk_root),
+        .reset(reset),
+        .mask_en(mask_en),
+        .rgb1_out(rgb1_out),
+        .rgb2_out(rgb2_out),
+        .latch_out(latch_out)
+    );
 endmodule

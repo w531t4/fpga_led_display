@@ -83,109 +83,109 @@ module spi_master #(
     reg shift;
     reg clr;
 
-//FSM i/o
-always @(start or cur or nbit or cdiv or rreg) begin
-    nxt = cur;
-    clr = 0;
-    shift = 0; //ss=0;
-    case (cur)
-        idle: begin
-            if (start == 1) begin
-                case (cdiv)
-                    2'b00: mid = 2;
-                    2'b01: mid = 4;
-                    2'b10: mid = 8;
-                    2'b11: mid = 16;
-                endcase
-                shift = 1;
-                done = 1'b0;
-                nxt = send;
+    //FSM i/o
+    always @(start or cur or nbit or cdiv or rreg) begin
+        nxt = cur;
+        clr = 0;
+        shift = 0; //ss=0;
+        case (cur)
+            idle: begin
+                if (start == 1) begin
+                    case (cdiv)
+                        2'b00: mid = 2;
+                        2'b01: mid = 4;
+                        2'b10: mid = 8;
+                        2'b11: mid = 16;
+                    endcase
+                    shift = 1;
+                    done = 1'b0;
+                    nxt = send;
+                end
+            end //idle
+            send: begin
+                ss = 0;
+                if (nbit != 8) begin
+                    shift = 1;
+                end
+                else begin
+                    rdata = rreg;
+                    done = 1'b1;
+                    nxt = finish;
+                end
+            end //send
+            finish: begin
+                shift = 0;
+                ss = 1;
+                clr = 1;
+                nxt = idle;
             end
-        end //idle
-        send: begin
-            ss = 0;
-            if (nbit != 8) begin
-                shift = 1;
-            end
-            else begin
-                rdata = rreg;
-                done = 1'b1;
-                nxt = finish;
-            end
-        end //send
-        finish: begin
-            shift = 0;
-            ss = 1;
-            clr = 1;
-            nxt = idle;
-        end
-        default: nxt = finish;
-    endcase
-end //always
+            default: nxt = finish;
+        endcase
+    end //always
 
-//state transistion
-always @(negedge clk or negedge rstb) begin
-    if (rstb == 0)
-        cur <= finish;
-    else
-        cur <= nxt;
-end
-
-//setup falling edge (shift dout) sample rising edge (read din)
-always @(negedge clk or posedge clr) begin
-    if (clr == 1) begin
-        cnt = 0;
-        sck = 1;
+    //state transistion
+    always @(negedge clk or negedge rstb) begin
+        if (rstb == 0)
+            cur <= finish;
+        else
+            cur <= nxt;
     end
-    else begin
-        if (shift == 1) begin
-            cnt = cnt + 1;
-            if (cnt == mid) begin
-                sck =~ sck;
-                cnt = 0;
-            end //mid
-        end //shift
-    end //rst
-end //always
 
-//sample @ rising edge (read din)
-always @(posedge sck or posedge clr) begin // or negedge rstb
-    if (clr == 1) begin
-        nbit = 0;
-        rreg = 8'hFF;
-    end
-    else begin
-        if (mlb == 0) begin //LSB first, din@msb -> right shift
-            rreg = {din, rreg[7:1]};
+    //setup falling edge (shift dout) sample rising edge (read din)
+    always @(negedge clk or posedge clr) begin
+        if (clr == 1) begin
+            cnt = 0;
+            sck = 1;
         end
-        else begin//MSB first, din@lsb -> left shift
-            rreg = {rreg[6:0], din};
-        end
-        nbit = nbit + 1;
-    end //rst
-end //always
-
-always @(negedge sck or posedge clr) begin
-    if (clr == 1) begin
-        treg = 8'hFF;
-        dout = 1;
-    end
-    else begin
-        if (nbit == 0) begin //load data into TREG
-            treg = tdat;
-            dout = mlb ? treg[7] : treg[0];
-        end //nbit_if
         else begin
-            if (mlb==0) begin //LSB first, shift right
-                treg = {1'b1, treg[7:1]};
-                dout = treg[0];
-            end
-            else begin //MSB first shift LEFT
-                treg = {treg[6:0], 1'b1};
-                dout = treg[7];
-            end
+            if (shift == 1) begin
+                cnt = cnt + 1;
+                if (cnt == mid) begin
+                    sck =~ sck;
+                    cnt = 0;
+                end //mid
+            end //shift
+        end //rst
+    end //always
+
+    //sample @ rising edge (read din)
+    always @(posedge sck or posedge clr) begin // or negedge rstb
+        if (clr == 1) begin
+            nbit = 0;
+            rreg = 8'hFF;
         end
-    end //rst
-end //always
+        else begin
+            if (mlb == 0) begin //LSB first, din@msb -> right shift
+                rreg = {din, rreg[7:1]};
+            end
+            else begin//MSB first, din@lsb -> left shift
+                rreg = {rreg[6:0], din};
+            end
+            nbit = nbit + 1;
+        end //rst
+    end //always
+
+    always @(negedge sck or posedge clr) begin
+        if (clr == 1) begin
+            treg = 8'hFF;
+            dout = 1;
+        end
+        else begin
+            if (nbit == 0) begin //load data into TREG
+                treg = tdat;
+                dout = mlb ? treg[7] : treg[0];
+            end //nbit_if
+            else begin
+                if (mlb==0) begin //LSB first, shift right
+                    treg = {1'b1, treg[7:1]};
+                    dout = treg[0];
+                end
+                else begin //MSB first shift LEFT
+                    treg = {treg[6:0], 1'b1};
+                    dout = treg[7];
+                end
+            end
+        end //rst
+    end //always
 
 endmodule

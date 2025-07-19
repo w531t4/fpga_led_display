@@ -6,7 +6,7 @@ module multimem #(
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
-    ) (
+) (
     input wire [7:0] DataInA,
     input wire [15:0] DataInB,
     // 12 bits [11:0]      -5-                   -log( (64*2),2)=7-
@@ -23,13 +23,13 @@ module multimem #(
     input wire ResetB,
     output reg [7:0] QA,
     output reg [15:0] QB
-    );
+);
     // Underlying memory: 4K x 8-bit
     //  [7:0] mem [0:4095]
     reg [7:0] mem [0:(PIXEL_HEIGHT*PIXEL_WIDTH*BYTES_PER_PIXEL)-1];  // 2^12 = 4096 entries
     `ifdef SIM
-    reg [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] init_index;
-    reg        init_done;
+        reg [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] init_index;
+        reg        init_done;
     `endif
     // Write Port A: 8-bit writes
     always @(posedge ClockA) begin
@@ -43,27 +43,27 @@ module multimem #(
     always @(posedge ClockB) begin
         if (ResetA || ResetB) begin
             `ifdef SIM
-            init_index <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
-            init_done <= 1'b0;
+                init_index <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
+                init_done <= 1'b0;
             `endif
             QB <= 16'b0;
         end
         else begin
             `ifdef SIM
-            if (!init_done) begin
-                mem[init_index] <= 8'h00;
-                init_index <= init_index + 1;
-                if (init_index == ((PIXEL_HEIGHT*PIXEL_WIDTH*BYTES_PER_PIXEL)-1)) begin
-                    init_done <= 1;
+                if (!init_done) begin
+                    mem[init_index] <= 8'h00;
+                    init_index <= init_index + 1;
+                    if (init_index == ((PIXEL_HEIGHT*PIXEL_WIDTH*BYTES_PER_PIXEL)-1)) begin
+                        init_done <= 1;
+                    end
                 end
-            end
-            else begin
+                else begin
             `endif
                 if (ClockEnB) begin
                     QB <= {mem[{AddressB, 1'b1}], mem[{AddressB, 1'b0}]};
                 end
             `ifdef SIM
-            end
+                end
             `endif
         end
     end

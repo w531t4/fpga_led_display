@@ -75,8 +75,7 @@ module tb_spi #(
         `endif
         $dumpvars(0, tb_spi);
         #OFFSET;
-        forever
-        begin
+        forever begin
             clk = 1'b0;
             #(PERIOD-(PERIOD*DUTY_CYCLE)) clk = 1'b1;
             #(PERIOD*DUTY_CYCLE);
@@ -146,8 +145,7 @@ module tb_spi #(
     end
 
     always @ (rstb or Mrdata) begin
-        if(rstb == 0)
-            s_tdata = 8'hAA;
+        if(rstb == 0) s_tdata = 8'hAA;
         else begin
             # 10 s_tdata = Mrdata;
         end
