@@ -306,13 +306,6 @@ fm6126init do_init (
             .done(rxdata_ready),          // data ready
             .rdata(rxdata_to_controller)   // data
         );
-        ff_sync #(
-        ) uart_sync (
-            .clk(clk_root),
-            .signal(rxdata_ready),
-            .sync_signal(rxdata_ready_sync),
-            .reset(global_reset)
-        );
     `else
         uart_rx #(
             // we want 22MHz / 2,430,000 = 9.0534
@@ -327,16 +320,16 @@ fm6126init do_init (
             .o_recvdata(uart_rx_dataready),
             .o_busy(rxdata_ready)
         );
-        // bring uart-data into main clock domain
-        ff_sync #(
-        ) uart_sync (
-            .clk(clk_root),
-            .signal(rxdata_ready),
-            .sync_signal(rxdata_ready_sync),
-            .reset(global_reset)
-        );
     `endif
 
+    // bring uart-data into main clock domain
+    ff_sync #(
+    ) uart_sync (
+        .clk(clk_root),
+        .signal(rxdata_ready),
+        .sync_signal(rxdata_ready_sync),
+        .reset(global_reset)
+    );
 
     /* the control module */
     control_module #(
