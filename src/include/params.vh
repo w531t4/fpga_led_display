@@ -3,10 +3,12 @@
 // tgt_hz variation (after rounding): 0.70%
 // 16000000hz / 246154hz = 65 ticks width=7
 parameter ROOT_CLOCK = 16000000,
-// Use this to determine what baudrate to require at ctrl/rx_in
 
-parameter CTRLR_UART_RX_FREQ_GOAL = 244444,
-parameter CTRLR_CLK_TICKS_PER_BIT = $rtoi(ROOT_CLOCK / CTRLR_UART_RX_FREQ_GOAL * 1.0),
+`ifndef SPI
+    // Use this to determine what baudrate to require at ctrl/rx_in
+    parameter CTRLR_UART_RX_FREQ_GOAL = 244444,
+    parameter CTRLR_CLK_TICKS_PER_BIT = $rtoi(ROOT_CLOCK / CTRLR_UART_RX_FREQ_GOAL * 1.0),
+`endif
 
 // Use this to tune what clock freq we expose to matrix_scan
 parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 3,
@@ -28,12 +30,12 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 3,
 `endif
 
 `ifdef SIM
-    // use smaller value in testbench so we don't infinitely sim
-    parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15,
-
+    `ifndef SPI
+        // use smaller value in testbench so we don't infinitely sim
+        parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15,
+    `endif
     // period = (1 / 16000000hz) / 2 = 31.25000 //31.25000*6, // *6 to match current clock divider in main
     parameter SIM_HALF_PERIOD_NS = ((1.0/ROOT_CLOCK) * 1000000000)/2.0, //31.25,
-
 `endif
 
 `ifdef W128
