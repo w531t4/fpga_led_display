@@ -10,10 +10,6 @@ module pixel_split #(
 
     output [2:0] rgb_output
 );
-    wire [4:0] red_raw;
-    wire [5:0] green_raw;
-    wire [4:0] blue_raw;
-
     wire [5:0] red_gamma;
     wire [5:0] green_gamma;
     wire [5:0] blue_gamma;
@@ -21,18 +17,9 @@ module pixel_split #(
     /* split the RGB565 pixel into components */
     rgb565 rgb (
         .data_in(pixel_rgb565),
-        .red(red_raw),
-        .green(green_raw),
-        .blue(blue_raw)
-    );
-
-    gamma565_correct gamma_c (
-        .red_in(red_raw),
-        .green_in(green_raw),
-        .blue_in(blue_raw),
-        .red_out(red_gamma),
-        .green_out(green_gamma),
-        .blue_out(blue_gamma)
+        .red(red_gamma),
+        .green(green_gamma),
+        .blue(blue_gamma)
     );
 
     /* apply the brightness mask to the gamma-corrected sub-pixel value */

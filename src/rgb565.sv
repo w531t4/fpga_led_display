@@ -6,11 +6,31 @@ module rgb565 #(
 ) (
     input [15:0] data_in,
 
-    output [4:0] red,
+    output [5:0] red,
     output [5:0] green,
-    output [4:0] blue
+    output [5:0] blue
 );
-    assign red[4:0]   = data_in[15:11];
-    assign green[5:0] = data_in[10:5];
-    assign blue[4:0]  = data_in[4:0];
+
+    gamma_correct #(
+        .IN_BITS(5),
+        .OUT_BITS(6)
+    ) gc_red (
+        .in(data_in[15:11]),
+        .out(red)
+    );
+    gamma_correct #(
+        .IN_BITS(6),
+        .OUT_BITS(6)
+    ) gc_green(
+        .in(data_in[10:5]),
+        .out(green)
+    );
+    gamma_correct #(
+        .IN_BITS(5),
+        .OUT_BITS(6)
+    ) gc_blue (
+        .in(data_in[4:0]),
+        .out(blue)
+    );
+
 endmodule
