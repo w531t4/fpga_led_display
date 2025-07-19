@@ -121,6 +121,7 @@ module main #(
     `ifdef SPI
         wire spi_clk;
         wire spi_cs;
+        wire spi_slave_sdout;
     `else
         // uart rx for controller
         wire uart_rx_dataready;
@@ -296,12 +297,12 @@ module main #(
         spi_slave spislave (
             .rstb(~global_reset),
             .ten(1'b0),     // transmit enable, 0 = disabled
-            .tdata(),
+            .tdata(8'b0),
             .mlb(1'b1),     // shift msb first
             .ss(spi_cs),
             .sck(spi_clk),
             .sdin(rxdata),    // data coming from master
-            .sdout(),
+            .sdout(spi_slave_sdout),
             .done(rxdata_ready),          // data ready
             .rdata(rxdata_to_controller)   // data
         );
@@ -505,7 +506,9 @@ module main #(
                         `endif
                         ram_a_reset,
                         ram_a_data_out,
-                        `ifndef SPI
+                        `ifdef SPI
+                            spi_slave_sdout,
+                        `else
                             uart_rx_dataready,
                         `endif
                         `ifdef USE_FM6126A
