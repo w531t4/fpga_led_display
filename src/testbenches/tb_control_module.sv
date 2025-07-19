@@ -10,7 +10,7 @@ module tb_control_module #(
 logic clk;
 logic reset;
 logic local_reset;
-wire rx_line;
+
 //20220106
 //logic [7:0] ram_data_in = 8'b01100101;
 wire [2:0] rgb_enable;
@@ -30,18 +30,18 @@ wire debug_command_busy;
 wire debug_command_pulse;
 wire [7:0] debug_command;
 
-wire [7:0] rxdata_for_controller;
+wire [7:0] rxdata_to_controller;
+wire rxdata;
+wire rxdata_ready;
+wire rxdata_ready_sync;
 `ifdef SPI
     logic [7:0] thebyte;
     wire spi_master_txdone;
     integer i;
     wire spi_clk;
     wire spi_cs;
-    wire spi_data_ready;
     logic spi_start;
 `else
-    wire uart_rx_running_presync;
-    wire uart_rx_running_sync;
     wire uart_rx_dataready;
 `endif
 //>>> "".join([a[i] for i in range(len(a)-1, -1, -1)])
@@ -63,7 +63,7 @@ logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118
         .din(1'b0),     // data from slave, disable
         .ss(spi_cs),        // chip select for slave
         .sck(spi_clk),      // clock to send to slave
-        .dout(rx_line),    // data to send to slave
+        .dout(rxdata),    // data to send to slave
         .done(spi_master_txdone),
         .rdata()
     );
@@ -74,10 +74,10 @@ logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118
         .mlb(1'b1),     // shift msb first
         .ss(spi_cs),
         .sck(spi_clk),
-        .sdin(rx_line),    // data coming from master
+        .sdin(rxdata),    // data coming from master
         .sdout(),
-        .done(spi_data_ready),          // data ready
-        .rdata(rxdata_for_controller)   // data
+        .done(rxdata_ready),          // data ready
+        .rdata(rxdata_to_controller)   // data
     );
 `else
     uart_rx #(
@@ -88,19 +88,10 @@ logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118
         .reset(reset),
         .i_clk(clk),
         .i_enable(1'b1),
-        .i_din_priortobuffer(rx_line),
-        .o_rxdata(rxdata_for_controller),
+        .i_din_priortobuffer(rxdata),
+        .o_rxdata(rxdata_to_controller),
         .o_recvdata(uart_rx_dataready),
-        .o_busy(uart_rx_running_presync)
-    );
-
-    // bring uart-data into main clock domain
-    ff_sync #(
-    ) uart_sync (
-        .clk(clk),
-        .signal(uart_rx_running_presync),
-        .sync_signal(uart_rx_running_sync),
-        .reset(reset)
+        .o_busy(rxdata_ready)
     );
     debugger #(
         .DATA_WIDTH(1072),
@@ -120,10 +111,17 @@ logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118
         .debug_command(debug_command),
         .debug_command_pulse(debug_command_pulse),
         .debug_command_busy(debug_command_busy),
-        .tx_out(rx_line)
+        .tx_out(rxdata)
     );
 `endif
-
+// bring uart-data into main clock domain
+ff_sync #(
+) uart_sync (
+    .clk(clk),
+    .signal(rxdata_ready),
+    .sync_signal(rxdata_ready_sync),
+    .reset(reset)
+);
 control_module #(
         // Picture/Video data RX baud rate
         .PIXEL_WIDTH(PIXEL_WIDTH),
@@ -132,11 +130,11 @@ control_module #(
     ) control_module_instance (
         .reset(reset),
         .clk_in(clk),
-        .data_rx(rxdata_for_controller),
+        .data_rx(rxdata_to_controller),
         `ifdef SPI
-            .data_ready_n(spi_data_ready),
+            .data_ready_n(~rxdata_ready_sync),
         `else
-            .data_ready_n(uart_rx_running_sync),
+            .data_ready_n(rxdata_ready_sync),
         `endif
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),

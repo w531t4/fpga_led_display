@@ -97,7 +97,7 @@ module main #(
         wire matrix_row_latch2;
         // end matrix_scan
     `endif
-    wire uart_rx;
+
     // [5:0]
     wire [$clog2(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
@@ -115,17 +115,16 @@ module main #(
     wire alt_reset;
     wire pll_locked;
 
-    wire [7:0] uart_rx_data;
-    wire uart_rx_running_sync;
+    wire rxdata;
+    wire rxdata_ready;
+    wire rxdata_ready_sync;
+    wire [7:0] rxdata_to_controller;
     `ifdef SPI
         wire spi_clk;
         wire spi_cs;
-        wire [7:0] rxdata_for_controller;
-        wire spi_data_ready;
     `else
         // uart rx for controller
         wire uart_rx_dataready;
-        wire uart_rx_running_presync;
     `endif
     // No wires past here
 
@@ -189,16 +188,12 @@ fm6126init do_init (
         cmd_line_addr2[11:0],
         rgb2[2:0],
         rgb1[2:0],
-        `ifdef SPI
-            1'b0,
-        `else
-            uart_rx_running_sync,
-        `endif
+        1'b0, // rxdata_ready_sync
         row_latch,
         row_latch_state[1:0],
         ram_b_reset,
         cmd_line_state[1:0],
-        uart_rx,
+        1'b0, // uart_rx,
         ram_access_start_latch,
         ram_access_start,
         //								127
@@ -221,7 +216,7 @@ fm6126init do_init (
         ram_a_address[$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-1:0],
         ram_a_clk_enable,
         ram_a_data_in[7:0],
-        uart_rx_data[7:0]
+        8'd0 // uart_rx_data[7:0]
         };
 `endif
 
@@ -306,16 +301,16 @@ fm6126init do_init (
             .mlb(1'b1),     // shift msb first
             .ss(spi_cs),
             .sck(spi_clk),
-            .sdin(uart_rx),    // data coming from master
+            .sdin(rxdata),    // data coming from master
             .sdout(),
-            .done(spi_data_ready),          // data ready
-            .rdata(rxdata_for_controller)   // data
+            .done(rxdata_ready),          // data ready
+            .rdata(rxdata_to_controller)   // data
         );
         ff_sync #(
         ) uart_sync (
             .clk(clk_root),
-            .signal(spi_data_ready),
-            .sync_signal(uart_rx_running_sync),
+            .signal(rxdata_ready),
+            .sync_signal(rxdata_ready_sync),
             .reset(global_reset)
         );
     `else
@@ -327,17 +322,17 @@ fm6126init do_init (
             .reset(global_reset),
             .i_clk(clk_root),
             .i_enable(1'b1),
-            .i_din_priortobuffer(uart_rx),
-            .o_rxdata(uart_rx_data),
+            .i_din_priortobuffer(rxdata),
+            .o_rxdata(rxdata_to_controller),
             .o_recvdata(uart_rx_dataready),
-            .o_busy(uart_rx_running_presync)
+            .o_busy(rxdata_ready)
         );
         // bring uart-data into main clock domain
         ff_sync #(
         ) uart_sync (
             .clk(clk_root),
-            .signal(uart_rx_running_presync),
-            .sync_signal(uart_rx_running_sync),
+            .signal(rxdata_ready),
+            .sync_signal(rxdata_ready_sync),
             .reset(global_reset)
         );
     `endif
@@ -352,12 +347,11 @@ fm6126init do_init (
         .reset(global_reset),
         .clk_in(clk_root),
         /* clk_root =  133MHZ */
+        .data_rx(rxdata_to_controller),
         `ifdef SPI
-            .data_rx(rxdata_for_controller),
-            .data_ready_n(~uart_rx_running_sync),
+            .data_ready_n(~rxdata_ready_sync),
         `else
-            .data_rx(uart_rx_data),
-            .data_ready_n(uart_rx_running_sync),
+            .data_ready_n(rxdata_ready_sync),
         `endif
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
@@ -458,9 +452,9 @@ fm6126init do_init (
     `ifdef SPI
         assign spi_clk = gp19;
         assign spi_cs = gp20;
-        assign uart_rx = gp17; // MOSI
+        assign rxdata = gp17; // MOSI
     `else
-        assign uart_rx = gp14;
+        assign rxdata = gp14;
     `endif
 
     assign gn11 = clk_pixel; // Pixel Clk
@@ -511,6 +505,9 @@ fm6126init do_init (
                         `endif
                         ram_a_reset,
                         ram_a_data_out,
+                        `ifndef SPI
+                            uart_rx_dataready
+                        `endif
                         `ifdef DEBUGGER
                             debug_command_pulse,
                             debug_command_busy,
@@ -524,4 +521,5 @@ fm6126init do_init (
                             init_reset_strobe,
                         `endif
                         1'b0};
+
 endmodule

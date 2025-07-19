@@ -15,7 +15,6 @@ module tb_main #(
     wire ROA1;
     wire ROA2;
     wire ROA3;
-    wire uart_rx;
     wire rgb2_0;
     wire rgb2_1;
     wire rgb2_2;
@@ -35,6 +34,7 @@ module tb_main #(
 
     `include "row4.vh"
 
+    wire rxdata;
     `ifdef SPI
         logic [7:0] thebyte;
         wire spi_master_txdone;
@@ -44,8 +44,6 @@ module tb_main #(
         wire spi_data_ready;
         logic spi_start;
     `else
-        wire uart_rx_running_presync;
-        wire uart_rx_running_sync;
         wire uart_rx_dataready;
     `endif
 
@@ -69,7 +67,7 @@ module tb_main #(
         .gp3(rgb2_2),
         .gp4(rgb2_0),
         .gp5(rgb2_1),
-        .gp14(uart_rx),
+        .gp14(rxdata),
         .gp16(debugger_txout),
         .gp15(debugger_rxin),
         .gn11(),
@@ -87,7 +85,7 @@ module tb_main #(
         .gn5()
         `ifdef SPI
             ,
-            .gp17(uart_rx),  // spi miso
+            .gp17(rxdata),  // spi miso
             //.gp18() // spi_mosi
             .gp19(spi_clk),  // spi_clk
             .gp20(spi_cs)   // spi_cs
@@ -106,7 +104,7 @@ module tb_main #(
             .din(1'b0),     // data from slave, disable
             .ss(spi_cs),        // chip select for slave
             .sck(spi_clk),      // clock to send to slave
-            .dout(uart_rx),    // data to send to slave
+            .dout(rxdata),    // data to send to slave
             .done(spi_master_txdone),
             .rdata()
         );
@@ -129,7 +127,7 @@ module tb_main #(
             .debug_command(debug_command),
             .debug_command_pulse(debug_command_pulse),
             .debug_command_busy(debug_command_busy),
-            .tx_out(uart_rx)
+            .tx_out(rxdata)
         );
     `endif
 
@@ -151,7 +149,7 @@ module tb_main #(
             $dumpvars(1, tb_main.tbi_main.clk_root);
             $dumpvars(1, tb_main.mydebug.debug_command_busy);
             $dumpvars(1, tb_main.mydebug.debug_command_pulse);
-            $dumpvars(1, tb_main.tbi_main.uart_rx);
+            $dumpvars(1, tb_main.tbi_main.rxdata);
             $dumpvars(1, tb_main.tbi_main.ctrl);
         `else
             $dumpvars(0, tb_main);
