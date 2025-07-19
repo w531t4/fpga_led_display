@@ -30,16 +30,56 @@ wire debug_command_busy;
 wire debug_command_pulse;
 wire [7:0] debug_command;
 
-wire [7:0] uart_rx_data;
-wire uart_rx_running_presync;
-wire uart_rx_running_sync;
-wire uart_rx_dataready;
-
+wire [7:0] rxdata_for_controller;
+`ifdef SPI
+    logic [7:0] thebyte;
+    wire spi_master_txdone;
+    integer i;
+    wire spi_clk;
+    wire spi_cs;
+    wire spi_data_ready;
+    logic spi_start;
+`else
+    wire uart_rx_running_presync;
+    wire uart_rx_running_sync;
+    wire uart_rx_dataready;
+`endif
 //>>> "".join([a[i] for i in range(len(a)-1, -1, -1)])
 //'brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110'
+localparam mystring_size = 'd1072;
 logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
 //logic tb_clk_baudrate;
 
+
+`ifdef SPI
+    spi_master #(
+    ) spimaster (
+        .rstb(~reset),
+        .clk(clk),
+        .mlb(1'b1),     // shift msb first
+        .start(spi_start),  // indicator to start activity
+        .tdat(thebyte),
+        .cdiv(2'b0),    // 2'b0 = divide by 4
+        .din(1'b0),     // data from slave, disable
+        .ss(spi_cs),        // chip select for slave
+        .sck(spi_clk),      // clock to send to slave
+        .dout(rx_line),    // data to send to slave
+        .done(spi_master_txdone),
+        .rdata()
+    );
+    spi_slave spislave (
+        .rstb(~reset),
+        .ten(1'b0),     // transmit enable, 0 = disabled
+        .tdata(),
+        .mlb(1'b1),     // shift msb first
+        .ss(spi_cs),
+        .sck(spi_clk),
+        .sdin(rx_line),    // data coming from master
+        .sdout(),
+        .done(spi_data_ready),          // data ready
+        .rdata(rxdata_for_controller)   // data
+    );
+`else
     uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
@@ -49,7 +89,7 @@ logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118
         .i_clk(clk),
         .i_enable(1'b1),
         .i_din_priortobuffer(rx_line),
-        .o_rxdata(uart_rx_data),
+        .o_rxdata(rxdata_for_controller),
         .o_recvdata(uart_rx_dataready),
         .o_busy(uart_rx_running_presync)
     );
@@ -62,35 +102,6 @@ logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118
         .sync_signal(uart_rx_running_sync),
         .reset(reset)
     );
-
-control_module #(
-        // Picture/Video data RX baud rate
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
-    ) control_module_instance (
-        .reset(reset),
-        .clk_in(clk),
-        .data_rx(uart_rx_data),
-        .data_ready_n(uart_rx_running_sync),
-        .rgb_enable(rgb_enable),
-        .brightness_enable(brightness_enable),
-        //20220106
-        //.ram_data_in(ram_data_in),
-        .ram_data_out(ram_data_out),
-        .ram_address(ram_address),
-        .ram_write_enable(ram_write_enable),
-        .ram_clk_enable(ram_clk_enable),
-        .ram_reset(ram_reset)
-        //20220106
-        //.rx_invalid(rx_invalid),
-        `ifdef DEBUGGER
-            ,
-            .cmd_line_state2(cmd_line_state2),
-            .num_commands_processed(num_commands_processed)
-        `endif
-    );
-
     debugger #(
         .DATA_WIDTH(1072),
         // use smaller than normal so it doesn't require us to simulate to
@@ -111,6 +122,39 @@ control_module #(
         .debug_command_busy(debug_command_busy),
         .tx_out(rx_line)
     );
+`endif
+
+control_module #(
+        // Picture/Video data RX baud rate
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+    ) control_module_instance (
+        .reset(reset),
+        .clk_in(clk),
+        .data_rx(rxdata_for_controller),
+        `ifdef SPI
+            .data_ready_n(spi_data_ready),
+        `else
+            .data_ready_n(uart_rx_running_sync),
+        `endif
+        .rgb_enable(rgb_enable),
+        .brightness_enable(brightness_enable),
+        //20220106
+        //.ram_data_in(ram_data_in),
+        .ram_data_out(ram_data_out),
+        .ram_address(ram_address),
+        .ram_write_enable(ram_write_enable),
+        .ram_clk_enable(ram_clk_enable),
+        .ram_reset(ram_reset)
+        //20220106
+        //.rx_invalid(rx_invalid),
+        `ifdef DEBUGGER
+            ,
+            .cmd_line_state2(cmd_line_state2),
+            .num_commands_processed(num_commands_processed)
+        `endif
+    );
 
   initial
   begin
@@ -121,27 +165,40 @@ control_module #(
       clk = 0;
       reset = 0;
       local_reset = 0;
-    repeat (20) begin
-        @(posedge clk);
-    end
-    @(posedge clk)
-        local_reset = ! local_reset;
-        reset = ! reset;
-    @(posedge clk)
-        local_reset = ! local_reset;
-        reset = ! reset;
-    repeat (20000) begin
-        @(posedge clk);
-    end
-    @(posedge clk)
-        local_reset = ! local_reset;
-        reset = ! reset;
-    @(posedge clk)
-        local_reset = ! local_reset;
-        reset = ! reset;
-    $finish;
+        `ifdef SPI
+            i = 0;
+            spi_start = 0;
+            thebyte = 8'b0;
+        `endif
+
+        @(posedge clk)
+            local_reset = ! local_reset;
+            reset = ! reset;
+        @(posedge clk)
+            local_reset = ! local_reset;
+            reset = ! reset;
+        `ifdef SPI
+            @(posedge clk)
+                thebyte = mystring[mystring_size-1 -: 8];
+            @(posedge clk)
+                spi_start = 1;
+        `endif
+        repeat (300) begin
+            @(posedge clk);
+        end
+        $finish;
   end
 
+`ifdef SPI
+    always begin
+        @(posedge spi_master_txdone) begin
+            if ((i < (mystring_size / 8))) begin
+                thebyte <= mystring[mystring_size-1 - (i*8) -: 8];
+                i <= i+1;
+            end
+        end
+    end
+`endif
 always begin
     #SIM_HALF_PERIOD_NS clk <= !clk;
 end

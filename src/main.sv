@@ -41,10 +41,17 @@ module main #(
   output gn11,
   output gn12,
   output gn13,
-  output gn14
-    // output gn15,
-    // output gn16,
-    // output gn17
+  output gn14,
+  // output gn15,
+  output gn16
+  `ifdef SPI
+    ,
+    input gp17,       // miso
+    //   output gp18, // mosi
+    input gp19,       // clk
+    input gp20        // ce
+  `endif
+
 );
 
 
@@ -108,12 +115,18 @@ module main #(
     wire alt_reset;
     wire pll_locked;
 
-    // uart rx for controller
     wire [7:0] uart_rx_data;
-    wire uart_rx_dataready;
-    wire uart_rx_running_presync;
-    logic uart_rx_running_buf, uart_rx_running_sync;
-
+    wire uart_rx_running_sync;
+    `ifdef SPI
+        wire spi_clk;
+        wire spi_cs;
+        wire [7:0] rxdata_for_controller;
+        wire spi_data_ready;
+    `else
+        // uart rx for controller
+        wire uart_rx_dataready;
+        wire uart_rx_running_presync;
+    `endif
     // No wires past here
 
     new_pll new_pll_inst (
@@ -176,7 +189,11 @@ fm6126init do_init (
         cmd_line_addr2[11:0],
         rgb2[2:0],
         rgb1[2:0],
-        uart_rx_running_sync,
+        `ifdef SPI
+            1'b0,
+        `else
+            uart_rx_running_sync,
+        `endif
         row_latch,
         row_latch_state[1:0],
         ram_b_reset,
@@ -281,28 +298,50 @@ fm6126init do_init (
     );
 
     // for controller
-    uart_rx #(
-        // we want 22MHz / 2,430,000 = 9.0534
-        // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
-    ) mycontrol_rxuart (
-        .reset(global_reset),
-        .i_clk(clk_root),
-        .i_enable(1'b1),
-        .i_din_priortobuffer(uart_rx),
-        .o_rxdata(uart_rx_data),
-        .o_recvdata(uart_rx_dataready),
-        .o_busy(uart_rx_running_presync)
-    );
+    `ifdef SPI
+        spi_slave spislave (
+            .rstb(~global_reset),
+            .ten(1'b0),     // transmit enable, 0 = disabled
+            .tdata(),
+            .mlb(1'b1),     // shift msb first
+            .ss(spi_cs),
+            .sck(spi_clk),
+            .sdin(uart_rx),    // data coming from master
+            .sdout(),
+            .done(spi_data_ready),          // data ready
+            .rdata(rxdata_for_controller)   // data
+        );
+        ff_sync #(
+        ) uart_sync (
+            .clk(clk_root),
+            .signal(spi_data_ready),
+            .sync_signal(uart_rx_running_sync),
+            .reset(global_reset)
+        );
+    `else
+        uart_rx #(
+            // we want 22MHz / 2,430,000 = 9.0534
+            // 22MHz / 9 = 2,444,444 baud 2444444
+            .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        ) mycontrol_rxuart (
+            .reset(global_reset),
+            .i_clk(clk_root),
+            .i_enable(1'b1),
+            .i_din_priortobuffer(uart_rx),
+            .o_rxdata(uart_rx_data),
+            .o_recvdata(uart_rx_dataready),
+            .o_busy(uart_rx_running_presync)
+        );
+        // bring uart-data into main clock domain
+        ff_sync #(
+        ) uart_sync (
+            .clk(clk_root),
+            .signal(uart_rx_running_presync),
+            .sync_signal(uart_rx_running_sync),
+            .reset(global_reset)
+        );
+    `endif
 
-    // bring uart-data into main clock domain
-    ff_sync #(
-    ) uart_sync (
-        .clk(clk_root),
-        .signal(uart_rx_running_presync),
-        .sync_signal(uart_rx_running_sync),
-        .reset(global_reset)
-    );
 
     /* the control module */
     control_module #(
@@ -313,8 +352,13 @@ fm6126init do_init (
         .reset(global_reset),
         .clk_in(clk_root),
         /* clk_root =  133MHZ */
-        .data_rx(uart_rx_data),
-        .data_ready_n(uart_rx_running_sync),
+        `ifdef SPI
+            .data_rx(rxdata_for_controller),
+            .data_ready_n(~uart_rx_running_sync),
+        `else
+            .data_rx(uart_rx_data),
+            .data_ready_n(uart_rx_running_sync),
+        `endif
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
 
@@ -411,8 +455,13 @@ fm6126init do_init (
     assign gp8 = row_address_active[1]; // B / Row[1]
     assign gp9 = row_address_active[2]; // C / Row[2]
     assign gp10 = row_address_active[3]; // D / Row[3]
-
-    assign uart_rx = gp14;
+    `ifdef SPI
+        assign spi_clk = gp19;
+        assign spi_cs = gp20;
+        assign uart_rx = gp17; // MOSI
+    `else
+        assign uart_rx = gp14;
+    `endif
 
     assign gn11 = clk_pixel; // Pixel Clk
     assign gn12 = row_latch; // Row Latch

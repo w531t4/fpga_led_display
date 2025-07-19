@@ -35,6 +35,20 @@ module tb_main #(
 
     `include "row4.vh"
 
+    `ifdef SPI
+        logic [7:0] thebyte;
+        wire spi_master_txdone;
+        integer i;
+        wire spi_clk;
+        wire spi_cs;
+        wire spi_data_ready;
+        logic spi_start;
+    `else
+        wire uart_rx_running_presync;
+        wire uart_rx_running_sync;
+        wire uart_rx_dataready;
+    `endif
+
     main #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
@@ -71,28 +85,53 @@ module tb_main #(
         .gn3(),
         .gn4(),
         .gn5()
+        `ifdef SPI
+            ,
+            .gp17(uart_rx),  // spi miso
+            //.gp18() // spi_mosi
+            .gp19(spi_clk),  // spi_clk
+            .gp20(spi_cs)   // spi_cs
+        `endif
     );
     logic mask;
-    debugger #(
-        .DATA_WIDTH(myled_row_size),
-        // use smaller than normal so it doesn't require us to simulate to
-        // infinity to see results
-        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+    `ifdef SPI
+        spi_master #(
+        ) spimaster (
+            .rstb(~reset),
+            .clk(clk),
+            .mlb(1'b1),     // shift msb first
+            .start(spi_start),  // indicator to start activity
+            .tdat(thebyte),
+            .cdiv(2'b0),    // 2'b0 = divide by 4
+            .din(1'b0),     // data from slave, disable
+            .ss(spi_cs),        // chip select for slave
+            .sck(spi_clk),      // clock to send to slave
+            .dout(uart_rx),    // data to send to slave
+            .done(spi_master_txdone),
+            .rdata()
+        );
+    `else
+        debugger #(
+            .DATA_WIDTH(myled_row_size),
+            // use smaller than normal so it doesn't require us to simulate to
+            // infinity to see results
+            .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
-        // We're using the debugger here as a data transmitter only. Need
-        // to transmit at the same speed as the controller is expecting to
-        // receive at
-        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
-    ) mydebug (
-        .clk_in(clk && mask),
-        .reset(local_reset),
-        .data_in(myled_row),
-        .debug_uart_rx_in(1'b0),
-        .debug_command(debug_command),
-        .debug_command_pulse(debug_command_pulse),
-        .debug_command_busy(debug_command_busy),
-        .tx_out(uart_rx)
-    );
+            // We're using the debugger here as a data transmitter only. Need
+            // to transmit at the same speed as the controller is expecting to
+            // receive at
+            .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        ) mydebug (
+            .clk_in(clk && mask),
+            .reset(local_reset),
+            .data_in(myled_row),
+            .debug_uart_rx_in(1'b0),
+            .debug_command(debug_command),
+            .debug_command_pulse(debug_command_pulse),
+            .debug_command_busy(debug_command_busy),
+            .tx_out(uart_rx)
+        );
+    `endif
 
     initial begin
         `ifdef DUMP_FILE_NAME
@@ -119,7 +158,10 @@ module tb_main #(
         `endif
         clk = 0;
         mask = 1;
-
+        `ifdef SPI
+            i = 0;
+            thebyte = 8'd0;
+        `endif
 
         debugger_rxin = 0;
         reset = 0;
@@ -133,6 +175,15 @@ module tb_main #(
         @(posedge clk)
             local_reset = ! local_reset;
             reset = ! reset;
+        `ifdef SPI
+            repeat (50) begin
+                @(posedge clk);
+            end
+            @(posedge clk)
+                thebyte = myled_row[myled_row_size-1 -: 8];
+            @(posedge clk)
+                spi_start = 1;
+        `endif
         // repeat (20) begin
         //     @(posedge clk);
         // end
@@ -143,6 +194,16 @@ module tb_main #(
             mask = 1;
         #15000000 $finish;
     end
+    `ifdef SPI
+        always begin
+            @(posedge spi_master_txdone) begin
+                if ((i < (myled_row_size / 8))) begin
+                    thebyte <= myled_row[myled_row_size-1 - (i*8) -: 8];
+                    i <= i+1;
+                end
+            end
+        end
+    `endif
     always begin
         #SIM_HALF_PERIOD_NS clk <= !clk;
     end
