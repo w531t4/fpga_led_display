@@ -9,7 +9,6 @@ module tb_debugger #(
 
     logic clk;
     logic reset;
-    logic local_reset;
     logic [23:0] data_in;
     wire tx_out;
     logic clk_out;
@@ -24,7 +23,7 @@ module tb_debugger #(
     clock_divider #(
         .CLK_DIV_COUNT(600)
     ) clkdiv_baudrate (
-        .reset(local_reset),
+        .reset(reset),
         .clk_in(clk),
         .clk_out(tb_clk_baudrate)
     );
@@ -49,7 +48,6 @@ module tb_debugger #(
         $dumpvars(0, tb_debugger);
         clk = 0;
         reset = 0;
-        local_reset = 0;
         rx_line2 = 0;
         clk_out = 0;
         data_in = 24'b111100001010101000001101;
@@ -82,11 +80,9 @@ module tb_debugger #(
     end
     initial begin
         #2 reset = ! reset;
-        #2 local_reset = ! local_reset;
     end
     initial begin
         #3 reset = ! reset;
-        #3 local_reset = ! local_reset;
     end
 
     initial #1000000 $finish;

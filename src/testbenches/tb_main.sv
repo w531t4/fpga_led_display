@@ -25,7 +25,6 @@ module tb_main #(
     logic  debugger_rxin;
 
     logic reset;
-    logic local_reset;
 
     // debugger stuff
     wire debug_command_busy;
@@ -121,7 +120,7 @@ module tb_main #(
             .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
         ) mydebug (
             .clk_in(clk && mask),
-            .reset(local_reset),
+            .reset(reset),
             .data_in(myled_row),
             .debug_uart_rx_in(1'b0),
             .debug_command(debug_command),
@@ -163,16 +162,13 @@ module tb_main #(
 
         debugger_rxin = 0;
         reset = 0;
-        local_reset = 0;
         // repeat (20) begin
         //     @(posedge clk);
         // end
         @(posedge clk) begin
-            local_reset = ! local_reset;
             reset = ! reset;
         end
         @(posedge clk) begin
-            local_reset = ! local_reset;
             reset = ! reset;
         end
         `ifdef SPI
