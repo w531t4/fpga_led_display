@@ -15,7 +15,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # FOCUS_TB_MAIN_UART - limit main testbench to include only signals applicable to uart debugging
 # SPI - use SPI for data ingress instead of a UART
 
-BUILD_FLAGS ?=-DDEBUGGER -DSPI
+BUILD_FLAGS ?=-DSPI
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
