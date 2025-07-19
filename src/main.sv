@@ -479,6 +479,11 @@ fm6126init do_init (
     wire _unused_ok = &{1'b0,
                         pll_locked,
                         `ifdef DEBUGGER
+                            debug_command_pulse,
+                            debug_command_busy,
+                            debug_uart_tx,
+                            debug_uart_rx,
+                            debug_command,
                             //from controller
                             cmd_line_state,
                             ram_access_start,
@@ -495,20 +500,13 @@ fm6126init do_init (
                             clk_pixel_load_en,
                             matrix_row_latch2,
                             // end matrix_scan
+                        `else
+                            gp15,
                         `endif
                         ram_a_reset,
                         ram_a_data_out,
                         `ifndef SPI
                             uart_rx_dataready,
-                        `endif
-                        `ifdef DEBUGGER
-                            debug_command_pulse,
-                            debug_command_busy,
-                            debug_uart_tx,
-                            debug_uart_rx,
-                            debug_command,
-                        `else
-                            gp15,
                         `endif
                         `ifdef USE_FM6126A
                             init_reset_strobe,
