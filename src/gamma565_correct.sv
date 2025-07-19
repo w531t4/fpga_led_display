@@ -17,9 +17,11 @@ module gamma565_correct #(
     reg [7:0] gamma_g_lut [0:63];
     reg [7:0] gamma_b_lut [0:31];
 
+    // verilator lint_off UNUSEDSIGNAL
     wire [7:0] red_gamma   = gamma_r_lut[red_in];
     wire [7:0] green_gamma = gamma_g_lut[green_in];
     wire [7:0] blue_gamma  = gamma_b_lut[blue_in];
+    // verilator lint_on UNUSEDSIGNAL
 
     // Scale gamma-corrected 8-bit values back to 6-bit range
     assign red_out = red_gamma[7:2];     // truncate to 6 bits
