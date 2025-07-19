@@ -159,31 +159,24 @@ module tb_main #(
         `endif
 
         debugger_rxin = 0;
-        reset = 0;
-        // repeat (20) begin
-        //     @(posedge clk);
-        // end
-        @(posedge clk) begin
-            reset = ! reset;
-        end
-        @(posedge clk) begin
-            reset = ! reset;
-        end
+        reset = 1;
+
+        // get past undefined period for global_reset. look for rising edge.
+        wait (tb_main.tbi_main.global_reset);
+        // finish reset for tb
+        @(posedge clk) reset = ~reset;
+        // wait for tb_main/global_reset to fall
+        wait (!tb_main.tbi_main.global_reset);
+
+        // wait until next clk_root goes high
+        wait (tb_main.tbi_main.clk_root);
+        // @(posedge tb_main.tbi_main.clk_root);
         `ifdef SPI
-            repeat (50) begin
-                @(posedge clk);
-            end
-            @(posedge clk)
+            @(posedge clk) begin
                 thebyte = myled_row[myled_row_size-1 -: 8];
-            @(posedge clk)
                 spi_start = 1;
+            end
         `endif
-        // repeat (20) begin
-        //     @(posedge clk);
-        // end
-        // repeat (5) begin
-        //     @(posedge clk);
-        // end
         @(posedge clk)
         #15000000 $finish;
     end
