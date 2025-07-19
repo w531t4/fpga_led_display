@@ -47,7 +47,7 @@ module matrix_scan #(
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
-    wire [6:0] unused_7bit_counter;
+    wire [$clog2(PIXEL_WIDTH)+1:0] pixel_load_en_counter_output;
     assign row_latch = row_latch_state[1:0] == 2'b10;
 
     assign clk_state = state == 2'b10;
@@ -69,7 +69,7 @@ module matrix_scan #(
         .start(clk_state),
         // 7'd64
         .value(PIXEL_WIDTH),
-        .counter(unused_7bit_counter),
+        .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
     );
 
@@ -165,7 +165,7 @@ module matrix_scan #(
     end
 
     wire _unused_ok = &{1'b0,
-                        unused_7bit_counter,
+                        pixel_load_en_counter_output,
                         unused_timer_runpin,
                         1'b0};
 endmodule
