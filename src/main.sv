@@ -69,14 +69,14 @@ module main #(
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
     wire ram_a_reset;
-    wire [15:0] ram_b_data_out;
+    wire [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
     //  [10:0]
-    wire [$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-2:0] ram_b_address;
+    wire [$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-3:0] ram_b_address;
     wire ram_b_clk_enable;
     wire ram_b_reset;
 
-    wire [15:0] pixel_rgb565_top;
-    wire [15:0] pixel_rgb565_bottom;
+    wire [(BYTES_PER_PIXEL*8)-1:0] pixel_rgb565_top;
+    wire [(BYTES_PER_PIXEL*8)-1:0] pixel_rgb565_bottom;
 
     `ifdef DEBUGGER
         // from controller
@@ -199,8 +199,8 @@ module main #(
             ram_access_start_latch,
             ram_access_start,
             //								127
-            pixel_rgb565_top[15:0],
-            pixel_rgb565_bottom[15:0],
+            pixel_rgb565_top[(BYTES_PER_PIXEL*8)-1:0],
+            pixel_rgb565_bottom[(BYTES_PER_PIXEL*8)-1:0],
             brightness_mask[5:0],
             brightness_enable[5:0],
             rgb_enable[2:0],
@@ -209,9 +209,9 @@ module main #(
             row_address[3:0],
             row_address_active[3:0],
             // [10:0]
-            ram_b_address[$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-2:0],
+            ram_b_address[$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-3:0],
             ram_b_clk_enable,
-            ram_b_data_out[15:0],
+            ram_b_data_out[((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0],
             ram_a_write_enable,
             ram_a_data_out[7:0],
             //  [11:0]
@@ -271,6 +271,7 @@ module main #(
 
     framebuffer_fetch #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) fb_f (

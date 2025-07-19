@@ -2,6 +2,7 @@
 module multimem #(
     parameter PIXEL_WIDTH = 'd64,
     parameter PIXEL_HEIGHT = 'd32,
+    parameter PIXEL_HALFHEIGHT = 'd16,
     parameter BYTES_PER_PIXEL = 'd2,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
@@ -11,8 +12,8 @@ module multimem #(
     input wire [15:0] DataInB,
     // 12 bits [11:0]      -5-                   -log( (64*2),2)=7-
     input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] AddressA,
-    // 11 bits [10:0] (-2, because this is 16bit, not 8bit)
-    input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-2:0] AddressB,
+    // 11 bits [10:0] (-2, because this is 16bit, not 8bit), -3 because we're not pulling half panels anymore
+    input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-3:0] AddressB,
     input wire ClockA,
     input wire ClockB,
     input wire ClockEnA,
@@ -22,7 +23,7 @@ module multimem #(
     input wire ResetA,
     input wire ResetB,
     output reg [7:0] QA,
-    output reg [15:0] QB
+    output reg [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] QB
 );
     // Underlying memory: 4K x 8-bit
     //  [7:0] mem [0:4095]
@@ -31,7 +32,7 @@ module multimem #(
         reg [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] init_index;
         reg        init_done;
     `endif
-    reg [15:0] QB_pre;
+    reg [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] QB_pre;
     // Write Port A: 8-bit writes
     always @(posedge ClockA) begin
         if (ClockEnA) begin
@@ -46,9 +47,9 @@ module multimem #(
             `ifdef SIM
                 init_index <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
                 init_done <= 1'b0;
-                QB_pre <= 16'b0;
+                QB_pre <= {((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8){1'b0}};
             `endif
-            QB <= 16'b0;
+            QB <= {((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8){1'b0}};
         end
         else begin
             `ifdef SIM
@@ -62,7 +63,10 @@ module multimem #(
                 else begin
             `endif
                 if (ClockEnB) begin
-                    QB_pre <= {mem[{AddressB, 1'b1}], mem[{AddressB, 1'b0}]};
+                    QB_pre <= {mem[{1'b1, AddressB, 1'b1}],
+                               mem[{1'b1, AddressB, 1'b0}],
+                               mem[{1'b0, AddressB, 1'b1}],
+                               mem[{1'b0, AddressB, 1'b0}]};
                     QB <= QB_pre;
                 end
             `ifdef SIM

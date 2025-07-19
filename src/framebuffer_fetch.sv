@@ -1,6 +1,7 @@
 `default_nettype none
 module framebuffer_fetch #(
     parameter PIXEL_WIDTH = 'd64,
+    parameter PIXEL_HEIGHT = 'd32,
     parameter PIXEL_HALFHEIGHT = 'd16,
     parameter BYTES_PER_PIXEL = 'd2,
     // verilator lint_off UNUSEDPARAM
@@ -20,7 +21,7 @@ module framebuffer_fetch #(
     input pixel_load_start,
 
     // [15:0] each fetch is one pixel worth of data
-    input [(BYTES_PER_PIXEL*8)-1:0] ram_data_in,
+    input [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] ram_data_in,
     // [10:0]
     output [$clog2(PIXEL_WIDTH) + $clog2(PIXEL_HALFHEIGHT):0] ram_address,
     output ram_clk_enable,
@@ -46,7 +47,8 @@ module framebuffer_fetch #(
 
     logic half_address;
     // [10:0]
-    assign ram_address = { half_address,
+    assign ram_address = {
+                        //    half_address,
                            row_address[$clog2(PIXEL_HALFHEIGHT)-1:0],
                            // log2(128)==7-1=6
                            ~column_address[$clog2(PIXEL_WIDTH)-1:0] };
@@ -87,11 +89,10 @@ module framebuffer_fetch #(
                 half_address <= 1'b0;
             end
             else if (pixel_load_counter == 'd1) begin
-                rgb565_bottom <= ram_data_in;
+                {rgb565_bottom, rgb565_top} <= ram_data_in;
                 half_address <= 1'b1;
             end
             else if (pixel_load_counter == 'd0) begin
-                rgb565_top <= ram_data_in;
             end
         end
     end
