@@ -2,7 +2,16 @@
 // 16000000hz / 244444hz = 65.4547 ticks width=7
 // tgt_hz variation (after rounding): 0.70%
 // 16000000hz / 246154hz = 65 ticks width=7
-parameter ROOT_CLOCK = 16000000,
+`ifdef CLK_100
+    parameter ROOT_CLOCK = 100_000_000,
+    parameter PLL_SPEED = 2,
+`elsif CLK_50
+    parameter ROOT_CLOCK = 50_000_000,
+    parameter PLL_SPEED = 1,
+`else
+    parameter ROOT_CLOCK = 16_000_000,
+    parameter PLL_SPEED = 0,
+`endif
 
 `ifndef SPI
     // Use this to determine what baudrate to require at ctrl/rx_in

@@ -128,7 +128,9 @@ module main #(
     `endif
     // No wires past here
 
-    new_pll new_pll_inst (
+    new_pll #(
+        .SPEED(PLL_SPEED)
+    ) new_pll_inst (
         .clock_in(clk_25mhz),
         .clock_out(clk_root),
         .locked(pll_locked)

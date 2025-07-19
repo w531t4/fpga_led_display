@@ -14,6 +14,8 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # W128 - enable 128 pixel width
 # FOCUS_TB_MAIN_UART - limit main testbench to include only signals applicable to uart debugging
 # SPI - use SPI for data ingress instead of a UART
+# CLK_100 - Use 100MHz clock for clk_root
+# CLK_50 - Use 50MHz clock for clk_root
 
 BUILD_FLAGS ?=-DSPI
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
