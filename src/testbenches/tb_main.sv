@@ -178,7 +178,9 @@ module tb_main #(
             end
         `endif
         @(posedge clk)
-        #15000000 $finish;
+        #((myled_row_size + 1000)*SIM_HALF_PERIOD_NS*2*4); // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
+        wait (tb_main.tbi_main.row_address_active == 4'b0101);
+        $finish;
     end
     `ifdef SPI
         always begin
