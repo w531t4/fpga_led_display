@@ -90,7 +90,6 @@ module tb_main #(
             .gp20(spi_cs)   // spi_cs
         `endif
     );
-    logic mask;
     `ifdef SPI
         spi_master #(
         ) spimaster (
@@ -119,7 +118,7 @@ module tb_main #(
             // receive at
             .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
         ) mydebug (
-            .clk_in(clk && mask),
+            .clk_in(clk),
             .reset(reset),
             .data_in(myled_row),
             .debug_uart_rx_in(1'b0),
@@ -154,7 +153,6 @@ module tb_main #(
             $dumpvars(0, tb_main);
         `endif
         clk = 0;
-        mask = 1;
         `ifdef SPI
             i = 0;
             thebyte = 8'd0;
@@ -187,7 +185,6 @@ module tb_main #(
         //     @(posedge clk);
         // end
         @(posedge clk)
-            mask = 1;
         #15000000 $finish;
     end
     `ifdef SPI
