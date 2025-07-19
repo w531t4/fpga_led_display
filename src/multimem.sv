@@ -25,12 +25,15 @@ module multimem #(
     output reg [7:0] QA,
     output reg [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] QB
 );
+    // PARALLEL_MEMS represents how many memories we'll break things down into (based on the bits that are hardcoded (and not included in AddressB))
+    //                 2 choices for half
+    //                 2 choices for pixel-byte
     localparam PARALLEL_MEMS = ((PIXEL_HEIGHT / PIXEL_HALFHEIGHT)) * BYTES_PER_PIXEL;
     localparam DEPTH_AFTER_PARALLEL = $rtoi((PIXEL_HEIGHT*PIXEL_WIDTH*BYTES_PER_PIXEL) / (((PIXEL_HEIGHT / PIXEL_HALFHEIGHT)) * BYTES_PER_PIXEL)*1.0);
 
     // Underlying memory: 4K x 8-bit
     //  [7:0] mem [0:4095]
-    reg [7:0] mem [0:PARALLEL_MEMS-1][0:DEPTH_AFTER_PARALLEL-1];  // 2^12 = 4096 entries
+    reg [7:0] mem [0:DEPTH_AFTER_PARALLEL-1][0:PARALLEL_MEMS-1];  // 2^12 = 4096 entries
     `ifdef SIM
         reg [$clog2(DEPTH_AFTER_PARALLEL)-1:0] init_index;
         reg [$clog2(PARALLEL_MEMS)-1:0] init_mems;
@@ -41,9 +44,9 @@ module multimem #(
     always @(posedge ClockA) begin
         if (ClockEnA) begin
             if (WrA)
-                mem[{AddressA[$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1],
-                     AddressA[0]}]
-                   [AddressA[$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-2:1]] <= DataInA;
+                mem[AddressA[$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-2:1]]
+                   [{AddressA[$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1],
+                     AddressA[0]}] <= DataInA;
         end
     end
 
@@ -61,7 +64,7 @@ module multimem #(
         else begin
             `ifdef SIM
                 if (!init_done) begin
-                    mem[init_mems][init_index] <= {$clog2(DEPTH_AFTER_PARALLEL){1'b0}};
+                    mem[init_index][init_mems] <= {$clog2(DEPTH_AFTER_PARALLEL){1'b0}};
                     init_index <= init_index + 1;
                     if (init_index == (DEPTH_AFTER_PARALLEL-1)) begin
                         if (init_mems == (PARALLEL_MEMS-1)) init_done <= 1;
@@ -74,11 +77,9 @@ module multimem #(
                 else begin
             `endif
                 if (ClockEnB) begin
-                    QB_pre <= {mem[2'b11][AddressB],
-                               mem[2'b10][AddressB],
-                               mem[2'b01][AddressB],
-                               mem[2'b00][AddressB]
-                                };
+                    for (int i = 0; i < PARALLEL_MEMS; i++) begin
+                         QB_pre[i*8 +: 8] <= mem[AddressB][i];
+                    end
                     QB <= QB_pre;
                 end
             `ifdef SIM
