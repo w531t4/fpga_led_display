@@ -168,12 +168,14 @@ module tb_control_module #(
             thebyte = 8'b0;
         `endif
 
-        @(posedge clk)
+        @(posedge clk) begin
             local_reset = ! local_reset;
             reset = ! reset;
-        @(posedge clk)
+        end
+        @(posedge clk) begin
             local_reset = ! local_reset;
             reset = ! reset;
+        end
         `ifdef SPI
             @(posedge clk)
                 thebyte = mystring[mystring_size-1 -: 8];

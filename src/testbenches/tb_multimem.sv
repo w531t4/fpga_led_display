@@ -57,18 +57,20 @@ module tb_multimem #(
         ram_a_reset = 0;
         ram_b_reset = 0;
 
-        @(posedge clk_a)
+        @(posedge clk_a) begin
             local_reset = ! local_reset;
             reset = ! reset;
             ram_a_reset = !ram_a_reset;
             ram_b_reset = !ram_b_reset;
-        @(posedge clk_a)
+        end
+        @(posedge clk_a) begin
             local_reset = ! local_reset;
             reset = !reset;
             ram_a_reset = !ram_a_reset;
             ram_b_reset = !ram_b_reset;
             #10 $dumpoff;
           #190000 $dumpon;
+        end
         @(negedge clk_a)
             do_write_start(12'b1111_1111_1111, "A");
         @(posedge clk_a)

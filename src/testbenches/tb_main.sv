@@ -167,12 +167,14 @@ module tb_main #(
         // repeat (20) begin
         //     @(posedge clk);
         // end
-        @(posedge clk)
+        @(posedge clk) begin
             local_reset = ! local_reset;
             reset = ! reset;
-        @(posedge clk)
+        end
+        @(posedge clk) begin
             local_reset = ! local_reset;
             reset = ! reset;
+        end
         `ifdef SPI
             repeat (50) begin
                 @(posedge clk);
