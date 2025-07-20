@@ -1,6 +1,7 @@
 `default_nettype none
 module main #(
     `include "params.vh"
+    `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -65,18 +66,18 @@ module main #(
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out;
     //  [11:0]
-    wire [$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-1:0] ram_a_address;
+    wire [_NUM_ADDRESS_A_BITS-1:0] ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
     wire ram_a_reset;
-    wire [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
+    wire [_NUM_DATA_B_BITS-1:0] ram_b_data_out;
     //  [10:0]
-    wire [$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-3:0] ram_b_address;
+    wire [_NUM_ADDRESS_B_BITS-1:0] ram_b_address;
     wire ram_b_clk_enable;
     wire ram_b_reset;
 
-    wire [(BYTES_PER_PIXEL*8)-1:0] pixeldata_top;
-    wire [(BYTES_PER_PIXEL*8)-1:0] pixeldata_bottom;
+    wire [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_top;
+    wire [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_bottom;
 
     `ifdef DEBUGGER
         // from controller
@@ -199,8 +200,8 @@ module main #(
             ram_access_start_latch,
             ram_access_start,
             //								127
-            pixeldata_top[(BYTES_PER_PIXEL*8)-1:0],
-            pixeldata_bottom[(BYTES_PER_PIXEL*8)-1:0],
+            pixeldata_top[_NUM_BITS_PER_SUBPANEL-1:0],
+            pixeldata_bottom[_NUM_BITS_PER_SUBPANEL-1:0],
             brightness_mask[BRIGHTNESS_LEVELS-1:0],
             brightness_enable[BRIGHTNESS_LEVELS-1:0],
             rgb_enable[2:0],
@@ -209,13 +210,13 @@ module main #(
             row_address[3:0],
             row_address_active[3:0],
             // [10:0]
-            ram_b_address[$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-3:0],
+            ram_b_address[_NUM_ADDRESS_B_BITS-1:0],
             ram_b_clk_enable,
-            ram_b_data_out[((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0],
+            ram_b_data_out[_NUM_DATA_B_BITS-1:0],
             ram_a_write_enable,
             ram_a_data_out[7:0],
             //  [11:0]
-            ram_a_address[$clog2(PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL)-1:0],
+            ram_a_address[_NUM_ADDRESS_A_BITS-1:0],
             ram_a_clk_enable,
             ram_a_data_in[7:0],
             8'd0 // uart_rx_data[7:0]

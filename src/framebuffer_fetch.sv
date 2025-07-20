@@ -1,9 +1,7 @@
 `default_nettype none
 module framebuffer_fetch #(
-    parameter PIXEL_WIDTH = 'd64,
-    parameter PIXEL_HEIGHT = 'd32,
-    parameter PIXEL_HALFHEIGHT = 'd16,
-    parameter BYTES_PER_PIXEL = 'd2,
+    `include "params.vh"
+    `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -20,16 +18,16 @@ module framebuffer_fetch #(
 
     input pixel_load_start,
 
-    // [15:0] each fetch is one pixel worth of data
-    input [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] ram_data_in,
+    // [15:0] each fetch is one pixel worth of data -- no longer true
+    input [_NUM_DATA_B_BITS-1:0] ram_data_in,
     // [10:0]
-    output [$clog2(PIXEL_WIDTH) + $clog2(PIXEL_HALFHEIGHT):0] ram_address,
+    output [_NUM_ADDRESS_B_BITS-1:0] ram_address,
     output ram_clk_enable,
     output ram_reset,
 
     // [15:0]
-    output logic [(BYTES_PER_PIXEL*8)-1:0] pixeldata_top,
-    output logic [(BYTES_PER_PIXEL*8)-1:0] pixeldata_bottom
+    output logic [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_top,
+    output logic [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_bottom
     `ifdef DEBUGGER
         ,
         output [3:0] pixel_load_counter2
@@ -74,8 +72,8 @@ module framebuffer_fetch #(
         if (reset) begin
             half_address <= 1'b0;
 
-            pixeldata_top    <= {(BYTES_PER_PIXEL*8){1'b0}};
-            pixeldata_bottom <= {(BYTES_PER_PIXEL*8){1'b0}};
+            pixeldata_top    <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
+            pixeldata_bottom <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
         end
         else begin
             // the frequency of pixel_load_start must contain enough clk_root

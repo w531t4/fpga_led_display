@@ -1,8 +1,7 @@
 `default_nettype none
 module control_module #(
-    parameter PIXEL_WIDTH = 'd64,
-    parameter PIXEL_HEIGHT = 'd32,
-    parameter BYTES_PER_PIXEL = 'd2,
+    `include "params.vh"
+    `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -15,9 +14,9 @@ module control_module #(
     output logic [2:0] rgb_enable,
     output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
 
-    output logic [7:0] ram_data_out,
+    output logic [_NUM_DATA_A_BITS-1:0] ram_data_out,
     //      with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
-    output logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] ram_address,
+    output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,
     output logic ram_write_enable,
     output ram_clk_enable,
     output ram_reset
@@ -26,11 +25,11 @@ module control_module #(
         output [1:0] cmd_line_state2,
         output ram_access_start2,
         output ram_access_start_latch2,
-        output [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] cmd_line_addr2,
+        output [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2,
         output logic [7:0] num_commands_processed
     `endif
 );
-
+    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH);
     wire ram_clk_enable_real;
     logic ram_access_start;
     logic ram_access_start_latch;
@@ -44,12 +43,13 @@ module control_module #(
     // For 32 bit high displays, [4:0]
     logic  [$clog2(PIXEL_HEIGHT)-1:0]  cmd_line_addr_row;
     // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
-    logic  [$clog2(PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0]  cmd_line_addr_col;
-    wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] cmd_line_addr =
+    logic  [_NUM_COLUMN_ADDRESS_BITS-1:0]  cmd_line_addr_col;
+    logic [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_line_pixelselect_num;
+    wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr =
         {  cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0],
-          ~cmd_line_addr_col[$clog2(PIXEL_WIDTH * BYTES_PER_PIXEL)-1:1],
-           ~cmd_line_addr_col[0] }; // <-- use this bit to toggle endainness. ~ == little endain
-                                    //                                          == bit endian
+          ~cmd_line_addr_col,
+          ~cmd_line_pixelselect_num}; // <-- use this to toggle endainness. ~ == little endain
+                                    //                                      == bit endian
                                     // NOTE: uart/alphabet.uart is BIG ENDIAN.
 
     `ifdef DEBUGGER
@@ -90,13 +90,13 @@ module control_module #(
             brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
 
             ram_data_out <= 8'd0;
-            ram_address <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
+            ram_address <= {_NUM_ADDRESS_A_BITS{1'b0}};
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
 
             cmd_line_state <= 2'd0;
             cmd_line_addr_row <= {$clog2(PIXEL_HEIGHT){1'b0}};
-            cmd_line_addr_col <= {$clog2(PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
+            cmd_line_addr_col <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
             `ifdef DEBUGGER
                 num_commands_processed <= 8'b0;
             `endif
@@ -113,13 +113,18 @@ module control_module #(
             // parameter PIXEL_WIDTH = 'd64,
             // parameter BYTES_PER_PIXEL = 'd2
             // cmd_line_addr_col[6:0] <= 7'd127;
-            cmd_line_addr_col[$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] <= (PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
+            cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
+            cmd_line_addr_col[_NUM_COLUMN_ADDRESS_BITS-1:0] <= PIXEL_WIDTH - 1;
             cmd_line_state <= 2'd1;
         end
         else if (cmd_line_state == 2'd1) begin
             /* decrement the column address (or finish the load) */
-            if (cmd_line_addr_col != 'd0) begin
-                cmd_line_addr_col <= cmd_line_addr_col - 'd1;
+            if (cmd_line_addr_col != 'd0 || cmd_line_pixelselect_num != 'd0) begin
+                if (cmd_line_pixelselect_num == 'd0) begin
+                    cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
+                    cmd_line_addr_col <= cmd_line_addr_col - 'd1;
+                end else
+                    cmd_line_pixelselect_num <= cmd_line_pixelselect_num - 'd1;
             end
             else begin
                 cmd_line_state <= 2'd0;

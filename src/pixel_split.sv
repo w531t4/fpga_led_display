@@ -1,12 +1,12 @@
 `default_nettype none
 module pixel_split #(
-    parameter BRIGHTNESS_LEVELS = 6,
-    parameter BYTES_PER_PIXEL = 'd2,
+    `include "params.vh"
+    `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input [(BYTES_PER_PIXEL*2)-1:0] pixel_data,
+    input [_NUM_DATA_B_BITS-1:0] pixel_data,
     input [BRIGHTNESS_LEVELS-1:0] brightness_mask,
     input [2:0] rgb_enable,
 

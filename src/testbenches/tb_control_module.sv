@@ -2,6 +2,7 @@
 `default_nettype none
 module tb_control_module #(
     `include "params.vh"
+    `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -15,8 +16,8 @@ module tb_control_module #(
     //logic [7:0] ram_data_in = 8'b01100101;
     wire [2:0] rgb_enable;
     wire [5:0] brightness_enable;
-    wire [7:0] ram_data_out;
-    wire [$clog2(PIXEL_HEIGHT)+$clog2((PIXEL_WIDTH * BYTES_PER_PIXEL) - 1)-1:0] ram_address;
+    wire [_NUM_DATA_A_BITS-1:0] ram_data_out;
+    wire [_NUM_ADDRESS_A_BITS-1:0] ram_address;
     wire ram_write_enable;
 
     wire ram_clk_enable;
