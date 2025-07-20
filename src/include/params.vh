@@ -55,5 +55,12 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 3,
 
 parameter PIXEL_HEIGHT = 32,
 parameter PIXEL_HALFHEIGHT = 16,
-parameter BYTES_PER_PIXEL = 2,
-parameter BRIGHTNESS_LEVELS = 6,
+
+
+`ifdef RGB24
+    parameter BYTES_PER_PIXEL = 3,
+    parameter BRIGHTNESS_LEVELS = 8,
+`else
+    parameter BYTES_PER_PIXEL = 2,
+    parameter BRIGHTNESS_LEVELS = 6,
+`endif

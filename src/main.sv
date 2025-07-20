@@ -75,8 +75,8 @@ module main #(
     wire ram_b_clk_enable;
     wire ram_b_reset;
 
-    wire [(BYTES_PER_PIXEL*8)-1:0] pixel_rgb565_top;
-    wire [(BYTES_PER_PIXEL*8)-1:0] pixel_rgb565_bottom;
+    wire [(BYTES_PER_PIXEL*8)-1:0] pixeldata_top;
+    wire [(BYTES_PER_PIXEL*8)-1:0] pixeldata_bottom;
 
     `ifdef DEBUGGER
         // from controller
@@ -199,8 +199,8 @@ module main #(
             ram_access_start_latch,
             ram_access_start,
             //								127
-            pixel_rgb565_top[(BYTES_PER_PIXEL*8)-1:0],
-            pixel_rgb565_bottom[(BYTES_PER_PIXEL*8)-1:0],
+            pixeldata_top[(BYTES_PER_PIXEL*8)-1:0],
+            pixeldata_bottom[(BYTES_PER_PIXEL*8)-1:0],
             brightness_mask[BRIGHTNESS_LEVELS-1:0],
             brightness_enable[BRIGHTNESS_LEVELS-1:0],
             rgb_enable[2:0],
@@ -288,8 +288,8 @@ module main #(
         .ram_clk_enable(ram_b_clk_enable),
         .ram_reset(ram_b_reset),
 
-        .rgb565_top(pixel_rgb565_top),
-        .rgb565_bottom(pixel_rgb565_bottom)
+        .pixeldata_top(pixeldata_top),
+        .pixeldata_bottom(pixeldata_bottom)
         `ifdef DEBUGGER
         ,
             .pixel_load_counter2(pixel_load_counter2)
@@ -391,9 +391,10 @@ module main #(
 
     /* split the pixels and get the current brightness' bit */
     pixel_split #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) px_top (
-        .pixel_rgb565(pixel_rgb565_top),
+        .pixel_data(pixeldata_top),
         .brightness_mask(brightness_mask & brightness_enable),
         .rgb_enable(rgb_enable),
         `ifdef USE_FM6126A
@@ -403,9 +404,10 @@ module main #(
         `endif
     );
     pixel_split #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) px_bottom (
-        .pixel_rgb565(pixel_rgb565_bottom),
+        .pixel_data(pixeldata_bottom),
         .brightness_mask(brightness_mask & brightness_enable),
         .rgb_enable(rgb_enable),
         `ifdef USE_FM6126A

@@ -16,6 +16,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # SPI - use SPI for data ingress instead of a UART
 # CLK_100 - Use 100MHz clock for clk_root
 # CLK_50 - Use 50MHz clock for clk_root
+# RGB24 - Use RGB24 instead of RGB565
 
 BUILD_FLAGS ?=-DSPI
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
@@ -40,6 +41,7 @@ VSOURCES:=$(SRC_DIR)/brightness.sv \
 		  $(SRC_DIR)/matrix_scan.sv \
 		  $(SRC_DIR)/pixel_split.sv \
 		  $(SRC_DIR)/rgb565.sv \
+		  $(SRC_DIR)/rgb24.sv \
 		  $(SRC_DIR)/timeout.sv \
 		  $(SRC_DIR)/uart_tx.sv \
 		  $(SRC_DIR)/timeout_sync.sv \

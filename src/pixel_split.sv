@@ -1,11 +1,12 @@
 `default_nettype none
 module pixel_split #(
     parameter BRIGHTNESS_LEVELS = 6,
+    parameter BYTES_PER_PIXEL = 'd2,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input [15:0] pixel_rgb565,
+    input [(BYTES_PER_PIXEL*2)-1:0] pixel_data,
     input [BRIGHTNESS_LEVELS-1:0] brightness_mask,
     input [2:0] rgb_enable,
 
@@ -15,13 +16,30 @@ module pixel_split #(
     wire [BRIGHTNESS_LEVELS-1:0] green_gamma;
     wire [BRIGHTNESS_LEVELS-1:0] blue_gamma;
 
-    /* split the RGB565 pixel into components */
-    rgb565 rgb (
-        .data_in(pixel_rgb565),
-        .red(red_gamma),
-        .green(green_gamma),
-        .blue(blue_gamma)
-    );
+    `ifdef RGB24
+        rgb24 rgb_888 (
+            // bits 7:0 are empty
+
+            //              [bbbb,gggg,rrrr]
+            //                 0    1    2   3
+            //              [____,____,____,xxxx]
+            .data_in({pixel_data[15:8], pixel_data[23:16], pixel_data[31:24]}),
+            // .data_in({pixel_data[15:8], pixel_data[31:24], pixel_data[23:16]}), // things that are blue are green
+            // .data_in({pixel_data[7:0], 8'b0, 8'b0}),
+            .red(red_gamma),
+            .green(green_gamma),
+            .blue(blue_gamma)
+        );
+    `else
+        /* split the RGB565 pixel into components */
+        rgb565 rgb_565 (
+            //              [rrrrrbbb bbbggggg]
+            .data_in(pixel_data),
+            .red(red_gamma),
+            .green(green_gamma),
+            .blue(blue_gamma)
+        );
+    `endif
 
     /* apply the brightness mask to the gamma-corrected sub-pixel value */
     brightness #(

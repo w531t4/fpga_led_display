@@ -28,8 +28,8 @@ module framebuffer_fetch #(
     output ram_reset,
 
     // [15:0]
-    output logic [(BYTES_PER_PIXEL*8)-1:0] rgb565_top,
-    output logic [(BYTES_PER_PIXEL*8)-1:0] rgb565_bottom
+    output logic [(BYTES_PER_PIXEL*8)-1:0] pixeldata_top,
+    output logic [(BYTES_PER_PIXEL*8)-1:0] pixeldata_bottom
     `ifdef DEBUGGER
         ,
         output [3:0] pixel_load_counter2
@@ -74,8 +74,8 @@ module framebuffer_fetch #(
         if (reset) begin
             half_address <= 1'b0;
 
-            rgb565_top    <= {(BYTES_PER_PIXEL*8){1'b0}};
-            rgb565_bottom <= {(BYTES_PER_PIXEL*8){1'b0}};
+            pixeldata_top    <= {(BYTES_PER_PIXEL*8){1'b0}};
+            pixeldata_bottom <= {(BYTES_PER_PIXEL*8){1'b0}};
         end
         else begin
             // the frequency of pixel_load_start must contain enough clk_root
@@ -89,7 +89,7 @@ module framebuffer_fetch #(
                 half_address <= 1'b0;
             end
             else if (pixel_load_counter == 'd1) begin
-                {rgb565_bottom, rgb565_top} <= ram_data_in;
+                {pixeldata_bottom, pixeldata_top} <= ram_data_in;
                 half_address <= 1'b1;
             end
             else if (pixel_load_counter == 'd0) begin
