@@ -33,7 +33,7 @@ module debugger	#(
             count <= 0;
         end
         else begin
-            if (count == DIVIDER_TICKS) begin
+            if (($clog2(DIVIDER_TICKS))'(count) == ($clog2(DIVIDER_TICKS))'(DIVIDER_TICKS)) begin
                 debug_start <= 1;
                 count <= 0;
             end
@@ -143,5 +143,7 @@ module debugger	#(
         .o_busy(tx_busy),
         .o_dout(tx_out)
     );
-
+    wire _unused_ok = &{1'b0,
+                        tx_done,
+                        1'b0};
 endmodule

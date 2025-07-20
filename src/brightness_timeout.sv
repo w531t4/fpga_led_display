@@ -10,12 +10,12 @@ module brightness_timeout #(
     input wire reset,
     input wire row_latch,
     output wire output_enable,
-    output wire [TIMEOUT_WIDTH-1:0] brightness_counter,
     output wire exceeded_overlap_time
 );
     wire [TIMEOUT_WIDTH-1:0] brightness_timeout; /* used to time the output enable period */
     wire [$clog2(N+1)-1:0] active_bits = $countones(brightness_mask_active);
     wire one_hot = (active_bits == 1);
+    wire [TIMEOUT_WIDTH-1:0] brightness_counter;
 
     // Priority encoder
     integer i;
@@ -24,11 +24,11 @@ module brightness_timeout #(
         bit_index = 0;
         for (i = N-1; i >= 0; i = i - 1) begin
             if (brightness_mask_active[i])
-                bit_index = i;
+                bit_index = ($clog2(N))'(i);
         end
     end
 
-    wire [TIMEOUT_WIDTH-1:0] shifted = BASE_TIMEOUT << bit_index;
+    wire [TIMEOUT_WIDTH-1:0] shifted = (TIMEOUT_WIDTH)'(BASE_TIMEOUT << bit_index);
 
     assign brightness_timeout = one_hot ? shifted : {{(TIMEOUT_WIDTH-1){1'b0}}, 1'b1};
 

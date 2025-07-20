@@ -1,3 +1,4 @@
+// verilator lint_off UNUSEDPARAM
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7
 // tgt_hz variation (after rounding): 0.70%
@@ -64,3 +65,4 @@ parameter PIXEL_HALFHEIGHT = 16,
     parameter BYTES_PER_PIXEL = 2,
     parameter BRIGHTNESS_LEVELS = 6,
 `endif
+//verilator lint_on UNUSEDPARAM

@@ -58,7 +58,7 @@ module uart_tx #(
     logic [3:0] tx_bit_counter;
     logic [$clog2(TICKS_PER_BIT)-1:0] ticks_counter;
 
-    wire ticks_counter_ovf 		= (ticks_counter == TICKS_PER_BIT-1);
+    wire ticks_counter_ovf 		= ticks_counter == ($clog2(TICKS_PER_BIT))'(TICKS_PER_BIT-1);
     wire tx_bit_counter_ovf 	= (tx_bit_counter[3]); // if equals >= 8
 
     //Init registers for testbench simulation

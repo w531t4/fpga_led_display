@@ -38,7 +38,7 @@ module clock_divider #(
             t=10:: clk_out=1;clk_count=1 => clk_out=1;clk_count=2
             t=11:: clk_out=1;clk_count=2 => clk_out=0;clk_count=0 <--- start of matrix_scan cycle
             */
-            if (clk_count == (CLK_DIV_COUNT - 1)) begin
+            if (clk_count == ($clog2(CLK_DIV_COUNT))'(CLK_DIV_COUNT - 1)) begin
                 clk_out <= ~clk_out;
                 clk_count <= 'b0;
             end

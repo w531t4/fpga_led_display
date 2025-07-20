@@ -1,3 +1,4 @@
+    // verilator lint_off UNUSEDPARAM
     parameter _NUM_SUBPANELS = PIXEL_HEIGHT / PIXEL_HALFHEIGHT,
     parameter _NUM_SUBPANELSELECT_BITS = $clog2(_NUM_SUBPANELS),
     parameter _NUM_PIXELCOLORSELECT_BITS = $clog2(BYTES_PER_PIXEL),
@@ -7,3 +8,4 @@
     parameter _NUM_DATA_A_BITS = 8,
     parameter _NUM_DATA_B_BITS = ((1 << _NUM_PIXELCOLORSELECT_BITS) << _NUM_SUBPANELSELECT_BITS) << $clog2(8),
     parameter _NUM_BITS_PER_SUBPANEL = _NUM_DATA_B_BITS >> _NUM_SUBPANELSELECT_BITS,
+    // verilator lint_on UNUSEDPARAM

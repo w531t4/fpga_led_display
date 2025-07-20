@@ -80,8 +80,8 @@ module multimem #(
     always @(posedge ClockB) begin
         if (ResetA || ResetB) begin
             `ifdef SIM
-                init_index <= {(1 << _NUM_ADDRESS_B_BITS){1'b0}};
-                init_mems <= {(1 << _NUM_STRUCTURE_BITS){1'b0}};
+                init_index <= {_NUM_ADDRESS_B_BITS{1'b0}};
+                init_mems <= {_NUM_STRUCTURE_BITS{1'b0}};
                 init_done <= 1'b0;
                 QB_pre <= {_NUM_DATA_B_BITS{1'b0}};
             `endif

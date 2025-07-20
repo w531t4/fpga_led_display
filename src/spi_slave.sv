@@ -45,6 +45,7 @@
         CHANGE DATA (sdout) @ NEGEDGE SCK
         read data (sdin) @posedge SCK
 */
+// verilator lint_off BLKSEQ
 module spi_slave #(
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
@@ -117,7 +118,7 @@ module spi_slave #(
     end //always
 
 endmodule
-
+// verilator lint_on BLKSEQ
 /*
             if(mlb==0)  //LSB first, out=lsb -> right shift
                     begin treg = {treg[7],treg[7:1]}; end

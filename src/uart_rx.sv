@@ -40,8 +40,8 @@ module uart_rx #(
     output logic o_busy
 );
     /* END MODULE IO LIST */
-    localparam TICKS_TO_BIT		= TICKS_PER_BIT-1;
-    localparam TICKS_TO_MIDLE	= TICKS_TO_BIT/2;
+    localparam TICKS_TO_BIT		= $clog2(TICKS_PER_BIT)'(TICKS_PER_BIT-1);
+    localparam TICKS_TO_MIDLE	= $clog2(TICKS_PER_BIT)'(TICKS_TO_BIT/2);
 
     logic [7:0] rx_data;
     assign o_rxdata = rx_data;

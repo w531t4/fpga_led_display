@@ -44,11 +44,10 @@ module matrix_scan #(
 
     wire brightness_exceeded_overlap_time;
     logic  [BRIGHTNESS_LEVELS-1:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
-    wire [9:0] brightness_counter;     /* used to control the state advance overlap */
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
-    wire [$clog2(PIXEL_WIDTH)+1:0] pixel_load_en_counter_output;
+    wire [$clog2(PIXEL_WIDTH):0] pixel_load_en_counter_output;
     assign row_latch = row_latch_state[1:0] == 2'b10;
 
     assign clk_state = state == 2'b10;
@@ -69,7 +68,7 @@ module matrix_scan #(
         .clk_in(clk_in),
         .start(clk_state),
         // 7'd64
-        .value(PIXEL_WIDTH),
+        .value(($clog2(PIXEL_WIDTH)+1)'(PIXEL_WIDTH)),
         .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
     );
@@ -85,7 +84,7 @@ module matrix_scan #(
         .clk_in(clk_in),
         .start(clk_state),
         // 6'd63
-        .value(PIXEL_WIDTH-1),
+        .value(($clog2(PIXEL_WIDTH-1))'(PIXEL_WIDTH-1)),
         .counter(column_address),
         .running(unused_timer_runpin)
     );
@@ -99,8 +98,8 @@ module matrix_scan #(
             brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
             brightness_mask_active <= {BRIGHTNESS_LEVELS{1'b0}};
             // 4'd0
-            row_address <= {PIXEL_HALFHEIGHT{1'b0}};
-            row_address_active <= {PIXEL_HALFHEIGHT{1'b0}};
+            row_address <= {$clog2(PIXEL_HALFHEIGHT){1'b0}};
+            row_address_active <= {$clog2(PIXEL_HALFHEIGHT){1'b0}};
         end
         else begin
             clk_pixel_en <= clk_pixel_load_en;

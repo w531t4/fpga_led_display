@@ -7,10 +7,11 @@ module reset_on_start #(
     input wire clock_in,
     output wire reset
 );
+    localparam counter = 2;
     logic count;
     logic objective;
 
-    wire [3:0] unused_timer_counter;
+    wire [$clog2(counter+1)-1:0] unused_timer_counter;
     initial begin
         count = 1'b0;
         objective = 1'b0;
@@ -25,12 +26,12 @@ module reset_on_start #(
         end
     end
     timeout_sync #(
-        .COUNTER_WIDTH(4)
+        .COUNTER_WIDTH($clog2(counter+1))
     ) reset_on_start_timeout (
         .reset(count),
         .clk_in(clock_in),
         .start(objective),
-        .value(2'd2),
+        .value(counter),
         .counter(unused_timer_counter),
         .running(reset)
     );

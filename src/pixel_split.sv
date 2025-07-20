@@ -6,7 +6,7 @@ module pixel_split #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input [_NUM_DATA_B_BITS-1:0] pixel_data,
+    input [_NUM_BITS_PER_SUBPANEL-1:0] pixel_data,
     input [BRIGHTNESS_LEVELS-1:0] brightness_mask,
     input [2:0] rgb_enable,
 
@@ -66,4 +66,11 @@ module pixel_split #(
         .enable(rgb_enable[2]),
         .out(rgb_output[2])
     );
+
+    `ifdef RGB24
+        wire _unused_ok = &{ 1'b0,
+                             pixel_data[7:0],
+                             1'b0
+                            };
+    `endif
 endmodule

@@ -18,8 +18,7 @@ module control_module #(
     //      with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
     output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,
     output logic ram_write_enable,
-    output ram_clk_enable,
-    output ram_reset
+    output ram_clk_enable
     `ifdef DEBUGGER
         ,
         output [1:0] cmd_line_state2,
@@ -37,7 +36,6 @@ module control_module #(
         assign ram_access_start2 = ram_access_start;
         assign ram_access_start_latch2 = ram_access_start_latch;
     `endif
-    assign ram_reset = reset;
     wire [1:0] timer_counter_unused;
     logic  [1:0]  cmd_line_state;
     // For 32 bit high displays, [4:0]
@@ -114,7 +112,7 @@ module control_module #(
             // parameter BYTES_PER_PIXEL = 'd2
             // cmd_line_addr_col[6:0] <= 7'd127;
             cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
-            cmd_line_addr_col[_NUM_COLUMN_ADDRESS_BITS-1:0] <= PIXEL_WIDTH - 1;
+            cmd_line_addr_col[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
             cmd_line_state <= 2'd1;
         end
         else if (cmd_line_state == 2'd1) begin

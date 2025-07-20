@@ -69,22 +69,27 @@ module main #(
     wire [_NUM_ADDRESS_A_BITS-1:0] ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
-    wire ram_a_reset;
     wire [_NUM_DATA_B_BITS-1:0] ram_b_data_out;
     //  [10:0]
     wire [_NUM_ADDRESS_B_BITS-1:0] ram_b_address;
     wire ram_b_clk_enable;
-    wire ram_b_reset;
 
     wire [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_top;
     wire [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_bottom;
 
     `ifdef DEBUGGER
+        // self
+            localparam debug_data_width = 192;
+            wire debugger_debug_start;
+            wire [4:0] debugger_current_state;
+            wire debugger_do_close;
+            wire debugger_tx_start;
+            wire [$clog2(debug_data_width):0] debugger_current_position;
         // from controller
         wire [1:0] cmd_line_state;
         wire ram_access_start;
         wire ram_access_start_latch;
-        wire [11:0] cmd_line_addr2;
+        wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2;
         wire [7:0] num_commands_processed;
         // end controller
         // from framebuffer_fetch
@@ -176,7 +181,7 @@ module main #(
         wire debug_command_busy;
         wire debug_uart_tx;
         wire debug_uart_rx;
-        wire [191:0] ddata =  {
+        wire [debug_data_width-1:0] ddata =  {
             //
             3'b0,
             //								181
@@ -194,7 +199,6 @@ module main #(
             1'b0, // rxdata_ready_sync
             row_latch,
             row_latch_state[1:0],
-            ram_b_reset,
             cmd_line_state[1:0],
             1'b0, // uart_rx,
             ram_access_start_latch,
@@ -287,7 +291,6 @@ module main #(
         .ram_data_in(ram_b_data_out),
         .ram_address(ram_b_address),
         .ram_clk_enable(ram_b_clk_enable),
-        .ram_reset(ram_b_reset),
 
         .pixeldata_top(pixeldata_top),
         .pixeldata_bottom(pixeldata_bottom)
@@ -357,8 +360,7 @@ module main #(
         .ram_data_out(ram_a_data_in),
         .ram_address(ram_a_address),
         .ram_write_enable(ram_a_write_enable),
-        .ram_clk_enable(ram_a_clk_enable),
-        .ram_reset(ram_a_reset)
+        .ram_clk_enable(ram_a_clk_enable)
         `ifdef DEBUGGER
             ,
             .cmd_line_state2(cmd_line_state),
@@ -383,7 +385,7 @@ module main #(
         .DataInB(16'b0),
         .AddressB(ram_b_address),
         .WrB(1'b0),
-        .ResetB(ram_b_reset),
+        .ResetB(global_reset),
         .QA(ram_a_data_out),
         .QB(ram_b_data_out),
         .ClockEnA(ram_a_clk_enable),
@@ -422,7 +424,7 @@ module main #(
         debugger #(
             // Describes the sample rate of messages sent to debugger client
             .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
-            .DATA_WIDTH(192),
+            .DATA_WIDTH(debug_data_width),
             // Describes the baudrate for sending messages to debugger client
             .UART_TICKS_PER_BIT(DEBUG_TX_UART_TICKS_PER_BIT)
         ) mydebug (
@@ -433,6 +435,11 @@ module main #(
             .debug_command(debug_command),
             .debug_command_pulse(debug_command_pulse),
             .debug_command_busy(debug_command_busy),
+            .debug_start(debugger_debug_start),
+            .currentState(debugger_current_state),
+            .do_close(debugger_do_close),
+            .tx_start(debugger_tx_start),
+            .current_position(debugger_current_position),
             .tx_out(debug_uart_tx)
         );
         assign gp16 = debug_uart_tx;
@@ -491,6 +498,11 @@ module main #(
     wire _unused_ok = &{1'b0,
                         pll_locked,
                         `ifdef DEBUGGER
+                            debugger_debug_start,
+                            debugger_current_state,
+                            debugger_do_close,
+                            debugger_tx_start,
+                            debugger_current_position,
                             debug_command_pulse,
                             debug_command_busy,
                             debug_uart_tx,
@@ -515,7 +527,6 @@ module main #(
                         `else
                             gp15,
                         `endif
-                        ram_a_reset,
                         ram_a_data_out,
                         `ifdef SPI
                             spi_slave_sdout,

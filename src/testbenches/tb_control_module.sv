@@ -21,7 +21,6 @@ module tb_control_module #(
     wire ram_write_enable;
 
     wire ram_clk_enable;
-    wire ram_reset;
     `ifdef DEBUGGER
         wire [1:0] cmd_line_state2;
         wire [7:0] num_commands_processed;
@@ -144,8 +143,7 @@ module tb_control_module #(
             .ram_data_out(ram_data_out),
             .ram_address(ram_address),
             .ram_write_enable(ram_write_enable),
-            .ram_clk_enable(ram_clk_enable),
-            .ram_reset(ram_reset)
+            .ram_clk_enable(ram_clk_enable)
             //20220106
             //.rx_invalid(rx_invalid),
             `ifdef DEBUGGER

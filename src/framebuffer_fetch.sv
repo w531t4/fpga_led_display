@@ -23,7 +23,6 @@ module framebuffer_fetch #(
     // [10:0]
     output [_NUM_ADDRESS_B_BITS-1:0] ram_address,
     output ram_clk_enable,
-    output ram_reset,
 
     // [15:0]
     output logic [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_top,
@@ -43,15 +42,12 @@ module framebuffer_fetch #(
         assign pixel_load_counter2[3:0] = { 2'b0, pixel_load_counter[1:0] };
     `endif
 
-    logic half_address;
     // [10:0]
     assign ram_address = {
                         //    half_address,
                            row_address[$clog2(PIXEL_HALFHEIGHT)-1:0],
                            // log2(128)==7-1=6
                            ~column_address[$clog2(PIXEL_WIDTH)-1:0] };
-
-    assign ram_reset = reset;
 
     timeout #(
         .COUNTER_WIDTH(2)
@@ -70,8 +66,6 @@ module framebuffer_fetch #(
 
     always @(negedge clk_in, posedge reset) begin
         if (reset) begin
-            half_address <= 1'b0;
-
             pixeldata_top    <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
             pixeldata_bottom <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
         end
@@ -84,11 +78,9 @@ module framebuffer_fetch #(
             // cycle 2 - read half 0, change half to 1
             // cycle 3 - read half 1
             if (pixel_load_counter == 'd2) begin
-                half_address <= 1'b0;
             end
             else if (pixel_load_counter == 'd1) begin
                 {pixeldata_bottom, pixeldata_top} <= ram_data_in;
-                half_address <= 1'b1;
             end
             else if (pixel_load_counter == 'd0) begin
             end
