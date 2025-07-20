@@ -3,7 +3,11 @@ ffmpeg -i video.mp4 -vf "scale=64:32" -pix_fmt rgb565le -f rawvideo video.rgb565
 
 ffmpeg -i video.mp4 -vf "scale=128:32" -pix_fmt rgb565le -f rawvideo video.rgb565
 ffmpeg -r 120 -i video.mp4 -vf "scale=128:32,fps=120" -pix_fmt rgb565le -f rawvideo video.rgb565
+ffmpeg -i video.mp4 -vf "scale=128:32" -pix_fmt rgb24 -f rawvideo video.rgb24
 ```
+# other pixformats
+1. rgb24
+1. rgb565le
 
 ffmpeg -i "input.mpg" -filter_complex "fps=15,scale=220:-1:flags=bilinear:sws_dither=none[x];[x]split[x1][x2];[x1]palettegen=reserve_transparent=off:stats_mode=single:max_colors=256[p];[x2][p]paletteuse=new=1:dither=none,format=rgb565le" frames/%03d.bmp
 
