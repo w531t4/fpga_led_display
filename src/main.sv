@@ -101,10 +101,10 @@ module main #(
     wire [$clog2(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
-    wire [5:0] brightness_mask;
+    wire [BRIGHTNESS_LEVELS-1:0] brightness_mask;
 
     wire [2:0] rgb_enable;
-    wire [5:0] brightness_enable;
+    wire [BRIGHTNESS_LEVELS-1:0] brightness_enable;
     wire [2:0] rgb1; /* the current RGB value for the top-half of the display */
 
     wire [2:0] rgb2; /* the current RGB value for the bottom-half of the display */
@@ -201,8 +201,8 @@ module main #(
             //								127
             pixel_rgb565_top[(BYTES_PER_PIXEL*8)-1:0],
             pixel_rgb565_bottom[(BYTES_PER_PIXEL*8)-1:0],
-            brightness_mask[5:0],
-            brightness_enable[5:0],
+            brightness_mask[BRIGHTNESS_LEVELS-1:0],
+            brightness_enable[BRIGHTNESS_LEVELS-1:0],
             rgb_enable[2:0],
             // [5:0]
             column_address[$clog2(PIXEL_WIDTH)-1:0],
@@ -240,7 +240,8 @@ module main #(
 
     matrix_scan #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
     )  matscan1 (
         .reset(global_reset),
         .clk_in(clk_matrix),
@@ -389,7 +390,9 @@ module main #(
     );
 
     /* split the pixels and get the current brightness' bit */
-    pixel_split px_top (
+    pixel_split #(
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
+    ) px_top (
         .pixel_rgb565(pixel_rgb565_top),
         .brightness_mask(brightness_mask & brightness_enable),
         .rgb_enable(rgb_enable),
@@ -399,7 +402,9 @@ module main #(
             .rgb_output(rgb1)
         `endif
     );
-    pixel_split px_bottom (
+    pixel_split #(
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
+    ) px_bottom (
         .pixel_rgb565(pixel_rgb565_bottom),
         .brightness_mask(brightness_mask & brightness_enable),
         .rgb_enable(rgb_enable),

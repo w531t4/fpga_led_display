@@ -13,7 +13,7 @@ module control_module #(
     input [7:0] data_rx,
     input data_ready_n,
     output logic [2:0] rgb_enable,
-    output logic [5:0] brightness_enable,
+    output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
 
     output logic [7:0] ram_data_out,
     //      with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
@@ -87,7 +87,7 @@ module control_module #(
     always @(negedge data_ready_n, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;
-            brightness_enable <= 6'b111111;
+            brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
 
             ram_data_out <= 8'd0;
             ram_address <= {$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL){1'b0}};
@@ -157,29 +157,21 @@ module control_module #(
                 "b": begin
                     rgb_enable[2] <= 1'b0;
                 end
-                "1": begin
-                    brightness_enable[5] <= ~brightness_enable[5];
-                end
-                "2": begin
-                    brightness_enable[4] <= ~brightness_enable[4];
-                end
-                "3": begin
-                    brightness_enable[3] <= ~brightness_enable[3];
-                end
-                "4":begin
-                    brightness_enable[2] <= ~brightness_enable[2];
-                end
-                "5": begin
-                    brightness_enable[1] <= ~brightness_enable[1];
-                end
-                "6": begin
-                    brightness_enable[0] <= ~brightness_enable[0];
-                end
+                "1": brightness_enable[BRIGHTNESS_LEVELS - 1] <= ~brightness_enable[BRIGHTNESS_LEVELS - 1];
+                "2": brightness_enable[BRIGHTNESS_LEVELS - 2] <= ~brightness_enable[BRIGHTNESS_LEVELS - 2];
+                "3": brightness_enable[BRIGHTNESS_LEVELS - 3] <= ~brightness_enable[BRIGHTNESS_LEVELS - 3];
+                "4": brightness_enable[BRIGHTNESS_LEVELS - 4] <= ~brightness_enable[BRIGHTNESS_LEVELS - 4];
+                "5": brightness_enable[BRIGHTNESS_LEVELS - 5] <= ~brightness_enable[BRIGHTNESS_LEVELS - 5];
+                "6": brightness_enable[BRIGHTNESS_LEVELS - 6] <= ~brightness_enable[BRIGHTNESS_LEVELS - 6];
+                `ifdef RGB24
+                    "7": brightness_enable[BRIGHTNESS_LEVELS - 7] <= ~brightness_enable[BRIGHTNESS_LEVELS - 7];
+                    "8": brightness_enable[BRIGHTNESS_LEVELS - 8] <= ~brightness_enable[BRIGHTNESS_LEVELS - 8];
+                `endif
                 "0": begin
-                    brightness_enable <= 6'b000000;
+                    brightness_enable <= {BRIGHTNESS_LEVELS{1'b0}};
                 end
                 "9": begin
-                    brightness_enable <= 6'b111111;
+                    brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
                 end
                 "L": begin
                     cmd_line_state <= 2'd2;

@@ -2,6 +2,7 @@
 module matrix_scan #(
     parameter PIXEL_WIDTH = 7'd64,
     parameter PIXEL_HALFHEIGHT = 'd16,
+    parameter BRIGHTNESS_LEVELS = 6,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -27,9 +28,9 @@ module matrix_scan #(
         output state_advance2,
         output clk_pixel_load_en2,
     `endif
-    output logic [5:0] brightness_mask /* used to pick a bit from the sub-pixel's brightness */
+    output logic [BRIGHTNESS_LEVELS-1:0] brightness_mask /* used to pick a bit from the sub-pixel's brightness */
  );
-    localparam state_timeout_overlap = 'd67;
+
 
     logic [1:0] state;
     wire clk_state;
@@ -41,8 +42,8 @@ module matrix_scan #(
 
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
-    logic  [5:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
-    wire [9:0] brightness_timeout;     /* used to time the output enable period */
+    wire brightness_exceeded_overlap_time;
+    logic  [BRIGHTNESS_LEVELS-1:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
     wire [9:0] brightness_counter;     /* used to control the state advance overlap */
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
@@ -95,8 +96,8 @@ module matrix_scan #(
         if (reset) begin
             clk_pixel_en <= 1'b1;
             row_latch_state <= 2'b1;
-            brightness_mask <= 6'b100000;
-            brightness_mask_active <= 6'd0;
+            brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
+            brightness_mask_active <= {BRIGHTNESS_LEVELS{1'b0}};
             // 4'd0
             row_address <= {PIXEL_HALFHEIGHT{1'b0}};
             row_address_active <= {PIXEL_HALFHEIGHT{1'b0}};
@@ -109,9 +110,9 @@ module matrix_scan #(
                 brightness_mask_active <= brightness_mask;
                 row_address_active <= row_address;
 
-                if ((brightness_mask == 6'd0) || (brightness_mask == 6'b000001)) begin
+                if ((brightness_mask == 'd0) || (brightness_mask == 'd1)) begin
                     // catch the initial value / oopsy //
-                    brightness_mask <= 6'b100000;
+                    brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
                     // 4'd1
                     row_address <= row_address + 1;
                 end
@@ -125,35 +126,20 @@ module matrix_scan #(
         end
     end
 
-    /* decide how long to enable the LEDs for... we probably need some gamma correction here */
-    assign brightness_timeout =
-        (brightness_mask_active == 6'b000001) ? 10'd23 :
-        (brightness_mask_active == 6'b000010) ? 10'd46 :
-        (brightness_mask_active == 6'b000100) ? 10'd92 :
-        (brightness_mask_active == 6'b001000) ? 10'd184 :
-        (brightness_mask_active == 6'b010000) ? 10'd368 :
-        (brightness_mask_active == 6'b100000) ? 10'd736 :
-        10'd1;
-
-    /* produces the variable-width output enable signal
-       this signal is controlled by the rolling brightness_mask_active signal (brightness_mask has advanced already)
-       the wider the output_enable pulse, the brighter the LEDs */
-    /* this shoud never be < 1us though, apparently TODO: need to prove*/
-
-    timeout #(
-        .COUNTER_WIDTH(10)
-    ) timeout_output_enable (
-        .reset(reset),
+    brightness_timeout #(
+        .N(BRIGHTNESS_LEVELS)
+    ) btd (
         .clk_in(clk_in),
-        .start(~row_latch),
-        .value(brightness_timeout),
-        .counter(brightness_counter),
-        .running(output_enable)
+        .reset(reset),
+        .row_latch(row_latch),
+        .brightness_mask_active(brightness_mask_active),
+        .output_enable(output_enable),
+        .exceeded_overlap_time(brightness_exceeded_overlap_time)
     );
 
     /* we want to overlap the pixel clock out with the previous output
        enable... but we do not want to start too early... */
-    assign state_advance = !output_enable || (state_timeout_overlap < brightness_counter);
+    assign state_advance = !output_enable || brightness_exceeded_overlap_time;
     /* shift the state advance signal into the bitfield */
     always @(posedge clk_in) begin
         if (reset) begin

@@ -1,0 +1,57 @@
+`timescale 1ns/1ns
+`default_nettype none
+module tb_brightness_timeout #(
+    `include "params.vh"
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
+
+    logic clk;
+    logic reset;
+    logic row_latch;
+    wire output_enable;
+    wire exceeded_overlap_time;
+    wire clk_out;
+    localparam N = 8;
+    localparam BASE_TIMEOUT = 23;
+    logic [N-1:0] brightness_mask_active;
+    wire [$clog2(BASE_TIMEOUT) + N:0] brightness_timeout;
+    brightness_timeout #(
+        .N(N),
+        .BASE_TIMEOUT(BASE_TIMEOUT)
+    ) btd (
+        .clk_in(clk),
+        .reset(reset),
+        .row_latch(row_latch),
+        .output_enable(output_enable),
+        .exceeded_overlap_time(exceeded_overlap_time),
+        .brightness_mask_active(brightness_mask_active)
+    );
+
+    initial begin
+        `ifdef DUMP_FILE_NAME
+            $dumpfile(`DUMP_FILE_NAME);
+        `endif
+        $dumpvars(0, tb_brightness_timeout);
+        clk = 0;
+        reset = 1;
+        row_latch = 0;
+        brightness_mask_active = 1 << (N-1);
+        @(posedge clk) reset = 0;
+        repeat (N*2) begin
+            @(posedge clk);
+            brightness_mask_active = brightness_mask_active >> 1;
+        end
+        @(posedge clk) brightness_mask_active = 1 << 1;
+        @(posedge clk) row_latch = 1;
+        @(posedge clk) row_latch = 0;
+        repeat (N*8) begin
+            @(posedge clk);
+        end
+        $finish;
+    end
+    always begin
+        #SIM_HALF_PERIOD_NS clk <= !clk;
+    end
+endmodule
