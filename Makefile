@@ -32,51 +32,25 @@ GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -I$(VINCLUDE_DIR)
 
-SRCS := $(shell find $(SRC_DIR) -name '*.sv' -or -name '*.v')
-
-VSOURCES:=$(SRC_DIR)/brightness.sv \
-		  $(SRC_DIR)/clock_divider.sv \
-		  $(SRC_DIR)/control_module.sv \
-		  $(SRC_DIR)/framebuffer_fetch.sv \
-		  $(SRC_DIR)/main.sv \
-		  $(SRC_DIR)/matrix_scan.sv \
-		  $(SRC_DIR)/pixel_split.sv \
-		  $(SRC_DIR)/rgb565.sv \
-		  $(SRC_DIR)/rgb24.sv \
-		  $(SRC_DIR)/timeout.sv \
-		  $(SRC_DIR)/uart_tx.sv \
-		  $(SRC_DIR)/timeout_sync.sv \
-		  $(SRC_DIR)/uart_rx.sv \
-		  $(SRC_DIR)/new_pll.sv \
-		  $(SRC_DIR)/reset_on_start.sv \
-		  $(SRC_DIR)/multimem.sv \
-		  $(SRC_DIR)/ff_sync.sv \
-		  $(SRC_DIR)/brightness_timeout.sv \
-		  $(SRC_DIR)/gamma_correct.sv \
-		  $(SRC_DIR)/platform/tiny_ecp5_sim.v
-
-
+VSOURCES := $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v')
+VSOURCES += $(shell find $(SRC_DIR)/platform -maxdepth 1 -name '*.sv' -or -name '*.v')
 
 INCLUDESRCS=$(shell find $(VINCLUDE_DIR) -name '*.vh')
 TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
 
-ifeq ($(findstring -DSPI,$(BUILD_FLAGS)), -DSPI)
-VSOURCES += $(SRC_DIR)/spi_master.sv $(SRC_DIR)/spi_slave.sv
+ifneq ($(findstring -DSPI,$(BUILD_FLAGS)), -DSPI)
+VSOURCES := $(filter-out $(SRC_DIR)/spi_master.sv, $(VSOURCES))
+VSOURCES := $(filter-out $(SRC_DIR)/spi_slave.sv, $(VSOURCES))
 endif
 
-ifeq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
-VSOURCES += $(SRC_DIR)/fm6126init.sv
-else
+ifneq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
+VSOURCES := $(filter-out $(SRC_DIR)/fm6126init.sv, $(VSOURCES))
 TBSRCS := $(filter-out $(TB_DIR)/tb_fm6126init.sv, $(TBSRCS))
 VVPOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vvp, $(VVPOBJS))
 VCDOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vcd, $(VCDOBJS))
 endif
-
-# ifeq ($(findstring -DDEBUGGER,$(BUILD_FLAGS)), -DDEBUGGER)
-VSOURCES += $(SRC_DIR)/debugger.sv
-# endif
 
 
 
