@@ -18,6 +18,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # CLK_50 - Use 50MHz clock for clk_root
 # RGB24 - Use RGB24 instead of RGB565
 # NO_GAMMA - Disable Gamma Correction
+# USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
 
 BUILD_FLAGS ?=-DSPI
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)

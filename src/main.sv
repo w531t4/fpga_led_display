@@ -12,6 +12,9 @@ module main #(
 
     // lessons
     // 1. Ensure that all unused IO are set to no pullup
+    `ifdef USE_BOARDLEDS_BRIGHTNESS
+        output [7:0] led,
+    `endif
     output gp0,
     output gp1,
     output gp2,
@@ -111,6 +114,9 @@ module main #(
 
     wire [2:0] rgb_enable;
     wire [BRIGHTNESS_LEVELS-1:0] brightness_enable;
+    `ifdef USE_BOARDLEDS_BRIGHTNESS
+        assign led = brightness_enable;
+    `endif
     wire [2:0] rgb1; /* the current RGB value for the top-half of the display */
 
     wire [2:0] rgb2; /* the current RGB value for the bottom-half of the display */
