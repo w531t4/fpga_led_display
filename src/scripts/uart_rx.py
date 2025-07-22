@@ -32,6 +32,7 @@ def send_spi_bytes(data: bytes) -> None:
     spi.max_speed_hz = spi_rate   # Set speed (10 MHz here)
     spi.mode = 0
     spi.xfer3(list(data))
+    spi.close()
 
 def gen_bitstring(c: str) -> str:
     r_int = ord(c)
