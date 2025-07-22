@@ -21,7 +21,7 @@
 `endif
 
 // Use this to tune what clock freq we expose to matrix_scan
-parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 3,
+parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
 
 `ifdef DEBUGGER
     // context: TX DEBUG baud
@@ -49,7 +49,7 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 3,
 `endif
 
 `ifdef W128
-    parameter PIXEL_WIDTH = 128,
+    parameter PIXEL_WIDTH = 64*2,
 `else
     parameter PIXEL_WIDTH = 64,
 `endif

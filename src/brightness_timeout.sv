@@ -1,7 +1,7 @@
 `default_nettype none
 module brightness_timeout #(
     parameter integer N = 8,
-    parameter integer BASE_TIMEOUT = 23,
+    parameter integer BASE_TIMEOUT = 10,
     parameter integer TIMEOUT_WIDTH = $clog2(BASE_TIMEOUT) + N,
     parameter integer STATE_TIMEOUT_OVERLAP = 'd67
 ) (
