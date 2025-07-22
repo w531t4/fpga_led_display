@@ -29,6 +29,7 @@ module control_module #(
     `endif
 );
     localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH);
+    logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     wire ram_clk_enable_real;
     logic ram_access_start;
     logic ram_access_start_latch;
@@ -86,6 +87,7 @@ module control_module #(
         if (reset) begin
             rgb_enable <= 3'b111;
             brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
+            brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
 
             ram_data_out <= 8'd0;
             ram_address <= {_NUM_ADDRESS_A_BITS{1'b0}};
@@ -99,91 +101,92 @@ module control_module #(
                 num_commands_processed <= 8'b0;
             `endif
         end
+        else begin
+            brightness_enable <= brightness_temp;
+            /* CMD: Line */
+            if (cmd_line_state == 2'd2 && data_rx != "L" ) begin
+                /* first, get the row to write to */
+                cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0] <= data_rx[4:0];
 
-
-        /* CMD: Line */
-        else if (cmd_line_state == 2'd2 && data_rx != "L" ) begin
-            /* first, get the row to write to */
-            cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0] <= data_rx[4:0];
-
-            /* and start clocking in the column data
-               64 pixels x 2 bytes each = 128 bytes */
-            // parameter PIXEL_WIDTH = 'd64,
-            // parameter BYTES_PER_PIXEL = 'd2
-            // cmd_line_addr_col[6:0] <= 7'd127;
-            cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
-            cmd_line_addr_col[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
-            cmd_line_state <= 2'd1;
-        end
-        else if (cmd_line_state == 2'd1) begin
-            /* decrement the column address (or finish the load) */
-            if (cmd_line_addr_col != 'd0 || cmd_line_pixelselect_num != 'd0) begin
-                if (cmd_line_pixelselect_num == 'd0) begin
-                    cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
-                    cmd_line_addr_col <= cmd_line_addr_col - 'd1;
-                end else
-                    cmd_line_pixelselect_num <= cmd_line_pixelselect_num - 'd1;
+                /* and start clocking in the column data
+                64 pixels x 2 bytes each = 128 bytes */
+                // parameter PIXEL_WIDTH = 'd64,
+                // parameter BYTES_PER_PIXEL = 'd2
+                // cmd_line_addr_col[6:0] <= 7'd127;
+                cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
+                cmd_line_addr_col[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
+                cmd_line_state <= 2'd1;
             end
-            else begin
-                cmd_line_state <= 2'd0;
-                `ifdef DEBUGGER
-                    num_commands_processed <= num_commands_processed + 1'b1;
-                `endif
-            end
-
-            /* store this byte */
-            ram_data_out <= data_rx[7:0];
-            ram_address <= cmd_line_addr;
-            ram_write_enable <= 1'b1;
-            ram_access_start <= !ram_access_start;
-        end
-
-        /* CMD: Main */
-        else if (cmd_line_state != 2'd2 && !data_ready_n) begin
-            //2650000
-            case (data_rx)
-                "R": begin
-                    rgb_enable[0] <= 1'b1;
+            else if (cmd_line_state == 2'd1) begin
+                /* decrement the column address (or finish the load) */
+                if (cmd_line_addr_col != 'd0 || cmd_line_pixelselect_num != 'd0) begin
+                    if (cmd_line_pixelselect_num == 'd0) begin
+                        cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
+                        cmd_line_addr_col <= cmd_line_addr_col - 'd1;
+                    end else
+                        cmd_line_pixelselect_num <= cmd_line_pixelselect_num - 'd1;
                 end
-                "r": begin
-                    rgb_enable[0] <= 1'b0;
-                end
-                "G": begin
-                    rgb_enable[1] <= 1'b1;
-                end
-                "g": begin
-                    rgb_enable[1] <= 1'b0;
-                end
-                "B": begin
-                    rgb_enable[2] <= 1'b1;
-                end
-                "b": begin
-                    rgb_enable[2] <= 1'b0;
-                end
-                "1": brightness_enable[BRIGHTNESS_LEVELS - 1] <= ~brightness_enable[BRIGHTNESS_LEVELS - 1];
-                "2": brightness_enable[BRIGHTNESS_LEVELS - 2] <= ~brightness_enable[BRIGHTNESS_LEVELS - 2];
-                "3": brightness_enable[BRIGHTNESS_LEVELS - 3] <= ~brightness_enable[BRIGHTNESS_LEVELS - 3];
-                "4": brightness_enable[BRIGHTNESS_LEVELS - 4] <= ~brightness_enable[BRIGHTNESS_LEVELS - 4];
-                "5": brightness_enable[BRIGHTNESS_LEVELS - 5] <= ~brightness_enable[BRIGHTNESS_LEVELS - 5];
-                "6": brightness_enable[BRIGHTNESS_LEVELS - 6] <= ~brightness_enable[BRIGHTNESS_LEVELS - 6];
-                `ifdef RGB24
-                    "7": brightness_enable[BRIGHTNESS_LEVELS - 7] <= ~brightness_enable[BRIGHTNESS_LEVELS - 7];
-                    "8": brightness_enable[BRIGHTNESS_LEVELS - 8] <= ~brightness_enable[BRIGHTNESS_LEVELS - 8];
-                `endif
-                "0": begin
-                    brightness_enable <= {BRIGHTNESS_LEVELS{1'b0}};
-                end
-                "9": begin
-                    brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
-                end
-                "L": begin
-                    cmd_line_state <= 2'd2;
-                end
-                default: begin
+                else begin
                     cmd_line_state <= 2'd0;
-                    ram_write_enable <= 1'b0;
+                    `ifdef DEBUGGER
+                        num_commands_processed <= num_commands_processed + 1'b1;
+                    `endif
                 end
-            endcase
+
+                /* store this byte */
+                ram_data_out <= data_rx[7:0];
+                ram_address <= cmd_line_addr;
+                ram_write_enable <= 1'b1;
+                ram_access_start <= !ram_access_start;
+            end
+
+            /* CMD: Main */
+            else if (cmd_line_state != 2'd2 && !data_ready_n) begin
+                //2650000
+                case (data_rx)
+                    "R": begin
+                        rgb_enable[0] <= 1'b1;
+                    end
+                    "r": begin
+                        rgb_enable[0] <= 1'b0;
+                    end
+                    "G": begin
+                        rgb_enable[1] <= 1'b1;
+                    end
+                    "g": begin
+                        rgb_enable[1] <= 1'b0;
+                    end
+                    "B": begin
+                        rgb_enable[2] <= 1'b1;
+                    end
+                    "b": begin
+                        rgb_enable[2] <= 1'b0;
+                    end
+                    "1": brightness_temp[BRIGHTNESS_LEVELS - 1] <= ~brightness_enable[BRIGHTNESS_LEVELS - 1];
+                    "2": brightness_temp[BRIGHTNESS_LEVELS - 2] <= ~brightness_enable[BRIGHTNESS_LEVELS - 2];
+                    "3": brightness_temp[BRIGHTNESS_LEVELS - 3] <= ~brightness_enable[BRIGHTNESS_LEVELS - 3];
+                    "4": brightness_temp[BRIGHTNESS_LEVELS - 4] <= ~brightness_enable[BRIGHTNESS_LEVELS - 4];
+                    "5": brightness_temp[BRIGHTNESS_LEVELS - 5] <= ~brightness_enable[BRIGHTNESS_LEVELS - 5];
+                    "6": brightness_temp[BRIGHTNESS_LEVELS - 6] <= ~brightness_enable[BRIGHTNESS_LEVELS - 6];
+                    `ifdef RGB24
+                        "7": brightness_temp[BRIGHTNESS_LEVELS - 7] <= ~brightness_enable[BRIGHTNESS_LEVELS - 7];
+                        "8": brightness_temp[BRIGHTNESS_LEVELS - 8] <= ~brightness_enable[BRIGHTNESS_LEVELS - 8];
+                    `endif
+                    "0": begin
+                        brightness_temp <= {BRIGHTNESS_LEVELS{1'b0}};
+                    end
+                    "9": begin
+                        brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
+                    end
+                    "L": begin
+                        cmd_line_state <= 2'd2;
+                    end
+                    default: begin
+                        cmd_line_state <= 2'd0;
+                        ram_write_enable <= 1'b0;
+                    end
+                endcase
+            end
         end
     end
     wire _unused_ok = &{1'b0,
