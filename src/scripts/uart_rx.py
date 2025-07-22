@@ -1,40 +1,22 @@
+import argparse
+from typing import List, Dict, Union, NamedTuple
+from functools import partial
+from pathlib import Path
+from typing import IO
+
+from curses import wrapper
 import serial
 import spidev
-from curses import wrapper
-from typing import IO
-BAUDRATE = 115200
-MAX_LINES=40
-global COLUMN_SIZE
-COLUMN_SIZE = 0
-global BAUDSET_DATA
-global BAUDSET_DATA_SCALE
-global BAUDSET_DATA_STATE
-global BAUDSET_DATA_MAX
-global BAUDSET_TESTVALS
-global BAUDSET_DATA_INIT
-BAUDSET_TESTVALS = ["A", "-", "C", "!"]
 
-BAUDSET_DATA_INIT=2444444
-BAUDSET_DATA = BAUDSET_DATA_INIT
-BAUDSET_DATA_SCALE=500
-BAUDSET_DATA_STATE=-1
-BAUDSET_DATA_MAX=2900000
-global enable_debug
-enable_debug = False
-spi = False
-
-def send_spi_bytes(data: bytes) -> None:
-    spi_dev = 1
-    spi_port = 0
-    spi_rate = 40000
-    spi = spidev.SpiDev()
-    spi.open(spi_dev, spi_port)                 # Use bus 1 (SPI1), device 0 (CE0)
-    spi.max_speed_hz = spi_rate   # Set speed (10 MHz here)
-    spi.mode = 0
-    spi.xfer3(list(data))
-    spi.close()
+class BaudContext(NamedTuple):
+    state: int
+    rate: int
 
 def gen_bitstring(c: str) -> str:
+    """ translate character into string represents its bits
+    @c: single character
+    ret: string equivalent of character containing only 1's and 0's "10001100"
+    """
     r_int = ord(c)
     if len(bin(r_int)[2:]) < 8:
         bitstring = '0'*(8-len(bin(r_int)[2:])) + bin(r_int)[2:]
@@ -43,108 +25,121 @@ def gen_bitstring(c: str) -> str:
     return bitstring
 
 def get_hexstring(bitstring: str, raw: bool = True) -> str:
+    """ Generate a hexidecimal representation of bitstring
+    @bitstring: python string containing only 1's and 0's (see gen_bitstring())
+    @raw: toggle adding 0x to front of output
+    """
     retstring = ""
     for each in [bitstring[i:i+4] for i in range(0, len(bitstring), 4)]:
-        retstring = retstring + hex(int(each,2))[2:]
-    if (raw == True):
+        retstring += hex(int(each,2))[2:]
+    if raw:
         return retstring
     else:
-        return "0x" + retstring
+        return f"0x{retstring}"
 
 def get_safe_string(c: str) -> str:
+    """Given a string, produce an equivalent containing only the printable characters
+    @c: string of any length
+    """
     d = ""
     for each in c:
         if ((ord(each) >= 32) and (ord(each) <= 126)):
-            d = d + each
+            d += each
         else:
-            d = d + "*"
+            d += "*"
     return d
 
 def reverse_bits_char(c: str) -> str:
+    """Given a single character, reverse the bits and produce the ascii equivalent of the result
+    @c: single character
+    """
     a = gen_bitstring(c)[::-1]
     return chr(int(a,2))
 
 def get_safe_string_rev(c: str) -> str:
+    """Given a string, produce an equivalent containing only the printable characters, and reverse the bits of the character
+    @c: string of any length
+    """
     d = ""
     for each in c:
         each = reverse_bits_char(each)
         if ((ord(each) >= 32) and (ord(each) <= 126)):
-            d = d + each
+            d += each
         else:
-            d = d + "*"
+            d += "*"
     return d
 
 def do_debug(c: str, title: str = "", titlelength: int = 24) -> str:
-    global uart_rx_data
+    """ Processes single component of debug structure
+    @titlelength: add rhs padding to title of component being processed to normalize output"""
+    def wrap_data(data: str) -> str:
+        """ helper to wrap text in sane formatting structure"""
+        return '{0: <%s}' % str(data)
     binstring = ""
     for each in c:
-        binstring = binstring + gen_bitstring(each)
+        binstring += gen_bitstring(each)
     hexrep = get_hexstring(binstring, raw=False)
     r_c = ""
     s = binstring
     for each in [s[i:i+8] for i in range(0, len(s), 8)]:
         if (int(each,2) > 256):
-            r_c = r_c + "X"
+            r_c += "X"
         else:
-            r_c = r_c + chr(int(each,2))
-    if title == "uart_rx_data":
-        uart_rx_data = get_safe_string(c)
-    rstring = (        '{0: <' + str(titlelength) + '}').format(title) \
-            + ('{0: <' + str(4+16) + '}').format("0b"+binstring) \
-            + ('{0: <' + str(4+4) + '}').format(hexrep) \
-            + ('{0: <' + str(2) +   '}').format(get_safe_string(c)) \
-            + " rchr=" +('{0: <' + str(2) +   '}').format(get_safe_string_rev(c))
+            r_c += chr(int(each,2))
+    rstring = (f"{wrap_data(str(titlelength)).format(title)}"
+               f"{wrap_data(str(4+16)).format(f'0b{binstring}')}"
+               f"{wrap_data(str(4+4)).format(hexrep)}"
+               f"{wrap_data(str(2)).format(get_safe_string(c))}"
+               f" rchr="
+               f"{wrap_data(str(2)).format(get_safe_string_rev(c))}"
+               )
     return rstring
 
-def writeser(ser: IO[bytes], s: str) -> None:
+def writeser(ser: IO[bytes], s: str, spi: bool = False) -> None:
     if spi:
-        send_spi_bytes(list(s.encode("utf-8")))
+        send_spi_bytes(s.encode("utf-8"))
     else:
         for each in s:
             ser.write(each.encode("utf-8"))
 
-def findbaud(stdscr, curval: str) -> None:
-    global BAUDSET_DATA_STATE
-    global BAUDSET_DATA
-    global BAUDSET_DATA_MAX
-    stdscr.addstr(MAX_LINES+2,0, "DATA_TX:BAUD:" + str(BAUDSET_DATA) + " STATE:" + str(BAUDSET_DATA_STATE))
-    if BAUDSET_DATA_STATE == 0 and curval == "A":
-        BAUDSET_DATA_STATE = 1
-        return
-    elif BAUDSET_DATA_STATE == 1 and curval == "-":
-        BAUDSET_DATA_STATE = 2
-        return
-    elif BAUDSET_DATA_STATE == 2 and curval == "C":
-        BAUDSET_DATA_STATE = -1
-        return
-    else:
-        if BAUDSET_DATA > BAUDSET_DATA_MAX:
-            BAUDSET_DATA_STATE = -1
-        else:
-            BAUDSET_DATA_STATE = 0
-            BAUDSET_DATA += BAUDSET_DATA_SCALE
-    return
+def send_spi_bytes(data: bytes) -> None:
+    """ Send bytestream to SPI hardcoded target (device, port, rate)"""
+    spi_dev = 1
+    spi_port = 0
+    spi_rate = 40000
+    dev = spidev.SpiDev()
+    dev.open(spi_dev, spi_port)                 # Use bus 1 (SPI1), device 0 (CE0)
+    dev.max_speed_hz = spi_rate   # Set speed (10 MHz here)
+    dev.mode = 0
+    dev.xfer3(list(data))
+    dev.close()
 
-def testval(dev: str, baud: int, val: str) -> None:
+def testval(dev: Path, baud: int, val: str, spi: bool = False) -> None:
     if spi:
         send_spi_bytes(val.encode("utf-8"))
     else:
-        ser_data = serial.Serial(dev, baud, timeout=None)
+        ser_data = serial.Serial(str(dev), baud, timeout=None)
         ser_data.write(val.encode("utf-8"))
         ser_data.close()
 
-def main(stdscr) -> None:
-    global BAUDSET_DATA
-    global BAUDSET_DATA_SCALE
-    global BAUDSET_DATA_STATE
-    global BAUDSET_DATA_MAX
-    global BAUDSET_TESTVALS
-    global BAUDSET_DATA_INIT
-    stdscr.clear()
-    stdscr.nodelay(1)
-    serial_device = "/dev/ttyAMA2"
-    baudrate=BAUDRATE
-    ser = serial.Serial(serial_device, baudrate, timeout=None)
+def findbaud(stdscr, curval: str, cur_context: BaudContext, max_lines: int, max_baudrate: int, baudrate_increment: int) -> BaudContext:
+    BAUDSET_DATA_STATE, BAUDSET_DATA = cur_context.state, cur_context.rate
+    stdscr.addstr(max_lines+2,0, f"DATA_TX:BAUD:{str(BAUDSET_DATA)} STATE:{str(BAUDSET_DATA_STATE)}")
+    if BAUDSET_DATA_STATE == 0 and curval == "A":
+        BAUDSET_DATA_STATE = 1
+    elif BAUDSET_DATA_STATE == 1 and curval == "-":
+        BAUDSET_DATA_STATE = 2
+    elif BAUDSET_DATA_STATE == 2 and curval == "C":
+        BAUDSET_DATA_STATE = -1
+    else:
+        if BAUDSET_DATA > max_baudrate:
+            BAUDSET_DATA_STATE = -1
+        else:
+            BAUDSET_DATA_STATE = 0
+            BAUDSET_DATA += baudrate_increment
+    return BaudContext(state=BAUDSET_DATA_STATE, rate=BAUDSET_DATA)
+
+def build_structure() -> List[Dict[str, Union[str, int]]]:
     structure = []
     structure.append({ 'name': 'newline', 'size': 8 })
     structure.append({ 'name': 'uart_rx_data', 'size': 8 })
@@ -183,11 +178,32 @@ def main(stdscr) -> None:
     structure.append({ 'name': 'debug_command', 'size': 8 })
     structure.append({ 'name': 'num_commands_processed', 'size': 8 })
     structure.append({ 'name': 'whitespace', 'size': 3 })
+    return structure
 
-    if enable_debug == True:
-        logfile = "blah"
-        fw = open(logfile, 'w')
+def main(stdscr,
+         max_lines: int,
+         rx_dev: Path,
+         rx_baudrate: int,
+         tx_dev: Path,
+         tx_baudrate_start: int,
+         tx_baudrate_max: int,
+         tx_baudrate_search_increment: int,
+         debug_filepath: Path,
+         use_spi: bool = False,
+         enable_debug: bool = False,
+         ) -> None:
+    BAUDSET_TESTVALS = ["A", "-", "C", "!"]
+    BAUDSET_DATA_STATE = -1                  # an indexed position within BAUDSET_TESTVALS
+    BAUDSET_DATA = tx_baudrate_start         # a baudrate used to send data out tx
+    uart_rx_data = ""
 
+    stdscr.clear()
+    stdscr.nodelay(1)
+    ser = serial.Serial(str(rx_dev), rx_baudrate, timeout=None)
+    structure = build_structure()
+
+    if enable_debug:
+        fw = open(str(debug_filepath), 'w')
     expected_bitsize = 0
     expected_bytes = 0
     for each in [int(x['size']) for x in structure]:
@@ -197,6 +213,7 @@ def main(stdscr) -> None:
     else:
         expected_bytes = (expected_bitsize/8) + 1
     while True:
+        COLUMN_SIZE = 0
         bytestring = ""
         bytestring_total = 0
         binstring = ""
@@ -204,15 +221,15 @@ def main(stdscr) -> None:
         i = 0
         while (bytestring_total < expected_bytes):
             if enable_debug:
-                fw.write("bytestring_total=%s expected_bytes=%s i=%s\n" % (bytestring_total, expected_bytes, i))
+                fw.write(f"bytestring_total={bytestring_total} expected_bytes={expected_bytes} i={i}\n")
             # ser.read_until() returns bytes
             bytestring = bytes(ser.read_until())
             if enable_debug:
                 fw.write("bytestring=%s\n" % bytestring)
             bytestring_total += len(bytestring)
             for each in bytestring:
-                    hexstring = hexstring + format(int(each), '02x')
-                    binstring = binstring + format(int(each), '08b')
+                hexstring += format(int(each), '02x')
+                binstring += format(int(each), '08b')
         # there exists
         #    hexstring
         #    binstring
@@ -220,69 +237,56 @@ def main(stdscr) -> None:
 
             i += 1
         if enable_debug:
-            fw.write("(expected_bitsize % 8) != 0 :: expected_bitsize={expected_bitsize}\n".format(expected_bitsize=expected_bitsize))
+            fw.write(f"(expected_bitsize % 8) != 0 :: expected_bitsize={expected_bitsize}\n")
         # trim any extra bits from bitstring, since we likely have padding on the end
         if ((expected_bitsize % 8) != 0):
             if enable_debug:
-                fw.write("old_hexstring=%s\n" % (hexstring))
+                fw.write(f"old_hexstring={hexstring}\n")
             offset = 8 - (expected_bitsize % 8)
             binstring = binstring[offset:]
             if enable_debug:
-                fw.write("new_hexstring=%s offset=%s\n" % (8 - (expected_bitsize % 8), hexstring))
+                fw.write(f"new_hexstring={8 - (expected_bitsize % 8)} offset={hexstring}\n")
         if enable_debug:
-            fw.write("len(binstring) != expected_bitsize :: len(binstring)={len_binstring} expected_bitsize={expected_bitsize}\n".format(expected_bitsize=expected_bitsize,
-                                                                                                                                     len_binstring=len(binstring)))
+            fw.write(f"len(binstring) != expected_bitsize :: len(binstring)={len(binstring)} expected_bitsize={expected_bitsize}\n")
         #REVISIT THIS AARON
         # if the string is not the right size, skip it
         if (len(binstring) != expected_bitsize):
             if enable_debug:
-                fw.write("len(binstring)=%s != expected_bitsize=%s hexstring=%s\n" % ( len(binstring), expected_bitsize, hexstring))
-            stdscr.addstr(1,80, "len(binstring)=" + str(len(binstring)) + "!= " + str(expected_bitsize))
+                fw.write(f"len(binstring)={len(binstring)} != expected_bitsize={expected_bitsize} hexstring={hexstring}\n")
+            stdscr.addstr(1,80, f"len(binstring)={str(len(binstring))}!= {str(expected_bitsize)}")
             continue
         else:
-            stdscr.addstr(1,80, "                                                                     ")
-            stdscr.addstr(1,0, hexstring + " len(c)=" + str(len(binstring)) + "bits")
+            stdscr.addstr(1,80, " " * 69)
+            stdscr.addstr(1,0, f"{hexstring} len(c)={str(len(binstring))}bits")
 
 
         if (bytestring_total > expected_bytes):
-            stdscr.addstr(0,0, hexstring +  " ERROR: received (" + str(bytestring_total) + ") more than" + str(expected_bytes) + " bytes")
+
+            stdscr.addstr(0,0, f"{hexstring} ERROR: received ({str(bytestring_total)}) more than{str(expected_bytes)} bytes")
         else:
-            stdscr.addstr(0,0, "                                                                                                                ")
+            stdscr.addstr(0,0, " " * 112)
 
 
         #reverse binstring so we can access it sanely using python list constructs
         binstring = binstring[::-1]
-        stdscr.addstr(2,0, "chars read:" + str(bytestring_total) + " bits:" + str(len(binstring)))
+        stdscr.addstr(2,0, f"chars read:{str(bytestring_total)} bits:{str(len(binstring))}")
         position = 0
         error_offset = 3
         i = 0
-        MAX_LINES = 38
-        COLUMN_SIZE = 0
         for variable in structure:
-            if i < MAX_LINES:
+            if i < max_lines:
                 y_pos = i + error_offset
                 x_pos = 0
             else:
-                y_pos = i + error_offset - MAX_LINES + 1
+                y_pos = i + error_offset - max_lines + 1
                 x_pos = COLUMN_SIZE + 3
             if variable['name'] == 'newline':
                 position += 8
             else:
-                bits_used = variable['size']
-                vname = variable['name']
+                bits_used = int(variable['size'])
+                vname = str(variable['name'])
                 subsegment = binstring[position:position+bits_used]
                 subsegment = subsegment[::-1]
-                delta = len(subsegment) % 8
-                #if delta > 0:
-                #    subsegment = "0"*(8-delta) + subsegment
-                # if enable_debug and (vname == "ram_a_address"):
-                #     fw.write("\n====blah====\n")
-                #     fw.write("bits_used=%s\n" % bits_used)
-                #     fw.write("position=%s\n" % position)
-                #     fw.write("delta=%s\n" % delta)
-                #     fw.write("binstring[position:position+bits_used]=%s hex=%s\n" % (binstring[position:position+bits_used], hex(int(binstring[position:position+bits_used], 2))))
-                #     fw.write("subsegment=%s hex=%s \n" % ((binstring[position:position+bits_used])[::-1], hex(int((binstring[position:position+bits_used])[::-1],2))))
-                subsegment_numbytes = len(subsegment)/8
                 subsegment_bytestring = ""
                 if (len(subsegment) % 8) != 0:
                     gap = 8 - len(subsegment) % 8
@@ -293,16 +297,21 @@ def main(stdscr) -> None:
                     modval = str(chr(int(val,2)))
                     temp_array.append(modval)
                 subsegment_bytestring = "".join(temp_array)
+                if vname == "uart_rx_data":
+                    uart_rx_data = get_safe_string(subsegment_bytestring)
                 output_string  = do_debug(subsegment_bytestring, title=vname)
-                if enable_debug == True:
-                    fw.write("bits_used:" + str(bits_used) + " position:" + str(position) + \
-                        " subsegment: " + subsegment + " len(subsegment)=" + str(len(subsegment)) + \
-                        " delta:" + str(delta) + " num_bytes:" + str(subsegment_numbytes) + \
-                        " subsegment_bytestring:" + subsegment_bytestring + " length=" + \
-                        str(len(subsegment_bytestring)) + " title=" + vname + \
-                        " output_string:" + output_string + \
-                        " x_pos=" + str(x_pos) + " y_pos=" + str(y_pos) + '\n')
-                if ((i < MAX_LINES) and (len(output_string) > COLUMN_SIZE)):
+                if enable_debug:
+                    fw.write(f"bits_used:{str(bits_used)} "
+                             f"position:{str(position)} "
+                             f"subsegment: {subsegment} "
+                             f"len(subsegment)={str(len(subsegment))} "
+                             f"subsegment_bytestring:{subsegment_bytestring} "
+                             f"length={str(len(subsegment_bytestring))} "
+                             f"title={vname} "
+                             f"output_string:{output_string} "
+                             f"x_pos={str(x_pos)} "
+                             f"y_pos={str(y_pos)}\n")
+                if ((i < max_lines) and (len(output_string) > COLUMN_SIZE)):
                     COLUMN_SIZE = len(output_string)
                 stdscr.addstr(y_pos, x_pos, output_string)
 
@@ -312,38 +321,91 @@ def main(stdscr) -> None:
         k = stdscr.getch()
         literals = ['R', 'r', 'G', 'g', 'B', 'b', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'L']
         if BAUDSET_DATA_STATE != -1 and BAUDSET_DATA_STATE != 3:
-            stdscr.addstr(MAX_LINES+3,0, "uart_rx_data:"+ uart_rx_data)
-            findbaud(stdscr, uart_rx_data)
-            testval("/dev/ttyAMA3", BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE])
+            stdscr.addstr(max_lines+3,0, f"uart_rx_data:{uart_rx_data}")
+            current_context = BaudContext(state=BAUDSET_DATA_STATE, rate=BAUDSET_DATA)
+            context = findbaud(stdscr, uart_rx_data, cur_context=current_context, max_lines=max_lines, max_baudrate=tx_baudrate_max, baudrate_increment=tx_baudrate_search_increment)
+            BAUDSET_DATA_STATE, BAUDSET_DATA = context.state, context.rate
+            testval(tx_dev, BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE], spi=use_spi)
         if (k != -1):
             if (chr(k) == 'H'):
-                writeser(ser, 'H')
-                writeser(ser, 'H')
-                writeser(ser, 'H')
-                writeser(ser, 'h')
-                writeser(ser, 'h')
-                writeser(ser, 'h')
-                writeser(ser, 'h')
-                writeser(ser, 'H')
-                writeser(ser, 'H')
-                writeser(ser, 'H')
-                writeser(ser, 'H')
-                writeser(ser, 'h')
-                writeser(ser, 'h')
-                writeser(ser, 'h')
-                writeser(ser, 'h')
-                writeser(ser, 'h')
+                for _ in range(0, 16):
+                    writeser(ser, 'H', spi=use_spi)
             elif (chr(k) == 'P'):
-                BAUDSET_DATA = BAUDSET_DATA_INIT
+                BAUDSET_DATA = tx_baudrate_start
                 BAUDSET_DATA_STATE = 1
             elif (chr(k) in literals):
-                testval("/dev/ttyAMA3", BAUDSET_DATA, chr(k))
-                writeser(ser, chr(k))
+                testval(tx_dev, BAUDSET_DATA, chr(k), spi=use_spi)
+                writeser(ser, chr(k), spi=use_spi)
             else:
-                writeser(ser, chr(k))
+                writeser(ser, chr(k), spi=use_spi)
     # TODO: fix this
     stdscr.refresh()
     stdscr.getkey()
     ser.close()
 
-wrapper(main)
+if __name__ == "__main__":
+    PARSER = argparse.ArgumentParser(prog="uart_rx",
+                                     description="i receive signals from fpga debugger")
+
+    PARSER.add_argument("--debug-filepath",
+                        dest="debug_filepath",
+                        action="store",
+                        default=Path("blah"),
+                        type=Path,
+                        help="If using --debug, write output to this path")
+    PARSER.add_argument("--rx-dev",
+                        dest="rx_dev",
+                        action="store",
+                        default=Path("/dev/ttyAMA2"),
+                        type=Path,
+                        help="UART device used to receive information from fpga debugger")
+    PARSER.add_argument("--rx-baudrate",
+                        dest="rx_baudrate",
+                        action="store",
+                        default=115200,
+                        type=int,
+                        help="baudrate to use for --rx-dev")
+    PARSER.add_argument("--tx-dev",
+                        dest="tx_dev",
+                        action="store",
+                        default=Path("/dev/ttyAMA3"),
+                        type=Path,
+                        help="UART device used to send information to the fpga debugger")
+    PARSER.add_argument("--tx-baudrate-start",
+                        dest="tx_baudrate_start",
+                        action="store",
+                        default=2444444,
+                        type=int,
+                        help="starting baudrate to be used to send information to the fpga debugger")
+    PARSER.add_argument("--tx-baudrate-max",
+                        dest="tx_baudrate_max",
+                        action="store",
+                        default=2900000,
+                        type=int,
+                        help="max baudrate to be used to send information to the fpga debugger")
+    PARSER.add_argument("--tx-baudrate-search-increment",
+                        dest="tx_baudrate_search_increment",
+                        action="store",
+                        default=500,
+                        type=int,
+                        help="amount to increment baudrate when searching for tx goal")
+    PARSER.add_argument("--max-lines",
+                        dest="max_lines",
+                        action="store",
+                        default=38,
+                        type=int,
+                        help="max lines shown")
+    PARSER.add_argument("--debug",
+                        dest="enable_debug",
+                        action="store_true",
+                        help="turn on debug")
+    PARSER.add_argument("--spi",
+                        dest="use_spi",
+                        action="store_true",
+                        help="use spi")
+    ARGS = PARSER.parse_args()
+
+    try:
+        wrapper(partial(main, **vars(ARGS)))
+    except KeyboardInterrupt:
+        pass
