@@ -3,3 +3,6 @@
 - It allows fujprog to push programs to the fpga, as well as allows the esp32 to be enumerated/updated via USB1
 - This bitstream `https://github.com/emard/ulx3s-bin/blob/master/fpga/dfu/85f-v317/passthru41113043.bit.gz` (after decompression) appears to function identically, except all led's D0-D7 are lit.
 
+# updating boot image
+- Must unprotect flash
+- oss-cad-suite/bin/openFPGALoader -b ulx3s --unprotect-flash -f ~/Downloads/passthru41113043\ \(1\).bit
