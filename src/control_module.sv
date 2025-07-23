@@ -38,11 +38,11 @@ module control_module #(
         assign ram_access_start_latch2 = ram_access_start_latch;
     `endif
     wire [1:0] timer_counter_unused;
-    logic  [1:0]  cmd_line_state;
+    logic [1:0] cmd_line_state;
     // For 32 bit high displays, [4:0]
-    logic  [$clog2(PIXEL_HEIGHT)-1:0]  cmd_line_addr_row;
+    logic [$clog2(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;
     // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
-    logic  [_NUM_COLUMN_ADDRESS_BITS-1:0]  cmd_line_addr_col;
+    logic [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_line_addr_col;
     logic [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_line_pixelselect_num;
     wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr =
         {  cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0],
@@ -56,15 +56,12 @@ module control_module #(
         assign cmd_line_addr2 = cmd_line_addr;
     `endif
 
-
-
-    // ^ is exclusive or
     timeout #(
         .COUNTER_WIDTH(2)
     ) timeout_cmd_line_write (
         .reset(reset),
         .clk_in(~clk_in),
-        .start(ram_access_start ^ ram_access_start_latch),
+        .start(ram_access_start ^ ram_access_start_latch), // ^ is exclusive or
         .value(2'b10),
         .counter(timer_counter_unused),
         .running(ram_clk_enable_real)
