@@ -2,21 +2,19 @@
 module control_module #(
     `include "params.vh"
     `include "memory_calcs.vh"
+    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH),
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input reset,
-    input clk_in, /* clk_root =  133MHZ */
-
+    input clk_in,
     input [7:0] data_rx,
     input data_ready_n,
     output logic [2:0] rgb_enable,
     output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
-
     output logic [_NUM_DATA_A_BITS-1:0] ram_data_out,
-    //      with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
-    output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,
+    output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,     // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
     output logic ram_write_enable,
     output ram_clk_enable
     `ifdef DEBUGGER
@@ -28,33 +26,29 @@ module control_module #(
         output logic [7:0] num_commands_processed
     `endif
 );
-    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH);
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     wire ram_clk_enable_real;
     logic ram_access_start;
     logic ram_access_start_latch;
-    `ifdef DEBUGGER
-        assign ram_access_start2 = ram_access_start;
-        assign ram_access_start_latch2 = ram_access_start_latch;
-    `endif
     wire [1:0] timer_counter_unused;
     logic [1:0] cmd_line_state;
-    // For 32 bit high displays, [4:0]
-    logic [$clog2(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;
-    // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
-    logic [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_line_addr_col;
+    logic [$clog2(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;     // For 32 bit high displays, [4:0]
+    logic [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_line_addr_col; // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
     logic [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_line_pixelselect_num;
     wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr =
         {  cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0],
           ~cmd_line_addr_col,
           ~cmd_line_pixelselect_num}; // <-- use this to toggle endainness. ~ == little endain
-                                    //                                      == bit endian
-                                    // NOTE: uart/alphabet.uart is BIG ENDIAN.
+                                      //                                      == bit endian
+                                      // NOTE: uart/alphabet.uart is BIG ENDIAN.
 
     `ifdef DEBUGGER
         assign cmd_line_state2[1:0] = cmd_line_state[1:0];
         assign cmd_line_addr2 = cmd_line_addr;
+        assign ram_access_start2 = ram_access_start;
+        assign ram_access_start_latch2 = ram_access_start_latch;
     `endif
+    assign ram_clk_enable = ram_clk_enable_real;
 
     timeout #(
         .COUNTER_WIDTH(2)
@@ -66,7 +60,7 @@ module control_module #(
         .counter(timer_counter_unused),
         .running(ram_clk_enable_real)
     );
-    assign ram_clk_enable = ram_clk_enable_real;
+
     always @(posedge clk_in) begin
         if (reset) begin
             ram_access_start_latch <= 1'b0;
