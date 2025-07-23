@@ -16,7 +16,7 @@ module control_module #(
     output logic [_NUM_DATA_A_BITS-1:0] ram_data_out,
     output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,     // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
     output logic ram_write_enable,
-    output ram_clk_enable
+    output logic ram_clk_enable
     `ifdef DEBUGGER
         ,
         output [1:0] cmd_line_state2,
@@ -27,7 +27,6 @@ module control_module #(
     `endif
 );
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
-    wire ram_clk_enable_real;
     logic ram_access_start;
     logic ram_access_start_latch;
     wire [1:0] timer_counter_unused;
@@ -48,7 +47,6 @@ module control_module #(
         assign ram_access_start2 = ram_access_start;
         assign ram_access_start_latch2 = ram_access_start_latch;
     `endif
-    assign ram_clk_enable = ram_clk_enable_real;
 
     timeout #(
         .COUNTER_WIDTH(2)
@@ -58,7 +56,7 @@ module control_module #(
         .start(ram_access_start ^ ram_access_start_latch), // ^ is exclusive or
         .value(2'b10),
         .counter(timer_counter_unused),
-        .running(ram_clk_enable_real)
+        .running(ram_clk_enable)
     );
 
     always @(posedge clk_in) begin
@@ -66,7 +64,7 @@ module control_module #(
             ram_access_start_latch <= 1'b0;
         end
         else begin
-            if (ram_clk_enable_real) begin
+            if (ram_clk_enable) begin
                 ram_access_start_latch <= ram_access_start;
             end
             else begin
