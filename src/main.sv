@@ -89,7 +89,6 @@ module main #(
             wire debugger_tx_start;
             wire [$clog2(debug_data_width):0] debugger_current_position;
         // from controller
-        wire [1:0] cmd_line_state;
         wire ram_access_start;
         wire ram_access_start_latch;
         wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2;
@@ -205,7 +204,7 @@ module main #(
             1'b0, // rxdata_ready_sync
             row_latch,
             row_latch_state[1:0],
-            cmd_line_state[1:0],
+            2'b0, // cmd_line_state[1:0],
             1'b0, // uart_rx,
             ram_access_start_latch,
             ram_access_start,
@@ -369,7 +368,6 @@ module main #(
         .ram_clk_enable(ram_a_clk_enable)
         `ifdef DEBUGGER
             ,
-            .cmd_line_state2(cmd_line_state),
             .ram_access_start2(ram_access_start),
             .ram_access_start_latch2(ram_access_start_latch),
             .cmd_line_addr2(cmd_line_addr2),
@@ -515,7 +513,6 @@ module main #(
                             debug_uart_rx,
                             debug_command,
                             //from controller
-                            cmd_line_state,
                             ram_access_start,
                             ram_access_start_latch,
                             cmd_line_addr2,

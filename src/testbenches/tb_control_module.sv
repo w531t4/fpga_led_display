@@ -22,7 +22,6 @@ module tb_control_module #(
 
     wire ram_clk_enable;
     `ifdef DEBUGGER
-        wire [1:0] cmd_line_state2;
         wire [7:0] num_commands_processed;
     `endif
     // debugger stuff
@@ -148,7 +147,6 @@ module tb_control_module #(
             //.rx_invalid(rx_invalid),
             `ifdef DEBUGGER
                 ,
-                .cmd_line_state2(cmd_line_state2),
                 .num_commands_processed(num_commands_processed)
             `endif
         );

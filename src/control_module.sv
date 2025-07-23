@@ -19,18 +19,20 @@ module control_module #(
     output logic ram_clk_enable
     `ifdef DEBUGGER
         ,
-        output [1:0] cmd_line_state2,
         output ram_access_start2,
         output ram_access_start_latch2,
         output [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2,
         output logic [7:0] num_commands_processed
     `endif
 );
+    typedef enum {STATE_READ_ROWNUMBER,
+                  STATE_READ_ROWDATA,
+                  STATE_IDLE} ctrl_fsm;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
     wire [1:0] timer_counter_unused;
-    logic [1:0] cmd_line_state;
+    ctrl_fsm cmd_line_state;
     logic [$clog2(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;     // For 32 bit high displays, [4:0]
     logic [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_line_addr_col; // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
     logic [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_line_pixelselect_num;
@@ -42,7 +44,6 @@ module control_module #(
                                       // NOTE: uart/alphabet.uart is BIG ENDIAN.
 
     `ifdef DEBUGGER
-        assign cmd_line_state2[1:0] = cmd_line_state[1:0];
         assign cmd_line_addr2 = cmd_line_addr;
         assign ram_access_start2 = ram_access_start;
         assign ram_access_start_latch2 = ram_access_start_latch;
@@ -83,7 +84,7 @@ module control_module #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
 
-            cmd_line_state <= 2'd0;
+            cmd_line_state <= STATE_IDLE;
             cmd_line_addr_row <= {$clog2(PIXEL_HEIGHT){1'b0}};
             cmd_line_addr_col <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
             `ifdef DEBUGGER
@@ -93,7 +94,7 @@ module control_module #(
         else begin
             brightness_enable <= brightness_temp;
             /* CMD: Line */
-            if (cmd_line_state == 2'd2 && data_rx != "L" ) begin
+            if (cmd_line_state == STATE_READ_ROWNUMBER && data_rx != "L" ) begin
                 /* first, get the row to write to */
                 cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0] <= data_rx[4:0];
 
@@ -104,9 +105,9 @@ module control_module #(
                 // cmd_line_addr_col[6:0] <= 7'd127;
                 cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
                 cmd_line_addr_col[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
-                cmd_line_state <= 2'd1;
+                cmd_line_state <= STATE_READ_ROWDATA;
             end
-            else if (cmd_line_state == 2'd1) begin
+            else if (cmd_line_state == STATE_READ_ROWDATA) begin
                 /* decrement the column address (or finish the load) */
                 if (cmd_line_addr_col != 'd0 || cmd_line_pixelselect_num != 'd0) begin
                     if (cmd_line_pixelselect_num == 'd0) begin
@@ -116,7 +117,7 @@ module control_module #(
                         cmd_line_pixelselect_num <= cmd_line_pixelselect_num - 'd1;
                 end
                 else begin
-                    cmd_line_state <= 2'd0;
+                    cmd_line_state <= STATE_IDLE;
                     `ifdef DEBUGGER
                         num_commands_processed <= num_commands_processed + 1'b1;
                     `endif
@@ -130,7 +131,7 @@ module control_module #(
             end
 
             /* CMD: Main */
-            else if (cmd_line_state != 2'd2 && !data_ready_n) begin
+            else if (cmd_line_state != STATE_READ_ROWNUMBER && !data_ready_n) begin
                 //2650000
                 case (data_rx)
                     "R": begin
@@ -168,10 +169,10 @@ module control_module #(
                         brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
                     end
                     "L": begin
-                        cmd_line_state <= 2'd2;
+                        cmd_line_state <= STATE_READ_ROWNUMBER;
                     end
                     default: begin
-                        cmd_line_state <= 2'd0;
+                        cmd_line_state <= STATE_IDLE;
                         ram_write_enable <= 1'b0;
                     end
                 endcase
