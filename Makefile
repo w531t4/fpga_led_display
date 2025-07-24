@@ -14,6 +14,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # W128 - enable 128 pixel width
 # FOCUS_TB_MAIN_UART - limit main testbench to include only signals applicable to uart debugging
 # SPI - use SPI for data ingress instead of a UART
+# SPI_ESP32 - must also specify SPI. Uses esp32 pinout
 # CLK_100 - Use 100MHz clock for clk_root
 # CLK_50 - Use 50MHz clock for clk_root
 # RGB24 - Use RGB24 instead of RGB565
@@ -55,7 +56,7 @@ endif
 
 
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore
 all: simulation lint
 #$(warning In a command script $(VVPOBJS))
 
@@ -202,3 +203,13 @@ ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 $(ARTIFACT_DIR)/netlist_pre.svg: $(ARTIFACT_DIR)/mydesign_pre_vizclean.json | $(ARTIFACT_DIR)
 	$(NETLISTSVG) $< -o $@
 endif
+
+restore:
+	$(TOOLPATH)/fujprog ~/Downloads/passthru41113043.bit
+
+esp32_build: restore
+	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py build
+esp32_flash: restore
+	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py flash
+
+esp32:   esp32_build  esp32_flash memprog

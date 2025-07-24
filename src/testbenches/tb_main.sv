@@ -84,10 +84,16 @@ module tb_main #(
         .gn5()
         `ifdef SPI
             ,
-            .gp17(rxdata),  // spi miso
-            //.gp18() // spi_mosi
-            .gp19(spi_clk),  // spi_clk
-            .gp20(spi_cs)   // spi_cs
+            `ifdef SPI_ESP32
+                .sd_d({3'b0, rxdata}),  // sd_d[0]=mosi
+                .sd_clk(spi_clk),       // clk
+                .sd_cmd(spi_cs)         // ce
+            `else
+                .gp17(rxdata),  // spi miso
+                //.gp18()       // spi_mosi
+                .gp19(spi_clk), // spi_clk
+                .gp20(spi_cs)   // spi_cs
+            `endif
         `endif
     );
     `ifdef SPI

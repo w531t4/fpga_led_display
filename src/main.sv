@@ -50,10 +50,16 @@ module main #(
     // output gn16
     `ifdef SPI
         ,
-        input gp17,       // miso
-        //   output gp18, // mosi
-        input gp19,       // clk
-        input gp20        // ce
+        `ifdef SPI_ESP32
+            input [3:0] sd_d, // sd_d[0]=mosi
+            input sd_clk,     // clk
+            input sd_cmd      // ce
+        `else
+            input gp17,       // miso
+            //   output gp18, // mosi
+            input gp19,       // clk
+            input gp20        // ce
+        `endif
     `endif
 );
 
@@ -466,9 +472,15 @@ module main #(
     assign gp9 = row_address_active[2]; // C / Row[2]
     assign gp10 = row_address_active[3]; // D / Row[3]
     `ifdef SPI
-        assign spi_clk = gp19;
-        assign spi_cs = gp20;
-        assign rxdata = gp17; // MOSI
+        `ifdef SPI_ESP32
+            assign spi_clk = sd_clk;
+            assign spi_cs = sd_cmd;
+            assign rxdata = sd_d[0]; // MOSI
+        `else
+            assign spi_clk = gp19;
+            assign spi_cs = gp20;
+            assign rxdata = gp17; // MOSI
+        `endif
     `else
         assign rxdata = gp14;
     `endif
@@ -532,6 +544,9 @@ module main #(
                         `endif
                         ram_a_data_out,
                         `ifdef SPI
+                            `ifdef SPI_ESP32
+                                sd_d[3:1],
+                            `endif
                             spi_slave_sdout,
                         `else
                             uart_rx_dataready,
