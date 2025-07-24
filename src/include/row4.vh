@@ -35,9 +35,28 @@
 
 // Add tests for pixel set command
 localparam myled_row_size_pixel = (1 + 1 + 1 + 2) * 8;
-logic [myled_row_size_pixel-1:0] myled_row_pixel  = 'h50_08_30_10_20;
+logic [myled_row_size_pixel-1:0] myled_row_pixel  = 'h50_08_30_10_20; // "P" + row=8 column=0x30 bytedata=0x1020
 logic [myled_row_size_pixel-1:0] myled_row_pixel2 = 'h50_09_32_30_40;
 
+localparam myled_row_size_brightness_1 = 1*8;
+logic [myled_row_size_brightness_1-1:0] myled_row_brightness_1 = 'h33; // "3"
 
-localparam myled_row_size = myled_row_size_basic + myled_row_size_pixel + myled_row_size_pixel;
-logic [myled_row_size-1:0] myled_row = {myled_row_basic, myled_row_pixel, myled_row_pixel2};
+localparam myled_row_size_brightness_2 = (1 + 1) * 8;
+logic [myled_row_size_brightness_2-1:0] myled_row_brightness_2 = 'h5423; // "T" + \x23
+logic [myled_row_size_brightness_2-1:0] myled_row_brightness_3 = 'h5438; // "T" + \x38
+
+localparam myled_row_size = myled_row_size_basic
+                            + myled_row_size_pixel
+                            + myled_row_size_pixel
+                            + myled_row_size_brightness_1
+                            + myled_row_size_brightness_2
+                            + myled_row_size_brightness_2
+                            ;
+logic [myled_row_size-1:0] myled_row = {
+                                            myled_row_basic,
+                                            myled_row_pixel,
+                                            myled_row_pixel2,
+                                            myled_row_brightness_1,
+                                            myled_row_brightness_2,
+                                            myled_row_brightness_3
+                                        };

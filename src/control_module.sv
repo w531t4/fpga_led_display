@@ -27,6 +27,7 @@ module control_module #(
 );
     typedef enum {STATE_IDLE,
                   STATE_CMD_READROW,
+                  STATE_CMD_READBRIGHTNESS,
                   STATE_CMD_READPIXEL
                   } ctrl_fsm;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
@@ -44,6 +45,8 @@ module control_module #(
                                       //                                      == bit endian
                                       // NOTE: uart/alphabet.uart is BIG ENDIAN.
     logic state_done;
+    logic brightness_change_enable;
+    logic [BRIGHTNESS_LEVELS-1:0] brightness_data_out;
 
     `ifdef DEBUGGER
         assign cmd_line_addr2 = cmd_line_addr;
@@ -123,6 +126,18 @@ module control_module #(
         .done(cmd_readpixel_done)
     );
 
+    wire cmd_readbrightness_done, cmd_readbrightness_be;
+    wire [BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
+    control_cmd_readbrightness #(
+    ) cmd_readbrightness (
+        .reset(reset),
+        .data_in(data_rx),
+        .clk_n(data_ready_n),
+        .enable(cmd_line_state == STATE_CMD_READBRIGHTNESS),
+        .data_out(cmd_readbrightness_do),
+        .brightness_change_en(cmd_readbrightness_be),
+        .done(cmd_readbrightness_done)
+    );
 
     always @(*) begin
         cmd_line_addr_row = {$clog2(PIXEL_HEIGHT){1'b0}};
@@ -132,7 +147,15 @@ module control_module #(
         ram_write_enable = 1'b0;
         ram_access_start = 1'b0;
         state_done = 1'b0;
+        brightness_change_enable = 1'b0;
+        brightness_data_out = {BRIGHTNESS_LEVELS{1'b0}};
+
         case (cmd_line_state)
+            STATE_CMD_READBRIGHTNESS: begin
+                brightness_change_enable = cmd_readbrightness_be;
+                brightness_data_out = cmd_readbrightness_do;
+                state_done = cmd_readbrightness_done;
+            end
             STATE_CMD_READROW: begin
                 cmd_line_addr_row = cmd_readrow_row_addr;
                 cmd_line_addr_col = cmd_readrow_col_addr;
@@ -168,7 +191,12 @@ module control_module #(
             `endif
         end
         else begin
-            brightness_enable <= brightness_temp;
+            if (brightness_enable != brightness_temp) begin
+                brightness_enable <= brightness_temp;
+            end else if (brightness_change_enable) begin
+                brightness_enable <= brightness_data_out;
+                brightness_temp <= brightness_data_out;
+            end
             /* CMD: Main */
             if (cmd_line_state == STATE_IDLE || state_done) begin
                 case (data_rx)
@@ -238,12 +266,14 @@ module control_module #(
                         brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
                         cmd_line_state <= STATE_IDLE;
                     end
+                    "T": cmd_line_state <= STATE_CMD_READBRIGHTNESS;
                     "L": begin
                         cmd_line_state <= STATE_CMD_READROW;
                     end
                     "P": cmd_line_state <= STATE_CMD_READPIXEL;
                     default: begin
                         cmd_line_state <= STATE_IDLE;
+                        if (brightness_change_enable) brightness_temp <= brightness_data_out;
                     end
                 endcase
             end
