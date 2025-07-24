@@ -174,37 +174,69 @@ module control_module #(
                 case (data_rx)
                     "R": begin
                         rgb_enable[0] <= 1'b1;
+                        cmd_line_state <= STATE_IDLE;
                     end
                     "r": begin
                         rgb_enable[0] <= 1'b0;
+                        cmd_line_state <= STATE_IDLE;
                     end
                     "G": begin
                         rgb_enable[1] <= 1'b1;
+                        cmd_line_state <= STATE_IDLE;
                     end
                     "g": begin
                         rgb_enable[1] <= 1'b0;
+                        cmd_line_state <= STATE_IDLE;
                     end
                     "B": begin
                         rgb_enable[2] <= 1'b1;
+                        cmd_line_state <= STATE_IDLE;
                     end
                     "b": begin
                         rgb_enable[2] <= 1'b0;
+                        cmd_line_state <= STATE_IDLE;
                     end
-                    "1": brightness_temp[BRIGHTNESS_LEVELS - 1] <= ~brightness_enable[BRIGHTNESS_LEVELS - 1];
-                    "2": brightness_temp[BRIGHTNESS_LEVELS - 2] <= ~brightness_enable[BRIGHTNESS_LEVELS - 2];
-                    "3": brightness_temp[BRIGHTNESS_LEVELS - 3] <= ~brightness_enable[BRIGHTNESS_LEVELS - 3];
-                    "4": brightness_temp[BRIGHTNESS_LEVELS - 4] <= ~brightness_enable[BRIGHTNESS_LEVELS - 4];
-                    "5": brightness_temp[BRIGHTNESS_LEVELS - 5] <= ~brightness_enable[BRIGHTNESS_LEVELS - 5];
-                    "6": brightness_temp[BRIGHTNESS_LEVELS - 6] <= ~brightness_enable[BRIGHTNESS_LEVELS - 6];
+                    "1": begin
+                        brightness_temp[BRIGHTNESS_LEVELS - 1] <= ~brightness_enable[BRIGHTNESS_LEVELS - 1];
+                        cmd_line_state <= STATE_IDLE;
+                    end
+                    "2": begin
+                        brightness_temp[BRIGHTNESS_LEVELS - 2] <= ~brightness_enable[BRIGHTNESS_LEVELS - 2];
+                        cmd_line_state <= STATE_IDLE;
+                    end
+                    "3": begin
+                        brightness_temp[BRIGHTNESS_LEVELS - 3] <= ~brightness_enable[BRIGHTNESS_LEVELS - 3];
+                        cmd_line_state <= STATE_IDLE;
+                    end
+                    "4": begin
+                        brightness_temp[BRIGHTNESS_LEVELS - 4] <= ~brightness_enable[BRIGHTNESS_LEVELS - 4];
+                        cmd_line_state <= STATE_IDLE;
+                    end
+                    "5": begin
+                        brightness_temp[BRIGHTNESS_LEVELS - 5] <= ~brightness_enable[BRIGHTNESS_LEVELS - 5];
+                        cmd_line_state <= STATE_IDLE;
+                    end
+                    "6": begin
+                        brightness_temp[BRIGHTNESS_LEVELS - 6] <= ~brightness_enable[BRIGHTNESS_LEVELS - 6];
+                        cmd_line_state <= STATE_IDLE;
+                    end
                     `ifdef RGB24
-                        "7": brightness_temp[BRIGHTNESS_LEVELS - 7] <= ~brightness_enable[BRIGHTNESS_LEVELS - 7];
-                        "8": brightness_temp[BRIGHTNESS_LEVELS - 8] <= ~brightness_enable[BRIGHTNESS_LEVELS - 8];
+                        "7": begin
+                            brightness_temp[BRIGHTNESS_LEVELS - 7] <= ~brightness_enable[BRIGHTNESS_LEVELS - 7];
+                            cmd_line_state <= STATE_IDLE;
+                        end
+                        "8": begin
+                            brightness_temp[BRIGHTNESS_LEVELS - 8] <= ~brightness_enable[BRIGHTNESS_LEVELS - 8];
+                            cmd_line_state <= STATE_IDLE;
+                        end
                     `endif
                     "0": begin
                         brightness_temp <= {BRIGHTNESS_LEVELS{1'b0}};
+                        cmd_line_state <= STATE_IDLE;
                     end
                     "9": begin
                         brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
+                        cmd_line_state <= STATE_IDLE;
                     end
                     "L": begin
                         cmd_line_state <= STATE_CMD_READROW;
