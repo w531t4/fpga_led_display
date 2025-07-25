@@ -173,7 +173,6 @@ module tb_main #(
         // @(posedge tb_main.tbi_main.clk_root);
         `ifdef SPI
             @(posedge clk) begin
-                thebyte = myled_row[myled_row_size-1 -: 8];
                 spi_start = 1;
             end
         `endif

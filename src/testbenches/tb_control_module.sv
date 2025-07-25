@@ -175,8 +175,6 @@ module tb_control_module #(
         end
         `ifdef SPI
             @(posedge clk)
-                thebyte = mystring[mystring_size-1 -: 8];
-            @(posedge clk)
                 spi_start = 1;
         `endif
         repeat (300) begin
