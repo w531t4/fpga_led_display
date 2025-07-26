@@ -25,9 +25,9 @@ module control_module #(
         output logic [7:0] num_commands_processed
     `endif
 );
-    typedef enum {STATE_READ_ROWNUMBER,
-                  STATE_READ_ROWDATA,
-                  STATE_IDLE} ctrl_fsm;
+    typedef enum {STATE_IDLE,
+                  STATE_CMD_READROW
+                  } ctrl_fsm;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
@@ -42,6 +42,7 @@ module control_module #(
           ~cmd_line_pixelselect_num}; // <-- use this to toggle endainness. ~ == little endain
                                       //                                      == bit endian
                                       // NOTE: uart/alphabet.uart is BIG ENDIAN.
+    logic state_done;
 
     `ifdef DEBUGGER
         assign cmd_line_addr2 = cmd_line_addr;
@@ -73,66 +74,69 @@ module control_module #(
         end
     end
 
+    wire cmd_readrow_we, cmd_readrow_as, cmd_readrow_done;
+    wire [7:0] cmd_readrow_do;
+    wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
+    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readrow_col_addr;
+    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readrow_pixel_addr;
+    wire cmd_readrow_ace;
+
+    control_cmd_readrow #(
+    ) cmd_readrow (
+        // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
+        .reset(reset),
+        .data_in(data_rx),
+        .enable(cmd_line_state == STATE_CMD_READROW),
+        .clk_n(data_ready_n),
+
+        .row(cmd_readrow_row_addr),
+        .column(cmd_readrow_col_addr),
+        .pixel(cmd_readrow_pixel_addr),
+        .data_out(cmd_readrow_do),
+        .ram_write_enable(cmd_readrow_we),
+        .ram_access_start(cmd_readrow_as),
+        .done(cmd_readrow_done)
+    );
+    assign ram_address = cmd_line_addr;
+
+    always @(*) begin
+        cmd_line_addr_row = {$clog2(PIXEL_HEIGHT){1'b0}};
+        cmd_line_addr_col = {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
+        cmd_line_pixelselect_num = {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
+        ram_data_out = 8'b0;
+        ram_write_enable = 1'b0;
+        ram_access_start = 1'b0;
+        state_done = 1'b0;
+        case (cmd_line_state)
+            STATE_CMD_READROW: begin
+                cmd_line_addr_row = cmd_readrow_row_addr;
+                cmd_line_addr_col = cmd_readrow_col_addr;
+                cmd_line_pixelselect_num = cmd_readrow_pixel_addr;
+                ram_data_out = cmd_readrow_do;
+                ram_write_enable = cmd_readrow_we;
+                ram_access_start = cmd_readrow_as;
+                state_done = cmd_readrow_done;
+            end
+            default: begin
+            end
+        endcase
+    end
+
     always @(negedge data_ready_n, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;
             brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
             brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
 
-            ram_data_out <= 8'd0;
-            ram_address <= {_NUM_ADDRESS_A_BITS{1'b0}};
-            ram_write_enable <= 1'b0;
-            ram_access_start <= 1'b0;
-
             cmd_line_state <= STATE_IDLE;
-            cmd_line_addr_row <= {$clog2(PIXEL_HEIGHT){1'b0}};
-            cmd_line_addr_col <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
             `ifdef DEBUGGER
                 num_commands_processed <= 8'b0;
             `endif
         end
         else begin
             brightness_enable <= brightness_temp;
-            /* CMD: Line */
-            if (cmd_line_state == STATE_READ_ROWNUMBER && data_rx != "L" ) begin
-                /* first, get the row to write to */
-                cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0] <= data_rx[4:0];
-
-                /* and start clocking in the column data
-                64 pixels x 2 bytes each = 128 bytes */
-                // parameter PIXEL_WIDTH = 'd64,
-                // parameter BYTES_PER_PIXEL = 'd2
-                // cmd_line_addr_col[6:0] <= 7'd127;
-                cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
-                cmd_line_addr_col[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
-                cmd_line_state <= STATE_READ_ROWDATA;
-            end
-            else if (cmd_line_state == STATE_READ_ROWDATA) begin
-                /* decrement the column address (or finish the load) */
-                if (cmd_line_addr_col != 'd0 || cmd_line_pixelselect_num != 'd0) begin
-                    if (cmd_line_pixelselect_num == 'd0) begin
-                        cmd_line_pixelselect_num <= BYTES_PER_PIXEL - 1;
-                        cmd_line_addr_col <= cmd_line_addr_col - 'd1;
-                    end else
-                        cmd_line_pixelselect_num <= cmd_line_pixelselect_num - 'd1;
-                end
-                else begin
-                    cmd_line_state <= STATE_IDLE;
-                    `ifdef DEBUGGER
-                        num_commands_processed <= num_commands_processed + 1'b1;
-                    `endif
-                end
-
-                /* store this byte */
-                ram_data_out <= data_rx[7:0];
-                ram_address <= cmd_line_addr;
-                ram_write_enable <= 1'b1;
-                ram_access_start <= !ram_access_start;
-            end
-
             /* CMD: Main */
-            else if (cmd_line_state != STATE_READ_ROWNUMBER && !data_ready_n) begin
-                //2650000
+            if (cmd_line_state == STATE_IDLE || state_done) begin
                 case (data_rx)
                     "R": begin
                         rgb_enable[0] <= 1'b1;
@@ -169,11 +173,10 @@ module control_module #(
                         brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
                     end
                     "L": begin
-                        cmd_line_state <= STATE_READ_ROWNUMBER;
+                        cmd_line_state <= STATE_CMD_READROW;
                     end
                     default: begin
                         cmd_line_state <= STATE_IDLE;
-                        ram_write_enable <= 1'b0;
                     end
                 endcase
             end

@@ -1,0 +1,91 @@
+`default_nettype none
+module control_cmd_readrow #(
+    `include "params.vh"
+    `include "memory_calcs.vh"
+    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH),
+    // verilator lint_off UNUSEDPARAM
+    parameter _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+) (
+    // input cmd_enable,
+    input reset,
+    input [7:0] data_in,
+    input enable,
+    input clk_n,
+
+    output logic [$clog2(PIXEL_HEIGHT)-1:0] row,
+    output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
+    output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
+    output logic [7:0] data_out,
+    output logic ram_write_enable,
+    output logic ram_access_start,
+    output logic done
+);
+    typedef enum {STATE_ROW_CAPTURE,
+                  STATE_ROW_PRIMEMEMWRITE,
+                  STATE_READ_ROWCONTENT
+                  } ctrl_fsm;
+    ctrl_fsm state;
+    always @(negedge clk_n, posedge reset) begin
+        if (reset) begin
+            data_out <= 8'd0;
+            ram_write_enable <= 1'b0;
+            ram_access_start <= 1'b0;
+            state <= STATE_ROW_CAPTURE;
+            row <= {$clog2(PIXEL_HEIGHT){1'b0}};
+            column <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
+            pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
+            done <= 1'b0;
+        end
+        else begin
+            case(state)
+                STATE_ROW_CAPTURE: begin
+                    if (enable) begin
+                        row[$clog2(PIXEL_HEIGHT)-1:0] <= data_in[4:0];
+                        ram_write_enable <= 1'b0;
+                        data_out <= 8'b0;
+                        state <= STATE_ROW_PRIMEMEMWRITE;
+                        done <= 1'b0;
+                    end
+                end
+                STATE_ROW_PRIMEMEMWRITE: begin
+                    if (enable) begin
+                        /* first, get the row to write to */
+
+                        state <= STATE_READ_ROWCONTENT;
+                        column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
+                        pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
+                        // Engage memory gears
+
+                        ram_write_enable <= 1'b1;
+                        data_out <= data_in;
+                        ram_access_start <= !ram_access_start;
+                    end
+                end
+                STATE_READ_ROWCONTENT: begin
+                    if (enable) begin
+                        ram_access_start <= !ram_access_start;
+                        if (column != 'd0 || pixel != 'd0) begin
+                            if (pixel == 'd0) begin
+                                pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
+                                column <= column - 'd1;
+                            end else begin
+                                if (column == 0 && ((pixel - 'd1) == 0)) done <= 1'b1;
+                                pixel <= pixel - 'd1;
+                            end
+                            data_out <= data_in;
+                        end
+                        else begin
+                            state <= STATE_ROW_CAPTURE;
+                            done <= 1'b0;
+                            ram_write_enable <= 1'b0;
+                            data_out <= 8'b0;
+                        end
+                        /* store this byte */
+                    end
+                end
+                default: state <= state;
+            endcase
+        end
+    end
+endmodule
