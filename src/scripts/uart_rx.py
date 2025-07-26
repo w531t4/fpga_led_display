@@ -3,6 +3,7 @@ from typing import List, Dict, Union, NamedTuple
 from functools import partial
 from pathlib import Path
 from typing import IO
+import sys
 
 from curses import wrapper
 import serial
@@ -399,13 +400,24 @@ if __name__ == "__main__":
                         dest="enable_debug",
                         action="store_true",
                         help="turn on debug")
+    PARSER.add_argument("--structure-size",
+                        dest="print_structure_size",
+                        action="store_true",
+                        help="print structure size and exit")
     PARSER.add_argument("--spi",
                         dest="use_spi",
                         action="store_true",
                         help="use spi")
     ARGS = PARSER.parse_args()
+    temp_args = vars(ARGS)
+    print_structure_size = temp_args.pop("print_structure_size")
+
+    if print_structure_size:
+        d = build_structure()
+        print(f"structure_size={sum(map(lambda x: int(x['size']), d))} bits")
+        sys.exit(0)
 
     try:
-        wrapper(partial(main, **vars(ARGS)))
+        wrapper(partial(main, **temp_args))
     except KeyboardInterrupt:
         pass
