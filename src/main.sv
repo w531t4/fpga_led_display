@@ -85,6 +85,7 @@ module main #(
 
     wire [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_top;
     wire [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_bottom;
+    wire ctrl_busy;
 
     `ifdef DEBUGGER
         // self
@@ -334,7 +335,7 @@ module main #(
         `endif
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
-
+        .busy(ctrl_busy),
         .ram_data_out(ram_a_data_in),
         .ram_address(ram_a_address),
         .ram_write_enable(ram_a_write_enable),
@@ -482,6 +483,7 @@ module main #(
     wire _unused_ok = &{1'b0,
                         pll_locked,
                         rxdata_ready_level,
+                        ctrl_busy,
                         `ifdef DEBUGGER
                             debugger_debug_start,
                             debugger_current_state,

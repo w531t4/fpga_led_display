@@ -16,6 +16,7 @@ module control_module #(
     output logic [_NUM_DATA_A_BITS-1:0] ram_data_out,
     output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,     // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
     output logic ram_write_enable,
+    output busy,
     output logic ram_clk_enable
     `ifdef DEBUGGER
         ,
@@ -180,7 +181,7 @@ module control_module #(
             end
         endcase
     end
-
+    assign busy = ~(cmd_line_state == STATE_IDLE || state_done);
     always @(negedge data_ready_n, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;

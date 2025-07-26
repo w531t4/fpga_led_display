@@ -19,7 +19,7 @@ module tb_control_module #(
     wire [_NUM_DATA_A_BITS-1:0] ram_data_out;
     wire [_NUM_ADDRESS_A_BITS-1:0] ram_address;
     wire ram_write_enable;
-
+    wire ctrl_busy;
     wire ram_clk_enable;
     `ifdef DEBUGGER
         wire [7:0] num_commands_processed;
@@ -131,6 +131,7 @@ module tb_control_module #(
         ) control_module_instance (
             .reset(reset),
             .clk_in(clk),
+            .busy(ctrl_busy),
             .data_rx(rxdata_to_controller),
             `ifdef SPI
                 .data_ready_n(~rxdata_ready_pulse),

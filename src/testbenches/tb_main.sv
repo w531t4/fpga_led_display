@@ -190,9 +190,11 @@ module tb_main #(
     `ifdef SPI
         always begin
             @(posedge spi_master_txdone) begin
-                if ((i < (myled_row_size / 8))) begin
-                    thebyte <= myled_row[myled_row_size-1 - (i*8) -: 8];
-                    i <= i+1;
+                if (!tb_main.tbi_main.ctrl.busy) begin
+                    if ((i < (myled_row_size / 8))) begin
+                        thebyte <= myled_row[myled_row_size-1 - (i*8) -: 8];
+                        i <= i+1;
+                    end
                 end
             end
         end
