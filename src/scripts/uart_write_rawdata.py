@@ -1,14 +1,28 @@
 import serial
 from pathlib import Path
+import spidev
 import argparse
 
 def main(device: Path,
          baudrate: int,
          infile: Path,
+         use_spi: bool,
          ):
-    ser = serial.Serial(str(device), baudrate)
-    ser.write(infile.read_bytes())
-    ser.close()
+    if use_spi:
+        d, p = str(device).split(",")
+        spi = spidev.SpiDev()
+        spi.open(int(d), int(p))                 # Use bus 1 (SPI1), device 0 (CE0)
+        spi.max_speed_hz = baudrate   # Set speed (10 MHz here)
+        spi.mode = 0
+    else:
+        ser = serial.Serial(str(device), baudrate)
+
+    data_to_write = infile.read_bytes()
+    if use_spi:
+        spi.xfer3(list(data_to_write))
+    else:
+        ser.write(data_to_write)
+        ser.close()
 
 if (__name__ == "__main__"):
     PARSER = argparse.ArgumentParser(prog="uart_write_rawdata",
@@ -39,10 +53,10 @@ if (__name__ == "__main__"):
     #                     dest="enable_debug",
     #                     action="store_true",
     #                     help="turn on debug")
-    # PARSER.add_argument("--spi",
-    #                     dest="use_spi",
-    #                     action="store_true",
-    #                     help="use spi")
+    PARSER.add_argument("--spi",
+                        dest="use_spi",
+                        action="store_true",
+                        help="use spi")
     ARGS = PARSER.parse_args()
 
     try:
