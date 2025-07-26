@@ -7,6 +7,8 @@ def main(device: Path,
          baudrate: int,
          infile: Path,
          use_spi: bool,
+         convert_from_hex: bool,
+         instring: str,
          ):
     if use_spi:
         d, p = str(device).split(",")
@@ -17,7 +19,14 @@ def main(device: Path,
     else:
         ser = serial.Serial(str(device), baudrate)
 
-    data_to_write = infile.read_bytes()
+    if instring:
+        data_to_write = bytes.fromhex(instring.replace(" ", "").replace("\n", ""))
+    else:
+        if convert_from_hex:
+            data_to_write = bytes.fromhex(infile.read_text().replace(" ", "").replace("\n", ""))
+        else:
+            data_to_write = infile.read_bytes()
+    # print(f"data_to_write={data_to_write}")
     if use_spi:
         spi.xfer3(list(data_to_write))
     else:
@@ -46,9 +55,17 @@ if (__name__ == "__main__"):
                         "--infile",
                         dest="infile",
                         action="store",
-                        required=True,
                         type=Path,
                         help="uart file to read")
+    PARSER.add_argument("--instring",
+                        dest="instring",
+                        action="store",
+                        type=str,
+                        help="a hex string")
+    PARSER.add_argument("--from-hex",
+                        dest="convert_from_hex",
+                        action="store_true",
+                        help="convert infile from hexstring")
     # PARSER.add_argument("--debug",
     #                     dest="enable_debug",
     #                     action="store_true",
