@@ -83,7 +83,6 @@ module control_module #(
     wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readrow_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readrow_pixel_addr;
-    wire cmd_readrow_ace;
 
     control_cmd_readrow #(
     ) cmd_readrow (
@@ -108,7 +107,7 @@ module control_module #(
     wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readpixel_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readpixel_pixel_addr;
-    // wire cmd_readpixel_ace;
+
     control_cmd_readpixel #(
     ) cmd_readpixel (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
