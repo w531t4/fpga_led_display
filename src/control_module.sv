@@ -26,7 +26,8 @@ module control_module #(
     `endif
 );
     typedef enum {STATE_IDLE,
-                  STATE_CMD_READROW
+                  STATE_CMD_READROW,
+                  STATE_CMD_READPIXEL
                   } ctrl_fsm;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
@@ -99,6 +100,30 @@ module control_module #(
     );
     assign ram_address = cmd_line_addr;
 
+    wire cmd_readpixel_we, cmd_readpixel_as, cmd_readpixel_done;
+    wire [7:0] cmd_readpixel_do;
+    wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
+    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readpixel_col_addr;
+    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readpixel_pixel_addr;
+    // wire cmd_readpixel_ace;
+    control_cmd_readpixel #(
+    ) cmd_readpixel (
+        // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
+        .reset(reset),
+        .data_in(data_rx),
+        .clk_n(data_ready_n),
+        .enable(cmd_line_state == STATE_CMD_READPIXEL),
+        .row(cmd_readpixel_row_addr),
+        .column(cmd_readpixel_col_addr),
+        .pixel(cmd_readpixel_pixel_addr),
+        .data_out(cmd_readpixel_do),
+        .ram_write_enable(cmd_readpixel_we),
+        .ram_access_start(cmd_readpixel_as),
+        // .address_change_en(cmd_readpixel_ace),
+        .done(cmd_readpixel_done)
+    );
+
+
     always @(*) begin
         cmd_line_addr_row = {$clog2(PIXEL_HEIGHT){1'b0}};
         cmd_line_addr_col = {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
@@ -116,6 +141,15 @@ module control_module #(
                 ram_write_enable = cmd_readrow_we;
                 ram_access_start = cmd_readrow_as;
                 state_done = cmd_readrow_done;
+            end
+            STATE_CMD_READPIXEL: begin
+                cmd_line_addr_row = cmd_readpixel_row_addr;
+                cmd_line_addr_col = cmd_readpixel_col_addr;
+                cmd_line_pixelselect_num = cmd_readpixel_pixel_addr;
+                ram_data_out = cmd_readpixel_do;
+                ram_write_enable = cmd_readpixel_we;
+                ram_access_start = cmd_readpixel_as;
+                state_done = cmd_readpixel_done;
             end
             default: begin
             end
@@ -175,6 +209,7 @@ module control_module #(
                     "L": begin
                         cmd_line_state <= STATE_CMD_READROW;
                     end
+                    "P": cmd_line_state <= STATE_CMD_READPIXEL;
                     default: begin
                         cmd_line_state <= STATE_IDLE;
                     end
