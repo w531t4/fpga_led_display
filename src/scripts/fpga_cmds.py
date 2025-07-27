@@ -1,0 +1,76 @@
+from uart_write_rawdata import main
+import argparse
+from pathlib import Path
+import sys
+
+
+if (__name__ == "__main__"):
+    PARSER = argparse.ArgumentParser(prog="fpga_cmds",
+                                     description="easy command tester")
+    PARSER.add_argument("--blank-panel",
+                        dest="blank_panel",
+                        action="store_true",
+                        help="issue blank panel command")
+    PARSER.add_argument("--fill-panel",
+                        dest="fill_panel",
+                        action="store_true",
+                        help="issue fill panel command")
+    PARSER.add_argument("--fill-rect",
+                        dest="fill_rect",
+                        action="store_true",
+                        help="issue fill rect command")
+    PARSER.add_argument("--set-pixel",
+                        dest="set_pixel",
+                        action="store_true",
+                        help="issue set pixel command")
+    PARSER.add_argument("--set-brightness",
+                        nargs=1,
+                        dest="set_brightness",
+                        action="store",
+                        type=int,
+                        help="issue set brightness command 0-255")
+    PARSER.add_argument("--show-smiley",
+                        dest="show_smiley",
+                        action="store_true",
+                        help="show smiley face")
+    ARGS = PARSER.parse_args()
+    args = vars(ARGS)
+
+    connectivity_args = {"baudrate": 44444,
+                         "device": Path("1,0"),
+                         "use_spi": True,
+                         }
+    instring_args = {"infile": Path(),
+                     "convert_from_hex": True}
+    instring_args.update(connectivity_args)
+
+
+    baudrate = 44444
+    device = Path("1,0")
+
+    if "blank_panel" in args and args["blank_panel"]:
+        main(**instring_args,
+             instring="5a")
+    elif "fill_panel" in args and args["fill_panel"]:
+        main(**instring_args,
+             instring="46_31_42")
+    elif "fill_rect" in args and args["fill_rect"]:
+        main(**instring_args,
+             instring="66_05_0A_10_05_E0A9")
+    elif "set_pixel" in args and args["set_pixel"]:
+        main(**instring_args,
+             instring="50_08_30_10_20")
+    elif "set_brightness" in args and args["set_brightness"]:
+        if int(args["set_brightness"][0]) > 255 or int(args["set_brightness"][0]) < 0:
+            print(f"brightness value={int(args['set_brightness'][0])} is out of bounds. exiting.")
+            sys.exit(1)
+        main(**instring_args,
+             instring="54" + hex(int(args["set_brightness"][0]))[2:].zfill(2))
+    elif "show_smiley" in args and args["show_smiley"]:
+        main(**connectivity_args,
+             infile=Path("../../uart/w64_rgb565_smiley.uart"),
+             convert_from_hex=True,
+             instring=None,
+             )
+
+

@@ -26,7 +26,7 @@ def main(device: Path,
             data_to_write = bytes.fromhex(infile.read_text().replace(" ", "").replace("\n", "").replace("_", ""))
         else:
             data_to_write = infile.read_bytes()
-    # print(f"data_to_write={data_to_write}")
+    print(f"data_to_write={data_to_write.hex()}")
     if use_spi:
         spi.xfer3(list(data_to_write))
     else:
