@@ -20,10 +20,10 @@ def main(device: Path,
         ser = serial.Serial(str(device), baudrate)
 
     if instring:
-        data_to_write = bytes.fromhex(instring.replace(" ", "").replace("\n", ""))
+        data_to_write = bytes.fromhex(instring.replace(" ", "").replace("\n", "").replace("_", ""))
     else:
         if convert_from_hex:
-            data_to_write = bytes.fromhex(infile.read_text().replace(" ", "").replace("\n", ""))
+            data_to_write = bytes.fromhex(infile.read_text().replace(" ", "").replace("\n", "").replace("_", ""))
         else:
             data_to_write = infile.read_bytes()
     # print(f"data_to_write={data_to_write}")
