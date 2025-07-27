@@ -88,7 +88,7 @@ module main #(
 
     `ifdef DEBUGGER
         // self
-            localparam debug_data_width = 24;
+            localparam debug_data_width = 32;
             wire debugger_debug_start;
             wire [4:0] debugger_current_state;
             wire debugger_do_close;
@@ -199,6 +199,7 @@ module main #(
             num_commands_processed[7:0],
             rgb_enable[2:0],
             cmd_line_state2[2:0],
+            brightness_enable[7:0],
             2'b0
             };
     `endif

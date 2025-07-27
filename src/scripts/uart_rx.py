@@ -150,6 +150,7 @@ def build_structure() -> List[Dict[str, Union[str, int]]]:
     structure = []
     structure.append({ 'name': 'newline', 'size': 8 })
     structure.append({ 'name': 'empty', 'size': 2 })
+    structure.append({ 'name': 'brightness_enable', 'size': 8 })
     structure.append({ 'name': 'cmd_line_state2', 'size': 3 })
     structure.append({ 'name': 'rgb_enable', 'size': 3 })
     structure.append({ 'name': 'num_commands_processed', 'size': 8 })
