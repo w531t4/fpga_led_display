@@ -1,8 +1,9 @@
 import argparse
-from typing import List, Dict, Union, NamedTuple
+from typing import List, Dict, Union, NamedTuple, Union
 from functools import partial
 from pathlib import Path
-from typing import IO
+from typing import IO, TextIO
+from io import StringIO
 import sys
 
 from curses import wrapper
@@ -12,6 +13,11 @@ import spidev
 class BaudContext(NamedTuple):
     state: int
     rate: int
+
+class DataFetch(NamedTuple):
+    bytestring: bytes
+    binstring: str
+    hexstring: str
 
 def gen_bitstring(c: str) -> str:
     """ translate character into string represents its bits
@@ -181,6 +187,34 @@ def build_structure() -> List[Dict[str, Union[str, int]]]:
     structure.append({ 'name': 'whitespace', 'size': 3 })
     return structure
 
+def read_debug_data(expected_bytes: Union[int, float],
+                    ser: serial.Serial,
+                    enable_debug: bool,
+                    fw: Union[TextIO, StringIO]) -> DataFetch:
+    full_bytestring = b""
+    bytestring_total = 0
+    binstring = ""
+    hexstring = ""
+    i = 0
+    while (bytestring_total < expected_bytes):
+        if enable_debug:
+            fw.write(f"bytestring_total={bytestring_total} expected_bytes={expected_bytes} i={i}\n")
+        # ser.read_until() returns bytes
+        bytestring: bytes = bytes(ser.read_until())
+        if enable_debug:
+            fw.write("bytestring=%s\n" % bytestring.hex())
+        bytestring_total += len(bytestring)
+        for each in bytestring:
+            hexstring += format(int(each), '02x')
+            binstring += format(int(each), '08b')
+        full_bytestring += bytestring
+        # there exists
+        #    hexstring
+        #    binstring
+        #    bytestring
+        i += 1
+    return DataFetch(bytestring=full_bytestring, binstring=binstring, hexstring=hexstring)
+
 def main(stdscr,
          max_lines: int,
          rx_dev: Path,
@@ -205,6 +239,8 @@ def main(stdscr,
 
     if enable_debug:
         fw = open(str(debug_filepath), 'w')
+    else:
+        fw = StringIO()
     expected_bitsize = 0
     expected_bytes = 0
     for each in [int(x['size']) for x in structure]:
@@ -215,29 +251,15 @@ def main(stdscr,
         expected_bytes = (expected_bitsize/8) + 1
     while True:
         COLUMN_SIZE = 0
-        bytestring = ""
-        bytestring_total = 0
-        binstring = ""
-        hexstring = ""
-        i = 0
-        while (bytestring_total < expected_bytes):
-            if enable_debug:
-                fw.write(f"bytestring_total={bytestring_total} expected_bytes={expected_bytes} i={i}\n")
-            # ser.read_until() returns bytes
-            bytestring = bytes(ser.read_until())
-            if enable_debug:
-                fw.write("bytestring=%s\n" % bytestring)
-            bytestring_total += len(bytestring)
-            for each in bytestring:
-                hexstring += format(int(each), '02x')
-                binstring += format(int(each), '08b')
-        # there exists
-        #    hexstring
-        #    binstring
-        #    bytestring
+        data = read_debug_data(expected_bytes=expected_bytes,
+                               ser=ser,
+                               enable_debug=enable_debug,
+                               fw=fw,
+                               )
+        _, binstring, hexstring = data.bytestring, data.binstring, data.hexstring
+        bytestring_total = len(data.bytestring)
 
-            i += 1
-        if enable_debug:
+        if enable_debug and ((expected_bitsize % 8) != 0):
             fw.write(f"(expected_bitsize % 8) != 0 :: expected_bitsize={expected_bitsize}\n")
         # trim any extra bits from bitstring, since we likely have padding on the end
         if ((expected_bitsize % 8) != 0):
@@ -247,7 +269,7 @@ def main(stdscr,
             binstring = binstring[offset:]
             if enable_debug:
                 fw.write(f"new_hexstring={8 - (expected_bitsize % 8)} offset={hexstring}\n")
-        if enable_debug:
+        if enable_debug and (len(binstring) != expected_bitsize):
             fw.write(f"len(binstring) != expected_bitsize :: len(binstring)={len(binstring)} expected_bitsize={expected_bitsize}\n")
         #REVISIT THIS AARON
         # if the string is not the right size, skip it
@@ -273,8 +295,7 @@ def main(stdscr,
         stdscr.addstr(2,0, f"chars read:{str(bytestring_total)} bits:{str(len(binstring))}")
         position = 0
         error_offset = 3
-        i = 0
-        for variable in structure:
+        for i, variable in enumerate(structure):
             if i < max_lines:
                 y_pos = i + error_offset
                 x_pos = 0
@@ -303,7 +324,7 @@ def main(stdscr,
                 output_string  = do_debug(subsegment_bytestring, title=vname)
                 if enable_debug:
                     fw.write(f"bits_used:{str(bits_used)} "
-                             f"position:{str(position)} "
+                             f"position:{str(position):<3} "
                              f"subsegment: {subsegment} "
                              f"len(subsegment)={str(len(subsegment))} "
                              f"subsegment_bytestring:{subsegment_bytestring} "
@@ -317,7 +338,6 @@ def main(stdscr,
                 stdscr.addstr(y_pos, x_pos, output_string)
 
                 position += bits_used
-            i += 1
             stdscr.refresh()
         k = stdscr.getch()
         literals = ['R', 'r', 'G', 'g', 'B', 'b', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'L']
