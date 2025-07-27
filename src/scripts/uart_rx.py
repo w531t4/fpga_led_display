@@ -196,6 +196,7 @@ def read_debug_data(expected_bytes: Union[int, float],
     binstring = ""
     hexstring = ""
     i = 0
+    ser.reset_input_buffer()
     while (bytestring_total < expected_bytes):
         if enable_debug:
             fw.write(f"bytestring_total={bytestring_total} expected_bytes={expected_bytes} i={i}\n")
