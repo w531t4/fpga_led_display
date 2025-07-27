@@ -88,7 +88,7 @@ module main #(
 
     `ifdef DEBUGGER
         // self
-            localparam debug_data_width = 192;
+            localparam debug_data_width = 24;
             wire debugger_debug_start;
             wire [4:0] debugger_current_state;
             wire debugger_do_close;
@@ -194,48 +194,10 @@ module main #(
         wire debug_uart_tx;
         wire debug_uart_rx;
         wire [debug_data_width-1:0] ddata =  {
-            //
-            3'b0,
-            //								181
+            rxdata_to_controller[7:0],
             num_commands_processed[7:0],
-            debug_command[7:0],
-            pixel_load_counter2[3:0],
-            clk_pixel_load_en,
-            clk_pixel_load,
-            cmd_line_addr2[11:7], 		// 5
-            ~cmd_line_addr2[6:1], cmd_line_addr2[0], //7
-            //								155
-            cmd_line_addr2[11:0],
-            rgb2[2:0],
-            rgb1[2:0],
-            1'b0, // rxdata_ready_sync
-            row_latch,
-            row_latch_state[1:0],
-            2'b0, // cmd_line_state[1:0],
-            1'b0, // uart_rx,
-            ram_access_start_latch,
-            ram_access_start,
-            //								127
-            pixeldata_top[_NUM_BITS_PER_SUBPANEL-1:0],
-            pixeldata_bottom[_NUM_BITS_PER_SUBPANEL-1:0],
-            brightness_mask[BRIGHTNESS_LEVELS-1:0],
-            brightness_enable[BRIGHTNESS_LEVELS-1:0],
             rgb_enable[2:0],
-            // [5:0]
-            column_address[$clog2(PIXEL_WIDTH)-1:0],
-            row_address[3:0],
-            row_address_active[3:0],
-            // [10:0]
-            ram_b_address[_NUM_ADDRESS_B_BITS-1:0],
-            ram_b_clk_enable,
-            ram_b_data_out[_NUM_DATA_B_BITS-1:0],
-            ram_a_write_enable,
-            ram_a_data_out[7:0],
-            //  [11:0]
-            ram_a_address[_NUM_ADDRESS_A_BITS-1:0],
-            ram_a_clk_enable,
-            ram_a_data_in[7:0],
-            8'd0 // uart_rx_data[7:0]
+            5'b0
             };
     `endif
 
