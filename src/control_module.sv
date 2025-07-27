@@ -19,12 +19,14 @@ module control_module #(
     output logic ram_clk_enable
     `ifdef DEBUGGER
         ,
+        output [2:0] cmd_line_state2,
         output ram_access_start2,
         output ram_access_start_latch2,
         output [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2,
         output logic [7:0] num_commands_processed
     `endif
 );
+    // for now, if adding new states, ensure cmd_line_state2 is updated.
     typedef enum {STATE_IDLE,
                   STATE_CMD_READROW,
                   STATE_CMD_READBRIGHTNESS,
@@ -49,6 +51,7 @@ module control_module #(
     logic [BRIGHTNESS_LEVELS-1:0] brightness_data_out;
 
     `ifdef DEBUGGER
+        assign cmd_line_state2 = cmd_line_state;
         assign cmd_line_addr2 = cmd_line_addr;
         assign ram_access_start2 = ram_access_start;
         assign ram_access_start_latch2 = ram_access_start_latch;
