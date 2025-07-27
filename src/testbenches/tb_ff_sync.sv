@@ -10,14 +10,16 @@ module tb_ff_sync #(
     logic clk;
     logic reset;
     logic signal;
-    logic sync_signal;
+    logic sync_level;
+    logic sync_pulse;
 
     ff_sync  #(
     ) ff_sync_instance (
         .reset(reset),
         .clk(clk),
         .signal(signal),
-        .sync_signal(sync_signal)
+        .sync_level(sync_level),
+        .sync_pulse(sync_pulse)
     );
 
     initial begin

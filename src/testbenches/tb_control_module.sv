@@ -32,7 +32,8 @@ module tb_control_module #(
     wire [7:0] rxdata_to_controller;
     wire rxdata;
     wire rxdata_ready;
-    wire rxdata_ready_sync;
+    wire rxdata_ready_level;
+    wire rxdata_ready_pulse;
     `ifdef SPI
         logic [7:0] thebyte;
         wire spi_master_txdone;
@@ -117,7 +118,8 @@ module tb_control_module #(
     ) uart_sync (
         .clk(clk),
         .signal(rxdata_ready),
-        .sync_signal(rxdata_ready_sync),
+        .sync_level(rxdata_ready_level),
+        .sync_pulse(rxdata_ready_pulse),
         .reset(reset)
     );
 
@@ -131,9 +133,9 @@ module tb_control_module #(
             .clk_in(clk),
             .data_rx(rxdata_to_controller),
             `ifdef SPI
-                .data_ready_n(~rxdata_ready_sync),
+                .data_ready_n(~rxdata_ready_pulse),
             `else
-                .data_ready_n(rxdata_ready_sync),
+                .data_ready_n(rxdata_ready_pulse),
             `endif
             .rgb_enable(rgb_enable),
             .brightness_enable(brightness_enable),
@@ -196,5 +198,8 @@ module tb_control_module #(
     always begin
         #SIM_HALF_PERIOD_NS clk <= !clk;
     end
+    wire _unused_ok = &{1'b0,
+                        rxdata_ready_level,
+                        1'b0};
 
 endmodule

@@ -133,7 +133,8 @@ module main #(
 
     wire rxdata;
     wire rxdata_ready;
-    wire rxdata_ready_sync;
+    wire rxdata_ready_level;
+    wire rxdata_ready_pulse;
     wire [7:0] rxdata_to_controller;
     `ifdef SPI
         wire spi_clk;
@@ -346,7 +347,8 @@ module main #(
     ) uart_sync (
         .clk(clk_root),
         .signal(rxdata_ready),
-        .sync_signal(rxdata_ready_sync),
+        .sync_level(rxdata_ready_level),
+        .sync_pulse(rxdata_ready_pulse),
         .reset(global_reset)
     );
 
@@ -361,9 +363,9 @@ module main #(
         /* clk_root =  133MHZ */
         .data_rx(rxdata_to_controller),
         `ifdef SPI
-            .data_ready_n(~rxdata_ready_sync),
+            .data_ready_n(~rxdata_ready_pulse),
         `else
-            .data_ready_n(rxdata_ready_sync),
+            .data_ready_n(rxdata_ready_pulse),
         `endif
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
@@ -513,6 +515,7 @@ module main #(
 
     wire _unused_ok = &{1'b0,
                         pll_locked,
+                        rxdata_ready_level,
                         `ifdef DEBUGGER
                             debugger_debug_start,
                             debugger_current_state,
