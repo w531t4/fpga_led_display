@@ -24,7 +24,7 @@ module debugger	#(
 );
 
     logic [7:0] debug_bits;
-    logic [$clog2(DIVIDER_TICKS)-1:0] count;
+    logic [$clog2(DIVIDER_TICKS):0] count;
 
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in) begin
@@ -33,7 +33,7 @@ module debugger	#(
             count <= 0;
         end
         else begin
-            if (($clog2(DIVIDER_TICKS))'(count) == ($clog2(DIVIDER_TICKS))'(DIVIDER_TICKS)) begin
+            if (count == DIVIDER_TICKS - 1) begin
                 debug_start <= 1;
                 count <= 0;
             end
