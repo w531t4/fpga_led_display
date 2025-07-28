@@ -311,6 +311,9 @@ module control_module #(
         end
         else if (state_done) begin
             cmd_line_state <= STATE_IDLE;
+            `ifdef DEBUGGER
+                num_commands_processed <= num_commands_processed + 'd1;
+            `endif
         end
         else if (~data_ready_n) begin
             if (brightness_enable != brightness_temp) begin
