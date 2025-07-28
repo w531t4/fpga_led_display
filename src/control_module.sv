@@ -17,6 +17,7 @@ module control_module #(
     output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,     // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
     output logic ram_write_enable,
     output busy,
+    output ready_for_data,
     output logic ram_clk_enable
     `ifdef DEBUGGER
         ,
@@ -33,6 +34,7 @@ module control_module #(
                   STATE_CMD_READBRIGHTNESS,
                   STATE_CMD_READPIXEL
                   } ctrl_fsm;
+    logic ready_for_data_logic;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
@@ -152,7 +154,7 @@ module control_module #(
         state_done = 1'b0;
         brightness_change_enable = 1'b0;
         brightness_data_out = {BRIGHTNESS_LEVELS{1'b0}};
-
+        ready_for_data_logic = 1'b1;
         case (cmd_line_state)
             STATE_CMD_READBRIGHTNESS: begin
                 brightness_change_enable = cmd_readbrightness_be;
@@ -182,6 +184,7 @@ module control_module #(
         endcase
     end
     assign busy = ~(cmd_line_state == STATE_IDLE || state_done);
+    assign ready_for_data = ready_for_data_logic || ~busy;
     always @(negedge data_ready_n, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;
