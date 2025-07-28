@@ -45,7 +45,19 @@ localparam myled_row_size_brightness_2 = (1 + 1) * 8;
 logic [myled_row_size_brightness_2-1:0] myled_row_brightness_2 = 'h5423; // "T" + \x23
 logic [myled_row_size_brightness_2-1:0] myled_row_brightness_3 = 'h5438; // "T" + \x38
 
-localparam myled_row_size = myled_row_size_basic
+localparam myled_row_size_blankpanel = 1*8;
+logic [myled_row_size_blankpanel-1:0] myled_row_blankpanel = 'h5a;
+
+localparam myled_row_size_fillpanel = 3*8;
+logic [myled_row_size_fillpanel-1:0] myled_row_fillpanel = 'h46_31_42;
+
+localparam myled_row_size_fillrect = 7*8;
+logic [myled_row_size_fillrect-1:0] myled_row_fillrect = 'h66_05_0A_10_05_E0A9; // "f" + x1/y1/width/height/color
+
+localparam myled_row_size = myled_row_size_blankpanel
+                            + myled_row_size_fillpanel
+                            + myled_row_size_fillrect
+                            + myled_row_size_basic
                             + myled_row_size_pixel
                             + myled_row_size_pixel
                             + myled_row_size_brightness_1
@@ -53,6 +65,9 @@ localparam myled_row_size = myled_row_size_basic
                             + myled_row_size_brightness_2
                             ;
 logic [myled_row_size-1:0] myled_row = {
+                                            myled_row_blankpanel,
+                                            myled_row_fillpanel,
+                                            myled_row_fillrect,
                                             myled_row_basic,
                                             myled_row_pixel,
                                             myled_row_pixel2,

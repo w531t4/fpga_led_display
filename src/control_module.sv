@@ -32,6 +32,9 @@ module control_module #(
     typedef enum {STATE_IDLE,               // 0
                   STATE_CMD_READROW,        // 1
                   STATE_CMD_READBRIGHTNESS, // 2
+                  STATE_CMD_BLANKPANEL,     // 3
+                  STATE_CMD_FILLPANEL,      // 4
+                  STATE_CMD_FILLRECT,       // 5
                   STATE_CMD_READPIXEL       // 6
                   } ctrl_fsm;
     logic [7:0] data_rx_latch;
@@ -61,17 +64,7 @@ module control_module #(
         assign ram_access_start_latch2 = ram_access_start_latch;
     `endif
 
-    timeout #(
-        .COUNTER_WIDTH(2)
-    ) timeout_cmd_line_write (
-        .reset(reset),
-        .clk_in(~clk_in),
-        .start(ram_access_start ^ ram_access_start_latch), // ^ is exclusive or
-        .value(2'b10),
-        .counter(timer_counter_unused),
-        .running(ram_clk_enable)
-    );
-
+    assign ram_clk_enable = ram_access_start ^ ram_access_start_latch;
     always @(posedge clk_in) begin
         if (reset) begin
             ram_access_start_latch <= 1'b0;
@@ -157,6 +150,83 @@ module control_module #(
         .done(cmd_readbrightness_done)
     );
 
+    wire cmd_blankpanel_we, cmd_blankpanel_as, cmd_blankpanel_done;
+    wire [7:0] cmd_blankpanel_do;
+    wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_blankpanel_row_addr;
+    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_blankpanel_col_addr;
+    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_blankpanel_pixel_addr;
+
+    control_cmd_blankpanel #(
+    ) cmd_blankpanel (
+        .reset(reset),
+        // This command requires no arguments, therefore it can operate at clock speed (no ~data_ready_n)
+        .enable(cmd_line_state == STATE_CMD_BLANKPANEL),
+        .clk(clk_in),
+        .mem_clk(clk_in),
+
+        .row(cmd_blankpanel_row_addr),
+        .column(cmd_blankpanel_col_addr),
+        .pixel(cmd_blankpanel_pixel_addr),
+        .data_out(cmd_blankpanel_do),
+        .ram_write_enable(cmd_blankpanel_we),
+        .ram_access_start(cmd_blankpanel_as),
+        .done(cmd_blankpanel_done)
+    );
+
+    wire                                  cmd_fillpanel_we;
+    wire                                  cmd_fillpanel_as;
+    wire                                  cmd_fillpanel_done;
+    wire [7:0]                            cmd_fillpanel_do;
+    wire [$clog2(PIXEL_HEIGHT)-1:0]       cmd_fillpanel_row_addr;
+    wire [_NUM_COLUMN_ADDRESS_BITS-1:0]   cmd_fillpanel_col_addr;
+    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillpanel_pixel_addr;
+    wire                                  cmd_fillpanel_rfd;
+
+    control_cmd_fillpanel #(
+    ) cmd_fillpanel (
+        .reset(reset),
+        // .enable(cmd_line_state == STATE_CMD_FILLPANEL),
+        .enable((cmd_line_state == STATE_CMD_FILLPANEL) && ~data_ready_n),
+        .clk(clk_in),
+        .mem_clk(clk_in),
+        .data_in(data_rx_latch),
+        .row(             cmd_fillpanel_row_addr),
+        .column(          cmd_fillpanel_col_addr),
+        .pixel(           cmd_fillpanel_pixel_addr),
+        .data_out(        cmd_fillpanel_do),
+        .ram_write_enable(cmd_fillpanel_we),
+        .ram_access_start(cmd_fillpanel_as),
+        .ready_for_data(  cmd_fillpanel_rfd),
+        .done(            cmd_fillpanel_done)
+    );
+
+    wire                                  cmd_fillrect_we;
+    wire                                  cmd_fillrect_as;
+    wire                                  cmd_fillrect_done;
+    wire [7:0]                            cmd_fillrect_do;
+    wire [$clog2(PIXEL_HEIGHT)-1:0]       cmd_fillrect_row_addr;
+    wire [_NUM_COLUMN_ADDRESS_BITS-1:0]   cmd_fillrect_col_addr;
+    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillrect_pixel_addr;
+    wire                                  cmd_fillrect_rfd;
+
+    control_cmd_fillrect #(
+    ) cmd_fillrect (
+        .reset(reset),
+        // .enable(cmd_line_state == STATE_CMD_FILLRECT),
+        .enable((cmd_line_state == STATE_CMD_FILLRECT) && ~data_ready_n),
+        .clk(clk_in),
+        .mem_clk(clk_in),
+        .data_in(data_rx),
+        .row(             cmd_fillrect_row_addr),
+        .column(          cmd_fillrect_col_addr),
+        .pixel(           cmd_fillrect_pixel_addr),
+        .data_out(        cmd_fillrect_do),
+        .ram_write_enable(cmd_fillrect_we),
+        .ram_access_start(cmd_fillrect_as),
+        .ready_for_data(  cmd_fillrect_rfd),
+        .done(            cmd_fillrect_done)
+    );
+
     always @(*) begin
         cmd_line_addr_row = {$clog2(PIXEL_HEIGHT){1'b0}};
         cmd_line_addr_col = {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
@@ -182,6 +252,36 @@ module control_module #(
                 ram_write_enable = cmd_readrow_we;
                 ram_access_start = cmd_readrow_as;
                 state_done = cmd_readrow_done;
+            end
+            STATE_CMD_BLANKPANEL: begin
+                cmd_line_addr_row = cmd_blankpanel_row_addr;
+                cmd_line_addr_col = cmd_blankpanel_col_addr;
+                cmd_line_pixelselect_num = cmd_blankpanel_pixel_addr;
+                ram_data_out = cmd_blankpanel_do;
+                ram_write_enable = cmd_blankpanel_we;
+                ram_access_start = cmd_blankpanel_as;
+                state_done = cmd_blankpanel_done;
+                ready_for_data_logic = 1'b0;
+            end
+            STATE_CMD_FILLPANEL: begin
+                cmd_line_addr_row =        cmd_fillpanel_row_addr;
+                cmd_line_addr_col =        cmd_fillpanel_col_addr;
+                cmd_line_pixelselect_num = cmd_fillpanel_pixel_addr;
+                ram_data_out =             cmd_fillpanel_do;
+                ram_write_enable =         cmd_fillpanel_we;
+                ram_access_start =         cmd_fillpanel_as;
+                state_done =               cmd_fillpanel_done;
+                ready_for_data_logic =     cmd_fillpanel_rfd;
+            end
+            STATE_CMD_FILLRECT: begin
+                cmd_line_addr_row =        cmd_fillrect_row_addr;
+                cmd_line_addr_col =        cmd_fillrect_col_addr;
+                cmd_line_pixelselect_num = cmd_fillrect_pixel_addr;
+                ram_data_out =             cmd_fillrect_do;
+                ram_write_enable =         cmd_fillrect_we;
+                ram_access_start =         cmd_fillrect_as;
+                state_done =               cmd_fillrect_done;
+                ready_for_data_logic =     cmd_fillrect_rfd;
             end
             STATE_CMD_READPIXEL: begin
                 cmd_line_addr_row = cmd_readpixel_row_addr;
@@ -289,6 +389,9 @@ module control_module #(
                         cmd_line_state <= STATE_IDLE;
                     end
                     "T": cmd_line_state <= STATE_CMD_READBRIGHTNESS;
+                    "Z": cmd_line_state <= STATE_CMD_BLANKPANEL;
+                    "F": cmd_line_state <= STATE_CMD_FILLPANEL;
+                    "f": cmd_line_state <= STATE_CMD_FILLRECT;
                     "L": begin
                         cmd_line_state <= STATE_CMD_READROW;
                     end
