@@ -29,11 +29,12 @@ module control_module #(
     `endif
 );
     // for now, if adding new states, ensure cmd_line_state2 is updated.
-    typedef enum {STATE_IDLE,
-                  STATE_CMD_READROW,
-                  STATE_CMD_READBRIGHTNESS,
-                  STATE_CMD_READPIXEL
+    typedef enum {STATE_IDLE,               // 0
+                  STATE_CMD_READROW,        // 1
+                  STATE_CMD_READBRIGHTNESS, // 2
+                  STATE_CMD_READPIXEL       // 6
                   } ctrl_fsm;
+    logic [7:0] data_rx_latch;
     logic ready_for_data_logic;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
@@ -84,6 +85,15 @@ module control_module #(
         end
     end
 
+    // this prevents testbench from continuing to send data (even though we're not ready to accept)
+    always_ff @(posedge clk_in) begin
+        if (reset) begin
+            data_rx_latch <= 8'd0;
+        end else if (ready_for_data) begin
+            data_rx_latch <= data_rx;
+        end
+    end
+
     wire cmd_readrow_we, cmd_readrow_as, cmd_readrow_done;
     wire [7:0] cmd_readrow_do;
     wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
@@ -94,9 +104,10 @@ module control_module #(
     ) cmd_readrow (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
         .reset(reset),
-        .data_in(data_rx),
-        .enable(cmd_line_state == STATE_CMD_READROW),
-        .clk_n(data_ready_n),
+        .data_in(data_rx_latch),
+        // .enable(cmd_line_state == STATE_CMD_READROW),
+        .enable((cmd_line_state == STATE_CMD_READROW) && ~data_ready_n),
+        .clk(clk_in),
 
         .row(cmd_readrow_row_addr),
         .column(cmd_readrow_col_addr),
@@ -118,9 +129,10 @@ module control_module #(
     ) cmd_readpixel (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
         .reset(reset),
-        .data_in(data_rx),
-        .clk_n(data_ready_n),
-        .enable(cmd_line_state == STATE_CMD_READPIXEL),
+        .data_in(data_rx_latch),
+        .clk(clk_in),
+        // .enable(cmd_line_state == STATE_CMD_READPIXEL),
+        .enable((cmd_line_state == STATE_CMD_READPIXEL) && ~data_ready_n),
         .row(cmd_readpixel_row_addr),
         .column(cmd_readpixel_col_addr),
         .pixel(cmd_readpixel_pixel_addr),
@@ -136,9 +148,10 @@ module control_module #(
     control_cmd_readbrightness #(
     ) cmd_readbrightness (
         .reset(reset),
-        .data_in(data_rx),
-        .clk_n(data_ready_n),
-        .enable(cmd_line_state == STATE_CMD_READBRIGHTNESS),
+        .data_in(data_rx_latch),
+        .clk(clk_in),
+        // .enable(cmd_line_state == STATE_CMD_READBRIGHTNESS),
+        .enable((cmd_line_state == STATE_CMD_READBRIGHTNESS) && ~data_ready_n),
         .data_out(cmd_readbrightness_do),
         .brightness_change_en(cmd_readbrightness_be),
         .done(cmd_readbrightness_done)
@@ -185,7 +198,7 @@ module control_module #(
     end
     assign busy = ~(cmd_line_state == STATE_IDLE || state_done);
     assign ready_for_data = ready_for_data_logic || ~busy;
-    always @(negedge data_ready_n, posedge reset) begin
+    always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;
             brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
@@ -196,7 +209,10 @@ module control_module #(
                 num_commands_processed <= 8'b0;
             `endif
         end
-        else begin
+        else if (state_done) begin
+            cmd_line_state <= STATE_IDLE;
+        end
+        else if (~data_ready_n) begin
             if (brightness_enable != brightness_temp) begin
                 brightness_enable <= brightness_temp;
             end else if (brightness_change_enable) begin
@@ -205,7 +221,7 @@ module control_module #(
             end
             /* CMD: Main */
             if (cmd_line_state == STATE_IDLE || state_done) begin
-                case (data_rx)
+                case (data_rx_latch)
                     "R": begin
                         rgb_enable[0] <= 1'b1;
                         cmd_line_state <= STATE_IDLE;

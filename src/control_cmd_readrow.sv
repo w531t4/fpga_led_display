@@ -11,7 +11,7 @@ module control_cmd_readrow #(
     input reset,
     input [7:0] data_in,
     input enable,
-    input clk_n,
+    input clk,
 
     output logic [$clog2(PIXEL_HEIGHT)-1:0] row,
     output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
@@ -23,10 +23,11 @@ module control_cmd_readrow #(
 );
     typedef enum {STATE_ROW_CAPTURE,
                   STATE_ROW_PRIMEMEMWRITE,
-                  STATE_READ_ROWCONTENT
+                  STATE_READ_ROWCONTENT,
+                  STATE_DONE
                   } ctrl_fsm;
     ctrl_fsm state;
-    always @(negedge clk_n, posedge reset) begin
+    always @(posedge clk, posedge reset) begin
         if (reset) begin
             data_out <= 8'd0;
             ram_write_enable <= 1'b0;
@@ -36,8 +37,7 @@ module control_cmd_readrow #(
             column <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
             pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
             done <= 1'b0;
-        end
-        else begin
+        end else begin
             case(state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
@@ -70,19 +70,23 @@ module control_cmd_readrow #(
                                 pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
                                 column <= column - 'd1;
                             end else begin
-                                if (column == 0 && ((pixel - 'd1) == 0)) done <= 1'b1;
+                                if (column == 0 && ((pixel - 'd1) == 0)) begin
+                                    done <= 1'b1;
+                                    state <= STATE_DONE;
+                                end
                                 pixel <= pixel - 'd1;
                             end
                             data_out <= data_in;
                         end
-                        else begin
-                            state <= STATE_ROW_CAPTURE;
-                            done <= 1'b0;
-                            ram_write_enable <= 1'b0;
-                            data_out <= 8'b0;
-                        end
                         /* store this byte */
                     end
+                end
+                STATE_DONE: begin
+                    state <= STATE_ROW_CAPTURE;
+                    done <= 1'b0;
+                    ram_write_enable <= 1'b0;
+                    data_out <= 8'b0;
+                    // ready_for_data <= 1'b1;
                 end
                 default: state <= state;
             endcase

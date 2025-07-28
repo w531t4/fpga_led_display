@@ -7,7 +7,7 @@ module control_cmd_readbrightness #(
 ) (
     input reset,
     input [7:0] data_in,
-    input clk_n,
+    input clk,
     input enable,
 
     output logic [BRIGHTNESS_LEVELS-1:0] data_out,
@@ -15,29 +15,31 @@ module control_cmd_readbrightness #(
     output logic done
 );
     typedef enum {STATE_READY,
-                  STATE_READ_BRIGHTNESS
+                  STATE_DONE
                   } ctrl_fsm;
     ctrl_fsm state;
-    always @(negedge clk_n, posedge reset) begin
+    always @(posedge clk, posedge reset) begin
         if (reset) begin
             data_out <= {BRIGHTNESS_LEVELS{1'b0}};
             done <= 1'b0;
             state <= STATE_READY;
             brightness_change_en <= 1'b0;
-        end
-        else if (enable) begin
+        end else begin
             case (state)
                 STATE_READY: begin
-                    done <= 1'b1;
-                    brightness_change_en <= 1'b1;
-                    data_out <= data_in[BRIGHTNESS_LEVELS-1:0];
-                    state <= STATE_READ_BRIGHTNESS;
+                    if (enable) begin
+                        done <= 1'b1;
+                        brightness_change_en <= 1'b1;
+                        data_out <= data_in[BRIGHTNESS_LEVELS-1:0];
+                        state <= STATE_DONE;
+                    end
                 end
-                STATE_READ_BRIGHTNESS: begin
+                STATE_DONE: begin
                     done <= 1'b0;
                     brightness_change_en <= 1'b0;
                     data_out <= 8'b0;
                     state <= STATE_READY;
+                    // ready_for_data <= 1'b1;
                 end
             endcase
         end

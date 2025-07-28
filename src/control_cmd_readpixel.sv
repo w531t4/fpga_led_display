@@ -10,7 +10,7 @@ module control_cmd_readpixel #(
 ) (
     input reset,
     input [7:0] data_in,
-    input clk_n,
+    input clk,
     input enable,
 
     output logic [$clog2(PIXEL_HEIGHT)-1:0] row,
@@ -25,7 +25,8 @@ module control_cmd_readpixel #(
     typedef enum {STATE_ROW_CAPTURE,
                   STATE_COLUMN_CAPTURE,
                   STATE_PRIME_MEMWRITE,
-                  STATE_READ_PIXELBYTES
+                  STATE_READ_PIXELBYTES,
+                  STATE_DONE
                   } ctrl_fsm;
     ctrl_fsm state;
     logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] column_bits;
@@ -33,7 +34,7 @@ module control_cmd_readpixel #(
 
     assign column = column_bits[_NUM_COLUMN_ADDRESS_BITS-1:0];
 
-    always @(negedge clk_n, posedge reset) begin
+    always @(posedge clk, posedge reset) begin
         if (reset) begin
             data_out <= 8'd0;
             ram_write_enable <= 1'b0;
@@ -44,8 +45,7 @@ module control_cmd_readpixel #(
             done <= 1'b0;
             column_byte_counter <= {safe_bits_needed_for_column_byte_counter{1'b0}};
             column_bits <= {(_NUM_COLUMN_BYTES_NEEDED*8){1'b0}};
-        end
-        else begin
+        end else begin
             case (state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
@@ -80,19 +80,24 @@ module control_cmd_readpixel #(
                         /* store this byte */
                         data_out <= data_in;
                         ram_access_start <= !ram_access_start;
-                        if (pixel == 'b0) begin
-                            state <= STATE_ROW_CAPTURE;
-                            done <= 1'b0;
-                            data_out <= 8'b0;
-                            ram_write_enable <= 1'b0;
-                            ram_access_start <= 1'b0;
-                            row <= 'd0;
-                            column_bits <= 'd0;
-                        end else begin
-                            if ((pixel - 'd1) == 0) done <= 1'b1;
+                        if (pixel != 'b0) begin
+                            if ((pixel - 'd1) == 0) begin
+                                done <= 1'b1;
+                                state <= STATE_DONE;
+                            end
                             pixel <= pixel - 1;
                         end
                     end
+                end
+                STATE_DONE: begin
+                    state <= STATE_ROW_CAPTURE;
+                    done <= 1'b0;
+                    data_out <= 8'b0;
+                    ram_write_enable <= 1'b0;
+                    ram_access_start <= 1'b0;
+                    row <= 'd0;
+                    column_bits <= 'd0;
+                    // ready_for_data <= 1'b1;
                 end
                 default: state <= state;
             endcase
