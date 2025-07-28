@@ -194,6 +194,8 @@ module tb_main #(
                     if ((i < (myled_row_size / 8))) begin
                         thebyte <= myled_row[myled_row_size-1 - (i*8) -: 8];
                         i <= i+1;
+                    end else if ((i == (myled_row_size / 8))) begin
+                        thebyte <= 8'b0;
                     end
                 end
             end
