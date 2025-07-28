@@ -38,6 +38,7 @@ module tb_main #(
         logic [7:0] thebyte;
         wire spi_master_txdone;
         integer i;
+        logic spi_clk_en;
         wire spi_clk;
         wire spi_cs;
         wire spi_data_ready;
@@ -100,7 +101,7 @@ module tb_main #(
         spi_master #(
         ) spimaster (
             .rstb(~reset),
-            .clk(clk),
+            .clk(clk && spi_clk_en),
             .mlb(1'b1),     // shift msb first
             .start(spi_start),  // indicator to start activity
             .tdat(thebyte),
@@ -162,6 +163,7 @@ module tb_main #(
         `ifdef SPI
             i = 0;
             thebyte = 8'd0;
+            spi_clk_en = 1'b1;
         `endif
 
         debugger_rxin = 0;
@@ -195,7 +197,7 @@ module tb_main #(
                         thebyte <= myled_row[myled_row_size-1 - (i*8) -: 8];
                         i <= i+1;
                     end else if ((i == (myled_row_size / 8))) begin
-                        thebyte <= 8'b0;
+                        spi_clk_en = 1'b0;
                     end
                 end
             end
