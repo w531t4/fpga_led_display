@@ -308,13 +308,13 @@ module control_module #(
                 num_commands_processed <= 8'b0;
             `endif
         end
-        else if (state_done) begin
-            cmd_line_state <= STATE_IDLE;
-            `ifdef DEBUGGER
-                num_commands_processed <= num_commands_processed + 'd1;
-            `endif
-        end
-        else if (~data_ready_n) begin
+        else begin
+            if (state_done) begin
+                cmd_line_state <= STATE_IDLE;
+                `ifdef DEBUGGER
+                    num_commands_processed <= num_commands_processed + 'd1;
+                `endif
+            end
             if (brightness_enable != brightness_temp) begin
                 brightness_enable <= brightness_temp;
             end else if (brightness_change_enable) begin
@@ -322,7 +322,7 @@ module control_module #(
                 brightness_temp <= brightness_data_out;
             end
             /* CMD: Main */
-            if (cmd_line_state == STATE_IDLE || state_done) begin
+            if ((cmd_line_state == STATE_IDLE || state_done) && ~data_ready_n) begin
                 case (data_rx_latch)
                     "R": begin
                         rgb_enable[0] <= 1'b1;
