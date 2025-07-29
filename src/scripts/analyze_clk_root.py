@@ -23,7 +23,8 @@ def print_critical_path(path, index=0):
     print(f"\n[{index}] Critical path")
     print(f"  From: {path.get('from')}")
     print(f"  To:   {path.get('to')}")
-    print(f"  Total delay: {path.get('delay', 0):.2f} ns")
+    delay_sum = sum(map(lambda x: x.get('delay', 0), path['path']))
+    print(f"  Total delay: {delay_sum:.2f} ns")
     print("  Path elements (sorted by delay):")
 
     sorted_elements = sorted(path['path'], key=lambda x: -x['delay'])
