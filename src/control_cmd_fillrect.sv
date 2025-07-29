@@ -151,7 +151,7 @@ module control_cmd_fillrect #(
 
     control_subcmd_fillarea #(
     ) subcmd_fillarea (
-        .reset(reset),
+        .reset(reset || local_reset),
         .enable(subcmd_enable),
         .clk(mem_clk),
         .ack(done),
