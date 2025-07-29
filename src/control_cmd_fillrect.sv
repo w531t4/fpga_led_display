@@ -130,12 +130,10 @@ module control_cmd_fillrect #(
                     done_inside <= 1'b1;
                     local_reset <= 1'b0;
                     state <= STATE_DONE;
-                    // state <= STATE_DONE;
                 end
                 STATE_DONE: begin
                     done_inside <= 1'b0;
                     ready_for_data <= 1'b1;
-                    // local_reset <= 1'b0;
                     state <= STATE_X1_CAPTURE;
                     x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                     width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
@@ -145,11 +143,6 @@ module control_cmd_fillrect #(
                     width <= {(_NUM_COLUMN_BYTES_NEEDED*8){1'b0}};
                     y1 <= {$clog2(PIXEL_HEIGHT){1'b0}};
                     height <= {$clog2(PIXEL_HEIGHT){1'b0}};
-                //     done <= 1'b0;
-                //     state <= STATE_START;
-                //     ready_for_data <= 1'b1;
-                //     x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
-                //     width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                 end
                 default state <= state;
             endcase

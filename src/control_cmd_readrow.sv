@@ -86,7 +86,6 @@ module control_cmd_readrow #(
                     done <= 1'b0;
                     ram_write_enable <= 1'b0;
                     data_out <= 8'b0;
-                    // ready_for_data <= 1'b1;
                 end
                 default: state <= state;
             endcase

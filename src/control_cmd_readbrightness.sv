@@ -39,7 +39,6 @@ module control_cmd_readbrightness #(
                     brightness_change_en <= 1'b0;
                     data_out <= 8'b0;
                     state <= STATE_READY;
-                    // ready_for_data <= 1'b1;
                 end
             endcase
         end

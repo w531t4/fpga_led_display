@@ -97,7 +97,6 @@ module control_cmd_readpixel #(
                     ram_access_start <= 1'b0;
                     row <= 'd0;
                     column_bits <= 'd0;
-                    // ready_for_data <= 1'b1;
                 end
                 default: state <= state;
             endcase

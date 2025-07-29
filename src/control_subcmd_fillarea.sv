@@ -93,7 +93,6 @@ module control_subcmd_fillarea #(
                         end
                         else begin
                             state <= STATE_WAIT_FOR_RESET;
-                            // done <= 1'b0;
                             ram_write_enable <= 1'b0;
                             data_out <= 8'b0;
                         end

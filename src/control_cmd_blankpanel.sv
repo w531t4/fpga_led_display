@@ -7,7 +7,6 @@ module control_cmd_blankpanel #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    // input cmd_enable,
     input reset,
     input enable,
     input clk,
