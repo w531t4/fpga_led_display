@@ -42,7 +42,6 @@ module control_module #(
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
-    wire [1:0] timer_counter_unused;
     ctrl_fsm cmd_line_state;
     logic [$clog2(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;     // For 32 bit high displays, [4:0]
     logic [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_line_addr_col; // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
@@ -408,6 +407,5 @@ module control_module #(
         end
     end
     wire _unused_ok = &{1'b0,
-                        timer_counter_unused,
                         1'b0};
 endmodule
