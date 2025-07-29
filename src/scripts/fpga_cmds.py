@@ -23,6 +23,15 @@ if (__name__ == "__main__"):
                         dest="set_pixel",
                         action="store_true",
                         help="issue set pixel command")
+    PARSER.add_argument("--rgb24",
+                        dest="use_rgb24",
+                        action="store_true",
+                        help="use rgb24")
+    PARSER.add_argument("--raw",
+                        dest="raw",
+                        action="store",
+                        type=str,
+                        help="send raw hex")
     PARSER.add_argument("--set-brightness",
                         nargs=1,
                         dest="set_brightness",
@@ -49,17 +58,33 @@ if (__name__ == "__main__"):
     device = Path("1,0")
 
     if "blank_panel" in args and args["blank_panel"]:
+        if args["use_rgb24"]:
+            outstring = "5a"
+        else:
+            outstring = "5a"
         main(**instring_args,
-             instring="5a")
+             instring=outstring)
     elif "fill_panel" in args and args["fill_panel"]:
+        if args["use_rgb24"]:
+            outstring = "46_314233"
+        else:
+            outstring = "46_3142"
         main(**instring_args,
-             instring="46_31_42")
+             instring=outstring)
     elif "fill_rect" in args and args["fill_rect"]:
+        if args["use_rgb24"]:
+            outstring = "66_05_0A_10_05_E0A903"
+        else:
+            outstring = "66_05_0A_10_05_E0A9"
         main(**instring_args,
-             instring="66_05_0A_10_05_E0A9")
+             instring=outstring)
     elif "set_pixel" in args and args["set_pixel"]:
+        if args["use_rgb24"]:
+            outstring = "50_08_30_102030"
+        else:
+            outstring = "50_08_30_1020"
         main(**instring_args,
-             instring="50_08_30_10_20")
+             instring=outstring)
     elif "set_brightness" in args and args["set_brightness"]:
         if int(args["set_brightness"][0]) > 255 or int(args["set_brightness"][0]) < 0:
             print(f"brightness value={int(args['set_brightness'][0])} is out of bounds. exiting.")
@@ -67,10 +92,14 @@ if (__name__ == "__main__"):
         main(**instring_args,
              instring="54" + hex(int(args["set_brightness"][0]))[2:].zfill(2))
     elif "show_smiley" in args and args["show_smiley"]:
-        main(**connectivity_args,
-             infile=Path("../../uart/w64_rgb565_smiley.uart"),
-             convert_from_hex=True,
-             instring=None,
-             )
-
-
+        if args["use_rgb24"]:
+            print("no rgb24 smiley exists")
+        else:
+            main(**connectivity_args,
+                 infile=Path("../../uart/w64_rgb565_smiley.uart"),
+                 convert_from_hex=True,
+                 instring=None,
+                 )
+    elif "raw" in args and args["raw"]:
+        main(**instring_args,
+             instring=args["raw"])
