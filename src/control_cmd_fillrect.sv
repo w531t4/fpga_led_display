@@ -36,9 +36,11 @@ module control_cmd_fillrect #(
                   } ctrl_fsm;
     ctrl_fsm state;
     logic local_reset;
+    // verilator lint_off UNUSEDSIGNAL
     logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] x1;
-    logic [safe_bits_needed_for_column_byte_counter-1:0] x1_byte_counter;
     logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] width;
+    // verilator lint_on UNUSEDSIGNAL
+    logic [safe_bits_needed_for_column_byte_counter-1:0] x1_byte_counter;
     logic [safe_bits_needed_for_column_byte_counter-1:0] width_byte_counter;
     logic [$clog2(PIXEL_HEIGHT)-1:0] y1;
     logic [$clog2(PIXEL_HEIGHT)-1:0] height;
@@ -65,7 +67,7 @@ module control_cmd_fillrect #(
             state <= STATE_X1_CAPTURE;
             done_inside <= 1'b0;
             ready_for_data <= 1'b1;
-            capturebytes_remaining <= BYTES_PER_PIXEL -1;
+            capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
             selected_color <= {(BYTES_PER_PIXEL*8){1'b0}};
             x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
             width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
@@ -86,7 +88,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_Y1_CAPTURE: begin
                     if (enable) begin
-                        y1 <= data_in;
+                        y1 <= data_in[$clog2(PIXEL_HEIGHT)-1:0];
                         state <= STATE_WIDTH_CAPTURE;
                     end
                 end
@@ -100,13 +102,13 @@ module control_cmd_fillrect #(
                 end
                 STATE_HEIGHT_CAPTURE: begin
                     if (enable) begin
-                        height <= data_in;
+                        height <= data_in[$clog2(PIXEL_HEIGHT)-1:0];
                         state <= STATE_COLOR_CAPTURE;
                     end
                 end
                 STATE_COLOR_CAPTURE: begin
                     if (enable) begin
-                        selected_color[((capturebytes_remaining+1)*8)-1 -: 8] <= data_in;
+                        selected_color[(((32)'(capturebytes_remaining)+1)*8)-1 -: 8] <= data_in;
                         if (capturebytes_remaining == 0) begin
                             state <= STATE_START;
                             ready_for_data <= 1'b0;
@@ -137,7 +139,7 @@ module control_cmd_fillrect #(
                     state <= STATE_X1_CAPTURE;
                     x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                     width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
-                    capturebytes_remaining <= BYTES_PER_PIXEL -1;
+                    capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                     selected_color <= {(BYTES_PER_PIXEL*8){1'b0}};
                     x1 <= {(_NUM_COLUMN_BYTES_NEEDED*8){1'b0}};
                     width <= {(_NUM_COLUMN_BYTES_NEEDED*8){1'b0}};
@@ -155,10 +157,10 @@ module control_cmd_fillrect #(
         .enable(subcmd_enable),
         .clk(mem_clk),
         .ack(done),
-        .x1(x1),
+        .x1(($clog2(PIXEL_WIDTH))'(x1)),
         .y1(y1),
-        .width(width),
-        .height(height),
+        .width(($clog2(PIXEL_WIDTH))'(width)),
+        .height(($clog2(PIXEL_HEIGHT))'(height)),
         .color(selected_color),
         .row(row),
         .column(column),

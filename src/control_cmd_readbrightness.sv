@@ -6,7 +6,9 @@ module control_cmd_readbrightness #(
     // verilator lint_on UNUSEDPARAM
 ) (
     input reset,
+    // verilator lint_off UNUSEDSIGNAL
     input [7:0] data_in,
+    // verilator lint_on UNUSEDSIGNAL
     input clk,
     input enable,
 
@@ -37,7 +39,7 @@ module control_cmd_readbrightness #(
                 STATE_DONE: begin
                     done <= 1'b0;
                     brightness_change_en <= 1'b0;
-                    data_out <= 8'b0;
+                    data_out <= {BRIGHTNESS_LEVELS{1'b0}};
                     state <= STATE_READY;
                 end
             endcase

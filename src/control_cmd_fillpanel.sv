@@ -51,7 +51,7 @@ module control_cmd_fillpanel #(
             subcmd_enable <= 1'b0;
             state <= STATE_COLOR_CAPTURE;
             done_inside <= 1'b0;
-            capturebytes_remaining <= BYTES_PER_PIXEL -1;
+            capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
             ready_for_data <= 1'b1;
             selected_color <= {(BYTES_PER_PIXEL*8){1'b0}};
             local_reset <= 1'b0;
@@ -59,7 +59,7 @@ module control_cmd_fillpanel #(
             case (state)
                 STATE_COLOR_CAPTURE: begin
                     if (enable) begin
-                        selected_color[((capturebytes_remaining+1)*8)-1 -: 8] <= data_in;
+                        selected_color[(((32)'(capturebytes_remaining)+1)*8)-1 -: 8] <= data_in;
                         if (capturebytes_remaining == 0) begin
                             state <= STATE_START;
                             ready_for_data <= 1'b0;
@@ -90,7 +90,7 @@ module control_cmd_fillpanel #(
                     local_reset <= 1'b0;
                     ready_for_data <= 1'b1;
                     state <= STATE_COLOR_CAPTURE;
-                    capturebytes_remaining <= BYTES_PER_PIXEL -1;
+                    capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                     selected_color <= {(BYTES_PER_PIXEL*8){1'b0}};
                 end
                 default state <= state;
@@ -106,8 +106,8 @@ module control_cmd_fillpanel #(
         .ack(done),
         .x1(0),
         .y1(0),
-        .width(PIXEL_WIDTH),
-        .height(PIXEL_HEIGHT),
+        .width(($clog2(PIXEL_WIDTH))'(PIXEL_WIDTH)),
+        .height(($clog2(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
         .color(selected_color),
         .row(row),
         .column(column),
