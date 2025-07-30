@@ -18,53 +18,45 @@
     // this is abcdefghij duplicated
     // logic [4111:0] myled_row = 'h4c040000000098000000000000009800000081a000000000000081a0000094c000000000000094c00000042000000000000004200000044f00000000000000000000021000000000000000000000001600000000000000160000401300000000000040130000000000008811000000000000000000000000980000000000000000000000000098000000000000009800000081a000000000000081a0000094c000000000000094c00000042000000000000004200000044f0000000000000000000002100000000000000000000000160000000000000016000040130000000000004013000000000000881100000000000000000000000098000000000000000000;
     // this is abcdefghij placed in middle of displays
-    localparam myled_row_size_basic = 2048 + 16;
-    // See row4 of uart/w128_f60.uart
-    logic [myled_row_size_basic-1:0] myled_row_basic = 'h4c04490229022902ab0acb02ec028a0a4a02280aa701a601a701a601a701c7010902ab128b0a0f4c9675346d9354d34c112c2d238b0a290a4a0a290a0902aa12ab12280aa7014501860186014501650186018609460145014501450125012401250124012501450145014501250145014501450125014501660186096601650166016501660186096601650946016501450144012501240125012401250124012501450125010401e4000301e400c3004601e300250144092501a611c711e719c811c719a7114a5b539d739d02090401e400e300a300a2008200820082008200620061006200610062006100620061006200810062008200820082008200a2008300;
+    // 2048 + 16
+    localparam [(8*((512/4) + 16))-1:0] myled_row_basic = 2064'h4c04490229022902ab0acb02ec028a0a4a02280aa701a601a701a601a701c7010902ab128b0a0f4c9675346d9354d34c112c2d238b0a290a4a0a290a0902aa12ab12280aa7014501860186014501650186018609460145014501450125012401250124012501450145014501250145014501450125014501660186096601650166016501660186096601650946016501450144012501240125012401250124012501450125010401e4000301e400c3004601e300250144092501a611c711e719c811c719a7114a5b539d739d02090401e400e300a300a2008200820082008200620061006200610062006100620061006200810062008200820082008200a2008300;
 
 
 `else
     // 260 * 8 = 2080 ;; 64 * 2 * 8
     // 128 bytes (64 pixels * 2) * 8 bits + (1bytes * 8bits [L]) + (1bytes * 8bits [row]) == (64*2*8) + 8 + 8 = 1040
     // i don't know how we got to 260... pretty sure it should be 258.
-    localparam myled_row_size_basic = 1024 + 16;
-    // See row4 of uart/w64_f60.uart
-    logic [myled_row_size_basic-1:0] myled_row_basic = 'h4c0449026b02cb0a6a02e7018701c701e801aa12d354345d5144cc1a4a02290a8b12c7016601850166016501450124012501440145014501450145014601650966016509660165014501440125012401250144010401e300040104014501c711c811a51971746c53a200c30082008200820061006200610062008200820082008300;
+    // 1024 + 16
+    localparam [(8*((256/4) + 2))-1:0] myled_row_basic = 2040'h4c0449026b02cb0a6a02e7018701c701e801aa12d354345d5144cc1a4a02290a8b12c7016601850166016501450124012501440145014501450145014601650966016509660165014501440125012401250144010401e300040104014501c711c811a51971746c53a200c30082008200820061006200610062008200820082008300;
 ;
 `endif
 
 // Add tests for pixel set command
-localparam myled_row_size_pixel = (1 + 1 + 1 + 2) * 8;
-logic [myled_row_size_pixel-1:0] myled_row_pixel  = 'h50_08_30_10_20; // "P" + row=8 column=0x30 bytedata=0x1020
-logic [myled_row_size_pixel-1:0] myled_row_pixel2 = 'h50_09_32_30_40;
+localparam [(8*4)-1:0] myled_row_pixel  = 'h50_08_30_10_20; // "P" + row=8 column=0x30 bytedata=0x1020
+localparam [(8*4)-1:0] myled_row_pixel2 = 'h50_09_32_30_40;
 
-localparam myled_row_size_brightness_1 = 1*8;
-logic [myled_row_size_brightness_1-1:0] myled_row_brightness_1 = 'h33; // "3"
+localparam [(8*1)-1:0] myled_row_brightness_1 = 1'h33; // "3"
 
-localparam myled_row_size_brightness_2 = (1 + 1) * 8;
-logic [myled_row_size_brightness_2-1:0] myled_row_brightness_2 = 'h5423; // "T" + \x23
-logic [myled_row_size_brightness_2-1:0] myled_row_brightness_3 = 'h5438; // "T" + \x38
+localparam [(8*2)-1:0] myled_row_brightness_2 = 'h5423; // "T" + \x23
+localparam [(8*2)-1:0] myled_row_brightness_3 = 'h5438; // "T" + \x38
 
-localparam myled_row_size_blankpanel = 1*8;
-logic [myled_row_size_blankpanel-1:0] myled_row_blankpanel = 'h5a;
+localparam [(8*1)-1:0] myled_row_blankpanel = 'h5a;
 
-localparam myled_row_size_fillpanel = 3*8;
-logic [myled_row_size_fillpanel-1:0] myled_row_fillpanel = 'h46_31_42;
+localparam [(8*3)-1:0] myled_row_fillpanel = 'h46_31_42;
 
-localparam myled_row_size_fillrect = 7*8;
-logic [myled_row_size_fillrect-1:0] myled_row_fillrect = 'h66_05_0A_10_05_E0A9; // "f" + x1/y1/width/height/color
+localparam [(8*7)-1:0] myled_row_fillrect = 'h66_05_0A_10_05_E0A9; // "f" + x1/y1/width/height/color
 
-localparam myled_row_size = myled_row_size_blankpanel
-                            + myled_row_size_fillpanel
-                            + myled_row_size_fillrect
-                            + myled_row_size_basic
-                            + myled_row_size_pixel
-                            + myled_row_size_pixel
-                            + myled_row_size_brightness_1
-                            + myled_row_size_brightness_2
-                            + myled_row_size_brightness_2
-                            ;
-logic [myled_row_size-1:0] myled_row = {
+logic [
+        ($bits(myled_row_blankpanel)
+            + $bits(myled_row_fillpanel)
+            + $bits(myled_row_fillrect)
+            + $bits(myled_row_basic)
+            + $bits(myled_row_pixel)
+            + $bits(myled_row_pixel2)
+            + $bits(myled_row_brightness_1)
+            + $bits(myled_row_brightness_2)
+            + $bits(myled_row_brightness_3)
+        )-1:0] myled_row = {
                                             myled_row_blankpanel,
                                             myled_row_fillpanel,
                                             myled_row_fillrect,
