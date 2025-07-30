@@ -21,7 +21,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # NO_GAMMA - Disable Gamma Correction
 # USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
 
-BUILD_FLAGS ?=-DSPI
+BUILD_FLAGS ?=-DSPI -DNO_GAMMA -DUSE_BOARDLEDS_BRIGHTNESS -DCLK_50 -DW128 -DRGB24 -DSPI_ESP32
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
@@ -207,9 +207,9 @@ endif
 restore:
 	$(TOOLPATH)/fujprog ~/Downloads/passthru41113043.bit
 
-esp32_build: restore
-	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py build
+# esp32_build: restore
+# 	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py build
 esp32_flash: restore
 	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py flash
 
-esp32:   esp32_build  esp32_flash memprog
+esp32: esp32_flash memprog
