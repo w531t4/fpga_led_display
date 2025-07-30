@@ -115,7 +115,7 @@ module tb_main #(
         );
     `else
         debugger #(
-            .DATA_WIDTH(myled_row_size),
+            .DATA_WIDTH($bits(myled_row)),
             // use smaller than normal so it doesn't require us to simulate to
             // infinity to see results
             .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
@@ -185,7 +185,7 @@ module tb_main #(
             end
         `endif
         @(posedge clk)
-        #((myled_row_size + 1000)*SIM_HALF_PERIOD_NS*2*4); // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
+        #(($bits(myled_row) + 1000)*SIM_HALF_PERIOD_NS*2*4); // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
         wait (tb_main.tbi_main.row_address_active == 4'b0101);
         $finish;
     end
@@ -193,10 +193,10 @@ module tb_main #(
         always begin
             @(posedge spi_master_txdone) begin
                 if (tb_main.tbi_main.ctrl.ready_for_data) begin
-                    if ((i < (myled_row_size / 8))) begin
-                        thebyte <= myled_row[myled_row_size-1 - (i*8) -: 8];
+                    if ((i < ($bits(myled_row) / 8))) begin
+                        thebyte <= myled_row[$bits(myled_row)-1 - (i*8) -: 8];
                         i <= i+1;
-                    end else if ((i == (myled_row_size / 8))) begin
+                    end else if ((i == ($bits(myled_row) / 8))) begin
                         spi_clk_en = 1'b0;
                     end
                 end
