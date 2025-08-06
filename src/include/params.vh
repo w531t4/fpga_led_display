@@ -52,7 +52,7 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
 `endif
 
 `ifdef W128
-    parameter PIXEL_WIDTH = 64*2,
+    parameter PIXEL_WIDTH = 64*12,
 `else
     parameter PIXEL_WIDTH = 64,
 `endif
