@@ -5,6 +5,9 @@
 // 16000000hz / 246154hz = 65 ticks width=7
 `ifdef CLK_100
     parameter ROOT_CLOCK = 100_000_000,
+    parameter PLL_SPEED = 3,
+`elsif CLK_90
+    parameter ROOT_CLOCK = 90_000_000,
     parameter PLL_SPEED = 2,
 `elsif CLK_50
     parameter ROOT_CLOCK = 50_000_000,
