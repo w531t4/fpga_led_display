@@ -1,4 +1,5 @@
 PROJ:=this
+SHELL:=/bin/bash
 
 ARTIFACT_DIR:=build
 SIMULATION_DIR:=$(ARTIFACT_DIR)/simulation
