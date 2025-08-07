@@ -210,8 +210,11 @@ module main #(
         .clock_in(clk_root),
         .reset(alt_reset)
     );
-
-    assign global_reset = alt_reset;
+    `ifdef SPI_ESP32
+        assign global_reset = alt_reset | sd_d[1];
+    `else
+        assign global_reset = alt_reset;
+    `endif
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
