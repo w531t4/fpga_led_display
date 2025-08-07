@@ -21,7 +21,7 @@ module control_module #(
     output logic ram_clk_enable
     `ifdef DEBUGGER
         ,
-        output [2:0] cmd_line_state2,
+        output [3:0] cmd_line_state2,
         output ram_access_start2,
         output ram_access_start_latch2,
         output [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2,
@@ -35,7 +35,8 @@ module control_module #(
                   STATE_CMD_BLANKPANEL,     // 3
                   STATE_CMD_FILLPANEL,      // 4
                   STATE_CMD_FILLRECT,       // 5
-                  STATE_CMD_READPIXEL       // 6
+                  STATE_CMD_READPIXEL,      // 6
+                  STATE_CMD_READFRAME       // 7
                   } ctrl_fsm;
     logic [7:0] data_rx_latch;
     logic ready_for_data_logic;
@@ -226,6 +227,30 @@ module control_module #(
         .done(            cmd_fillrect_done)
     );
 
+    wire                                  cmd_readframe_we;
+    wire                                  cmd_readframe_as;
+    wire                                  cmd_readframe_done;
+    wire [7:0]                            cmd_readframe_do;
+    wire [$clog2(PIXEL_HEIGHT)-1:0]       cmd_readframe_row_addr;
+    wire [_NUM_COLUMN_ADDRESS_BITS-1:0]   cmd_readframe_col_addr;
+    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readframe_pixel_addr;
+
+    control_cmd_readframe #(
+    ) cmd_readframe (
+        .reset(reset),
+        // .enable(cmd_line_state == STATE_CMD_FILLRECT),
+        .enable((cmd_line_state == STATE_CMD_READFRAME) && ~data_ready_n),
+        .clk(clk_in),
+        .data_in(data_rx_latch),
+        .row(             cmd_readframe_row_addr),
+        .column(          cmd_readframe_col_addr),
+        .pixel(           cmd_readframe_pixel_addr),
+        .data_out(        cmd_readframe_do),
+        .ram_write_enable(cmd_readframe_we),
+        .ram_access_start(cmd_readframe_as),
+        .done(            cmd_readframe_done)
+    );
+
     always @(*) begin
         cmd_line_addr_row = {$clog2(PIXEL_HEIGHT){1'b0}};
         cmd_line_addr_col = {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
@@ -242,6 +267,15 @@ module control_module #(
                 brightness_change_enable = cmd_readbrightness_be;
                 brightness_data_out = cmd_readbrightness_do;
                 state_done = cmd_readbrightness_done;
+            end
+            STATE_CMD_READFRAME: begin
+                cmd_line_addr_row =        cmd_readframe_row_addr;
+                cmd_line_addr_col =        cmd_readframe_col_addr;
+                cmd_line_pixelselect_num = cmd_readframe_pixel_addr;
+                ram_data_out =             cmd_readframe_do;
+                ram_write_enable =         cmd_readframe_we;
+                ram_access_start =         cmd_readframe_as;
+                state_done =               cmd_readframe_done;
             end
             STATE_CMD_READROW: begin
                 cmd_line_addr_row = cmd_readrow_row_addr;
@@ -394,6 +428,7 @@ module control_module #(
                     "Z": cmd_line_state <= STATE_CMD_BLANKPANEL;
                     "F": cmd_line_state <= STATE_CMD_FILLPANEL;
                     "f": cmd_line_state <= STATE_CMD_FILLRECT;
+                    "Y": cmd_line_state <= STATE_CMD_READFRAME;
                     "L": begin
                         cmd_line_state <= STATE_CMD_READROW;
                     end
