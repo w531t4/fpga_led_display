@@ -8,6 +8,7 @@ module pixel_split #(
 ) (
     input [_NUM_BITS_PER_SUBPANEL-1:0] pixel_data,
     input [BRIGHTNESS_LEVELS-1:0] brightness_mask,
+    input [BRIGHTNESS_LEVELS-1:0] brightness_enable,
     input [2:0] rgb_enable,
 
     output [2:0] rgb_output
@@ -46,7 +47,7 @@ module pixel_split #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
     ) b_red (
         .value(red_gamma),
-        .mask(brightness_mask),
+        .mask(brightness_mask & brightness_enable),
         .enable(rgb_enable[0]),
         .out(rgb_output[0])
     );
@@ -54,7 +55,7 @@ module pixel_split #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
     ) b_green (
         .value(green_gamma),
-        .mask(brightness_mask),
+        .mask(brightness_mask & brightness_enable),
         .enable(rgb_enable[1]),
         .out(rgb_output[1])
     );
@@ -62,7 +63,7 @@ module pixel_split #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
     ) b_blue(
         .value(blue_gamma),
-        .mask(brightness_mask),
+        .mask(brightness_mask & brightness_enable),
         .enable(rgb_enable[2]),
         .out(rgb_output[2])
     );

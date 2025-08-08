@@ -382,7 +382,8 @@ module main #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) px_top (
         .pixel_data(pixeldata_top),
-        .brightness_mask(brightness_mask & brightness_enable),
+        .brightness_mask(brightness_mask),
+        .brightness_enable(brightness_enable),
         .rgb_enable(rgb_enable),
         `ifdef USE_FM6126A
             .rgb_output(rgb1_intermediary)
@@ -395,7 +396,8 @@ module main #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) px_bottom (
         .pixel_data(pixeldata_bottom),
-        .brightness_mask(brightness_mask & brightness_enable),
+        .brightness_mask(brightness_mask),
+        .brightness_enable(brightness_enable),
         .rgb_enable(rgb_enable),
         `ifdef USE_FM6126A
             .rgb_output(rgb2_intermediary)
