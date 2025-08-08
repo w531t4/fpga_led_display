@@ -10,32 +10,40 @@ module rgb24 #(
     output [7:0] green,
     output [7:0] blue
 );
+    wire [7:0] red_selected;
+    wire [7:0] green_selected;
+    wire [7:0] blue_selected;
+
+    assign red_selected = data_in[23:16];
+    assign green_selected = data_in[15:8];
+    assign blue_selected = data_in[7:0];
+
     `ifdef GAMMA
         gamma_correct #(
             .IN_BITS(8),
             .OUT_BITS(8)
         ) gc_red (
-            .in(data_in[23:16]),
+            .in(red_selected),
             .out(red)
         );
         gamma_correct #(
             .IN_BITS(8),
             .OUT_BITS(8)
         ) gc_green(
-            .in(data_in[15:8]),
+            .in(green_selected),
             .out(green)
         );
         gamma_correct #(
             .IN_BITS(8),
             .OUT_BITS(8)
         ) gc_blue (
-            .in(data_in[7:0]),
+            .in(blue_selected),
             .out(blue)
         );
     `else
-        assign red = data_in[23:16];
-        assign green = data_in[15:8];
-        assign blue = data_in [7:0];
+        assign red = red_selected;
+        assign green = green_selected;
+        assign blue = blue_selected;
     `endif
 
 endmodule
