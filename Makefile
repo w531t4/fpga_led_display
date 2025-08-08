@@ -20,10 +20,10 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # CLK_90 - Use 90MHz clock for clk_root
 # CLK_50 - Use 50MHz clock for clk_root
 # RGB24 - Use RGB24 instead of RGB565
-# NO_GAMMA - Disable Gamma Correction
+# GAMMA - Enable Gamma Correction
 # USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
 
-BUILD_FLAGS ?=-DSPI -DNO_GAMMA -DUSE_BOARDLEDS_BRIGHTNESS -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32
+BUILD_FLAGS ?=-DSPI -DUSE_BOARDLEDS_BRIGHTNESS -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg

@@ -10,7 +10,7 @@ module rgb24 #(
     output [7:0] green,
     output [7:0] blue
 );
-    `ifdef NO_GAMMA
+    `ifdef GAMMA
         gamma_correct #(
             .IN_BITS(8),
             .OUT_BITS(8)

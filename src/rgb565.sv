@@ -11,7 +11,7 @@ module rgb565 #(
     output [5:0] blue
 );
 
-    `ifdef NO_GAMMA
+    `ifdef GAMMA
         gamma_correct #(
             .IN_BITS(5),
             .OUT_BITS(6)
