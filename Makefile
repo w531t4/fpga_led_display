@@ -23,7 +23,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # GAMMA - Enable Gamma Correction
 # USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_50 -DW128 -DRGB24 -DSPI_ESP32
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
