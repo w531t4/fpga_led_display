@@ -27,6 +27,7 @@ module pixel_split #(
             .data_in({pixel_data[15:8], pixel_data[23:16], pixel_data[31:24]}),
             // .data_in({pixel_data[15:8], pixel_data[31:24], pixel_data[23:16]}), // things that are blue are green
             // .data_in({pixel_data[7:0], 8'b0, 8'b0}),
+            .brightness(brightness_enable),
             .red(red_gamma),
             .green(green_gamma),
             .blue(blue_gamma)
@@ -36,6 +37,7 @@ module pixel_split #(
         rgb565 rgb_565 (
             //              [rrrrrbbb bbbggggg]
             .data_in(pixel_data),
+            .brightness(brightness_enable),
             .red(red_gamma),
             .green(green_gamma),
             .blue(blue_gamma)
@@ -47,7 +49,7 @@ module pixel_split #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
     ) b_red (
         .value(red_gamma),
-        .mask(brightness_mask & brightness_enable),
+        .mask(brightness_mask),
         .enable(rgb_enable[0]),
         .out(rgb_output[0])
     );
@@ -55,7 +57,7 @@ module pixel_split #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
     ) b_green (
         .value(green_gamma),
-        .mask(brightness_mask & brightness_enable),
+        .mask(brightness_mask),
         .enable(rgb_enable[1]),
         .out(rgb_output[1])
     );
@@ -63,7 +65,7 @@ module pixel_split #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
     ) b_blue(
         .value(blue_gamma),
-        .mask(brightness_mask & brightness_enable),
+        .mask(brightness_mask),
         .enable(rgb_enable[2]),
         .out(rgb_output[2])
     );
