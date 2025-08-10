@@ -1,5 +1,41 @@
 # fpga_led_display
-A recipie for having an FPGA drive a 64x32 LED matrix
+A recipe driving a chain of LED matricies with a FPGA
+
+## Features
+- Supports matrix topologies - n-pixel width by 8-bit height
+- RGB24/RGB565 color
+- FPGA UART debugger (TX) + UART python debugger console (RX)
+- Feed FPGA data with UART or SPI
+- Gamma adjustment
+- No vendor IP (except use of PLL)
+- Testbenches for main + many submodules
+- Uses logic that both simulates and synthesizes well with the open source toolchain (YosysHQ/oss-cad-quite-build) [see below]
+
+## Getting Started
+1. Clone the project.
+1. Download the latest toolchain release from https://github.com/YosysHQ/oss-cad-suite-build and extract it into the project directory
+1. get netlistsvg app by issing `(cd src/scripts; sh create_npm_env.sh)`
+1. Adjust compile parameters in `Makefile` (for instance, enabling the debugger '-DDEBUGGER')
+1. Run `make` (this will produce simulations and render them in build/simulations)
+1. Run `make pack` (will build, route, and pack a bitstream. bitstream is wrriten as build/ulx3s.bit)
+1. Connect the ULX3s to the computer using USB [use the connector on the upper left of the board]
+1. Run `make memprog` (will write build/ulx3s.bit to the ULX3s, but it will NOT persist a powercycle of the FPGA)
+
+## Persisting bitstream to execute at startup
+The ULX3s has write-protected flash that prevents `fujproj` from writing to a location that will persist across powercycles.
+A different command (from the open source toolchain) must be used with a flag for unprotecting the flash contents.
+`oss-cad-suite/bin/openFPGALoader -b ulx3s --unprotect-flash -f build/ulx3s.bit`
+
+## Restoring the "original"/preloaded bitstream
+The original bitstream that is loaded to the ULX3s at shipping time convieniently allows the user to both:
+1. Write new images to the FPGA over USB
+1. Write content to the ESP32 over USB
+
+At times (when working with the ESP32), it was very helpful to be able to return back to this image so i could monitor its serial output.
+
+The original image (at startup), LED's D18 Green, and D0 Red, D1 Orange, and D2 yellow-ish are illuminated. I wasn't able to figure out how to dump the preloaded bitstream, however the following file (https://github.com/emard/ulx3s-bin/blob/master/fpga/dfu/85f-v317/passthru41113043.bit.gz) appears to behave identically, except all led's (D0-D7) are lit.
+
+Follow the instructions (Persisting bitstream to execute at startup) using the above file (after gunzipping it).
 
 # interacting with Tiny FPGA BX via USB
 Note: Following instructions from https://tinyfpga.com/bx/guide.html
