@@ -18,6 +18,9 @@ module control_module #(
     output logic ram_write_enable,
     output busy,
     output ready_for_data,
+    `ifdef DOUBLE_BUFFER
+        output logic frame_select,
+    `endif
     output logic ram_clk_enable
     `ifdef DEBUGGER
         ,
@@ -331,9 +334,16 @@ module control_module #(
     end
     assign busy = ~(cmd_line_state == STATE_IDLE || state_done);
     assign ready_for_data = ready_for_data_logic || ~busy;
+    `ifdef DOUBLE_BUFFER
+        logic frame_select_temp;
+    `endif
     always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;
+            `ifdef DOUBLE_BUFFER
+                frame_select <= 1'b0;
+                frame_select_temp <= 1'b0;
+            `endif
             brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
             brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
 
@@ -355,6 +365,10 @@ module control_module #(
                 brightness_enable <= brightness_data_out;
                 brightness_temp <= brightness_data_out;
             end
+            `ifdef DOUBLE_BUFFER
+                if (frame_select_temp != frame_select)
+                    frame_select <= frame_select_temp;
+            `endif
             /* CMD: Main */
             if ((cmd_line_state == STATE_IDLE || state_done) && ~data_ready_n) begin
                 case (data_rx_latch)
@@ -433,6 +447,9 @@ module control_module #(
                         cmd_line_state <= STATE_CMD_READROW;
                     end
                     "P": cmd_line_state <= STATE_CMD_READPIXEL;
+                    `ifdef DOUBLE_BUFFER
+                        "t": frame_select_temp <= ~frame_select;
+                    `endif
                     default: begin
                         cmd_line_state <= STATE_IDLE;
                         if (brightness_change_enable) brightness_temp <= brightness_data_out;

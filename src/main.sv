@@ -73,12 +73,18 @@ module main #(
     wire clk_pixel;
     wire row_latch;
     wire [7:0] ram_a_data_in;
-    wire [7:0] ram_a_data_out;
+    wire [7:0] ram_a_data_out_frame1;
     //  [11:0]
     wire [_NUM_ADDRESS_A_BITS-1:0] ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
     wire [_NUM_DATA_B_BITS-1:0] ram_b_data_out;
+    wire [_NUM_DATA_B_BITS-1:0] ram_b_data_out_frame1;
+    `ifdef DOUBLE_BUFFER
+        wire frame_select;
+        wire [7:0] ram_a_data_out_frame2;
+        wire [_NUM_DATA_B_BITS-1:0] ram_b_data_out_frame2;
+    `endif
     //  [10:0]
     wire [_NUM_ADDRESS_B_BITS-1:0] ram_b_address;
     wire ram_b_clk_enable;
@@ -344,6 +350,9 @@ module main #(
         .ram_data_out(ram_a_data_in),
         .ram_address(ram_a_address),
         .ram_write_enable(ram_a_write_enable),
+        `ifdef DOUBLE_BUFFER
+            .frame_select(frame_select),
+        `endif
         .ram_clk_enable(ram_a_clk_enable)
         `ifdef DEBUGGER
             ,
@@ -363,19 +372,47 @@ module main #(
         .ClockA(clk_root),
         .AddressA(ram_a_address),
         .DataInA(ram_a_data_in),
-        .WrA(ram_a_write_enable),
+        `ifdef DOUBLE_BUFFER
+            .WrA(ram_a_write_enable & frame_select),
+        `else
+            .WrA(ram_a_write_enable),
+        `endif
         .ResetA(global_reset),
         .ClockB(clk_root),
         .DataInB(16'b0),
         .AddressB(ram_b_address),
         .WrB(1'b0),
         .ResetB(global_reset),
-        .QA(ram_a_data_out),
-        .QB(ram_b_data_out),
+        .QA(ram_a_data_out_frame1),
+        .QB(ram_b_data_out_frame1),
         .ClockEnA(ram_a_clk_enable),
         .ClockEnB(ram_b_clk_enable)
     );
-
+    `ifdef DOUBLE_BUFFER
+        multimem #(
+            .PIXEL_WIDTH(PIXEL_WIDTH),
+            .PIXEL_HEIGHT(PIXEL_HEIGHT),
+            .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+        ) fb2 (
+            .ClockA(clk_root),
+            .AddressA(ram_a_address),
+            .DataInA(ram_a_data_in),
+            .WrA(ram_a_write_enable & ~frame_select),
+            .ResetA(global_reset),
+            .ClockB(clk_root),
+            .DataInB(16'b0),
+            .AddressB(ram_b_address),
+            .WrB(1'b0),
+            .ResetB(global_reset),
+            .QA(ram_a_data_out_frame2),
+            .QB(ram_b_data_out_frame2),
+            .ClockEnA(ram_a_clk_enable),
+            .ClockEnB(ram_b_clk_enable)
+        );
+        assign ram_b_data_out = frame_select ? ram_b_data_out_frame2 : ram_b_data_out_frame1;
+    `else
+        assign ram_b_data_out = ram_b_data_out_frame1;
+    `endif
     /* split the pixels and get the current brightness' bit */
     pixel_split #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
@@ -521,7 +558,10 @@ module main #(
                         `else
                             gp15,
                         `endif
-                        ram_a_data_out,
+                        ram_a_data_out_frame1,
+                        `ifdef DOUBLE_BUFFER
+                            ram_a_data_out_frame2,
+                        `endif
                         `ifdef SPI
                             `ifdef SPI_ESP32
                                 sd_d[3:1],

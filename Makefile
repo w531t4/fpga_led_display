@@ -23,8 +23,9 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # RGB24 - Use RGB24 instead of RGB565
 # GAMMA - Enable Gamma Correction
 # USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
+# DOUBLE_BUFFER - Allow image to be written to one buffer while displaying the other buffer at led's.
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_100 -DW128 -DRGB24 -DSPI_ESP32
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_100 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
