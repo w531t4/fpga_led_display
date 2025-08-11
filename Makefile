@@ -90,6 +90,10 @@ $(SIMULATION_DIR):
 clean:
 	rm -rf ${ARTIFACT_DIR}
 
+# This plugin is necessary to infer OUTREG in blockram correctly in yosys.
+depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so:
+	(cd depends/yosys_ecp5_infer_bram_outreg/;  YOSYS_PATH=../../oss-cad-suite/ make)
+
 YOSYS_DEBUG ?= false
 YOSYS_INCLUDE_EXTRA ?= false
 
@@ -131,17 +135,21 @@ endif
 YOSYS_SCRIPT +=$(YOSYS_READVERILOG_CMD);
 YOSYS_SCRIPT +=$(YOSYS_EXTRA);
 YOSYS_SCRIPT +=$(YOSYS_SYNTHECP5_CMD);
+# YOSYS_SCRIPT +=write_verilog -noattr -noexpr $(ARTIFACT_DIR)/code_preblah.sv;
+YOSYS_SCRIPT +=ecp5_infer_bram_outreg;
+# YOSYS_SCRIPT +=write_verilog -noattr -noexpr $(ARTIFACT_DIR)/code_postblah.sv;
 YOSYS_SCRIPT +=show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show;
 YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il;
 YOSYS_SCRIPT +=write_verilog -selected $(ARTIFACT_DIR)/mydesign_final.sv;
 
 YOSYS_CMD_ARGS:=-L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_SCRIPT)"
+YOSYS_CMD_ARGS += -m depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_CMD_ARGS :=-d -v9 -g $(YOSYS_CMD_ARGS)
 endif
 
 compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) | $(ARTIFACT_DIR)
+$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so | $(ARTIFACT_DIR)
 	echo "$(YOSYS_SCRIPT)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_CMD_ARGS)
 
