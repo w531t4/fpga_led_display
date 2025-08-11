@@ -27,90 +27,70 @@ module multimem #(
     output reg [_NUM_DATA_A_BITS-1:0] QA,
     output reg [_NUM_DATA_B_BITS-1:0] QB
 );
-    // Underlying memory: 4K x 8-bit
-    //  [7:0] mem [0:4095]
-    //  [7:0] mem [structure bits] [addr_b/index bits]
-    reg [_NUM_DATA_A_BITS-1:0] mem [0:(1 << _NUM_STRUCTURE_BITS)-1][0:(1 << _NUM_ADDRESS_B_BITS) - 1];  // 2^12 = 4096 entries
-    `ifdef SIM
-        // Used to initialize memory during simulation
-        //  [7:0] mem [mems] [index]
-        reg [_NUM_ADDRESS_B_BITS-1:0] init_index;
-        reg [_NUM_STRUCTURE_BITS-1:0] init_mems;
-        reg init_done;
-    `endif
-    reg [_NUM_DATA_B_BITS-1:0] QB_pre;
-    // Write Port A: 8-bit writes
-    always @(posedge ClockA) begin
-        if (ClockEnA) begin
-            if (WrA)
-                // consider
-                // 8 bits addr a, 2 bits colorselect, 2 bits display
-                //      addrA = 8
-                //      colorselect = 2
-                //      display = 2
+    // consider
+    // 8 bits addr a, 2 bits colorselect, 2 bits display
+    //      addrA = 8
+    //      colorselect = 2
+    //      display = 2
 
-                //      7 display          = (addrA - 1)
-                //      6 display          = (addrA - display)
-                //      5 body             = (addrA - display) -1           // aka addrb
-                //      4 body             =                                // aka addrb
-                //      3 body             =                                // aka addrb
-                //      2 body             = (colorselect - 1) + 1          // aka addrb
-                //      1 pixelcolorselect = colorselect - 1
-                //      0 pixelcolorselect = 0
-                //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
-                mem[{
-                        AddressA[_NUM_ADDRESS_A_BITS-1
-                                 :_NUM_ADDRESS_A_BITS-_NUM_SUBPANELSELECT_BITS
-                                 ],
-                        AddressA[_NUM_PIXELCOLORSELECT_BITS - 1
-                                 :0]
-                    }]
-                   [{
-                        AddressA[(_NUM_ADDRESS_A_BITS-_NUM_SUBPANELSELECT_BITS)-1
-                                 :(_NUM_PIXELCOLORSELECT_BITS - 1) + 1]
-                   }] <= DataInA;
-                // mem[AddressA[$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-2:1]]
-                //    [{AddressA[$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1],
-                //      AddressA[0]}] <= DataInA;
+    //      7 display          = (addrA - 1)
+    //      6 display          = (addrA - display)
+    //      5 body             = (addrA - display) -1           // aka addrb
+    //      4 body             =                                // aka addrb
+    //      3 body             =                                // aka addrb
+    //      2 body             = (colorselect - 1) + 1          // aka addrb
+    //      1 pixelcolorselect = colorselect - 1
+    //      0 pixelcolorselect = 0
+    //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
+
+    localparam LANES = (1 << _NUM_STRUCTURE_BITS);
+    wire [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes;
+
+    reg [_NUM_ADDRESS_B_BITS-1:0] AddressB_q;
+    always @(posedge ClockB) AddressB_q <= AddressB;
+
+    genvar i;
+    generate
+    for (i = 0; i < LANES; i = i + 1) begin : G
+        wire [_NUM_STRUCTURE_BITS-1:0] lane_idx_from_addr = { AddressA[_NUM_ADDRESS_A_BITS-1 -: _NUM_SUBPANELSELECT_BITS],
+                                                              AddressA[_NUM_PIXELCOLORSELECT_BITS-1:0] };
+
+        wire lane_sel = (lane_idx_from_addr == i[_NUM_STRUCTURE_BITS-1:0]);
+        wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[_NUM_STRUCTURE_BITS-1:0]);
+        // NEW: register the write triplet locally (1-cycle latency on writes)
+        (* keep = "true" *) reg we_lane_q;
+        (* keep = "true" *) reg [_NUM_ADDRESS_B_BITS-1:0] addra_q;
+        (* keep = "true" *) reg [_NUM_DATA_A_BITS-1:0]    dia_q;
+
+        always @(posedge ClockA) begin
+            we_lane_q <= we_lane_c;
+            addra_q   <= AddressA[(_NUM_ADDRESS_A_BITS-_NUM_SUBPANELSELECT_BITS)-1 -: _NUM_ADDRESS_B_BITS];
+            dia_q     <= DataInA;
         end
+
+        mem_lane #(
+            .ADDR_BITS(_NUM_ADDRESS_B_BITS),
+            .DW(_NUM_DATA_A_BITS)
+        ) u_lane (
+            .clka   (ClockA),
+            .ena    (1'b1),
+            .wea    (we_lane_q),
+            .addra  (addra_q),
+            .dia    (dia_q),
+
+            .clkb   (ClockB),
+            .addrb  (AddressB_q),
+            .dob    (qb_lanes[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS])
+        );
     end
+    endgenerate
 
-    // Read Port B: 16-bit reads from two consecutive 8-bit locations
-
+    // keep CE on the publish only
     always @(posedge ClockB) begin
         if (ResetA || ResetB) begin
-            `ifdef SIM
-                init_index <= {_NUM_ADDRESS_B_BITS{1'b0}};
-                init_mems <= {_NUM_STRUCTURE_BITS{1'b0}};
-                init_done <= 1'b0;
-                QB_pre <= {_NUM_DATA_B_BITS{1'b0}};
-            `endif
             QB <= {_NUM_DATA_B_BITS{1'b0}};
-        end
-        else begin
-            `ifdef SIM
-                if (!init_done) begin
-                    mem[init_mems][init_index] <= {_NUM_DATA_A_BITS{1'b0}};
-                    init_index <= init_index + 1;
-                    if (init_index == ((1 << _NUM_ADDRESS_B_BITS) - 1)) begin
-                        if (init_mems == ((1 << _NUM_STRUCTURE_BITS) - 1)) init_done <= 1;
-                        else begin
-                            init_mems <= init_mems + 1;
-                            init_index <= 0;
-                        end
-                    end
-                end
-                else begin
-            `endif
-                if (ClockEnB) begin
-                    for (int i = 0; i < (1 << _NUM_STRUCTURE_BITS); i++) begin
-                         QB_pre[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS] <= mem[i][AddressB];
-                    end
-                    QB <= QB_pre;
-                end
-            `ifdef SIM
-                end
-            `endif
+        end else if (ClockEnB) begin
+            QB <= qb_lanes; // or one extra pipeline if needed
         end
     end
     assign QA = 0;
