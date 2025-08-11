@@ -3,7 +3,10 @@
 // 16000000hz / 244444hz = 65.4547 ticks width=7
 // tgt_hz variation (after rounding): 0.70%
 // 16000000hz / 246154hz = 65 ticks width=7
-`ifdef CLK_100
+`ifdef CLK_110
+    parameter ROOT_CLOCK = 110_000_000,
+    parameter PLL_SPEED = 4,
+`elsif CLK_100
     parameter ROOT_CLOCK = 100_000_000,
     parameter PLL_SPEED = 3,
 `elsif CLK_90

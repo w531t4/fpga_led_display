@@ -16,6 +16,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # FOCUS_TB_MAIN_UART - limit main testbench to include only signals applicable to uart debugging
 # SPI - use SPI for data ingress instead of a UART
 # SPI_ESP32 - must also specify SPI. Uses esp32 pinout
+# CLK_110 - Use 110Mhz clock for clk_root
 # CLK_100 - Use 100MHz clock for clk_root
 # CLK_90 - Use 90MHz clock for clk_root
 # CLK_50 - Use 50MHz clock for clk_root
@@ -23,7 +24,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # GAMMA - Enable Gamma Correction
 # USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_100 -DW128 -DRGB24 -DSPI_ESP32
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg

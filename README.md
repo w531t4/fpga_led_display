@@ -41,6 +41,11 @@ The original image (at startup), LED's D18 Green, and D0 Red, D1 Orange, and D2 
 
 Follow the instructions (Persisting bitstream to execute at startup) using the above file (after gunzipping it).
 
+# Performance
+- When clk_root is set to 90mhz, the design can sustain 64x32 x12 refresh rate using rgb24 at 156hz.
+- When clk_root is set to 100mhz, the design can sustain 64x32 x12 refresh rate using rgb24 at 188hz
+- When clk_root is set to 110mhz (and using 12 64x32 panels, it's clear that we start to see timing issues at the rear-end of the chain)
+
 # interacting with Tiny FPGA BX via USB
 Note: Following instructions from https://tinyfpga.com/bx/guide.html
 

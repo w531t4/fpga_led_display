@@ -8,7 +8,7 @@
 `timescale 1ns/10ps
 `endif
 module new_pll #(
-    parameter SPEED = 0, // 0 - 16mhz, 1 - 50mhz, 2 - 90mhz, 3 - 100mhz - else use the incoming 25mhz clock
+    parameter SPEED = 0, // 0 - 16mhz, 1 - 50mhz, 2 - 90mhz, 3 - 100mhz, 4 - 110mhz - else use the incoming 25mhz clock
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -170,6 +170,47 @@ module new_pll #(
                     .CLKOS_DIV(6),
                     .CLKOS_CPHASE(0),
                     .CLKOS_FPHASE(0),
+                    .FEEDBK_PATH("CLKOP"),
+                    .CLKFB_DIV(1)
+                ) pll_i (
+                    .RST(1'b0),
+                    .STDBY(1'b0),
+                    .CLKI(clock_in),
+                    .CLKOP(clkfb),
+                    .CLKOS(clock_out),
+                    .CLKFB(clkfb),
+                    .CLKINTFB(),
+                    .PHASESEL0(1'b0),
+                    .PHASESEL1(1'b0),
+                    .PHASEDIR(1'b1),
+                    .PHASESTEP(1'b1),
+                    .PHASELOADREG(1'b1),
+                    .PLLWAKESYNC(1'b0),
+                    .ENCLKOP(1'b0),
+                    .LOCK(locked)
+                );
+        end else if (SPEED == 4) begin
+            (* FREQUENCY_PIN_CLKI="25" *)
+            (* FREQUENCY_PIN_CLKOS="110" *)
+            (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
+            EHXPLLL #(
+                    .PLLRST_ENA("DISABLED"),
+                    .INTFB_WAKE("DISABLED"),
+                    .STDBY_ENABLE("DISABLED"),
+                    .DPHASE_SOURCE("DISABLED"),
+                    .OUTDIVIDER_MUXA("DIVA"),
+                    .OUTDIVIDER_MUXB("DIVB"),
+                    .OUTDIVIDER_MUXC("DIVC"),
+                    .OUTDIVIDER_MUXD("DIVD"),
+                    .CLKI_DIV(1),
+                    .CLKOP_ENABLE("ENABLED"),
+                    .CLKOP_DIV(22),
+                    .CLKOP_CPHASE(9),
+                    .CLKOP_FPHASE(0),
+                    .CLKOS_ENABLE("ENABLED"),
+                    .CLKOS_DIV(5),
+                    .CLKOS_CPHASE(343706368),
+                    .CLKOS_FPHASE(32767),
                     .FEEDBK_PATH("CLKOP"),
                     .CLKFB_DIV(1)
                 ) pll_i (
