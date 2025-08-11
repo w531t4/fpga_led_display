@@ -1,3 +1,8 @@
+"""
+Use to assist in finding issues capping frequencing of clk_root.
+python3 analyze_clk_root build/nextpnr-report.json
+"""
+
 import json
 import sys
 

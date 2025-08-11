@@ -1,3 +1,6 @@
+"""
+A wrapper for uart_write_rawdata, to easily test the output of commands. 
+"""
 from uart_write_rawdata import main
 import argparse
 from pathlib import Path

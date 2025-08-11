@@ -1,3 +1,9 @@
+"""
+Write images to FPGA.
+    - Capable of performing transforms (e.g. stretching image to multiple panels).
+    - Ignore classname, also works with SPI
+
+"""
 from pathlib import Path
 from io import BytesIO
 from typing import List, Dict, Self, Optional, Sequence

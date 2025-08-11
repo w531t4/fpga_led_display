@@ -1,3 +1,6 @@
+"""
+A script to write
+"""
 import serial
 import sys
 import binascii
