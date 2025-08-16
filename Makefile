@@ -64,18 +64,18 @@ endif
 all: simulation lint
 #$(warning In a command script $(VVPOBJS))
 
-$(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
 	$(VVP_BIN) $(VVP_FLAGS) $<
 
-$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv $(SRC_DIR)/%.sv $(INCLUDESRCS) | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv $(SRC_DIR)/%.sv $(INCLUDESRCS) Makefile | $(SIMULATION_DIR)
 #	$(info In a command script)
 	$(shell mkdir -p $(SIMULATION_DIR))
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 
 ifeq ($(findstring -DSPI,$(BUILD_FLAGS)), -DSPI)
-$(SIMULATION_DIR)/spi.vcd: $(SIMULATION_DIR)/spi.vvp | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/spi.vcd: $(SIMULATION_DIR)/spi.vvp Makefile | $(SIMULATION_DIR)
 	$(VVP_BIN) $(VVP_FLAGS) $<
-$(SIMULATION_DIR)/spi.vvp: $(TB_DIR)/tb_spi.sv $(SRC_DIR)/spi_slave.sv $(SRC_DIR)/spi_master.sv $(INCLUDESRCS) | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/spi.vvp: $(TB_DIR)/tb_spi.sv $(SRC_DIR)/spi_slave.sv $(SRC_DIR)/spi_master.sv $(INCLUDESRCS) Makefile | $(SIMULATION_DIR)
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_spi -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 endif
 
@@ -151,7 +151,7 @@ ifeq ($(YOSYS_DEBUG), true)
 endif
 
 compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so | $(ARTIFACT_DIR)
+$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) Makefile depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so | $(ARTIFACT_DIR)
 	echo "$(YOSYS_SCRIPT)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_CMD_ARGS)
 
