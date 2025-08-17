@@ -142,6 +142,7 @@ module tb_spi #(
         #100 start = 1'b1;
         #100 start = 1'b0;
         #2000;
+        $finish;
     end
 
     always @ (rstb or Mrdata) begin
