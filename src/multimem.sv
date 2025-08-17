@@ -93,13 +93,12 @@ module multimem #(
             QB <= qb_lanes; // or one extra pipeline if needed
         end
     end
-    // TODO: When the below is enabled, we lose 15Mhz off of clk_root....
-    // assign QA = 0;
-    // wire _unused_ok = &{1'b0,
-    //                     WrB,
-    //                     DataInB,
-    //                     QA,
-    //                     1'b0};
+    assign QA = 0;
+    wire _unused_ok = &{1'b0,
+                        WrB,
+                        DataInB,
+                        QA,
+                        1'b0};
 endmodule
 
 
