@@ -100,13 +100,3 @@ module multimem #(
                         QA,
                         1'b0};
 endmodule
-
-
-
-
-
-    // localparam MEM_RAWBYTES_NEEDED = PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL;
-    // localparam MEM_RAWBITS_NEEDED = $clog2(MEM_RAWBYTES_NEEDED);
-
-    // localparam MEM_NON_ADDRESSABLE_BITS_NEEDED = $clog2(_NUM_SUBPANELS) + $clog2(BYTES_PER_PIXEL);
-    // localparam MEM_ADDRESSABLE_BITS_NEEDED = $clog2();
