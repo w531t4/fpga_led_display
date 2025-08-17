@@ -25,6 +25,16 @@ A recipe driving a chain of LED matricies with a FPGA
 1. Connect the ULX3s to the computer using USB [use the connector on the upper left of the board]
 1. Run `make memprog` (will write build/ulx3s.bit to the ULX3s, but it will NOT persist a powercycle of the FPGA)
 
+## Writing to ULX3s from RPI (raspi-os)
+1. `sudo usermod -aG plugdev,dialout <user>`
+1. Get idProduct and idVendor from lsubsb - `sudo lsusb | grep "Future Technology Devices International, Ltd Bridge"`
+    - Will print something like this `Bus 001 Device 002: ID 0403:6015 Future Technology Devices International, Ltd Bridge(I2C/SPI/UART/FIFO)`
+1. `printf '%s\n' 'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6010", GROUP="plugdev", MODE="0660"' | sudo tee /etc/udev/rules.d/99-ulx3s.rules`
+1. `sudo udevadm control --reload-rules`
+1. `sudo udevadm trigger`
+1.  Note, in above output of `lsusb`.. `Bus 001 Device 002:`
+    - Verify `ls -fl /dev/bus/usb/001/002` (replace bus/device with appropriate figures) has ownership of root:plugdev
+
 ## Persisting bitstream to execute at startup
 The ULX3s has write-protected flash that prevents `fujproj` from writing to a location that will persist across powercycles.
 A different command (from the open source toolchain) must be used with a flag for unprotecting the flash contents.
