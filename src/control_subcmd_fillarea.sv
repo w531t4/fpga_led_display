@@ -12,12 +12,12 @@ module control_subcmd_fillarea #(
     input clk,
     input ack,
     input [_NUM_COLUMN_ADDRESS_BITS-1:0] x1,
-    input [$clog2(PIXEL_HEIGHT)-1:0] y1,
+    input [_NUM_ROW_ADDRESS_BITS-1:0] y1,
     input [_NUM_COLUMN_ADDRESS_BITS-1:0] width,
-    input [$clog2(PIXEL_HEIGHT)-1:0] height,
+    input [_NUM_ROW_ADDRESS_BITS-1:0] height,
     input [(BYTES_PER_PIXEL*8)-1:0] color, // must be byte aligned
 
-    output logic [$clog2(PIXEL_HEIGHT)-1:0] row,
+    output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
     output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
     output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
     output logic [7:0] data_out,
@@ -36,7 +36,7 @@ module control_subcmd_fillarea #(
             |           ^(x1+width, y1+height)
     */
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] x2;
-    wire [$clog2(PIXEL_HEIGHT)-1:0] y2;
+    wire [_NUM_ROW_ADDRESS_BITS-1:0] y2;
 
     assign x2 = x1 + width;
     assign y2 = y1 + height;
@@ -52,7 +52,7 @@ module control_subcmd_fillarea #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_PRIMEMEMWRITE;
-            row <= {$clog2(PIXEL_HEIGHT){1'b0}};
+            row <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
             column <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
             pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
             done <= 1'b0;
@@ -63,7 +63,7 @@ module control_subcmd_fillarea #(
                     if (enable) begin
 
                         state <= STATE_ROW_MEMWRITE;
-                        row <= ($clog2(PIXEL_HEIGHT))'(y2-1);
+                        row <= (_NUM_ROW_ADDRESS_BITS)'(y2-1);
                         column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(x2-1);
                         pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears

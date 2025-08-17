@@ -11,7 +11,7 @@ module control_cmd_blankpanel #(
     input clk,
     input mem_clk,
 
-    output logic [$clog2(PIXEL_HEIGHT)-1:0] row,
+    output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
     output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
     output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
     output logic [7:0] data_out,
@@ -77,7 +77,7 @@ module control_cmd_blankpanel #(
         .x1(0),
         .y1(0),
         .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
-        .height(($clog2(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
+        .height((_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT)),
         .color({(BYTES_PER_PIXEL*8){1'b0}}),
         .row(row),
         .column(column),

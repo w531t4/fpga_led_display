@@ -12,7 +12,7 @@ module control_cmd_readpixel #(
     input clk,
     input enable,
 
-    output logic [$clog2(PIXEL_HEIGHT)-1:0] row,
+    output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
     output [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
     output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
     output logic [7:0] data_out,
@@ -39,7 +39,7 @@ module control_cmd_readpixel #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_CAPTURE;
-            row <= {$clog2(PIXEL_HEIGHT){1'b0}};
+            row <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
             pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
             done <= 1'b0;
             column_byte_counter <= {safe_bits_needed_for_column_byte_counter{1'b0}};
@@ -52,7 +52,7 @@ module control_cmd_readpixel #(
                         done <= 1'b0;
                         column_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                         state <= STATE_COLUMN_CAPTURE;
-                        row[$clog2(PIXEL_HEIGHT)-1:0] <= data_in[4:0];
+                        row[_NUM_ROW_ADDRESS_BITS-1:0] <= data_in[4:0];
                     end
                 end
                 STATE_COLUMN_CAPTURE: begin

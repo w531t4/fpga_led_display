@@ -12,7 +12,7 @@ module control_cmd_readrow #(
     input enable,
     input clk,
 
-    output logic [$clog2(PIXEL_HEIGHT)-1:0] row,
+    output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
     output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
     output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
     output logic [7:0] data_out,
@@ -32,7 +32,7 @@ module control_cmd_readrow #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_CAPTURE;
-            row <= {$clog2(PIXEL_HEIGHT){1'b0}};
+            row <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
             column <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
             pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
             done <= 1'b0;
@@ -40,7 +40,7 @@ module control_cmd_readrow #(
             case(state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
-                        row[$clog2(PIXEL_HEIGHT)-1:0] <= data_in[4:0];
+                        row[_NUM_ROW_ADDRESS_BITS-1:0] <= data_in[4:0];
                         ram_write_enable <= 1'b0;
                         data_out <= 8'b0;
                         state <= STATE_ROW_PRIMEMEMWRITE;

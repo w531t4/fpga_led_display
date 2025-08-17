@@ -46,11 +46,11 @@ module control_module #(
     logic ram_access_start;
     logic ram_access_start_latch;
     ctrl_fsm cmd_line_state;
-    logic [$clog2(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;     // For 32 bit high displays, [4:0]
+    logic [_NUM_ROW_ADDRESS_BITS-1:0] cmd_line_addr_row;     // For 32 bit high displays, [4:0]
     logic [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_line_addr_col; // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
     logic [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_line_pixelselect_num;
     wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr =
-        {  cmd_line_addr_row[$clog2(PIXEL_HEIGHT)-1:0],
+        {  cmd_line_addr_row[_NUM_ROW_ADDRESS_BITS-1:0],
           ~cmd_line_addr_col,
           ~cmd_line_pixelselect_num}; // <-- use this to toggle endainness. ~ == little endain
                                       //                                      == bit endian
@@ -91,7 +91,7 @@ module control_module #(
 
     wire cmd_readrow_we, cmd_readrow_as, cmd_readrow_done;
     wire [7:0] cmd_readrow_do;
-    wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
+    wire [_NUM_ROW_ADDRESS_BITS-1:0] cmd_readrow_row_addr;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readrow_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readrow_pixel_addr;
 
@@ -116,7 +116,7 @@ module control_module #(
 
     wire cmd_readpixel_we, cmd_readpixel_as, cmd_readpixel_done;
     wire [7:0] cmd_readpixel_do;
-    wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
+    wire [_NUM_ROW_ADDRESS_BITS-1:0] cmd_readpixel_row_addr;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readpixel_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readpixel_pixel_addr;
 
@@ -154,7 +154,7 @@ module control_module #(
 
     wire cmd_blankpanel_we, cmd_blankpanel_as, cmd_blankpanel_done;
     wire [7:0] cmd_blankpanel_do;
-    wire [$clog2(PIXEL_HEIGHT)-1:0] cmd_blankpanel_row_addr;
+    wire [_NUM_ROW_ADDRESS_BITS-1:0] cmd_blankpanel_row_addr;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_blankpanel_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_blankpanel_pixel_addr;
 
@@ -179,7 +179,7 @@ module control_module #(
     wire                                  cmd_fillpanel_as;
     wire                                  cmd_fillpanel_done;
     wire [7:0]                            cmd_fillpanel_do;
-    wire [$clog2(PIXEL_HEIGHT)-1:0]       cmd_fillpanel_row_addr;
+    wire [_NUM_ROW_ADDRESS_BITS-1:0]      cmd_fillpanel_row_addr;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0]   cmd_fillpanel_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillpanel_pixel_addr;
     wire                                  cmd_fillpanel_rfd;
@@ -206,7 +206,7 @@ module control_module #(
     wire                                  cmd_fillrect_as;
     wire                                  cmd_fillrect_done;
     wire [7:0]                            cmd_fillrect_do;
-    wire [$clog2(PIXEL_HEIGHT)-1:0]       cmd_fillrect_row_addr;
+    wire [_NUM_ROW_ADDRESS_BITS-1:0]      cmd_fillrect_row_addr;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0]   cmd_fillrect_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillrect_pixel_addr;
     wire                                  cmd_fillrect_rfd;
@@ -233,7 +233,7 @@ module control_module #(
     wire                                  cmd_readframe_as;
     wire                                  cmd_readframe_done;
     wire [7:0]                            cmd_readframe_do;
-    wire [$clog2(PIXEL_HEIGHT)-1:0]       cmd_readframe_row_addr;
+    wire [_NUM_ROW_ADDRESS_BITS-1:0]      cmd_readframe_row_addr;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0]   cmd_readframe_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readframe_pixel_addr;
 
@@ -254,7 +254,7 @@ module control_module #(
     );
 
     always @(*) begin
-        cmd_line_addr_row = {$clog2(PIXEL_HEIGHT){1'b0}};
+        cmd_line_addr_row = {_NUM_ROW_ADDRESS_BITS{1'b0}};
         cmd_line_addr_col = {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
         cmd_line_pixelselect_num = {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
         ram_data_out = 8'b0;
