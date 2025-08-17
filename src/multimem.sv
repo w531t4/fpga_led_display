@@ -44,10 +44,15 @@ module multimem #(
     //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
 
     localparam LANES = (1 << _NUM_STRUCTURE_BITS);
-    wire [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes;
+
+    // Per-lane BRAM-out wires (renamed from qb_lanes)
+    wire [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes_w;
 
     reg [_NUM_ADDRESS_B_BITS-1:0] AddressB_q;
     always @(posedge ClockB) AddressB_q <= AddressB;
+
+    // NEW: one local stage per lane (placed near each EBR)
+    (* keep = "true" *) reg [_NUM_DATA_A_BITS-1:0] qb_lane_stage [0:LANES-1];
 
     genvar i;
     generate
@@ -80,8 +85,22 @@ module multimem #(
 
             .clkb   (ClockB),
             .addrb  (AddressB_q),
-            .dob    (qb_lanes[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS])
+            .dob    (qb_lanes_w[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS])
         );
+
+        // NEW: local slice right after BRAM output (no CE here)
+        always @(posedge ClockB) begin
+            qb_lane_stage[i] <= qb_lanes_w[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS];
+        end
+    end
+    endgenerate
+
+    // Flatten array of lane slices to a bus
+    wire [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes_stage;
+    genvar j;
+    generate
+    for (j = 0; j < LANES; j = j + 1) begin : FLATTEN
+        assign qb_lanes_stage[j*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS] = qb_lane_stage[j];
     end
     endgenerate
 
@@ -90,7 +109,7 @@ module multimem #(
         if (ResetA || ResetB) begin
             QB <= {_NUM_DATA_B_BITS{1'b0}};
         end else if (ClockEnB) begin
-            QB <= qb_lanes; // or one extra pipeline if needed
+            QB <= qb_lanes_stage; // now fed from the per-lane slices
         end
     end
     assign QA = 0;
