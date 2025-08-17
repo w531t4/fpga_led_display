@@ -1,8 +1,7 @@
 `default_nettype none
 module matrix_scan #(
-    parameter PIXEL_WIDTH = 7'd64,
-    parameter PIXEL_HALFHEIGHT = 'd16,
-    parameter BRIGHTNESS_LEVELS = 6,
+    `include "params.vh"
+    `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
