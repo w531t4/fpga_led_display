@@ -24,6 +24,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # GAMMA - Enable Gamma Correction
 # USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
 # DOUBLE_BUFFER - Allow image to be written to one buffer while displaying the other buffer at led's.
+# USE_INFER_BRAM_PLUGIN - Compile and use Yosys plugin to assist with inferring OUTREG for BRAM's
 
 BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_100 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
@@ -137,21 +138,25 @@ endif
 YOSYS_SCRIPT +=$(YOSYS_READVERILOG_CMD);
 YOSYS_SCRIPT +=$(YOSYS_EXTRA);
 YOSYS_SCRIPT +=$(YOSYS_SYNTHECP5_CMD);
-# YOSYS_SCRIPT +=write_verilog -noattr -noexpr $(ARTIFACT_DIR)/code_preblah.sv;
-YOSYS_SCRIPT +=ecp5_infer_bram_outreg;
-# YOSYS_SCRIPT +=write_verilog -noattr -noexpr $(ARTIFACT_DIR)/code_postblah.sv;
+ifeq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)), -DUSE_INFER_BRAM_PLUGIN)
+	# YOSYS_SCRIPT +=write_verilog -noattr -noexpr $(ARTIFACT_DIR)/code_preblah.sv;
+	YOSYS_SCRIPT +=ecp5_infer_bram_outreg;
+	# YOSYS_SCRIPT +=write_verilog -noattr -noexpr $(ARTIFACT_DIR)/code_postblah.sv;
+endif
 YOSYS_SCRIPT +=show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show;
 YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il;
 YOSYS_SCRIPT +=write_verilog -selected $(ARTIFACT_DIR)/mydesign_final.sv;
 
 YOSYS_CMD_ARGS:=-L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_SCRIPT)"
+ifeq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)), -DUSE_INFER_BRAM_PLUGIN)
 YOSYS_CMD_ARGS += -m depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so
+endif
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_CMD_ARGS :=-d -v9 -g $(YOSYS_CMD_ARGS)
 endif
 
 compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) Makefile depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so | $(ARTIFACT_DIR)
+$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) Makefile  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)
 	echo "$(YOSYS_SCRIPT)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_CMD_ARGS)
 
