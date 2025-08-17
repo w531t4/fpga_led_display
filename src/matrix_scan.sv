@@ -10,7 +10,7 @@ module matrix_scan #(
     input clk_in,
 
     // [5:0]  64 width
-    output [$clog2(PIXEL_WIDTH)-1:0] column_address,         /* the current column (clocking out now) */
+    output [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,         /* the current column (clocking out now) */
     // [3:0] 16 height rows (two of them)
     output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,        /* the current row (clocking out now) */
     // [3:0] 16 height rows (two of them)
@@ -46,7 +46,7 @@ module matrix_scan #(
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
-    wire [$clog2(PIXEL_WIDTH):0] pixel_load_en_counter_output;
+    wire [_NUM_COLUMN_ADDRESS_BITS:0] pixel_load_en_counter_output;
     assign row_latch = row_latch_state[1:0] == 2'b10;
 
     assign clk_state = state == 2'b10;
@@ -61,13 +61,13 @@ module matrix_scan #(
        external logic should present the pixel value on the rising edge */
     timeout #(
         // 7
-        .COUNTER_WIDTH($clog2(PIXEL_WIDTH)+1)
+        .COUNTER_WIDTH(_NUM_COLUMN_ADDRESS_BITS+1)
     ) timeout_clk_pixel_load_en (
         .reset(reset),
         .clk_in(clk_in),
         .start(clk_state),
         // 7'd64
-        .value(($clog2(PIXEL_WIDTH)+1)'(PIXEL_WIDTH)),
+        .value((_NUM_COLUMN_ADDRESS_BITS+1)'(PIXEL_WIDTH)),
         .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
     );

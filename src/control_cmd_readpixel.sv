@@ -2,7 +2,6 @@
 module control_cmd_readpixel #(
     `include "params.vh"
     `include "memory_calcs.vh"
-    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH),
     localparam _NUM_COLUMN_BYTES_NEEDED = ((_NUM_COLUMN_ADDRESS_BITS + 8 - 1) / 8),
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0

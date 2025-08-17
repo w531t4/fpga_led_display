@@ -2,7 +2,6 @@
 module control_cmd_readrow #(
     `include "params.vh"
     `include "memory_calcs.vh"
-    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH),
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

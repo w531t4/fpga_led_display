@@ -2,7 +2,6 @@
 module control_cmd_blankpanel #(
     `include "params.vh"
     `include "memory_calcs.vh"
-    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH),
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -77,7 +76,7 @@ module control_cmd_blankpanel #(
         .ack(done),
         .x1(0),
         .y1(0),
-        .width(($clog2(PIXEL_WIDTH))'(PIXEL_WIDTH)),
+        .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
         .height(($clog2(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
         .color({(BYTES_PER_PIXEL*8){1'b0}}),
         .row(row),

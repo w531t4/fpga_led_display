@@ -2,7 +2,6 @@
 module control_cmd_fillrect #(
     `include "params.vh"
     `include "memory_calcs.vh"
-    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH),
     localparam _NUM_COLUMN_BYTES_NEEDED = ((_NUM_COLUMN_ADDRESS_BITS + 8 - 1) / 8),
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
@@ -157,9 +156,9 @@ module control_cmd_fillrect #(
         .enable(subcmd_enable),
         .clk(mem_clk),
         .ack(done),
-        .x1(($clog2(PIXEL_WIDTH))'(x1)),
+        .x1((_NUM_COLUMN_ADDRESS_BITS)'(x1)),
         .y1(y1),
-        .width(($clog2(PIXEL_WIDTH))'(width)),
+        .width((_NUM_COLUMN_ADDRESS_BITS)'(width)),
         .height(($clog2(PIXEL_HEIGHT))'(height)),
         .color(selected_color),
         .row(row),

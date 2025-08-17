@@ -12,7 +12,7 @@ module framebuffer_fetch #(
 
     // appears that framebuffer fetch broke things, may have an issue here 20250710
     // [5:0] 64 width
-    input [$clog2(PIXEL_WIDTH)-1:0] column_address,
+    input [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,
     // [3:0] 16 height (top/bottom half)
     input [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,
 
@@ -47,7 +47,7 @@ module framebuffer_fetch #(
                         //    half_address,
                            row_address[$clog2(PIXEL_HALFHEIGHT)-1:0],
                            // log2(128)==7-1=6
-                           ~column_address[$clog2(PIXEL_WIDTH)-1:0] };
+                           ~column_address[_NUM_COLUMN_ADDRESS_BITS-1:0] };
 
     timeout #(
         .COUNTER_WIDTH(2)

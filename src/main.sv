@@ -121,7 +121,7 @@ module main #(
     `endif
 
     // [5:0]
-    wire [$clog2(PIXEL_WIDTH)-1:0] column_address;
+    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
     wire [BRIGHTNESS_LEVELS-1:0] brightness_mask;
