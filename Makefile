@@ -175,6 +175,7 @@ $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR
 		--log $(ARTIFACT_DIR)/nextpnr.log \
 		--package CABGA381 \
 		--report $(ARTIFACT_DIR)/nextpnr-report.json \
+		--placer-heap-critexp 3 --placer-heap-timingweight 20 \
 		--detailed-timing-report \
 		--textcfg $@
 	python3 -m json.tool $(ARTIFACT_DIR)/nextpnr-report.json > $(ARTIFACT_DIR)/nextpnr-report.pretty.json
