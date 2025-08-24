@@ -25,8 +25,9 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
 # DOUBLE_BUFFER - Allow image to be written to one buffer while displaying the other buffer at led's.
 # USE_INFER_BRAM_PLUGIN - Compile and use Yosys plugin to assist with inferring OUTREG for BRAM's
+# USE_WATCHDOG - Requires recurring command sequence to be present, otherwise board resets
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_100 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_100 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
@@ -50,6 +51,13 @@ VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd
 ifneq ($(findstring -DSPI,$(BUILD_FLAGS)), -DSPI)
 VSOURCES := $(filter-out $(SRC_DIR)/spi_master.sv, $(VSOURCES))
 VSOURCES := $(filter-out $(SRC_DIR)/spi_slave.sv, $(VSOURCES))
+endif
+
+ifneq ($(findstring -DUSE_WATCHDOG,$(BUILD_FLAGS)), -DUSE_WATCHDOG)
+VSOURCES := $(filter-out $(SRC_DIR)/control_cmd_watchdog.sv, $(VSOURCES))
+TBSRCS := $(filter-out $(TB_DIR)/tb_control_cmd_watchdog.sv, $(TBSRCS))
+VVPOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.vvp, $(VVPOBJS))
+VCDOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.vcd, $(VCDOBJS))
 endif
 
 ifneq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)

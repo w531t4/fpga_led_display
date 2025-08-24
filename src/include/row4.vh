@@ -40,6 +40,9 @@ localparam [(8*2)-1:0] myled_row_brightness_3 = 'h5438; // "T" + \x38
 
 localparam [(8*1)-1:0] myled_row_blankpanel = 'h5a;
 
+`ifdef USE_WATCHDOG
+    localparam [(8*(8+1))-1:0] myled_row_watchdog = 'h57_de_ad_be_ef_fe_eb_da_ed; // "W" + "DEADBEEFFEEBDAED"
+`endif
 `ifdef RGB24
     localparam [(8*6)-1:0] myled_row_pixel  = 'h50_08_30_132040; // "P" + row=8 column=0x30 bytedata=0x1020
     localparam [(8*6)-1:0] myled_row_pixel2 = 'h50_09_32_304013;
@@ -55,6 +58,9 @@ logic [
         ($bits(myled_row_blankpanel)
             + $bits(myled_row_fillpanel)
             + $bits(myled_row_fillrect)
+            `ifdef USE_WATCHDOG
+                + $bits(myled_row_watchdog)
+            `endif
             `ifdef RGB24
                 + $bits(myled_row_basic)
             `endif
@@ -65,6 +71,9 @@ logic [
             + $bits(myled_row_brightness_3)
         )-1:0] myled_row = {
                                             myled_row_blankpanel,
+                                            `ifdef USE_WATCHDOG
+                                                myled_row_watchdog,
+                                            `endif
                                             myled_row_fillpanel,
                                             myled_row_fillrect,
                                             myled_row_pixel,

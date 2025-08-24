@@ -20,6 +20,9 @@ module control_module #(
     `ifdef DOUBLE_BUFFER
         output logic frame_select,
     `endif
+    `ifdef USE_WATCHDOG
+        output logic watchdog_reset,
+    `endif
     output logic ram_clk_enable
     `ifdef DEBUGGER
         ,
@@ -39,6 +42,10 @@ module control_module #(
                   STATE_CMD_FILLRECT,       // 5
                   STATE_CMD_READPIXEL,      // 6
                   STATE_CMD_READFRAME       // 7
+                  `ifdef USE_WATCHDOG
+                    ,
+                    STATE_CMD_WATCHDOG       // 8
+                  `endif
                   } ctrl_fsm;
     logic [7:0] data_rx_latch;
     logic ready_for_data_logic;
@@ -253,6 +260,22 @@ module control_module #(
         .done(            cmd_readframe_done)
     );
 
+    `ifdef USE_WATCHDOG
+        wire                                  cmd_watchdog_done;
+        wire                                  cmd_watchdog_sysreset;
+
+        control_cmd_watchdog #(
+        ) cmd_watchdog (
+            .reset(reset),
+            .enable((cmd_line_state == STATE_CMD_WATCHDOG) && ~data_ready_n),
+            .clk(clk_in),
+            .data_in(data_rx_latch),
+            .sys_reset(       cmd_watchdog_sysreset),
+            .done(            cmd_watchdog_done)
+        );
+        assign watchdog_reset = cmd_watchdog_sysreset;
+    `endif
+
     always @(*) begin
         cmd_line_addr_row = {_NUM_ROW_ADDRESS_BITS{1'b0}};
         cmd_line_addr_col = {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
@@ -327,6 +350,11 @@ module control_module #(
                 ram_access_start = cmd_readpixel_as;
                 state_done = cmd_readpixel_done;
             end
+            `ifdef USE_WATCHDOG
+                STATE_CMD_WATCHDOG: begin
+                    state_done =               cmd_watchdog_done;
+                end
+            `endif
             default: begin
             end
         endcase
@@ -446,6 +474,9 @@ module control_module #(
                         cmd_line_state <= STATE_CMD_READROW;
                     end
                     "P": cmd_line_state <= STATE_CMD_READPIXEL;
+                    `ifdef USE_WATCHDOG
+                        "W": cmd_line_state <= STATE_CMD_WATCHDOG;
+                    `endif
                     `ifdef DOUBLE_BUFFER
                         "t": frame_select_temp <= ~frame_select;
                     `endif

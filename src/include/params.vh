@@ -29,6 +29,14 @@
 // Use this to tune what clock freq we expose to matrix_scan
 parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
 
+`ifdef USE_WATCHDOG
+    // reset control logic if watchdog isn't satisfied within x seconds
+    parameter WATCHDOG_CONTROL_FREQ_GOAL = 0.5, // 2 seconds
+    parameter WATCHDOG_CONTROL_TICKS = $rtoi(ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0),
+    parameter WATCHDOG_SIGNATURE_BITS = 64,
+    parameter WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED,
+`endif
+
 `ifdef DEBUGGER
     // context: TX DEBUG baud
     // 16000000hz / 115200hz = 138.8889 ticks width=8

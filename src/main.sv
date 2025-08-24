@@ -153,6 +153,9 @@ module main #(
         // uart rx for controller
         wire uart_rx_dataready;
     `endif
+    `ifdef USE_WATCHDOG
+        wire watchdog_reset;
+    `endif
     // No wires past here
 
     new_pll #(
@@ -217,9 +220,17 @@ module main #(
         .reset(alt_reset)
     );
     `ifdef SPI_ESP32
-        assign global_reset = alt_reset | sd_d[1];
+        `ifdef USE_WATCHDOG
+            assign global_reset = alt_reset | sd_d[1] | watchdog_reset;
+        `else
+            assign global_reset = alt_reset | sd_d[1];
+        `endif
     `else
-        assign global_reset = alt_reset;
+        `ifdef USE_WATCHDOG
+            assign global_reset = alt_reset | watchdog_reset;
+        `else
+            assign global_reset = alt_reset;
+        `endif
     `endif
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
@@ -352,6 +363,9 @@ module main #(
         .ram_write_enable(ram_a_write_enable),
         `ifdef DOUBLE_BUFFER
             .frame_select(frame_select),
+        `endif
+        `ifdef USE_WATCHDOG
+            .watchdog_reset(watchdog_reset),
         `endif
         .ram_clk_enable(ram_a_clk_enable)
         `ifdef DEBUGGER
