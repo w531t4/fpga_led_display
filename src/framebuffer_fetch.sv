@@ -47,7 +47,7 @@ module framebuffer_fetch #(
                         //    half_address,
                            row_address[$clog2(PIXEL_HALFHEIGHT)-1:0],
                            // log2(128)==7-1=6
-                           ~column_address[_NUM_COLUMN_ADDRESS_BITS-1:0] };
+                           column_address[_NUM_COLUMN_ADDRESS_BITS-1:0] };
 
     timeout #(
         .COUNTER_WIDTH(2)

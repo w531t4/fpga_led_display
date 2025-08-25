@@ -58,7 +58,7 @@ module control_module #(
     logic [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_line_pixelselect_num;
     wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr =
         {  cmd_line_addr_row[_NUM_ROW_ADDRESS_BITS-1:0],
-          ~cmd_line_addr_col,
+           cmd_line_addr_col,
           ~cmd_line_pixelselect_num}; // <-- use this to toggle endainness. ~ == little endain
                                       //                                      == bit endian
                                       // NOTE: uart/alphabet.uart is BIG ENDIAN.
