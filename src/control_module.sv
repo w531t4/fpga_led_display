@@ -381,7 +381,7 @@ module control_module #(
         end
         else begin
             if (state_done) begin
-                cmd_line_state <= STATE_IDLE;
+                if (data_ready_n && cmd_line_state != STATE_IDLE ) cmd_line_state <= STATE_IDLE;
                 `ifdef DEBUGGER
                     num_commands_processed <= num_commands_processed + 'd1;
                 `endif
