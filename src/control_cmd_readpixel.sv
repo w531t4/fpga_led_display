@@ -23,7 +23,6 @@ module control_cmd_readpixel #(
     localparam safe_bits_needed_for_column_byte_counter = _NUM_COLUMN_BYTES_NEEDED > 1 ? $clog2(_NUM_COLUMN_BYTES_NEEDED) : 1;
     typedef enum {STATE_ROW_CAPTURE,
                   STATE_COLUMN_CAPTURE,
-                  STATE_PRIME_MEMWRITE,
                   STATE_READ_PIXELBYTES,
                   STATE_DONE
                   } ctrl_fsm;
@@ -61,17 +60,12 @@ module control_cmd_readpixel #(
                         //   - if multibyte, expect little endian (LSB -> MSB)
                         column_bits[((_NUM_COLUMN_BYTES_NEEDED-(32)'(column_byte_counter))*8)-1 -: 8] <= data_in[7:0];
                         if (column_byte_counter == 'b0) begin
-                            state <= STATE_PRIME_MEMWRITE;
+                            state <= STATE_READ_PIXELBYTES;
+                            ram_write_enable <= 1'b1;
+                            ram_access_start <= !ram_access_start;
+                            data_out <= data_in;
+                            pixel <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                         end else column_byte_counter <= column_byte_counter - 1;
-                    end
-                end
-                STATE_PRIME_MEMWRITE: begin
-                    if (enable) begin
-                        state <= STATE_READ_PIXELBYTES;
-                        ram_write_enable <= 1'b1;
-                        ram_access_start <= !ram_access_start;
-                        data_out <= data_in;
-                        pixel <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                     end
                 end
                 STATE_READ_PIXELBYTES: begin
