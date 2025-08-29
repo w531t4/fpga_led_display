@@ -97,6 +97,7 @@ module control_cmd_readpixel #(
         end
     end
     wire _unused_ok = &{1'b0,
+                        // TODO: This breaks if width=256
                         column_bits[(_NUM_COLUMN_BYTES_NEEDED*8)-1:_NUM_COLUMN_ADDRESS_BITS],
                         1'b0};
 endmodule
