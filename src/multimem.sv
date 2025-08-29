@@ -1,3 +1,4 @@
+// multimem.sv
 `default_nettype none
 module multimem #(
     parameter PIXEL_WIDTH = 'd64,
@@ -24,8 +25,8 @@ module multimem #(
     input wire WrB,
     input wire ResetA,
     input wire ResetB,
-    output reg [_NUM_DATA_A_BITS-1:0] QA,
-    output reg [_NUM_DATA_B_BITS-1:0] QB
+    output wire [_NUM_DATA_A_BITS-1:0] QA,
+    output wire [_NUM_DATA_B_BITS-1:0] QB
 );
     // consider
     // 8 bits addr a, 2 bits colorselect, 2 bits display
@@ -44,15 +45,7 @@ module multimem #(
     //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
 
     localparam LANES = (1 << _NUM_STRUCTURE_BITS);
-
-    // Per-lane BRAM-out wires (renamed from qb_lanes)
     wire [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes_w;
-
-    reg [_NUM_ADDRESS_B_BITS-1:0] AddressB_q;
-    always @(posedge ClockB) AddressB_q <= AddressB;
-
-    // NEW: one local stage per lane (placed near each EBR)
-    (* keep = "true" *) reg [_NUM_DATA_A_BITS-1:0] qb_lane_stage [0:LANES-1];
 
     genvar i;
     generate
@@ -60,9 +53,7 @@ module multimem #(
         wire [_NUM_STRUCTURE_BITS-1:0] lane_idx_from_addr = { AddressA[_NUM_ADDRESS_A_BITS-1 -: _NUM_SUBPANELSELECT_BITS],
                                                               AddressA[_NUM_PIXELCOLORSELECT_BITS-1:0] };
 
-        wire lane_sel = (lane_idx_from_addr == i[_NUM_STRUCTURE_BITS-1:0]);
         wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[_NUM_STRUCTURE_BITS-1:0]);
-        // NEW: register the write triplet locally (1-cycle latency on writes)
         (* keep = "true" *) reg we_lane_q;
         (* keep = "true" *) reg [_NUM_ADDRESS_B_BITS-1:0] addra_q;
         (* keep = "true" *) reg [_NUM_DATA_A_BITS-1:0]    dia_q;
@@ -84,38 +75,19 @@ module multimem #(
             .dia    (dia_q),
 
             .clkb   (ClockB),
-            .addrb  (AddressB_q),
+            .enb    (ClockEnB),
+            .rstb   (ResetA || ResetB),
+            .addrb  (AddressB),
             .dob    (qb_lanes_w[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS])
         );
-
-        // NEW: local slice right after BRAM output (no CE here)
-        always @(posedge ClockB) begin
-            qb_lane_stage[i] <= qb_lanes_w[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS];
-        end
     end
     endgenerate
 
-    // Flatten array of lane slices to a bus
-    wire [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes_stage;
-    genvar j;
-    generate
-    for (j = 0; j < LANES; j = j + 1) begin : FLATTEN
-        assign qb_lanes_stage[j*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS] = qb_lane_stage[j];
-    end
-    endgenerate
+    assign QB = qb_lanes_w;
 
-    // keep CE on the publish only
-    always @(posedge ClockB) begin
-        if (ResetA || ResetB) begin
-            QB <= {_NUM_DATA_B_BITS{1'b0}};
-        end else if (ClockEnB) begin
-            QB <= qb_lanes_stage; // now fed from the per-lane slices
-        end
-    end
     assign QA = 0;
     wire _unused_ok = &{1'b0,
                         WrB,
                         DataInB,
-                        QA,
                         1'b0};
 endmodule

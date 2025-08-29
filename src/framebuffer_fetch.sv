@@ -64,25 +64,14 @@ module framebuffer_fetch #(
         .running(ram_clk_enable_real)
     );
 
-    always @(negedge clk_in, posedge reset) begin
+    always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             pixeldata_top    <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
             pixeldata_bottom <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
         end
         else begin
-            // the frequency of pixel_load_start must contain enough clk_root
-            // cycles such that the top/bottom data can be loaded prior to next posedge
-            // of pixel_load_start
-            // for TinyFPGA BX - We can do this in 3 cycles (ram reads are one cycle long)
-            // cycle 1 - change address to half 0
-            // cycle 2 - read half 0, change half to 1
-            // cycle 3 - read half 1
             if (pixel_load_counter == 'd2) begin
-            end
-            else if (pixel_load_counter == 'd1) begin
                 {pixeldata_bottom, pixeldata_top} <= ram_data_in;
-            end
-            else if (pixel_load_counter == 'd0) begin
             end
         end
     end
