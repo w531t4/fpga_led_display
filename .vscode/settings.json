@@ -7,6 +7,11 @@
         "nenv": true,
         ".pytest_cache": true,
         "oss-cad-suite": true,
+        "waves": true,
+        "uart": true,
+        "depends": true,
+        "images": true,
+        ".verilator_lint": true,
         "**/__pycache__/**": true,
     }
 }
