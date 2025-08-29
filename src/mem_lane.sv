@@ -18,6 +18,13 @@ module mem_lane #(
     (* ram_style="block", no_rw_check *)
     reg [DW-1:0] mem [0:(1<<ADDR_BITS)-1];
 
+    // synthesis translate_off
+    initial begin
+        for (int i = 0; i < (1<<ADDR_BITS); i++)
+            mem[i] = '0;
+    end
+    // synthesis translate_on
+
     // Write port
     always @(posedge clka) begin
         if (ena && wea)
