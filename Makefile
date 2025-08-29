@@ -27,7 +27,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # USE_INFER_BRAM_PLUGIN - Compile and use Yosys plugin to assist with inferring OUTREG for BRAM's
 # USE_WATCHDOG - Requires recurring command sequence to be present, otherwise board resets
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_100 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
