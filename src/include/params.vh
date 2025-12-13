@@ -31,7 +31,7 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
 
 `ifdef USE_WATCHDOG
     // reset control logic if watchdog isn't satisfied within x seconds
-    parameter WATCHDOG_CONTROL_FREQ_GOAL = 0.5, // 2 seconds
+    parameter WATCHDOG_CONTROL_FREQ_GOAL = 0.1, // 10 seconds
     parameter WATCHDOG_CONTROL_TICKS = $rtoi(ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0),
     parameter WATCHDOG_SIGNATURE_BITS = 64,
     parameter WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED,
