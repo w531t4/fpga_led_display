@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
 [submodule "depends/yosys_ecp5_infer_bram_outreg"]
 	path = depends/yosys_ecp5_infer_bram_outreg
 	url = https://github.com/rowanG077/yosys_ecp5_infer_bram_outreg

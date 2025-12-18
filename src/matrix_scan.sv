@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 Attie Grande <attie@attie.co.uk>
+// SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+// SPDX-License-Identifier: MIT
 `default_nettype none
 module matrix_scan #(
     `include "params.vh"

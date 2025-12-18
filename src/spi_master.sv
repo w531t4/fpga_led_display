@@ -1,3 +1,10 @@
+/*
+ * SPDX-FileCopyrightText: 2014-2015 Santhosh G (santhg@opencores.org)
+ * SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+ * SPDX-FileComment: Original source: https://opencores.org/projects/spi_verilog_master_slave
+ *
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 `default_nettype none
 ////////////////////////////////////////////////////////////////////////////////
 ////                                                                        ////
@@ -40,7 +47,6 @@
 //// from http://www.opencores.org/lgpl.shtml                               ////
 ////                                                                        ////
 ////////////////////////////////////////////////////////////////////////////////
-// project obtained from https://opencores.org/projects/spi_verilog_master_slave
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SPI MODE 3
         CHANGE DATA @ NEGEDGE

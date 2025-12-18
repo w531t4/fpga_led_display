@@ -1,5 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
 """
-A wrapper for uart_write_rawdata, to easily test the output of commands. 
+A wrapper for uart_write_rawdata, to easily test the output of commands.
 """
 from uart_write_rawdata import main
 import argparse

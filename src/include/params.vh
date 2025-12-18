@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+// SPDX-License-Identifier: MIT
 // verilator lint_off UNUSEDPARAM
 // context: RX DATA baud
 // 16000000hz / 244444hz = 65.4547 ticks width=7

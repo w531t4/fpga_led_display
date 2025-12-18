@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Write images to FPGA.
     - Capable of performing transforms (e.g. stretching image to multiple panels).

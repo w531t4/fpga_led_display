@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+// SPDX-License-Identifier: MIT
     // verilator lint_off UNUSEDPARAM
     localparam _NUM_SUBPANELS = PIXEL_HEIGHT / PIXEL_HALFHEIGHT,
     localparam _NUM_SUBPANELSELECT_BITS = $clog2(_NUM_SUBPANELS),

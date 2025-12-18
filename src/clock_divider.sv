@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 Attie Grande <attie@attie.co.uk>
+// SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+// SPDX-License-Identifier: MIT
 `default_nettype none
 /* simple clock divider
    counts from zero to the given value, and then toggles clk_out

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
 """
 Use to assist in finding issues capping frequencing of clk_root.
 python3 analyze_clk_root build/nextpnr-report.json

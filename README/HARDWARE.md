@@ -1,4 +1,7 @@
-
+<!--
+SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+SPDX-License-Identifier: MIT
+-->
 # buffer
 74hc245c OK
 ck8m1l1 OK x3 (20pin 2x10)

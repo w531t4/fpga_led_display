@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+// SPDX-License-Identifier: MIT
 `timescale 1ns/1ns
 `default_nettype none
 module tb_control_module #(
@@ -44,8 +46,6 @@ module tb_control_module #(
     `else
         wire uart_rx_dataready;
     `endif
-    //>>> "".join([a[i] for i in range(len(a)-1, -1, -1)])
-    //'brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110'
     localparam mystring_size = 'd1072;
     logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
     //logic tb_clk_baudrate;
