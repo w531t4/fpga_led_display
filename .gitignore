@@ -6,6 +6,7 @@ oss-cad-suite/*
 *.tgz
 bitmaps
 images
+!.github/images
 nenv
 build
 build_*
