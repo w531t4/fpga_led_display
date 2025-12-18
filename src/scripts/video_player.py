@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
 """ Script to display videos over serial port """
 from pathlib import Path
 from typing import Optional, List

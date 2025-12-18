@@ -1,3 +1,2 @@
 src/platform/tiny_ecp5_sim.v
-src/platform/newram.v
 src/new_pll.sv

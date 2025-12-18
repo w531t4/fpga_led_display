@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
 import argparse
 from typing import List, Dict, Union, NamedTuple, Union
 from functools import partial

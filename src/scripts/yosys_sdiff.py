@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
 import re
 from typing import List, Optional, NamedTuple, Sequence, Union
 from io import StringIO

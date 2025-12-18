@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
 """ Parse linting output from verilator, and emit any items failing to match a denylist filter"""
 import sys
 from typing import List, NamedTuple

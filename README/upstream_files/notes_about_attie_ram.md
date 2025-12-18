@@ -1,4 +1,7 @@
-
+<!--
+SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+SPDX-License-Identifier: MIT
+-->
 
     VHI scuba_vhi_inst (.Z(scuba_vhi));
 https://github.com/attie/led_matrix_tinyfpga_a2/blob/master/framebuffer.v

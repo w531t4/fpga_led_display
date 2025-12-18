@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+// SPDX-License-Identifier: MIT
 `default_nettype none
 // diamond 3.7 accepts this PLL
 // diamond 3.8-3.9 is untested
