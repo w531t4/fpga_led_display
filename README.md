@@ -7,6 +7,11 @@ A recipe driving a chain of LED matricies with a FPGA
 ![LED matrix static demo](.github/images/display_picture.jpeg)
 ![LED matrix video demo](.github/videos/active_display.gif)
 
+NOTE: Displaying widgets on the display (as shown above) is out of scope for this project. For more information on how that's done, please see:
+- A c++ interface capable of issuing compatible commands (via SPI) to FPGA (https://github.com/w531t4/ESP32-FPGA-MatrixPanel)
+- A ESPHome module which uses the above C++ interface to allow it to write content to the display (https://github.com/w531t4/ESPHome-FPGA-MatrixPanelWrapper)
+- A manager for widgets to be displayed on the display (i'm working on releasing this code)
+
 ## Features
 - Supports chained topologies - n-bit width by 8-bit height
 - RGB24/RGB565 color
