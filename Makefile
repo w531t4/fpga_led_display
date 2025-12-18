@@ -32,16 +32,15 @@ SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=nenv/node_modules/.bin/netlistsvg
 IVERILOG_BIN:=$(TOOLPATH)/iverilog
-IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement -Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector -Wsensitivity-entire-array -I$(VINCLUDE_DIR) # -g2012 solves issue where platform/tiny_cell_sim.v is detected as systemverilog | tells iVerilog to read the source files as SystemVerilog (specifically the SystemVerilog defined in IEEE 1800-2012)
+IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement -Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector -Wsensitivity-entire-array -I$(VINCLUDE_DIR)
 VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=-n -N
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -v $(SRC_DIR)/platform/tiny_ecp5_sim.v -I$(VINCLUDE_DIR)
+VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -I$(VINCLUDE_DIR)
 
 VSOURCES := $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v')
-VSOURCES += $(shell find $(SRC_DIR)/platform -maxdepth 1 -name '*.sv' -or -name '*.v')
 
 INCLUDESRCS=$(shell find $(VINCLUDE_DIR) -name '*.vh')
 TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
@@ -137,12 +136,20 @@ ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_READVERILOG_ARGS:=-debug $(YOSYS_READVERILOG_ARGS)
 endif
 YOSYS_READVERILOG_CMD:=read_verilog $(YOSYS_READVERILOG_ARGS)
+
+YOSYS_READVERILOGLIB_ARGS:=-lib +/lattice/cells_bb_ecp5.v
+ifeq ($(YOSYS_DEBUG), true)
+	YOSYS_READVERILOGLIB_ARGS:=-debug $(YOSYS_READVERILOGLIB_ARGS)
+endif
+YOSYS_READVERILOGLIB_CMD:=read_verilog $(YOSYS_READVERILOGLIB_ARGS)
+
 YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top main -json $(ARTIFACT_DIR)/mydesign.json
 
 YOSYS_SCRIPT:=
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_SCRIPT +=echo on;
 endif
+YOSYS_SCRIPT +=$(YOSYS_READVERILOGLIB_CMD);
 YOSYS_SCRIPT +=$(YOSYS_READVERILOG_CMD);
 YOSYS_SCRIPT +=$(YOSYS_EXTRA);
 YOSYS_SCRIPT +=$(YOSYS_SYNTHECP5_CMD);
