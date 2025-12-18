@@ -4,6 +4,8 @@ SPDX-License-Identifier: MIT
 -->
 # fpga_led_display
 A recipe driving a chain of LED matricies with a FPGA
+![LED matrix static demo](.github/images/display_picture.jpeg)
+![LED matrix video demo](.github/videos/active_display.gif)
 
 ## Features
 - Supports chained topologies - n-bit width by 8-bit height
