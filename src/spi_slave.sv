@@ -8,21 +8,6 @@
 `default_nettype none
 ////////////////////////////////////////////////////////////////////////////////
 ////                                                                        ////
-//// Project Name: SPI (Verilog)                                            ////
-////                                                                        ////
-//// Module Name: spi_slave                                                ////
-////                                                                        ////
-////                                                                        ////
-////  This file is part of the Ethernet IP core project                     ////
-////  http://opencores.com/project,spi_verilog_master_slave                 ////
-////                                                                        ////
-////  Author(s):                                                            ////
-////      Santhosh G (santhg@opencores.org)                                 ////
-////                                                                        ////
-////  Refer to Readme.txt for more information                              ////
-////                                                                        ////
-////////////////////////////////////////////////////////////////////////////////
-////                                                                        ////
 //// Copyright (C) 2014, 2015 Authors                                       ////
 ////                                                                        ////
 //// This source file may be used and distributed without                   ////
