@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 # SPDX-License-Identifier: MIT
 
-oss-cad-suite/*
+oss-cad-suite
 **/__pycache__/**
 *.tgz
 bitmaps
