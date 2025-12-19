@@ -1,0 +1,27 @@
+#!/bin/sh
+# Resolve all dependencies that the application requires to run.
+
+# Stop on errors
+set -e
+
+cd "$(realpath "$(dirname "$0")/../..")"
+
+echo "Installing development dependencies..."
+
+echo uv pip install \
+  -r src/scripts/requirements.txt \
+  colorlog \
+  --upgrade \
+  --config-settings editable_mode=compat
+uv pip install \
+  -r src/scripts/requirements.txt \
+  colorlog \
+  --upgrade \
+  --config-settings editable_mode=compat
+    # -e .
+mkdir -p build
+echo python3 src/scripts/pull_oss_cad_suite_release.py --latest --outdir build --extract
+python3 src/scripts/pull_oss_cad_suite_release.py --latest --outdir build --extract
+if [ -d "oss-cad-suite" ]; then rm -rf oss-cad-suite; fi
+mv build/oss-cad-suite oss-cad-suite
+# python3 -m script.translations develop --all
