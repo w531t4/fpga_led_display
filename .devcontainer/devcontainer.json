@@ -7,6 +7,11 @@
   "containerEnv": {
     "PYTHONASYNCIODEBUG": "1"
   },
+  "initializeCommand": "mkdir -p ${HOME}/.cache/oss-cad-suite",
+  "mounts": [
+        // This is used to cache oss-cad-suite on main system
+        "source=${localEnv:HOME}/.cache/oss-cad-suite,target=/workspaces/.cache/oss-cad-suite,type=bind"
+    ],
   "features": {
     // // Node feature required for Claude Code until fixed https://github.com/anthropics/devcontainer-features/issues/28
     // "ghcr.io/devcontainers/features/node:1": {},
