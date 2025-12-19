@@ -61,14 +61,6 @@ Follow the instructions (Persisting bitstream to execute at startup) using the a
 - When clk_root is set to 100mhz, the design can sustain 64x32 x12 refresh rate using rgb24 at 188hz
 - When clk_root is set to 110mhz (and using 12 64x32 panels, it's clear that we start to see timing issues at the rear-end of the chain)
 
-# visualizing verilog
-Based on suggestion from https://stackoverflow.com/questions/67923728/yosys-producing-an-electronic-schematics-from-verilog
-- install node
-- `dnf install python3-nodeenv`
-- `nodeenv --verbose nenv` (or) `nodenv --prebuilt nenv`
-- `npm install -g netlistsvg`
-- use json file from yosys to produce results (see Makefile)
-
 # Acknowledgements
 
 This project is based on and incorporates code from:
