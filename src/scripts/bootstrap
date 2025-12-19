@@ -31,7 +31,6 @@ python3 src/scripts/pull_oss_cad_suite_release.py --tag 2025-12-18 \
                                                   --symlink-subdir oss-cad-suite \
                                                   --force-symlink
 
-sh src/scripts/create_npm_env.sh
 git submodule init
 git submodule update
 # python3 -m script.translations develop --all

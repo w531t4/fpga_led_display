@@ -49,6 +49,10 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 #     --mount=type=bind,source=requirements_test.txt,target=requirements_test.txt \
 #     --mount=type=bind,source=requirements_test_pre_commit.txt,target=requirements_test_pre_commit.txt \
 #     uv pip install -r requirements.txt -r requirements_test.txt
+WORKDIR /opt/netlistsvg
+COPY depends/netlistsvg/package.json depends/netlistsvg/package-lock.json ./
+RUN npm ci
+ENV PATH="/opt/netlistsvg/node_modules/.bin:${PATH}"
 
 WORKDIR /workspaces
 

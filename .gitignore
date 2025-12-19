@@ -7,7 +7,6 @@ oss-cad-suite
 bitmaps
 images
 !.github/images
-nenv
 build
 build_*
 waves/*
