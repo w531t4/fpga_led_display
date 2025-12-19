@@ -88,3 +88,11 @@ This project is based on and incorporates code from:
 - **spi_verilog_master_slave** by Santhosh G <santhg@opencores.org>
   - https://opencores.org/projects/spi_verilog_master_slave
   - License: LGPL-2.1-or-later
+
+# Third-party Components
+
+This project includes the following third-party components as git submodules:
+
+- **yosys_ecp5_infer_bram_outreg** by Rowan Goemans <goemansrowan@gmail.com>
+  - https://github.com/rowanG077/yosys_ecp5_infer_bram_outreg
+  - License: MIT
