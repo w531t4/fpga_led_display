@@ -222,18 +222,12 @@ module main #(
         .clock_in(clk_root),
         .reset(alt_reset)
     );
-    `ifdef SPI_ESP32
-        `ifdef USE_WATCHDOG
-            assign global_reset = alt_reset | sd_d[1] | watchdog_reset;
-        `else
-            assign global_reset = alt_reset | sd_d[1];
-        `endif
+    // sd_d[1] was previously used as a way to reset the fpga, but has since been
+    // retired in favor of the watchdog.
+    `ifdef USE_WATCHDOG
+        assign global_reset = alt_reset | watchdog_reset;
     `else
-        `ifdef USE_WATCHDOG
-            assign global_reset = alt_reset | watchdog_reset;
-        `else
-            assign global_reset = alt_reset;
-        `endif
+        assign global_reset = alt_reset;
     `endif
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
