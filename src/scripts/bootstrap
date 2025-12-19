@@ -1,4 +1,12 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-FileCopyrightText: 2016–2025 The Home Assistant Authors
+#
+# SPDX-License-Identifier: Apache-2.0
+# This file is derived from the structure of:
+# https://github.com/home-assistant/core/blob/dev/scripts/bootstrap
+#
+# Modifications have been made.
 # Resolve all dependencies that the application requires to run.
 
 # Stop on errors
@@ -24,4 +32,7 @@ echo python3 src/scripts/pull_oss_cad_suite_release.py --latest --outdir build -
 python3 src/scripts/pull_oss_cad_suite_release.py --latest --outdir build --extract
 if [ -d "oss-cad-suite" ]; then rm -rf oss-cad-suite; fi
 mv build/oss-cad-suite oss-cad-suite
+
+git submodule init
+git submodule update
 # python3 -m script.translations develop --all

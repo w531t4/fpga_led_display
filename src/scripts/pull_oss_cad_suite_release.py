@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-FileComment: Generated using ChatGPT (OpenAI)
+# SPDX-License-Identifier: MIT
+
 from __future__ import annotations
 
 import argparse
