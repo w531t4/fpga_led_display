@@ -4,5 +4,8 @@
     "description": "Pinned netlistsvg CLI for fpga_led_display tooling",
     "devDependencies": {
         "netlistsvg": "^1.0.2"
+    },
+    "engines": {
+        "node": ">=18 <23"
     }
 }
