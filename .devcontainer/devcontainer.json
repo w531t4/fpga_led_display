@@ -24,7 +24,11 @@
     "-e",
     "GIT_EDITOR=code --wait",
     "--security-opt",
-    "label=disable"
+    "label=disable",
+    // To allow programming the fpga
+    "--device=/dev/bus/usb:/dev/bus/usb",
+    "--group-add=dialout",
+    "--group-add=plugdev",
   ],
   "customizations": {
     "vscode": {
