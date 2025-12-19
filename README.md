@@ -24,7 +24,6 @@ NOTE: Displaying widgets on the display (as shown above) is out of scope for thi
 ## Getting Started
 1. Clone the project.
 1. Launch devcontainer in vscode
-1. get netlistsvg app by issing `(cd src/scripts; sh create_npm_env.sh)`
 1. Adjust compile parameters in `Makefile` (for instance, enabling the debugger '-DDEBUGGER')
 1. Run `make` (this will produce simulations and render them in build/simulations)
 1. Run `make pack` (will build, route, and pack a bitstream. bitstream is wrriten as build/ulx3s.bit)
