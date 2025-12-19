@@ -23,12 +23,7 @@ NOTE: Displaying widgets on the display (as shown above) is out of scope for thi
 
 ## Getting Started
 1. Clone the project.
-1. Download the latest toolchain release from https://github.com/YosysHQ/oss-cad-suite-build and extract it into the project directory
-1. get netlistsvg app by issing `(cd src/scripts; sh create_npm_env.sh)`
-1. Pull in submodules `git submodule sync --recursive && git submodule update --init --recursive`
-1. If using the extra bram outreg yosys plugin, Install dependencies for `yosys_ecp5_infer_bram_outreg` (https://github.com/rowanG077/yosys_ecp5_infer_bram_outreg.git)
-    - For debian/ubuntu - `apt install libreadline-dev tcl-dev`
-    - For RHEL/fedora - `dnf install readline-devel tcl8-devel` <-- These are what are necessary, but there are still issues i haven't worked out yet between fedora libstdc++ and the one is oss-cad-suite
+1. Launch devcontainer in vscode
 1. Adjust compile parameters in `Makefile` (for instance, enabling the debugger '-DDEBUGGER')
 1. Run `make` (this will produce simulations and render them in build/simulations)
 1. Run `make pack` (will build, route, and pack a bitstream. bitstream is wrriten as build/ulx3s.bit)
@@ -88,6 +83,9 @@ This project is based on and incorporates code from:
 - **spi_verilog_master_slave** by Santhosh G <santhg@opencores.org>
   - https://opencores.org/projects/spi_verilog_master_slave
   - License: LGPL-2.1-or-later
+- **Homeassistant Core** by Homeassistant Authors
+  - https://github.com/home-assistant/core
+  - License: Apache-2.0
 
 # Third-party Components
 

@@ -1,0 +1,36 @@
+#!/bin/sh
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-FileCopyrightText: 2016–2025 The Home Assistant Authors
+#
+# SPDX-License-Identifier: Apache-2.0
+# This file is derived from the structure of:
+# https://github.com/home-assistant/core/blob/dev/scripts/bootstrap
+#
+# Modifications have been made.
+# Resolve all dependencies that the application requires to run.
+
+# Stop on errors
+set -e
+
+cd "$(realpath "$(dirname "$0")/../..")"
+
+echo "Installing development dependencies..."
+
+uv pip install \
+  -r src/scripts/requirements.txt \
+  colorlog \
+  --upgrade \
+  --config-settings editable_mode=compat
+    # -e .
+python3 src/scripts/pull_oss_cad_suite_release.py --tag 2025-12-18 \
+                                                  --tarball \
+                                                  --auto \
+                                                  --extract \
+                                                  --prune-other-versions \
+                                                  --symlink oss-cad-suite \
+                                                  --symlink-subdir oss-cad-suite \
+                                                  --force-symlink
+
+git submodule init
+git submodule update
+# python3 -m script.translations develop --all
