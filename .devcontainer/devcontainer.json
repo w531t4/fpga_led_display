@@ -1,5 +1,5 @@
 {
-  "name": "Home Assistant Dev",
+  "name": "fpga_led_display Dev",
   "context": "..",
   "dockerFile": "../Dockerfile.dev",
   "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && src/scripts/setup",
