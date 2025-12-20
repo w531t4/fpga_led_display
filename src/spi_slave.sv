@@ -42,7 +42,7 @@ module spi_slave #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-  input rstb,             // Active-low asynchronous reset. Resets internal registers like rreg, treg, nb, etc.
+  input rstb,             // Active-low synchronous reset (to SCK edges).
   input ss,               // Slave Select (Active Low). When low, this slave is active and communicates with the master.
   input sck,              // SPI Clock (from master). Rising edge captures incoming bit; falling edge shifts out data.
   input sdin,             // Slave Data In. SPI MISO line — data coming from the master to this slave.
@@ -63,7 +63,7 @@ module spi_slave #(
   assign sdout = ( (!ss) && ten ) ? sout : 1'bz; //if 1=> send data  else TRI-STATE sdout
 
     //read from  sdout
-    always @(posedge sck or negedge rstb) begin
+    always @(posedge sck) begin
         if (rstb == 0) begin
             rreg = 8'h00;
             rdata = 8'h00;
@@ -89,7 +89,7 @@ module spi_slave #(
     end
 
     //send to  sdout
-    always @(negedge sck or negedge rstb) begin
+    always @(negedge sck) begin
         if (rstb == 0) begin
             treg = 8'hFF;
         end
