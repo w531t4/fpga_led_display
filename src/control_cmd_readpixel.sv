@@ -34,7 +34,7 @@ module control_cmd_readpixel #(
 
     assign column = column_bits[_NUM_COLUMN_ADDRESS_BITS-1:0];
 
-    always @(posedge clk, posedge reset) begin
+    always @(posedge clk) begin
         if (reset) begin
             data_out <= 8'd0;
             ram_write_enable <= 1'b0;

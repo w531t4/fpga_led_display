@@ -26,7 +26,7 @@ module control_cmd_watchdog #(
     logic [$clog2(WATCHDOG_CONTROL_TICKS)-1:0] watchdog_counter;
     logic [$clog2(WATCHDOG_SIGBYTES)-1:0] sig_byte_counter;
 
-    always @(posedge clk, posedge reset) begin
+    always @(posedge clk) begin
         if (reset) begin
             cache <= {WATCHDOG_SIGNATURE_BITS{1'b0}};
             watchdog_counter <= ($clog2(WATCHDOG_CONTROL_TICKS))'(WATCHDOG_CONTROL_TICKS);

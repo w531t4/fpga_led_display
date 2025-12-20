@@ -62,7 +62,7 @@ module control_cmd_fillrect #(
         .sync_pulse(done)
     );
 
-    always @(posedge clk, posedge reset) begin
+    always @(posedge clk) begin
         if (reset) begin
             subcmd_enable <= 1'b0;
             state <= STATE_X1_CAPTURE;
