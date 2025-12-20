@@ -73,7 +73,7 @@ module framebuffer_fetch #(
             pixeldata_bottom <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
         end
         else begin
-            if (pixel_load_counter == 'd2) begin
+            if (pixel_load_counter == 'd1) begin
                 {pixeldata_bottom, pixeldata_top} <= ram_data_in;
             end
         end

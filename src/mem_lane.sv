@@ -14,7 +14,6 @@ module mem_lane #(
 
     input  wire                  clkb,
     input  wire                  enb,
-    input  wire                  rstb,
     input  wire [ADDR_BITS-1:0]  addrb,
     output reg  [DW-1:0]         dob
 );
@@ -38,10 +37,13 @@ module mem_lane #(
     // Read: 2-cycle latency (addr reg + BRAM outreg)
     reg [ADDR_BITS-1:0] addrb_q;
     always @(posedge clkb) addrb_q <= addrb;
+    reg [DW-1:0]         dob_pipe;
     always @(posedge clkb) begin
-        if (rstb)
-            dob <= '0;
-        else if (enb)
-            dob <= mem[addrb_q];
+        if (enb)
+            dob_pipe <= mem[addrb_q];
+    end
+    always @(posedge clkb) begin
+        if (enb)
+            dob <= dob_pipe;
     end
 endmodule
