@@ -70,7 +70,7 @@ module tb_control_cmd_readpixel #(
         data_in = 8'b0;
         // finish reset for tb
         @(posedge clk)
-        @(posedge clk) reset = ~reset;
+        @(posedge clk) reset <= ~reset;
 
         // @(posedge clk) begin
         //     subcmd_enable = 1;
