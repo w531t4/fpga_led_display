@@ -9,7 +9,6 @@
         "depends/netlistsvg/node_modules": true,
         "depends": true,
         "images": true,
-        ".verilator_lint": true,
         "**/__pycache__/**": true,
     }
 }
