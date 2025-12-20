@@ -39,7 +39,7 @@ fi
 
 src/scripts/bootstrap
 
-# pre-commit install
+pre-commit install
 
 # hass --script ensure_config -c config
 
