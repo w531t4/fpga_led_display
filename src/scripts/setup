@@ -22,8 +22,6 @@ if [ ! -f "$SETTINGS_FILE" ]; then
     cp "$SETTINGS_TEMPLATE_FILE" "$SETTINGS_FILE"
 fi
 
-mkdir -p config
-
 if [ ! -n "$VIRTUAL_ENV" ]; then
   if [ -x "$(command -v uv)" ]; then
     uv venv .venv
