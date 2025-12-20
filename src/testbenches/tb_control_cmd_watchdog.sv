@@ -44,7 +44,7 @@ module tb_control_cmd_watchdog #(
         subcmd_enable = 0;
         data_in = 8'b0;
         // finish reset for tb
-        @(posedge clk) reset = ~reset;
+        @(posedge clk) reset <= ~reset;
 
         for (int i = 0; i < (WATCHDOG_SIGNATURE_BITS/8); i++) begin
             @(posedge slowclk) begin

@@ -181,30 +181,29 @@ module tb_main #(
         debugger_rxin = 0;
         reset = 1;
 
-        // get past undefined period for global_reset. look for rising edge.
-        wait (tb_main.tbi_main.global_reset);
-        // finish reset for tb
-        @(posedge clk) reset = ~reset;
-        // wait for tb_main/global_reset to fall
-        wait (!tb_main.tbi_main.global_reset);
+        // wait for global_reset pulse and its deassertion before releasing tb reset
+        `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b1, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b0, TB_MAIN_WAIT_CYCLES)
+        @(posedge clk) reset <= 1'b0;
 
         // wait until next clk_root goes high
-        wait (tb_main.tbi_main.clk_root);
+        `WAIT_ASSERT(clk, tb_main.tbi_main.clk_root === 1'b1, TB_MAIN_WAIT_CYCLES)
         // @(posedge tb_main.tbi_main.clk_root);
         `ifdef SPI
+            `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.ready_for_data === 1'b1, TB_MAIN_WAIT_CYCLES)
             @(posedge clk) begin
                 spi_start = 1;
             end
         `endif
         @(posedge clk)
         #(($bits(myled_row) + 1000)*SIM_HALF_PERIOD_NS*2*4); // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
-        wait (tb_main.tbi_main.row_address_active == 4'b0101);
-        wait (tb_main.tbi_main.row_address_active != 4'b0101);
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         tb_main.tbi_main.ctrl.frame_select_temp = ~tb_main.tbi_main.ctrl.frame_select_temp;
         tb_main.tbi_main.ctrl.frame_select = ~tb_main.tbi_main.ctrl.frame_select;
-        wait (tb_main.tbi_main.row_address_active == 4'b0101);
-        wait (tb_main.tbi_main.row_address_active != 4'b0101);
-        wait (tb_main.tbi_main.row_address_active == 4'b0101);
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         wait (cmd_line_state_seq_done);
         $finish;
     end
