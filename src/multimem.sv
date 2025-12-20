@@ -49,21 +49,43 @@ module multimem #(
     localparam LANES = (1 << _NUM_STRUCTURE_BITS);
     wire [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes_w;
 
+    reg [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes_q;
+
+    always @(posedge ClockB) begin
+        if (ResetB)
+            qb_lanes_q <= {LANES*_NUM_DATA_A_BITS{1'b0}};
+        else if (ClockEnB)
+            qb_lanes_q <= qb_lanes_w;
+    end
+
+    reg [_NUM_ADDRESS_A_BITS-1:0] AddressA_q;
+    reg [_NUM_DATA_A_BITS-1:0]    DataInA_q;
+    reg                           WrA_q;
+    reg                           ClockEnA_q;
+
+    always @(posedge ClockA) begin
+        AddressA_q <= AddressA;
+        DataInA_q  <= DataInA;
+        WrA_q      <= WrA;
+        ClockEnA_q <= ClockEnA;
+    end
+    // Info: Max frequency for clock '$glbnet$sd_clk$TRELLIS_IO_IN': 316.36 MHz (PASS at 12.00 MHz)
+    // Info: Max frequency for clock           '$glbnet$clk_matrix': 88.67 MHz (PASS at 12.00 MHz)
+    // Info: Max frequency for clock             '$glbnet$clk_root': 96.28 MHz (PASS at 90.00 MHz)
     genvar i;
     generate
     for (i = 0; i < LANES; i = i + 1) begin : G
         wire [_NUM_STRUCTURE_BITS-1:0] lane_idx_from_addr = { AddressA[_NUM_ADDRESS_A_BITS-1 -: _NUM_SUBPANELSELECT_BITS],
                                                               AddressA[_NUM_PIXELCOLORSELECT_BITS-1:0] };
 
-        wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[_NUM_STRUCTURE_BITS-1:0]);
-        (* keep = "true" *) reg we_lane_q;
-        (* keep = "true" *) reg [_NUM_ADDRESS_B_BITS-1:0] addra_q;
-        (* keep = "true" *) reg [_NUM_DATA_A_BITS-1:0]    dia_q;
+        reg we_lane_q;
+        reg [_NUM_ADDRESS_B_BITS-1:0] addra_q;
+        reg [_NUM_DATA_A_BITS-1:0]    dia_q;
 
         always @(posedge ClockA) begin
-            we_lane_q <= we_lane_c;
-            addra_q   <= AddressA[(_NUM_ADDRESS_A_BITS-_NUM_SUBPANELSELECT_BITS)-1 -: _NUM_ADDRESS_B_BITS];
-            dia_q     <= DataInA;
+            we_lane_q <= ClockEnA_q & WrA_q & (lane_idx_from_addr == i[_NUM_STRUCTURE_BITS-1:0]);
+            addra_q   <= AddressA_q[(_NUM_ADDRESS_A_BITS-_NUM_SUBPANELSELECT_BITS)-1 -: _NUM_ADDRESS_B_BITS];
+            dia_q     <= DataInA_q;
         end
 
         mem_lane #(
@@ -85,7 +107,7 @@ module multimem #(
     end
     endgenerate
 
-    assign QB = qb_lanes_w;
+    assign QB = qb_lanes_q;
 
     assign QA = 0;
     wire _unused_ok = &{1'b0,
