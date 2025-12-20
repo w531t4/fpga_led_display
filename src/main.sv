@@ -278,7 +278,7 @@ module main #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) fb_f (
         .reset(global_reset),
-        .clk_in(clk_root),
+        .clk_in(clk_matrix),
 
         .column_address(column_address),
         .row_address(row_address),
@@ -389,7 +389,7 @@ module main #(
             .WrA(ram_a_write_enable),
         `endif
         .ResetA(global_reset),
-        .ClockB(clk_root),
+        .ClockB(clk_matrix),
         .DataInB(16'b0),
         .AddressB(ram_b_address),
         .WrB(1'b0),
@@ -410,7 +410,7 @@ module main #(
             .DataInA(ram_a_data_in),
             .WrA(ram_a_write_enable & ~frame_select),
             .ResetA(global_reset),
-            .ClockB(clk_root),
+            .ClockB(clk_matrix),
             .DataInB(16'b0),
             .AddressB(ram_b_address),
             .WrB(1'b0),
