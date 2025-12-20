@@ -49,15 +49,6 @@ module multimem #(
     localparam LANES = (1 << _NUM_STRUCTURE_BITS);
     wire [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes_w;
 
-    reg [LANES*_NUM_DATA_A_BITS-1:0] qb_lanes_q;
-
-    always @(posedge ClockB) begin
-        if (ResetB)
-            qb_lanes_q <= {LANES*_NUM_DATA_A_BITS{1'b0}};
-        else if (ClockEnB)
-            qb_lanes_q <= qb_lanes_w;
-    end
-
     reg [_NUM_ADDRESS_A_BITS-1:0] AddressA_q;
     reg [_NUM_DATA_A_BITS-1:0]    DataInA_q;
     reg                           WrA_q;
@@ -75,8 +66,8 @@ module multimem #(
     genvar i;
     generate
     for (i = 0; i < LANES; i = i + 1) begin : G
-        wire [_NUM_STRUCTURE_BITS-1:0] lane_idx_from_addr = { AddressA[_NUM_ADDRESS_A_BITS-1 -: _NUM_SUBPANELSELECT_BITS],
-                                                              AddressA[_NUM_PIXELCOLORSELECT_BITS-1:0] };
+        wire [_NUM_STRUCTURE_BITS-1:0] lane_idx_from_addr = { AddressA_q[_NUM_ADDRESS_A_BITS-1 -: _NUM_SUBPANELSELECT_BITS],
+                                                              AddressA_q[_NUM_PIXELCOLORSELECT_BITS-1:0] };
 
         reg we_lane_q;
         reg [_NUM_ADDRESS_B_BITS-1:0] addra_q;
@@ -100,17 +91,18 @@ module multimem #(
 
             .clkb   (ClockB),
             .enb    (ClockEnB),
-            .rstb   (ResetA || ResetB),
             .addrb  (AddressB),
             .dob    (qb_lanes_w[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS])
         );
     end
     endgenerate
 
-    assign QB = qb_lanes_q;
+    assign QB = qb_lanes_w;
 
     assign QA = 0;
     wire _unused_ok = &{1'b0,
+                        ResetA,
+                        ResetB,
                         WrB,
                         DataInB,
                         1'b0};
