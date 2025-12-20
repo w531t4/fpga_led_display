@@ -489,7 +489,7 @@ module control_module #(
                         "W": cmd_line_state <= STATE_CMD_WATCHDOG;
                     `endif
                     `ifdef DOUBLE_BUFFER
-                        "t": frame_select_temp <= ~frame_select;
+                        "t": frame_select_temp <= frame_select_temp ^ 1'b1;
                     `endif
                     default: begin
                         cmd_line_state <= STATE_IDLE;
