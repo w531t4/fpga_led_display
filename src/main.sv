@@ -225,7 +225,12 @@ module main #(
     // sd_d[1] was previously used as a way to reset the fpga, but has since been
     // retired in favor of the watchdog.
     `ifdef USE_WATCHDOG
-        assign global_reset = alt_reset | watchdog_reset;
+        `ifdef SIM
+            assign global_reset = alt_reset;
+            wire _unused_watchdog_reset = &{1'b0, watchdog_reset, 1'b0};
+        `else
+            assign global_reset = alt_reset | watchdog_reset;
+        `endif
     `else
         assign global_reset = alt_reset;
     `endif

@@ -8,6 +8,7 @@ module tb_main #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
+    `include "tb_helper.vh"
 
     logic clk;
     wire clk_pixel;
@@ -34,6 +35,8 @@ module tb_main #(
     wire [7:0] debug_command;
 
     `include "row4.vh"
+    localparam integer TB_MAIN_WAIT_SECS = 2;
+    localparam integer TB_MAIN_WAIT_CYCLES = ROOT_CLOCK * TB_MAIN_WAIT_SECS;
 
     wire rxdata;
     `ifdef SPI
@@ -171,15 +174,13 @@ module tb_main #(
         debugger_rxin = 0;
         reset = 1;
 
-        // get past undefined period for global_reset. look for rising edge.
-        wait (tb_main.tbi_main.global_reset);
+        // wait for global_reset to settle low before releasing tb reset
+        `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b0, TB_MAIN_WAIT_CYCLES)
         // finish reset for tb
-        @(posedge clk) reset <= ~reset;
-        // wait for tb_main/global_reset to fall
-        wait (!tb_main.tbi_main.global_reset);
+        @(posedge clk) reset <= 1'b0;
 
         // wait until next clk_root goes high
-        wait (tb_main.tbi_main.clk_root);
+        `WAIT_ASSERT(clk, tb_main.tbi_main.clk_root === 1'b1, TB_MAIN_WAIT_CYCLES)
         // @(posedge tb_main.tbi_main.clk_root);
         `ifdef SPI
             @(posedge clk) begin
@@ -188,13 +189,13 @@ module tb_main #(
         `endif
         @(posedge clk)
         #(($bits(myled_row) + 1000)*SIM_HALF_PERIOD_NS*2*4); // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
-        wait (tb_main.tbi_main.row_address_active == 4'b0101);
-        wait (tb_main.tbi_main.row_address_active != 4'b0101);
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         tb_main.tbi_main.ctrl.frame_select_temp = ~tb_main.tbi_main.ctrl.frame_select_temp;
         tb_main.tbi_main.ctrl.frame_select = ~tb_main.tbi_main.ctrl.frame_select;
-        wait (tb_main.tbi_main.row_address_active == 4'b0101);
-        wait (tb_main.tbi_main.row_address_active != 4'b0101);
-        wait (tb_main.tbi_main.row_address_active == 4'b0101);
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         $finish;
     end
     `ifdef SPI
