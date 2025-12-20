@@ -1,14 +1,11 @@
 {
     "files.exclude": {
         "waveforms_projects": true,
-        "bitmaps": true,
         "backup*.tgz": true,
         "*.pyc": true,
-        "nenv": true,
         ".pytest_cache": true,
         "oss-cad-suite": true,
         "uart": true,
-        "waves": true,
         "depends/netlistsvg/node_modules": true,
         "depends": true,
         "images": true,
