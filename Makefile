@@ -43,10 +43,10 @@ GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -I$(VINCLUDE_DIR)
 
-VSOURCES := $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v')
+VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 
-INCLUDESRCS=$(shell find $(VINCLUDE_DIR) -name '*.vh')
-TBSRCS:=$(shell find $(TB_DIR) -name '*.sv' -or -name '*.v')
+INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh'))
+TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
 
@@ -72,6 +72,7 @@ endif
 
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore
+.DELETE_ON_ERROR:
 all: simulation lint
 #$(warning In a command script $(VVPOBJS))
 
