@@ -25,8 +25,6 @@ module control_cmd_watchdog #(
     logic [WATCHDOG_SIGNATURE_BITS-1:0] cache;
     logic [$clog2(WATCHDOG_CONTROL_TICKS)-1:0] watchdog_counter;
     logic [$clog2(WATCHDOG_SIGBYTES)-1:0] sig_byte_counter;
-    logic [7:0] data_in_q;
-    logic enable_q;
 
     always @(posedge clk, posedge reset) begin
         if (reset) begin
@@ -36,20 +34,14 @@ module control_cmd_watchdog #(
             state <= STATE_SIG_CAPTURE;
             done <= 1'b0;
             sys_reset <= 1'b0;
-            data_in_q <= 8'b0;
-            enable_q <= 1'b0;
         end else begin
             sys_reset <= (watchdog_counter == 'd0);
-            enable_q <= enable;
-            if (enable) begin
-                data_in_q <= data_in;
-            end
             case(state)
                 STATE_SIG_CAPTURE: begin
-                    if (enable_q) begin
+                    if (enable) begin
                         // Update memory
-                        cache <= (cache << 8) + (WATCHDOG_SIGNATURE_BITS)'(data_in_q);
-                        if (((cache << 8) + (WATCHDOG_SIGNATURE_BITS)'(data_in_q)) == WATCHDOG_SIGNATURE_PATTERN) begin
+                        cache <= (cache << 8) + (WATCHDOG_SIGNATURE_BITS)'(data_in);
+                        if (((cache << 8) + (WATCHDOG_SIGNATURE_BITS)'(data_in)) == WATCHDOG_SIGNATURE_PATTERN) begin
                             watchdog_counter <= ($clog2(WATCHDOG_CONTROL_TICKS))'(WATCHDOG_CONTROL_TICKS);
                         end else begin
                             watchdog_counter <= watchdog_counter - 'd1;

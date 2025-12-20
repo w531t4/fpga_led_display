@@ -380,6 +380,7 @@ module control_module #(
             rgb_enable <= 3'b111;
             `ifdef DOUBLE_BUFFER
                 frame_select <= 1'b0;
+                frame_select_temp <= 1'b0;
             `endif
             brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
             brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
@@ -487,6 +488,9 @@ module control_module #(
                     `ifdef USE_WATCHDOG
                         "W": cmd_line_state <= STATE_CMD_WATCHDOG;
                     `endif
+                    `ifdef DOUBLE_BUFFER
+                        "t": frame_select_temp <= ~frame_select;
+                    `endif
                     default: begin
                         cmd_line_state <= STATE_IDLE;
                         if (brightness_change_enable) brightness_temp <= brightness_data_out;
@@ -495,23 +499,6 @@ module control_module #(
             end
         end
     end
-    `ifdef DOUBLE_BUFFER
-        wire cmd_toggle_frame = (cmd_line_state == STATE_IDLE || state_done) &&
-                                ~data_ready_n &&
-                                (data_rx_latch == "t");
-        logic cmd_toggle_frame_q;
-        always @(posedge clk_in, posedge reset) begin
-            if (reset) begin
-                frame_select_temp <= 1'b0;
-                cmd_toggle_frame_q <= 1'b0;
-            end else begin
-                cmd_toggle_frame_q <= cmd_toggle_frame;
-                if (cmd_toggle_frame_q) begin
-                    frame_select_temp <= ~frame_select;
-                end
-            end
-        end
-    `endif
     wire _unused_ok = &{1'b0,
                         1'b0};
 endmodule
