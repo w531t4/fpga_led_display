@@ -25,9 +25,9 @@ module rgb24 #(
     wire [15:0] g_mul = green_selected * brightness;
     wire [15:0] b_mul = blue_selected  * brightness;
 
-    wire [7:0] r_eff = (r_mul + 16'd127) >> 8;
-    wire [7:0] g_eff = (g_mul + 16'd127) >> 8;
-    wire [7:0] b_eff = (b_mul + 16'd127) >> 8;
+    wire [7:0] r_eff = 8'((r_mul + 16'd127) >> 8);
+    wire [7:0] g_eff = 8'((g_mul + 16'd127) >> 8);
+    wire [7:0] b_eff = 8'((b_mul + 16'd127) >> 8);
 
     `ifdef GAMMA
         gamma_correct #(
