@@ -1,7 +1,9 @@
 {
   "name": "fpga_led_display Dev",
-  "context": "..",
-  "dockerFile": "../Dockerfile.dev",
+  "build": {
+    "context": "..",
+    "dockerfile": "../Dockerfile.dev"
+  },
   "onCreateCommand": "npm ci --prefix depends/netlistsvg",
   "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && src/scripts/setup",
   "postStartCommand": "src/scripts/bootstrap",
