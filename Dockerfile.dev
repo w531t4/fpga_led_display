@@ -1,11 +1,5 @@
 # SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
-# SPDX-FileCopyrightText: 2016–2025 The Home Assistant Authors
-#
-# SPDX-License-Identifier: Apache-2.0
-# This file is derived from the structure of:
-# https://github.com/home-assistant/core/blob/dev/Dockerfile.dev
-#
-# Modifications have been made.
+# SPDX-License-Identifier: MIT
 FROM mcr.microsoft.com/vscode/devcontainers/base:bookworm
 # Need bookworm because oss-cad-suite is compiled with glibc max 3.4.30
 
@@ -53,9 +47,6 @@ RUN \
     && ln -sf /opt/verible/bin/* /usr/local/bin/ \
     # verible end
     && rm -rf /var/lib/apt/lists/*
-
-# # Add go2rtc binary
-# COPY --from=ghcr.io/alexxit/go2rtc:latest /usr/local/bin/go2rtc /bin/go2rtc
 
 WORKDIR /usr/src
 
