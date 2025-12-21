@@ -6,6 +6,6 @@
         "netlistsvg": "^1.0.2"
     },
     "engines": {
-        "node": ">=18 <23"
+        "node": "24"
     }
 }
