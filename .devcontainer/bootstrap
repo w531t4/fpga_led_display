@@ -12,12 +12,12 @@
 # Stop on errors
 set -e
 
-cd "$(realpath "$(dirname "$0")/../..")"
+cd "$(realpath "$(dirname "$0")/..")"
 
 echo "Installing development dependencies..."
 
 uv pip install \
-  -r src/scripts/requirements.txt \
+  -r .python-requirements \
   colorlog \
   --upgrade \
   --config-settings editable_mode=compat

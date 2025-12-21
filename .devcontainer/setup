@@ -12,7 +12,7 @@
 # Stop on errors
 set -e
 
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/.."
 
 # Add default vscode settings if not existing
 SETTINGS_FILE=./.vscode/settings.json
@@ -35,7 +35,7 @@ if ! [ -x "$(command -v uv)" ]; then
   python3 -m pip install uv
 fi
 
-src/scripts/bootstrap
+.devcontainer/bootstrap
 
 pre-commit install
 

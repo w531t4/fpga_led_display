@@ -8,8 +8,8 @@
     }
   },
   "onCreateCommand": "npm ci --prefix depends/netlistsvg",
-  "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && src/scripts/setup",
-  "postStartCommand": "src/scripts/bootstrap",
+  "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && .devcontainer/setup",
+  "postStartCommand": ".devcontainer/bootstrap",
   "containerEnv": {
     "PYTHONASYNCIODEBUG": "1"
   },
