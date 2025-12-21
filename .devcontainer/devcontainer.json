@@ -45,6 +45,7 @@
       ],
       // Please keep this file in sync with settings in home-assistant/.vscode/settings.default.jsonc
       "settings": {
+        "remote.autoForwardPorts": false,
         "git.ignoredRepositories": [
             "/workspaces/fpga_led_display/depends/yosys_ecp5_infer_bram_outreg"
         ],
