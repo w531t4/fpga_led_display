@@ -11,6 +11,8 @@ FROM mcr.microsoft.com/vscode/devcontainers/base:bookworm
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+ARG VERIBLE_VERSION
+
 RUN \
     apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -21,7 +23,23 @@ RUN \
         libreadline-dev \
         libffi-dev \
         tcl8.6-dev \
+        # required by verilog module
+        universal-ctags \
+        # verible deps start
+        tar \
+        curl \
+        ca-certificates \
+        # verible deps end
     && apt-get clean \
+    # verible start
+    && curl -fsSL -o /tmp/verible.tgz \
+        "https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz" \
+    && mkdir -p /opt/verible \
+    && tar -xzf /tmp/verible.tgz -C /opt/verible --strip-components=1 \
+    && rm -f /tmp/verible.tgz \
+    && chmod -R a+rX /opt/verible \
+    && ln -sf /opt/verible/bin/* /usr/local/bin/ \
+    # verible end
     && rm -rf /var/lib/apt/lists/*
 
 # # Add go2rtc binary
