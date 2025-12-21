@@ -55,8 +55,8 @@
             "/workspaces/fpga_led_display/depends/yosys_ecp5_infer_bram_outreg"
         ],
         "python.experiments.optOutFrom": ["pythonTestAdapter"],
-        // "python.defaultInterpreterPath": "/home/vscode/.local/ha-venv/bin/python",
-        // "python.pythonPath": "/home/vscode/.local/ha-venv/bin/python",
+        // "python.defaultInterpreterPath": "/home/vscode/.local/venv/bin/python",
+        // "python.pythonPath": "/home/vscode/.local/venv/bin/python",
         "python.terminal.activateEnvInCurrentTerminal": true,
         "python.testing.pytestArgs": ["--no-cov"],
         "pylint.importStrategy": "fromEnvironment",
