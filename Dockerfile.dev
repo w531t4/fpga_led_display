@@ -69,16 +69,9 @@ RUN --mount=type=bind,source=.python-version,target=.python-version \
     && uv venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# # Setup hass-release
-# RUN git clone --depth 1 https://github.com/home-assistant/hass-release ~/hass-release \
-#     && uv pip install -e ~/hass-release/
 
-# # Install Python dependencies from requirements
-# RUN --mount=type=bind,source=requirements.txt,target=requirements.txt \
-#     --mount=type=bind,source=homeassistant/package_constraints.txt,target=homeassistant/package_constraints.txt \
-#     --mount=type=bind,source=requirements_test.txt,target=requirements_test.txt \
-#     --mount=type=bind,source=requirements_test_pre_commit.txt,target=requirements_test_pre_commit.txt \
-#     uv pip install -r requirements.txt -r requirements_test.txt
+RUN --mount=type=bind,source=.python-requirements,target=.python-requirements \
+    uv pip install -r .python-requirements
 
 WORKDIR /workspaces
 
