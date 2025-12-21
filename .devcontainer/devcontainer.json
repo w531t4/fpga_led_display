@@ -19,13 +19,10 @@
         "source=${localEnv:HOME}/.cache/oss-cad-suite,target=/workspaces/.cache/oss-cad-suite,type=bind"
     ],
   "features": {
-    // // Node feature required for Claude Code until fixed https://github.com/anthropics/devcontainer-features/issues/28
     "ghcr.io/devcontainers/features/node:1": {},
-    // "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  // // Port 5683 udp is used by Shelly integration
-  // "appPort": ["8123:8123", "5683:5683/udp"],
+  // "appPort": [],
   "runArgs": [
     "-e",
     "GIT_EDITOR=code --wait",
@@ -45,10 +42,8 @@
         "redhat.vscode-yaml",
         "esbenp.prettier-vscode",
         "GitHub.vscode-pull-request-github",
-        "mshr-h.veriloghdl",
-        // "GitHub.copilot"
+        "mshr-h.veriloghdl"
       ],
-      // Please keep this file in sync with settings in home-assistant/.vscode/settings.default.jsonc
       "settings": {
         "remote.autoForwardPorts": false,
         "git.ignoredRepositories": [
@@ -66,22 +61,11 @@
         "editor.formatOnType": true,
         "files.trimTrailingWhitespace": true,
         "terminal.integrated.profiles.linux": {
-          // "zsh": {
-          //   "path": "/usr/bin/zsh"
-          // }
           "bash": {
             "path": "/usr/bin/bash"
           }
         },
         "terminal.integrated.defaultProfile.linux": "bash",
-        "yaml.customTags": [
-          "!input scalar",
-          "!secret scalar",
-          "!include_dir_named scalar",
-          "!include_dir_list scalar",
-          "!include_dir_merge_list scalar",
-          "!include_dir_merge_named scalar"
-        ],
         "[python]": {
           "editor.defaultFormatter": "charliermarsh.ruff"
         },
@@ -89,10 +73,6 @@
           "editor.defaultFormatter": "esbenp.prettier-vscode"
         },
         "json.schemas": [
-          // {
-          //   "fileMatch": ["homeassistant/components/*/manifest.json"],
-          //   "url": "${containerWorkspaceFolder}/script/json_schemas/manifest_schema.json"
-          // }
         ]
       }
     }

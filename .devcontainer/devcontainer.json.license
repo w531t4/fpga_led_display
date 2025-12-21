@@ -1,8 +1,2 @@
 SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
-SPDX-FileCopyrightText: 2016–2025 The Home Assistant Authors
-
-SPDX-License-Identifier: Apache-2.0
-# This file is derived from the structure of:
-# https://github.com/home-assistant/core/blob/dev/devcontainer/devcontainer.json
-#
-# Modifications have been made.
+SPDX-License-Identifier: MIT
