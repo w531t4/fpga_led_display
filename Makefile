@@ -73,7 +73,7 @@ endif
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore
 .DELETE_ON_ERROR:
-all: simulation lint
+all: $(ARTIFACT_DIR)/sim_args simulation lint
 #$(warning In a command script $(VVPOBJS))
 
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
@@ -91,8 +91,10 @@ $(SIMULATION_DIR)/spi.vvp: $(TB_DIR)/tb_spi.sv $(SRC_DIR)/spi_slave.sv $(SRC_DIR
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_spi -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 endif
 
-lint:
-	mkdir -p $(ARTIFACT_DIR)
+$(ARTIFACT_DIR)/sim_args: $(ARTIFACT_DIR) Makefile
+	@printf '%s\n' '$(SIM_FLAGS)' > $@
+
+lint: $(ARTIFACT_DIR)
 	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):

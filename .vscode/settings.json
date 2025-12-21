@@ -10,5 +10,8 @@
         "depends": true,
         "images": true,
         "**/__pycache__/**": true,
-    }
+    },
+    "verilog.linting.verilator.includePath": ["src/include", "src"],
+    "verilog.linting.linter": "verilator",
+    "verilog.linting.verilator.arguments": "-FI oss-cad-suite/share/yosys/ecp5/cells_bb.v -F build/sim_args",
 }
