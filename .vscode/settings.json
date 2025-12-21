@@ -5,7 +5,6 @@
         "*.pyc": true,
         ".pytest_cache": true,
         "oss-cad-suite": true,
-        "uart": true,
         "depends/netlistsvg/node_modules": true,
         "depends": true,
         "images": true,
