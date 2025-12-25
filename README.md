@@ -22,8 +22,15 @@ NOTE: Displaying widgets on the display (as shown above) is out of scope for thi
 - Uses logic that both simulates and synthesizes well with the open source toolchain (YosysHQ/oss-cad-quite-build) [see below]
 
 ## Getting Started
-1. Clone the project.
-1. Launch devcontainer in vscode
+1. Open project in Dev Container
+
+   [![Open in Dev Container](https://img.shields.io/badge/Open-Dev%20Container-blue?logo=visualstudiocode)](
+   https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/w531t4/fpga_led_display
+   )
+   [![Open in Dev Container (SSH)](https://img.shields.io/badge/Open-Dev%20Container%20SSH-blue?logo=visualstudiocode)](
+   https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=ssh%3A%2F%2Fgit%40github.com%2Fw531t4%2Ffpga_led_display.git
+   )
+
 1. Adjust compile parameters in `Makefile` (for instance, enabling the debugger '-DDEBUGGER')
 1. Run `make` (this will produce simulations and render them in build/simulations)
 1. Run `make pack` (will build, route, and pack a bitstream. bitstream is wrriten as build/ulx3s.bit)
