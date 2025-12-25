@@ -71,7 +71,7 @@ endif
 
 
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
 .DELETE_ON_ERROR:
 all: $(ARTIFACT_DIR)/sim_args simulation lint
 #$(warning In a command script $(VVPOBJS))
@@ -246,8 +246,11 @@ $(ARTIFACT_DIR)/netlist_pre.svg: $(ARTIFACT_DIR)/mydesign_pre_vizclean.json | $(
 	$(NETLISTSVG) $< -o $@
 endif
 
-restore:
-	$(TOOLPATH)/fujprog ~/Downloads/passthru41113043.bit
+restore: restore-build
+	$(TOOLPATH)/fujprog build/passthru/ulx3s_passthru_wifi.bit
+
+restore-build:
+	$(MAKE) -f src/passthru/Makefile all
 
 # esp32_build: restore
 # 	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py build

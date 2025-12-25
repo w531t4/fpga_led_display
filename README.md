@@ -50,11 +50,9 @@ The original bitstream that is loaded to the ULX3s at shipping time convienientl
 1. Write new images to the FPGA over USB
 1. Write content to the ESP32 over USB
 
-At times (when working with the ESP32), it was very helpful to be able to return back to this image so i could monitor its serial output.
+At times (when working with the ESP32), it was very helpful to be able to return back to this image so i could monitor its serial output (or recover from a broken esp32 image).
 
-The original image (at startup), LED's D18 Green, and D0 Red, D1 Orange, and D2 yellow-ish are illuminated. I wasn't able to figure out how to dump the preloaded bitstream, however the following file (https://github.com/emard/ulx3s-bin/blob/master/fpga/dfu/85f-v317/passthru41113043.bit.gz) appears to behave identically, except all led's (D0-D7) are lit.
-
-Follow the instructions (Persisting bitstream to execute at startup) using the above file (after gunzipping it).
+To restore, run `make restore`.
 
 # Performance
 - When clk_root is set to 90mhz, the design can sustain 64x32 x12 refresh rate using rgb24 at 156hz.
