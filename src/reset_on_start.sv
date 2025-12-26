@@ -9,11 +9,7 @@ module reset_on_start #(
     input wire clock_in,
     output wire reset
 );
-    `ifdef SIM
-        localparam counter = 8;
-    `else
-        localparam counter = 2;
-    `endif
+    localparam counter = 2;
     logic count;
     logic objective;
 

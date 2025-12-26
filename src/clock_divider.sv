@@ -20,21 +20,8 @@ module clock_divider #(
 );
     logic [$clog2(CLK_DIV_COUNT) - 1:0] clk_count;
 
-    `ifdef SIM
-        logic reset_prev;
-        initial begin
-            reset_prev = 1'b0;
-        end
-    `endif
-
     always @(posedge clk_in) begin
-
-    `ifdef SIM
-        reset_prev <= (reset === 1'b1);
-        if ((reset === 1'b1) && !reset_prev) begin
-    `else
         if (reset) begin
-    `endif
             clk_out <= 1'b0;
             clk_count <= 'b0;
         end
@@ -63,4 +50,5 @@ module clock_divider #(
             end
         end
     end
+
 endmodule
