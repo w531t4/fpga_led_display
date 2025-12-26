@@ -23,11 +23,11 @@ module uart_tx #(
 );
     /* END MODULE IO LIST */
 
-    localparam	STATE_IDLE 			= 5'b00001,
-                STATE_SEND_START 	= 5'b00010,
-                STATE_SEND_BITS		= 5'b00100,
-                STATE_SEND_STOP		= 5'b01000,
-                STATE_DONE			= 5'b10000;
+    localparam  STATE_IDLE          = 5'b00001,
+                STATE_SEND_START    = 5'b00010,
+                STATE_SEND_BITS     = 5'b00100,
+                STATE_SEND_STOP     = 5'b01000,
+                STATE_DONE          = 5'b10000;
 
     logic [4:0] currentState, nextState;
     logic done_flag;
@@ -42,8 +42,8 @@ module uart_tx #(
     logic [3:0] tx_bit_counter;
     logic [$clog2(TICKS_PER_BIT)-1:0] ticks_counter;
 
-    wire ticks_counter_ovf 		= ticks_counter == ($clog2(TICKS_PER_BIT))'(TICKS_PER_BIT-1);
-    wire tx_bit_counter_ovf 	= (tx_bit_counter[3]); // if equals >= 8
+    wire ticks_counter_ovf      = ticks_counter == ($clog2(TICKS_PER_BIT))'(TICKS_PER_BIT-1);
+    wire tx_bit_counter_ovf     = (tx_bit_counter[3]); // if equals >= 8
 
     //Init registers for testbench simulation
     initial begin

@@ -24,8 +24,8 @@ module uart_rx #(
     output logic o_busy
 );
     /* END MODULE IO LIST */
-    localparam TICKS_TO_BIT		= $clog2(TICKS_PER_BIT)'(TICKS_PER_BIT-1);
-    localparam TICKS_TO_MIDLE	= $clog2(TICKS_PER_BIT)'(TICKS_TO_BIT/2);
+    localparam TICKS_TO_BIT     = $clog2(TICKS_PER_BIT)'(TICKS_PER_BIT-1);
+    localparam TICKS_TO_MIDLE   = $clog2(TICKS_PER_BIT)'(TICKS_TO_BIT/2);
 
     logic [7:0] rx_data;
     assign o_rxdata = rx_data;
@@ -44,15 +44,15 @@ module uart_rx #(
     //Combinational comparator (depends of currentState)
     logic [$clog2(TICKS_PER_BIT)-1:0] bit_ticks_comparator;
 
-    wire bit_ticks_ovf_signal			= (bit_ticks_counter == bit_ticks_comparator);
-    wire bit_counter_ovf_signal 		= (bit_counter[3]); // if equals >= 8
+    wire bit_ticks_ovf_signal           = (bit_ticks_counter == bit_ticks_comparator);
+    wire bit_counter_ovf_signal         = (bit_counter[3]); // if equals >= 8
     logic [4:0] currentState, nextState;
 
-    localparam	STATE_IDLE			= 5'b00001,
-                  STATE_RECEIVE_START	= 5'b00010,
-                  STATE_RECEIVE_DATA	= 5'b00100,
-                  STATE_RECEIVE_STOP	= 5'b01000,
-                  STATE_DONE			= 5'b10000;
+    localparam    STATE_IDLE            = 5'b00001,
+                  STATE_RECEIVE_START   = 5'b00010,
+                  STATE_RECEIVE_DATA    = 5'b00100,
+                  STATE_RECEIVE_STOP    = 5'b01000,
+                  STATE_DONE            = 5'b10000;
 
     //Init registers for testbench simulation
     initial begin
@@ -169,8 +169,8 @@ module uart_rx #(
             else begin
             end
 
-            if(	currentState == STATE_RECEIVE_START ||
-                currentState == STATE_RECEIVE_DATA	||
+            if( currentState == STATE_RECEIVE_START ||
+                currentState == STATE_RECEIVE_DATA  ||
                 currentState == STATE_RECEIVE_STOP) begin
 
                 if(bit_ticks_ovf_signal) begin

@@ -32,7 +32,7 @@ module fm6126init #(
                STAGE2_OFFSET = 'd13;
 
 
-    localparam		STATE_INIT		 = 8'b00000001,
+    localparam      STATE_INIT       = 8'b00000001,
                     STATE1_BEGIN     = 8'b00000010,
                     STATE1_END       = 8'b00000100,
                     STATE2_PREBEGIN  = 8'b00001000,
@@ -60,12 +60,12 @@ module fm6126init #(
                 currentState <= STATE1_END;
                 // ({LED_WIDTH{1'b1}}) <-- create LED_WIDTH bit register prefilled with 1's
                 // (see_above >> (LED_WIDTH - STAGE1_OFFSET)) <-- shift right STAGE1_OFFSET bits
-                //												  thereby leaving 0's at the left side
+                //                                                thereby leaving 0's at the left side
                 // (| see_above) <-- boolean OR each bit of the register and return the result
-                //					 This portion is critical, because eventually we'll shift enough
-                //					 such that we hit the "remaining n bits". In that case,
-                //					 it'll yield a 0, which we'll then invert and use as an indicator
-                //					 to set the latch
+                //                   This portion is critical, because eventually we'll shift enough
+                //                   such that we hit the "remaining n bits". In that case,
+                //                   it'll yield a 0, which we'll then invert and use as an indicator
+                //                   to set the latch
                 // (! see_above) <-- invert the result
                 latch_out <= (~ (| widthState));
                 pixclock_out <= 1'b0;
@@ -91,12 +91,12 @@ module fm6126init #(
                 currentState <= STATE2_END;
                 // ({LED_WIDTH{1'b1}}) <-- create LED_WIDTH bit register prefilled with 1's
                 // (see_above >> (LED_WIDTH - STAGE1_OFFSET)) <-- shift right STAGE1_OFFSET bits
-                //												  thereby leaving 0's at the left side
+                //                                                thereby leaving 0's at the left side
                 // (| see_above) <-- boolean OR each bit of the register and return the result
-                //					 This portion is critical, because eventually we'll shift enough
-                //					 such that we hit the "remaining n bits". In that case,
-                //					 it'll yield a 0, which we'll then invert and use as an indicator
-                //					 to set the latch
+                //                   This portion is critical, because eventually we'll shift enough
+                //                   such that we hit the "remaining n bits". In that case,
+                //                   it'll yield a 0, which we'll then invert and use as an indicator
+                //                   to set the latch
                 // (! see_above) <-- invert the result
                 latch_out <= (~ (| widthState));
                 // shift right one, regardless
