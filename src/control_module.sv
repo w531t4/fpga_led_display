@@ -37,19 +37,19 @@ module control_module #(
     `endif
 );
     // for now, if adding new states, ensure cmd_line_state2 is updated.
-    typedef enum {STATE_IDLE,               // 0
-                  STATE_CMD_READROW,        // 1
-                  STATE_CMD_READBRIGHTNESS, // 2
-                  STATE_CMD_BLANKPANEL,     // 3
-                  STATE_CMD_FILLPANEL,      // 4
-                  STATE_CMD_FILLRECT,       // 5
-                  STATE_CMD_READPIXEL,      // 6
-                  STATE_CMD_READFRAME       // 7
-                  `ifdef USE_WATCHDOG
-                    ,
-                    STATE_CMD_WATCHDOG       // 8
-                  `endif
-                  } ctrl_fsm;
+    typedef enum logic [3:0] {STATE_IDLE,               // 0
+                              STATE_CMD_READROW,        // 1
+                              STATE_CMD_READBRIGHTNESS, // 2
+                              STATE_CMD_BLANKPANEL,     // 3
+                              STATE_CMD_FILLPANEL,      // 4
+                              STATE_CMD_FILLRECT,       // 5
+                              STATE_CMD_READPIXEL,      // 6
+                              STATE_CMD_READFRAME       // 7
+                              `ifdef USE_WATCHDOG
+                                ,
+                                STATE_CMD_WATCHDOG       // 8
+                              `endif
+                              } ctrl_fsm;
     logic [7:0] data_rx_latch;
     logic ready_for_data_logic;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
