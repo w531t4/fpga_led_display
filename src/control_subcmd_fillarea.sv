@@ -17,7 +17,7 @@ module control_subcmd_fillarea #(
     input [_NUM_ROW_ADDRESS_BITS-1:0] y1,
     input [_NUM_COLUMN_ADDRESS_BITS-1:0] width,
     input [_NUM_ROW_ADDRESS_BITS-1:0] height,
-    input [(BYTES_PER_PIXEL*8)-1:0] color, // must be byte aligned
+    input [(BYTES_PER_PIXEL*8)-1:0] color,  // must be byte aligned
 
     output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
     output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
@@ -43,10 +43,11 @@ module control_subcmd_fillarea #(
     assign x2 = x1 + width;
     assign y2 = y1 + height;
 
-    typedef enum {STATE_ROW_PRIMEMEMWRITE,
-                  STATE_ROW_MEMWRITE,
-                  STATE_WAIT_FOR_RESET
-                  } ctrl_fsm;
+    typedef enum {
+        STATE_ROW_PRIMEMEMWRITE,
+        STATE_ROW_MEMWRITE,
+        STATE_WAIT_FOR_RESET
+    } ctrl_fsm;
     ctrl_fsm state;
     always @(posedge clk) begin
         if (reset) begin
@@ -58,19 +59,18 @@ module control_subcmd_fillarea #(
             column <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
             pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
             done <= 1'b0;
-        end
-        else begin
-            case(state)
+        end else begin
+            case (state)
                 STATE_ROW_PRIMEMEMWRITE: begin
                     if (enable) begin
 
                         state <= STATE_ROW_MEMWRITE;
-                        row <= (_NUM_ROW_ADDRESS_BITS)'(y2-1);
-                        column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(x2-1);
+                        row <= (_NUM_ROW_ADDRESS_BITS)'(y2 - 1);
+                        column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(x2 - 1);
                         pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
-                        data_out <= color[(((32)'(pixel) + 1) * 8)-1 -: 8];
+                        data_out <= color[(((32)'(pixel)+1)*8)-1-:8];
                         ram_access_start <= !ram_access_start;
                     end
                 end
@@ -81,7 +81,7 @@ module control_subcmd_fillarea #(
                             if (pixel == 'd0) begin
                                 pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
                                 if (column == x1) begin
-                                    column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(x2-1);
+                                    column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(x2 - 1);
                                     row <= row - 'd1;
                                 end else begin
                                     column <= column - 'd1;
@@ -90,9 +90,8 @@ module control_subcmd_fillarea #(
                                 if (row == y1 && column == x1 && ((pixel - 'd1) == 0)) done <= 1'b1;
                                 pixel <= pixel - 'd1;
                             end
-                            data_out <= color[(((32)'(pixel) + 1) * 8)-1 -: 8];
-                        end
-                        else begin
+                            data_out <= color[(((32)'(pixel)+1)*8)-1-:8];
+                        end else begin
                             state <= STATE_WAIT_FOR_RESET;
                             ram_write_enable <= 1'b0;
                             data_out <= 8'b0;
@@ -103,7 +102,7 @@ module control_subcmd_fillarea #(
                 STATE_WAIT_FOR_RESET: begin
                     if (ack) begin
                         state <= STATE_ROW_PRIMEMEMWRITE;
-                        done <= 1'b0;
+                        done  <= 1'b0;
                     end
                 end
                 default: state <= state;

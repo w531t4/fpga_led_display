@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns/1ns
-`default_nettype none
+`timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
 
 module tb_control_subcmd_fillarea #(
@@ -13,7 +12,7 @@ module tb_control_subcmd_fillarea #(
     localparam WIDTH = 4;
     localparam HEIGHT = 4;
     localparam OUT_BITWIDTH = 8;
-    localparam MEMBITS = WIDTH*HEIGHT*BYTES_PER_PIXEL*8;
+    localparam MEMBITS = WIDTH * HEIGHT * BYTES_PER_PIXEL * 8;
     logic clk;
     logic subcmd_enable;
     wire [$clog2(WIDTH)-1:0] column;
@@ -37,11 +36,11 @@ module tb_control_subcmd_fillarea #(
         .enable(subcmd_enable),
         .clk(clk),
         .ack(done),
-        .x1({$clog2(WIDTH){1'b0}}),
-        .y1({$clog2(HEIGHT){1'b0}}),
+        .x1({$clog2(WIDTH) {1'b0}}),
+        .y1({$clog2(HEIGHT) {1'b0}}),
         .width(($clog2(WIDTH))'(WIDTH)),
         .height(($clog2(HEIGHT))'(HEIGHT)),
-        .color({(BYTES_PER_PIXEL*8){1'b0}}),
+        .color({(BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
         .column(column),
         .pixel(pixel),
@@ -52,14 +51,14 @@ module tb_control_subcmd_fillarea #(
     );
 
     initial begin
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
         $dumpvars(0, tb_control_subcmd_fillarea);
         clk = 0;
         done = 0;
         reset = 1;
-        addr = {$clog2(MEMBITS){1'b0}};
+        addr = {$clog2(MEMBITS) {1'b0}};
         mem = {MEMBITS{1'b1}};
         subcmd_enable = 0;
         // finish reset for tb
@@ -71,7 +70,8 @@ module tb_control_subcmd_fillarea #(
         @(posedge clk);
 
         `WAIT_ASSERT(clk, (row == 3), 1)
-        assert(data_out == 8'b0) else begin
+        assert (data_out == 8'b0)
+        else begin
             $display("expected to see data_out as 0, but saw %d\n", data_out);
             $stop;
         end
@@ -94,7 +94,7 @@ module tb_control_subcmd_fillarea #(
     end
     always @(posedge clk) begin
         addr = {row, column, pixel};
-        if (ram_write_enable) mem[((addr+1)* 8)-1 -: 8] <= data_out[7:0];
+        if (ram_write_enable) mem[((addr+1)*8)-1-:8] <= data_out[7:0];
     end
     always begin
         #2 clk <= !clk;

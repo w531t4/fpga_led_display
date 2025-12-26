@@ -13,7 +13,7 @@ module matrix_scan #(
     input clk_in,
 
     // [5:0]  64 width
-    output [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,         /* the current column (clocking out now) */
+    output       [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,     /* the current column (clocking out now) */
     // [3:0] 16 height rows (two of them)
     output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,        /* the current row (clocking out now) */
     // [3:0] 16 height rows (two of them)
@@ -22,25 +22,25 @@ module matrix_scan #(
     output clk_pixel_load,
     output clk_pixel,
     output row_latch,
-    output output_enable, /* the minimum output enable pulse should not be shorter than 1us... */
+    output output_enable,   /* the minimum output enable pulse should not be shorter than 1us... */
 
-    `ifdef DEBUGGER
-        output [1:0] row_latch_state2,
-        output row_latch2,
-        output state_advance2,
-        output clk_pixel_load_en2,
-    `endif
-    output logic [BRIGHTNESS_LEVELS-1:0] brightness_mask /* used to pick a bit from the sub-pixel's brightness */
- );
+`ifdef DEBUGGER
+    output [1:0] row_latch_state2,
+    output row_latch2,
+    output state_advance2,
+    output clk_pixel_load_en2,
+`endif
+    output logic [BRIGHTNESS_LEVELS-1:0] brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
+);
 
 
     logic [1:0] state;
     wire clk_state;
     wire state_advance;
 
-    wire clk_pixel_load_en;/* enables the pixel load clock */
-    logic  clk_pixel_en;    /* enables the pixel clock, delayed by one cycle from the load clock */
-    logic  [1:0] row_latch_state;
+    wire clk_pixel_load_en;  /* enables the pixel load clock */
+    logic clk_pixel_en;  /* enables the pixel clock, delayed by one cycle from the load clock */
+    logic [1:0] row_latch_state;
 
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
@@ -53,24 +53,24 @@ module matrix_scan #(
     assign row_latch = row_latch_state[1:0] == 2'b10;
 
     assign clk_state = state == 2'b10;
-    `ifdef DEBUGGER
-        assign row_latch_state2 = row_latch_state[1:0];
-        assign row_latch2 = row_latch;
-        assign clk_pixel_load_en2 = clk_pixel_load_en;
-        assign state_advance2 = state_advance;
-    `endif
+`ifdef DEBUGGER
+    assign row_latch_state2 = row_latch_state[1:0];
+    assign row_latch2 = row_latch;
+    assign clk_pixel_load_en2 = clk_pixel_load_en;
+    assign state_advance2 = state_advance;
+`endif
     wire unused_timer_runpin;
     /* produce 64 load clocks per line...
        external logic should present the pixel value on the rising edge */
     timeout #(
         // 7
-        .COUNTER_WIDTH(_NUM_COLUMN_ADDRESS_BITS+1)
+        .COUNTER_WIDTH(_NUM_COLUMN_ADDRESS_BITS + 1)
     ) timeout_clk_pixel_load_en (
-        .reset(reset),
-        .clk_in(clk_in),
-        .start(clk_state),
+        .reset  (reset),
+        .clk_in (clk_in),
+        .start  (clk_state),
         // 7'd64
-        .value((_NUM_COLUMN_ADDRESS_BITS+1)'(PIXEL_WIDTH)),
+        .value  ((_NUM_COLUMN_ADDRESS_BITS + 1)'(PIXEL_WIDTH)),
         .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
     );
@@ -80,13 +80,13 @@ module matrix_scan #(
        advances out-of-phase with the pixel clock */
     timeout #(
         // 6
-        .COUNTER_WIDTH($clog2(PIXEL_WIDTH-1))
+        .COUNTER_WIDTH($clog2(PIXEL_WIDTH - 1))
     ) timeout_column_address (
-        .reset(reset),
-        .clk_in(clk_in),
-        .start(clk_state),
+        .reset  (reset),
+        .clk_in (clk_in),
+        .start  (clk_state),
         // 6'd63
-        .value(($clog2(PIXEL_WIDTH-1))'(PIXEL_WIDTH-1)),
+        .value  (($clog2(PIXEL_WIDTH - 1))'(PIXEL_WIDTH - 1)),
         .counter(column_address),
         .running(unused_timer_runpin)
     );
@@ -100,12 +100,11 @@ module matrix_scan #(
             brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
             brightness_mask_active <= {BRIGHTNESS_LEVELS{1'b0}};
             // 4'd0
-            row_address <= {$clog2(PIXEL_HALFHEIGHT){1'b0}};
-            row_address_active <= {$clog2(PIXEL_HALFHEIGHT){1'b0}};
-        end
-        else begin
+            row_address <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
+            row_address_active <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
+        end else begin
             clk_pixel_en <= clk_pixel_load_en;
-            row_latch_state <= { row_latch_state[0], clk_pixel_load_en };
+            row_latch_state <= {row_latch_state[0], clk_pixel_load_en};
             /* on completion of the row_latch, we advanced the brightness mask to generate the next row of pixels */
             if (row_latch) begin
                 brightness_mask_active <= brightness_mask;
@@ -116,12 +115,10 @@ module matrix_scan #(
                     brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
                     // 4'd1
                     row_address <= row_address + 1;
-                end
-                else begin
+                end else begin
                     brightness_mask <= brightness_mask >> 1;
                 end
-            end
-            else begin
+            end else begin
             end
 
         end
@@ -145,14 +142,10 @@ module matrix_scan #(
     always @(posedge clk_in) begin
         if (reset) begin
             state <= 2'b1;
-        end
-        else begin
-            state <= { state[0], state_advance };
+        end else begin
+            state <= {state[0], state_advance};
         end
     end
 
-    wire _unused_ok = &{1'b0,
-                        pixel_load_en_counter_output,
-                        unused_timer_runpin,
-                        1'b0};
+    wire _unused_ok = &{1'b0, pixel_load_en_counter_output, unused_timer_runpin, 1'b0};
 endmodule

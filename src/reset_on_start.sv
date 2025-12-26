@@ -5,15 +5,15 @@ module reset_on_start #(
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
-    ) (
-    input wire clock_in,
+) (
+    input  wire clock_in,
     output wire reset
 );
-    `ifdef SIM
-        localparam counter = 8;
-    `else
-        localparam counter = 2;
-    `endif
+`ifdef SIM
+    localparam counter = 8;
+`else
+    localparam counter = 2;
+`endif
     logic count;
     logic objective;
 
@@ -32,16 +32,14 @@ module reset_on_start #(
         end
     end
     timeout_sync #(
-        .COUNTER_WIDTH($clog2(counter+1))
+        .COUNTER_WIDTH($clog2(counter + 1))
     ) reset_on_start_timeout (
-        .reset(count),
-        .clk_in(clock_in),
-        .start(objective),
-        .value(counter),
+        .reset  (count),
+        .clk_in (clock_in),
+        .start  (objective),
+        .value  (counter),
         .counter(unused_timer_counter),
         .running(reset)
     );
-    wire _unused_ok = &{1'b0,
-                        unused_timer_counter,
-                        1'b0};
+    wire _unused_ok = &{1'b0, unused_timer_counter, 1'b0};
 endmodule

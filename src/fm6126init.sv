@@ -7,8 +7,7 @@ module fm6126init #(
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
-)
-(
+) (
     input clk_in,
     input reset,
     output logic [2:0] rgb1_out,
@@ -17,19 +16,18 @@ module fm6126init #(
     output logic mask_en,
     output logic pixclock_out,
     output logic reset_notify
-    );
+);
 
     logic [15:0] C12;
     logic [15:0] C13;
-    logic [7:0] currentState;
-    logic [5:0] widthCounter; // 16 bits
+    logic [ 7:0] currentState;
+    logic [ 5:0] widthCounter;  // 16 bits
 
     //TODO: how do i not manually specify 64 here?
-    localparam LED_WIDTH = 'd64; // 64 pixel width led display
+    localparam LED_WIDTH = 'd64;  // 64 pixel width led display
     logic [LED_WIDTH - 1:0] widthState;
 
-    localparam STAGE1_OFFSET = 'd12,
-               STAGE2_OFFSET = 'd13;
+    localparam STAGE1_OFFSET = 'd12, STAGE2_OFFSET = 'd13;
 
 
     localparam      STATE_INIT       = 8'b00000001,
@@ -40,7 +38,7 @@ module fm6126init #(
                     STATE2_END       = 8'b00100000,
                     STATE_FINISH     = 8'b01000000,
                     STATE_FINISH2    = 8'b10000000;
-// End of default setup for RGB Matrix 64x32 panel
+    // End of default setup for RGB Matrix 64x32 panel
     always @(posedge clk_in) begin
         if (reset) begin
             C12 <= 16'b0111111111111111;
@@ -54,8 +52,7 @@ module fm6126init #(
             pixclock_out <= 1'b0;
             reset_notify <= 1'b0;
             mask_en <= 1'b1;
-        end
-        else begin
+        end else begin
             if (currentState == STATE1_BEGIN) begin
                 currentState <= STATE1_END;
                 // ({LED_WIDTH{1'b1}}) <-- create LED_WIDTH bit register prefilled with 1's
@@ -67,27 +64,24 @@ module fm6126init #(
                 //                   it'll yield a 0, which we'll then invert and use as an indicator
                 //                   to set the latch
                 // (! see_above) <-- invert the result
-                latch_out <= (~ (| widthState));
+                latch_out <= (~(|widthState));
                 pixclock_out <= 1'b0;
                 // shift right one, regardless
-                rgb1_out[2:0] <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
-                rgb2_out[2:0] <= {C12[widthCounter % 'd16], C12[widthCounter % 'd16], C12[widthCounter % 'd16]};
-            end
-            // reached STATE1_END and we've counted all the pixels, move to stage 2
-            else if (currentState == STATE1_END && (~ (| (widthCounter + 1'b1)))) begin
+                rgb1_out[2:0] <= {C12[widthCounter%'d16], C12[widthCounter%'d16], C12[widthCounter%'d16]};
+                rgb2_out[2:0] <= {C12[widthCounter%'d16], C12[widthCounter%'d16], C12[widthCounter%'d16]};
+            end  // reached STATE1_END and we've counted all the pixels, move to stage 2
+            else if (currentState == STATE1_END && (~(|(widthCounter + 1'b1)))) begin
                 currentState <= STATE2_BEGIN;
                 latch_out <= 1'b0;
                 pixclock_out <= 1'b1;
                 widthState <= ({LED_WIDTH{1'b1}}) >> (STAGE2_OFFSET + 1'b1);
                 widthCounter <= 'd0;
-            end
-            else if (currentState == STATE1_END) begin
+            end else if (currentState == STATE1_END) begin
                 currentState <= STATE1_BEGIN;
                 pixclock_out <= 1'b1;
-                widthState <= (widthState) >> 1;
+                widthState   <= (widthState) >> 1;
                 widthCounter <= widthCounter + 1'b1;
-            end
-            else if (currentState == STATE2_BEGIN) begin
+            end else if (currentState == STATE2_BEGIN) begin
                 currentState <= STATE2_END;
                 // ({LED_WIDTH{1'b1}}) <-- create LED_WIDTH bit register prefilled with 1's
                 // (see_above >> (LED_WIDTH - STAGE1_OFFSET)) <-- shift right STAGE1_OFFSET bits
@@ -98,33 +92,28 @@ module fm6126init #(
                 //                   it'll yield a 0, which we'll then invert and use as an indicator
                 //                   to set the latch
                 // (! see_above) <-- invert the result
-                latch_out <= (~ (| widthState));
+                latch_out <= (~(|widthState));
                 // shift right one, regardless
                 pixclock_out <= 1'b0;
-                rgb1_out <= {C13[widthCounter % 'd16], C13[widthCounter % 'd16], C13[widthCounter % 'd16]};
-                rgb2_out <= {C13[widthCounter % 'd16], C13[widthCounter % 'd16], C13[widthCounter % 'd16]};
-            end
-            else if (currentState == STATE2_END && (~ (| (widthCounter + 1'b1)))) begin
+                rgb1_out <= {C13[widthCounter%'d16], C13[widthCounter%'d16], C13[widthCounter%'d16]};
+                rgb2_out <= {C13[widthCounter%'d16], C13[widthCounter%'d16], C13[widthCounter%'d16]};
+            end else if (currentState == STATE2_END && (~(|(widthCounter + 1'b1)))) begin
                 currentState <= STATE_FINISH;
                 latch_out <= 1'b0;
                 reset_notify <= 1'b1;
                 widthCounter <= 'd0;
-            end
-            else if (currentState == STATE2_END) begin
+            end else if (currentState == STATE2_END) begin
                 currentState <= STATE2_BEGIN;
                 pixclock_out <= 1'b1;
-                widthState <= (widthState) >> 1;
+                widthState   <= (widthState) >> 1;
                 widthCounter <= widthCounter + 1'b1;
-            end
-            else if (currentState == STATE_FINISH) begin
+            end else if (currentState == STATE_FINISH) begin
                 currentState <= STATE_FINISH2;
                 pixclock_out <= 1'b0;
-            end
-            else if (currentState == STATE_FINISH2) begin
+            end else if (currentState == STATE_FINISH2) begin
                 mask_en <= 1'b1;
                 reset_notify <= 1'b0;
-            end
-            else if (currentState == STATE_INIT) begin
+            end else if (currentState == STATE_INIT) begin
                 currentState <= STATE1_BEGIN;
                 // not setting clock low, because that happens automatically.
                 widthCounter <= 4'd0;
