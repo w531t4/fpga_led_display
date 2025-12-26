@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns/1ns
-`default_nettype none
+`timescale 1ns / 1ns `default_nettype none
 module tb_multimem #(
     `include "params.vh"
     // verilator lint_off UNUSEDPARAM
@@ -42,9 +41,9 @@ module tb_multimem #(
     );
 
     initial begin
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
         $dumpvars(0, tb_multimem);
         clk_a = 0;
         clk_b = 0;
@@ -60,97 +59,78 @@ module tb_multimem #(
         ram_b_reset = 0;
 
         @(posedge clk_a) begin
-            local_reset = ! local_reset;
-            reset = ! reset;
+            local_reset = !local_reset;
+            reset = !reset;
             ram_a_reset = !ram_a_reset;
             ram_b_reset = !ram_b_reset;
         end
         @(posedge clk_a) begin
-            local_reset = ! local_reset;
+            local_reset = !local_reset;
             reset = !reset;
             ram_a_reset = !ram_a_reset;
             ram_b_reset = !ram_b_reset;
             #10 $dumpoff;
-          #190000 $dumpon;
+            #190000 $dumpon;
         end
-        @(negedge clk_a)
-            do_write_start(12'b1111_1111_1111, "A");
-        @(posedge clk_a)
-        @(negedge clk_a)
-            do_write_end();
+        @(negedge clk_a) do_write_start(12'b1111_1111_1111, "A");
+        @(posedge clk_a) @(negedge clk_a) do_write_end();
         //@(posedge clk_a)
 
 
-        @(negedge clk_a)
-            do_write_start(12'b1111_1111_1110, "B");
-        @(posedge clk_a)
-        @(negedge clk_a)
-            do_write_end();
+        @(negedge clk_a) do_write_start(12'b1111_1111_1110, "B");
+        @(posedge clk_a) @(negedge clk_a) do_write_end();
         //@(posedge clk_a)
 
 
-        @(negedge clk_a)
-        ram_b_clk_enable = 1;
-            do_read_start(11'b1111_1111_111);
-        @(posedge clk_a)
-        @(posedge clk_a)
-            do_read_end();
+        @(negedge clk_a) ram_b_clk_enable = 1;
+        do_read_start(11'b1111_1111_111);
+        @(posedge clk_a) @(posedge clk_a) do_read_end();
         //@(posedge clk_a)
 
 
-        @(negedge clk_a)
-            do_write_start(12'b1111_1111_1111, "C");
-        @(posedge clk_a)
-        @(negedge clk_a)
-            do_write_end();
+        @(negedge clk_a) do_write_start(12'b1111_1111_1111, "C");
+        @(posedge clk_a) @(negedge clk_a) do_write_end();
 
-        @(negedge clk_a)
-            do_read_start(11'b1111_1111_111);
-        @(posedge clk_a)
-        @(negedge clk_a)
-            do_read_end();
+        @(negedge clk_a) do_read_start(11'b1111_1111_111);
+        @(posedge clk_a) @(negedge clk_a) do_read_end();
 
 
 
-        @(negedge clk_a)
-            do_write_start(12'b1111_1111_1111, "D");
+        @(negedge clk_a) do_write_start(12'b1111_1111_1111, "D");
         @(posedge clk_a)
         @(negedge clk_a)
-            //do_write_end();
-            do_write_start(12'b1111_1111_1110, "E");
-            do_read_start(11'b1111_1111_111);
+        //do_write_end();
+        do_write_start(
+            12'b1111_1111_1110, "E");
+        do_read_start(11'b1111_1111_111);
         @(posedge clk_a)
         @(negedge clk_a)
-            //do_write_end();
-            do_write_start(12'b1111_1111_1110, "F");
-            do_read_start(11'b1111_1111_111);
-        @(posedge clk_a)
-        @(negedge clk_a)
-            do_read_start(11'b1111_1111_111);
-            do_write_end();
-        @(posedge clk_a)
-            do_read_end();
+        //do_write_end();
+        do_write_start(
+            12'b1111_1111_1110, "F");
+        do_read_start(11'b1111_1111_111);
+        @(posedge clk_a) @(negedge clk_a) do_read_start(11'b1111_1111_111);
+        do_write_end();
+        @(posedge clk_a) do_read_end();
 
 
         // test "half_address"
-        @(negedge clk_a)
-            do_write_start(12'b0111_1111_1111, "Z");
+        @(negedge clk_a) do_write_start(12'b0111_1111_1111, "Z");
         @(posedge clk_a)
         @(negedge clk_a)
         //do_write_end();
-            do_write_start(12'b0111_1111_1110, "Y");
-            do_read_start(11'b0111_1111_111);
+        do_write_start(
+            12'b0111_1111_1110, "Y");
+        do_read_start(11'b0111_1111_111);
         @(posedge clk_a)
         @(negedge clk_a)
         //do_write_end();
-            do_write_start(12'b0111_1111_1110, "R");
-            do_read_start(11'b0111_1111_111);
-        @(posedge clk_a)
-        @(negedge clk_a)
-            do_read_start(11'b0111_1111_111);
-            do_write_end();
-        @(posedge clk_a)
-            do_read_end();
+        do_write_start(
+            12'b0111_1111_1110, "R");
+        do_read_start(11'b0111_1111_111);
+        @(posedge clk_a) @(negedge clk_a) do_read_start(11'b0111_1111_111);
+        do_write_end();
+        @(posedge clk_a) do_read_end();
         //@(posedge clk_a)
 
         // end padding
@@ -242,8 +222,8 @@ module tb_multimem #(
     endtask
 
     always begin
-        #SIM_HALF_PERIOD_NS  clk_a <=  ~clk_a;
-        #SIM_HALF_PERIOD_NS  clk_b <=  ~clk_b;
+        #SIM_HALF_PERIOD_NS clk_a <= ~clk_a;
+        #SIM_HALF_PERIOD_NS clk_b <= ~clk_b;
     end
 
 endmodule

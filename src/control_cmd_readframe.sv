@@ -23,10 +23,11 @@ module control_cmd_readframe #(
     output logic ram_access_start,
     output logic done
 );
-    typedef enum {STATE_FRAME_PRIMEMEMWRITE,
-                  STATE_READ_FRAMECONTENT,
-                  STATE_DONE
-                  } ctrl_fsm;
+    typedef enum {
+        STATE_FRAME_PRIMEMEMWRITE,
+        STATE_READ_FRAMECONTENT,
+        STATE_DONE
+    } ctrl_fsm;
     ctrl_fsm state;
     always @(posedge clk) begin
         if (reset) begin
@@ -39,12 +40,12 @@ module control_cmd_readframe #(
             pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
             done <= 1'b0;
         end else begin
-            case(state)
+            case (state)
                 STATE_FRAME_PRIMEMEMWRITE: begin
                     if (enable) begin
                         /* first, get the row to write to */
                         state <= STATE_READ_FRAMECONTENT;
-                        row <= (_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT-1);
+                        row <= (_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT - 1);
                         column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
                         pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns/1ns
-`default_nettype none
+`timescale 1ns / 1ns `default_nettype none
 module tb_brightness_timeout #(
     `include "params.vh"
     // verilator lint_off UNUSEDPARAM
@@ -12,9 +11,9 @@ module tb_brightness_timeout #(
     logic clk;
     logic reset;
     logic row_latch;
-    wire output_enable;
-    wire exceeded_overlap_time;
-    wire clk_out;
+    wire  output_enable;
+    wire  exceeded_overlap_time;
+    wire  clk_out;
     localparam N = 8;
     localparam BASE_TIMEOUT = 23;
     logic [N-1:0] brightness_mask_active;
@@ -32,23 +31,23 @@ module tb_brightness_timeout #(
     );
 
     initial begin
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
         $dumpvars(0, tb_brightness_timeout);
         clk = 0;
         reset = 1;
         row_latch = 0;
-        brightness_mask_active = 1 << (N-1);
+        brightness_mask_active = 1 << (N - 1);
         @(posedge clk) reset <= 1'b0;
-        repeat (N*2) begin
+        repeat (N * 2) begin
             @(posedge clk);
             brightness_mask_active = brightness_mask_active >> 1;
         end
         @(posedge clk) brightness_mask_active = 1 << 1;
         @(posedge clk) row_latch = 1;
         @(posedge clk) row_latch = 0;
-        repeat (N*8) begin
+        repeat (N * 8) begin
             @(posedge clk);
         end
         $finish;

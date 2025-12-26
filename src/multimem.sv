@@ -51,45 +51,43 @@ module multimem #(
 
     genvar i;
     generate
-    for (i = 0; i < LANES; i = i + 1) begin : G
-        wire [_NUM_STRUCTURE_BITS-1:0] lane_idx_from_addr = { AddressA[_NUM_ADDRESS_A_BITS-1 -: _NUM_SUBPANELSELECT_BITS],
-                                                              AddressA[_NUM_PIXELCOLORSELECT_BITS-1:0] };
+        for (i = 0; i < LANES; i = i + 1) begin : G
+            wire [_NUM_STRUCTURE_BITS-1:0] lane_idx_from_addr = {
+                AddressA[_NUM_ADDRESS_A_BITS-1-:_NUM_SUBPANELSELECT_BITS], AddressA[_NUM_PIXELCOLORSELECT_BITS-1:0]
+            };
 
-        wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[_NUM_STRUCTURE_BITS-1:0]);
-        (* keep = "true" *) reg we_lane_q;
-        (* keep = "true" *) reg [_NUM_ADDRESS_B_BITS-1:0] addra_q;
-        (* keep = "true" *) reg [_NUM_DATA_A_BITS-1:0]    dia_q;
+            wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[_NUM_STRUCTURE_BITS-1:0]);
+            (* keep = "true" *) reg we_lane_q;
+            (* keep = "true" *) reg [_NUM_ADDRESS_B_BITS-1:0] addra_q;
+            (* keep = "true" *) reg [_NUM_DATA_A_BITS-1:0] dia_q;
 
-        always @(posedge ClockA) begin
-            we_lane_q <= we_lane_c;
-            addra_q   <= AddressA[(_NUM_ADDRESS_A_BITS-_NUM_SUBPANELSELECT_BITS)-1 -: _NUM_ADDRESS_B_BITS];
-            dia_q     <= DataInA;
+            always @(posedge ClockA) begin
+                we_lane_q <= we_lane_c;
+                addra_q   <= AddressA[(_NUM_ADDRESS_A_BITS-_NUM_SUBPANELSELECT_BITS)-1-:_NUM_ADDRESS_B_BITS];
+                dia_q     <= DataInA;
+            end
+
+            mem_lane #(
+                .ADDR_BITS(_NUM_ADDRESS_B_BITS),
+                .DW(_NUM_DATA_A_BITS)
+            ) u_lane (
+                .clka (ClockA),
+                .ena  (1'b1),
+                .wea  (we_lane_q),
+                .addra(addra_q),
+                .dia  (dia_q),
+
+                .clkb (ClockB),
+                .enb  (ClockEnB),
+                .rstb (ResetA || ResetB),
+                .addrb(AddressB),
+                .dob  (qb_lanes_w[i*_NUM_DATA_A_BITS+:_NUM_DATA_A_BITS])
+            );
         end
-
-        mem_lane #(
-            .ADDR_BITS(_NUM_ADDRESS_B_BITS),
-            .DW(_NUM_DATA_A_BITS)
-        ) u_lane (
-            .clka   (ClockA),
-            .ena    (1'b1),
-            .wea    (we_lane_q),
-            .addra  (addra_q),
-            .dia    (dia_q),
-
-            .clkb   (ClockB),
-            .enb    (ClockEnB),
-            .rstb   (ResetA || ResetB),
-            .addrb  (AddressB),
-            .dob    (qb_lanes_w[i*_NUM_DATA_A_BITS +: _NUM_DATA_A_BITS])
-        );
-    end
     endgenerate
 
     assign QB = qb_lanes_w;
 
     assign QA = 0;
-    wire _unused_ok = &{1'b0,
-                        WrB,
-                        DataInB,
-                        1'b0};
+    wire _unused_ok = &{1'b0, WrB, DataInB, 1'b0};
 endmodule

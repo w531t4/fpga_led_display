@@ -8,7 +8,7 @@ module rgb565 #(
     // verilator lint_on UNUSEDPARAM
 ) (
     input [15:0] data_in,
-    input [5:0] brightness,
+    input [ 5:0] brightness,
 
     output [5:0] red,
     output [5:0] green,
@@ -19,9 +19,9 @@ module rgb565 #(
     wire [5:0] green_selected;
     wire [4:0] blue_selected;
 
-    assign red_selected = data_in[15:11];
+    assign red_selected   = data_in[15:11];
     assign green_selected = data_in[10:5];
-    assign blue_selected = data_in[4:0];
+    assign blue_selected  = data_in[4:0];
 
     wire [6:0] k = {1'b0, brightness} + 7'd1;
     wire k_zero = (brightness == 6'd0);
@@ -34,31 +34,31 @@ module rgb565 #(
     wire [5:0] g6_scaled = k_zero ? 6'd0 : ((g_prod + 12'd32) >> 6);
     wire [4:0] b5_scaled = k_zero ? 5'd0 : ((b_prod + 11'd32) >> 6);
 
-    `ifdef GAMMA
-        gamma_correct #(
-            .IN_BITS(5),
-            .OUT_BITS(6)
-        ) gc_red (
-            .in(r5_scaled),
-            .out(red)
-        );
-        gamma_correct #(
-            .IN_BITS(6),
-            .OUT_BITS(6)
-        ) gc_green(
-            .in(g6_scaled),
-            .out(green)
-        );
-        gamma_correct #(
-            .IN_BITS(5),
-            .OUT_BITS(6)
-        ) gc_blue (
-            .in(b5_scaled),
-            .out(blue)
-        );
-    `else
-        assign red = {r5_scaled, r5_scaled[0]};
-        assign green = g6_scaled;
-        assign blue = {b5_scaled, b5_scaled[0]};
-    `endif
+`ifdef GAMMA
+    gamma_correct #(
+        .IN_BITS (5),
+        .OUT_BITS(6)
+    ) gc_red (
+        .in (r5_scaled),
+        .out(red)
+    );
+    gamma_correct #(
+        .IN_BITS (6),
+        .OUT_BITS(6)
+    ) gc_green (
+        .in (g6_scaled),
+        .out(green)
+    );
+    gamma_correct #(
+        .IN_BITS (5),
+        .OUT_BITS(6)
+    ) gc_blue (
+        .in (b5_scaled),
+        .out(blue)
+    );
+`else
+    assign red   = {r5_scaled, r5_scaled[0]};
+    assign green = g6_scaled;
+    assign blue  = {b5_scaled, b5_scaled[0]};
+`endif
 endmodule

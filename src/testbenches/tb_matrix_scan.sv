@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns/1ns
-`default_nettype none
+`timescale 1ns / 1ns `default_nettype none
 module tb_matrix_scan #(
     `include "params.vh"
     `include "memory_calcs.vh"
@@ -22,7 +21,7 @@ module tb_matrix_scan #(
     wire [5:0] brightness_mask;
 
 
-    matrix_scan  #(
+    matrix_scan #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
     ) matrix_scan_instance (
@@ -36,24 +35,24 @@ module tb_matrix_scan #(
         .row_latch(row_latch),
         .output_enable(output_enable),
         .brightness_mask(brightness_mask)
-      );
+    );
     initial begin
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
         $dumpvars(0, tb_matrix_scan);
-        clk = 0;
+        clk   = 0;
         reset = 0;
     end
 
-    initial #2 reset = ! reset;
-    initial #3 reset = ! reset;
+    initial #2 reset = !reset;
+    initial #3 reset = !reset;
     initial #10000000 $finish;
 
     always begin
         #ADJUSTED_CLOCK clk <= !clk;
     end
     // always begin
-      // #700 reset <= ! reset;
+    // #700 reset <= ! reset;
     // end
 endmodule

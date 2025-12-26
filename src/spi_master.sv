@@ -48,19 +48,19 @@ module spi_master #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input rstb,            // Asynchronous active-low reset — when 0, resets all internal state
-    input clk,             // System clock used to generate the SPI clock (sck) and time state machine transitions
-    input mlb,             // Bit order: 0 = LSB first, 1 = MSB first
-    input start,           // When 1, begins an SPI transaction (loads tdat, asserts ss, starts clocking)
-    input [7:0] tdat,      // The data byte to transmit to the slave
-    input [1:0] cdiv,      // Clock divider value that scales the system clock to generate sck.
-                           //       (00 = clk/4, 01 = /8, 10 = /16, 11 = /32)
-    input din,             // Data input from the slave (MISO) — captured by master on rising edge of sck
-    output reg ss,         // Slave select output (active-low). Asserted (0) during a transfer
-    output reg sck,        // SPI clock output (Mode 3 behavior: idles high, toggles every half-bit time)
-    output reg dout,       // Data output (MOSI) — changes on falling edge of sck
-    output reg done,       // Goes high for one cycle after 8 bits are transferred
-    output reg [7:0] rdata // Received byte from slave (din), valid when done is high
+    input            rstb,   // Asynchronous active-low reset — when 0, resets all internal state
+    input            clk,    // System clock used to generate the SPI clock (sck) and time state machine transitions
+    input            mlb,    // Bit order: 0 = LSB first, 1 = MSB first
+    input            start,  // When 1, begins an SPI transaction (loads tdat, asserts ss, starts clocking)
+    input      [7:0] tdat,   // The data byte to transmit to the slave
+    input      [1:0] cdiv,   // Clock divider value that scales the system clock to generate sck.
+                             //       (00 = clk/4, 01 = /8, 10 = /16, 11 = /32)
+    input            din,    // Data input from the slave (MISO) — captured by master on rising edge of sck
+    output reg       ss,     // Slave select output (active-low). Asserted (0) during a transfer
+    output reg       sck,    // SPI clock output (Mode 3 behavior: idles high, toggles every half-bit time)
+    output reg       dout,   // Data output (MOSI) — changes on falling edge of sck
+    output reg       done,   // Goes high for one cycle after 8 bits are transferred
+    output reg [7:0] rdata   // Received byte from slave (din), valid when done is high
 );
 
     reg [1:0] cur;
@@ -76,9 +76,9 @@ module spi_master #(
 
     //FSM i/o
     always @(start or cur or nbit or cdiv or rreg) begin
-        nxt = cur;
-        clr = 0;
-        shift = 0; //ss=0;
+        nxt   = cur;
+        clr   = 0;
+        shift = 0;  //ss=0;
         case (cur)
             idle: begin
                 if (start == 1) begin
@@ -89,21 +89,20 @@ module spi_master #(
                         2'b11: mid = 16;
                     endcase
                     shift = 1;
-                    done = 1'b0;
-                    nxt = send;
+                    done  = 1'b0;
+                    nxt   = send;
                 end
-            end //idle
+            end  //idle
             send: begin
                 ss = 0;
                 if (nbit != 8) begin
                     shift = 1;
-                end
-                else begin
+                end else begin
                     rdata = rreg;
-                    done = 1'b1;
-                    nxt = finish;
+                    done  = 1'b1;
+                    nxt   = finish;
                 end
-            end //send
+            end  //send
             finish: begin
                 shift = 0;
                 ss = 1;
@@ -112,14 +111,12 @@ module spi_master #(
             end
             default: nxt = finish;
         endcase
-    end //always
+    end  //always
 
     //state transistion
     always @(negedge clk or negedge rstb) begin
-        if (rstb == 0)
-            cur <= finish;
-        else
-            cur <= nxt;
+        if (rstb == 0) cur <= finish;
+        else cur <= nxt;
     end
 
     //setup falling edge (shift dout) sample rising edge (read din)
@@ -127,56 +124,51 @@ module spi_master #(
         if (clr == 1) begin
             cnt = 0;
             sck = 1;
-        end
-        else begin
+        end else begin
             if (shift == 1) begin
                 cnt = cnt + 1;
                 if (cnt == mid) begin
-                    sck =~ sck;
+                    sck = ~sck;
                     cnt = 0;
-                end //mid
-            end //shift
-        end //rst
-    end //always
+                end  //mid
+            end  //shift
+        end  //rst
+    end  //always
 
     //sample @ rising edge (read din)
-    always @(posedge sck or posedge clr) begin // or negedge rstb
+    always @(posedge sck or posedge clr) begin  // or negedge rstb
         if (clr == 1) begin
             nbit = 0;
             rreg = 8'hFF;
-        end
-        else begin
-            if (mlb == 0) begin //LSB first, din@msb -> right shift
+        end else begin
+            if (mlb == 0) begin  //LSB first, din@msb -> right shift
                 rreg = {din, rreg[7:1]};
-            end
-            else begin//MSB first, din@lsb -> left shift
+            end else begin  //MSB first, din@lsb -> left shift
                 rreg = {rreg[6:0], din};
             end
             nbit = nbit + 1;
-        end //rst
-    end //always
+        end  //rst
+    end  //always
 
     always @(negedge sck or posedge clr) begin
         if (clr == 1) begin
             treg = 8'hFF;
             dout = 1;
-        end
-        else begin
-            if (nbit == 0) begin //load data into TREG
+        end else begin
+            if (nbit == 0) begin  //load data into TREG
                 treg = tdat;
                 dout = mlb ? treg[7] : treg[0];
             end //nbit_if
             else begin
-                if (mlb==0) begin //LSB first, shift right
+                if (mlb == 0) begin  //LSB first, shift right
                     treg = {1'b1, treg[7:1]};
                     dout = treg[0];
-                end
-                else begin //MSB first shift LEFT
+                end else begin  //MSB first shift LEFT
                     treg = {treg[6:0], 1'b1};
                     dout = treg[7];
                 end
             end
-        end //rst
-    end //always
+        end  //rst
+    end  //always
 
 endmodule

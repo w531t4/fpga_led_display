@@ -8,7 +8,7 @@ module brightness #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input [BRIGHTNESS_LEVELS-1:0] value, /* the pixel's absolute value */
+    input [BRIGHTNESS_LEVELS-1:0] value,  /* the pixel's absolute value */
     input [BRIGHTNESS_LEVELS-1:0] mask,  /* a rolling brightness mask */
     input enable,
 

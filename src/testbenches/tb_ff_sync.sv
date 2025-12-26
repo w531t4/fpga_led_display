@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns/1ns
-`default_nettype none
+`timescale 1ns / 1ns `default_nettype none
 module tb_ff_sync #(
     `include "params.vh"
     // verilator lint_off UNUSEDPARAM
@@ -15,8 +14,7 @@ module tb_ff_sync #(
     logic sync_level;
     logic sync_pulse;
 
-    ff_sync  #(
-    ) ff_sync_instance (
+    ff_sync #() ff_sync_instance (
         .reset(reset),
         .clk(clk),
         .signal(signal),
@@ -25,17 +23,17 @@ module tb_ff_sync #(
     );
 
     initial begin
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
         $dumpvars(0, tb_ff_sync);
         clk = 0;
         reset = 0;
         signal = 0;
     end
 
-    initial #2 reset = ! reset;
-    initial #3 reset = ! reset;
+    initial #2 reset = !reset;
+    initial #3 reset = !reset;
 
     initial begin
         #SIM_HALF_PERIOD_NS signal = ~signal;

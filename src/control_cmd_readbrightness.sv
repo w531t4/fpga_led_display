@@ -18,9 +18,10 @@ module control_cmd_readbrightness #(
     output logic brightness_change_en,
     output logic done
 );
-    typedef enum {STATE_READY,
-                  STATE_DONE
-                  } ctrl_fsm;
+    typedef enum {
+        STATE_READY,
+        STATE_DONE
+    } ctrl_fsm;
     ctrl_fsm state;
     always @(posedge clk) begin
         if (reset) begin

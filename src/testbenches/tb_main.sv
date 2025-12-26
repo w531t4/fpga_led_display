@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns/1ns
-`default_nettype none
+`timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
 module tb_main #(
     `include "params.vh"
@@ -25,7 +24,7 @@ module tb_main #(
     wire rgb1_1;
     wire rgb1_2;
     wire debugger_txout;
-    logic  debugger_rxin;
+    logic debugger_rxin;
 
     logic reset;
 
@@ -38,26 +37,26 @@ module tb_main #(
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = ROOT_CLOCK * TB_MAIN_WAIT_SECS;
     localparam int CMD_LINE_STATE_SEQ_LEN = 18;
-    localparam integer CMD_LINE_STATE_STEP_SECS = 0; // use nanos below
-    localparam integer CMD_LINE_STATE_STEP_NS = 500_000; // 500us per step
+    localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
+    localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
     localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
         ? ((64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
         : (64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
     logic cmd_line_state_seq_done;
 
-    wire rxdata;
-    `ifdef SPI
-        logic [7:0] thebyte;
-        wire spi_master_txdone;
-        integer i;
-        logic spi_clk_en;
-        wire spi_clk;
-        wire spi_cs;
-        wire spi_data_ready;
-        logic spi_start;
-    `else
-        wire uart_rx_dataready;
-    `endif
+    wire  rxdata;
+`ifdef SPI
+    logic [7:0] thebyte;
+    wire spi_master_txdone;
+    integer i;
+    logic spi_clk_en;
+    wire spi_clk;
+    wire spi_cs;
+    wire spi_data_ready;
+    logic spi_start;
+`else
+    wire uart_rx_dataready;
+`endif
 
     main #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
@@ -65,118 +64,116 @@ module tb_main #(
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) tbi_main (
-        .gp11(clk_pixel),
-        .gp12(row_latch),
-        .gp13(OE),
+        .gp11     (clk_pixel),
+        .gp12     (row_latch),
+        .gp13     (OE),
         .clk_25mhz(clk),
-        .gp7(ROA0),
-        .gp8(ROA1),
-        .gp9(ROA2),
-        .gp10(ROA3),
-        .gp0(rgb1_0),
-        .gp1(rgb1_1),
-        .gp2(rgb1_2),
-        .gp3(rgb2_2),
-        .gp4(rgb2_0),
-        .gp5(rgb2_1),
-        .gp14(rxdata),
-        .gp16(debugger_txout),
-        .gp15(debugger_rxin),
-        .gn11(),
-        .gn12(),
-        .gn13(),
-        .gn7(),
-        .gn8(),
-        .gn9(),
-        .gn10(),
-        .gn0(),
-        .gn1(),
-        .gn2(),
-        .gn3(),
-        .gn4(),
-        .gn5()
-        `ifdef SPI
-            ,
-            `ifdef SPI_ESP32
-                .sd_d({3'b0, rxdata}),  // sd_d[0]=mosi
-                .sd_clk(spi_clk),       // clk
-                .sd_cmd(spi_cs)         // ce
-            `else
-                .gp17(rxdata),  // spi miso
-                //.gp18()       // spi_mosi
-                .gp19(spi_clk), // spi_clk
-                .gp20(spi_cs)   // spi_cs
-            `endif
-        `endif
+        .gp7      (ROA0),
+        .gp8      (ROA1),
+        .gp9      (ROA2),
+        .gp10     (ROA3),
+        .gp0      (rgb1_0),
+        .gp1      (rgb1_1),
+        .gp2      (rgb1_2),
+        .gp3      (rgb2_2),
+        .gp4      (rgb2_0),
+        .gp5      (rgb2_1),
+        .gp14     (rxdata),
+        .gp16     (debugger_txout),
+        .gp15     (debugger_rxin),
+        .gn11     (),
+        .gn12     (),
+        .gn13     (),
+        .gn7      (),
+        .gn8      (),
+        .gn9      (),
+        .gn10     (),
+        .gn0      (),
+        .gn1      (),
+        .gn2      (),
+        .gn3      (),
+        .gn4      (),
+        .gn5      ()
+`ifdef SPI,
+`ifdef SPI_ESP32
+        .sd_d     ({3'b0, rxdata}),  // sd_d[0]=mosi
+        .sd_clk   (spi_clk),         // clk
+        .sd_cmd   (spi_cs)           // ce
+`else
+        .gp17     (rxdata),          // spi miso
+        //.gp18()       // spi_mosi
+        .gp19     (spi_clk),         // spi_clk
+        .gp20     (spi_cs)           // spi_cs
+`endif
+`endif
     );
-    `ifdef SPI
-        spi_master #(
-        ) spimaster (
-            .rstb(~reset),
-            .clk(clk && spi_clk_en),
-            .mlb(1'b1),     // shift msb first
-            .start(spi_start),  // indicator to start activity
-            .tdat(thebyte),
-            .cdiv(2'b0),    // 2'b0 = divide by 4
-            .din(1'b0),     // data from slave, disable
-            .ss(spi_cs),        // chip select for slave
-            .sck(spi_clk),      // clock to send to slave
-            .dout(rxdata),    // data to send to slave
-            .done(spi_master_txdone),
-            .rdata()
-        );
-    `else
-        debugger #(
-            .DATA_WIDTH($bits(myled_row)),
-            // use smaller than normal so it doesn't require us to simulate to
-            // infinity to see results
-            .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+`ifdef SPI
+    spi_master #() spimaster (
+        .rstb (~reset),
+        .clk  (clk && spi_clk_en),
+        .mlb  (1'b1),               // shift msb first
+        .start(spi_start),          // indicator to start activity
+        .tdat (thebyte),
+        .cdiv (2'b0),               // 2'b0 = divide by 4
+        .din  (1'b0),               // data from slave, disable
+        .ss   (spi_cs),             // chip select for slave
+        .sck  (spi_clk),            // clock to send to slave
+        .dout (rxdata),             // data to send to slave
+        .done (spi_master_txdone),
+        .rdata()
+    );
+`else
+    debugger #(
+        .DATA_WIDTH($bits(myled_row)),
+        // use smaller than normal so it doesn't require us to simulate to
+        // infinity to see results
+        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
-            // We're using the debugger here as a data transmitter only. Need
-            // to transmit at the same speed as the controller is expecting to
-            // receive at
-            .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
-        ) mydebug (
-            .clk_in(clk),
-            .reset(reset),
-            .data_in(myled_row),
-            .debug_uart_rx_in(1'b0),
-            .debug_command(debug_command),
-            .debug_command_pulse(debug_command_pulse),
-            .debug_command_busy(debug_command_busy),
-            .tx_out(rxdata)
-        );
-    `endif
+        // We're using the debugger here as a data transmitter only. Need
+        // to transmit at the same speed as the controller is expecting to
+        // receive at
+        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+    ) mydebug (
+        .clk_in(clk),
+        .reset(reset),
+        .data_in(myled_row),
+        .debug_uart_rx_in(1'b0),
+        .debug_command(debug_command),
+        .debug_command_pulse(debug_command_pulse),
+        .debug_command_busy(debug_command_busy),
+        .tx_out(rxdata)
+    );
+`endif
 
     initial begin
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
-        `ifdef FOCUS_TB_MAIN_UART
-            // $dumpvars(0, tb_main);
-            $dumpvars(1, tb_main.mydebug.data_in);
-            $dumpvars(1, tb_main.mydebug.debug_bits);
-            $dumpvars(1, tb_main.mydebug.currentState);
-            $dumpvars(1, tb_main.mydebug.tx_busy);
-            $dumpvars(1, tb_main.mydebug.tx_done);
-            $dumpvars(1, tb_main.mydebug.tx_out);
-            $dumpvars(1, tb_main.mydebug.tx_start);
-            // $dumpvars(1, tb_main.mydebug);
-            // $dumpvars(1, tb_main.mydebug.tx_out);
-            $dumpvars(1, tb_main.tbi_main.clk_root);
-            $dumpvars(1, tb_main.mydebug.debug_command_busy);
-            $dumpvars(1, tb_main.mydebug.debug_command_pulse);
-            $dumpvars(1, tb_main.tbi_main.rxdata);
-            $dumpvars(1, tb_main.tbi_main.ctrl);
-        `else
-            $dumpvars(0, tb_main);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
+`ifdef FOCUS_TB_MAIN_UART
+        // $dumpvars(0, tb_main);
+        $dumpvars(1, tb_main.mydebug.data_in);
+        $dumpvars(1, tb_main.mydebug.debug_bits);
+        $dumpvars(1, tb_main.mydebug.currentState);
+        $dumpvars(1, tb_main.mydebug.tx_busy);
+        $dumpvars(1, tb_main.mydebug.tx_done);
+        $dumpvars(1, tb_main.mydebug.tx_out);
+        $dumpvars(1, tb_main.mydebug.tx_start);
+        // $dumpvars(1, tb_main.mydebug);
+        // $dumpvars(1, tb_main.mydebug.tx_out);
+        $dumpvars(1, tb_main.tbi_main.clk_root);
+        $dumpvars(1, tb_main.mydebug.debug_command_busy);
+        $dumpvars(1, tb_main.mydebug.debug_command_pulse);
+        $dumpvars(1, tb_main.tbi_main.rxdata);
+        $dumpvars(1, tb_main.tbi_main.ctrl);
+`else
+        $dumpvars(0, tb_main);
+`endif
         clk = 0;
-        `ifdef SPI
-            i = 0;
-            thebyte = 8'd0;
-            spi_clk_en = 1'b1;
-        `endif
+`ifdef SPI
+        i = 0;
+        thebyte = 8'd0;
+        spi_clk_en = 1'b1;
+`endif
 
         debugger_rxin = 0;
         reset = 1;
@@ -189,14 +186,17 @@ module tb_main #(
         // wait until next clk_root goes high
         `WAIT_ASSERT(clk, tb_main.tbi_main.clk_root === 1'b1, TB_MAIN_WAIT_CYCLES)
         // @(posedge tb_main.tbi_main.clk_root);
-        `ifdef SPI
-            `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.ready_for_data === 1'b1, TB_MAIN_WAIT_CYCLES)
-            @(posedge clk) begin
-                spi_start = 1;
-            end
-        `endif
+`ifdef SPI
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.ready_for_data === 1'b1, TB_MAIN_WAIT_CYCLES)
+        @(posedge clk) begin
+            spi_start = 1;
+        end
+`endif
         @(posedge clk)
-        #(($bits(myled_row) + 1000)*SIM_HALF_PERIOD_NS*2*4); // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
+        #(($bits(
+            myled_row
+        ) + 1000) * SIM_HALF_PERIOD_NS * 2 *
+            4);  // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
         `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         tb_main.tbi_main.ctrl.frame_select_temp = ~tb_main.tbi_main.ctrl.frame_select_temp;
@@ -210,16 +210,16 @@ module tb_main #(
 
     function automatic logic [3:0] cmd_line_state_expected(input int idx);
         case (idx)
-            0:  cmd_line_state_expected = 4'd3;
-            1:  cmd_line_state_expected = 4'd0;
-            2:  cmd_line_state_expected = 4'd8;
-            3:  cmd_line_state_expected = 4'd0;
-            4:  cmd_line_state_expected = 4'd4;
-            5:  cmd_line_state_expected = 4'd0;
-            6:  cmd_line_state_expected = 4'd5;
-            7:  cmd_line_state_expected = 4'd0;
-            8:  cmd_line_state_expected = 4'd6;
-            9:  cmd_line_state_expected = 4'd0;
+            0: cmd_line_state_expected = 4'd3;
+            1: cmd_line_state_expected = 4'd0;
+            2: cmd_line_state_expected = 4'd8;
+            3: cmd_line_state_expected = 4'd0;
+            4: cmd_line_state_expected = 4'd4;
+            5: cmd_line_state_expected = 4'd0;
+            6: cmd_line_state_expected = 4'd5;
+            7: cmd_line_state_expected = 4'd0;
+            8: cmd_line_state_expected = 4'd6;
+            9: cmd_line_state_expected = 4'd0;
             10: cmd_line_state_expected = 4'd6;
             11: cmd_line_state_expected = 4'd0;
             12: cmd_line_state_expected = 4'd2;
@@ -239,24 +239,25 @@ module tb_main #(
         for (idx = 0; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
             expected = cmd_line_state_expected(idx);
             `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state === expected, CMD_LINE_STATE_STEP_CYCLES)
-            $display("cmd_line_state[%0d] expected %0d observed %0d at %0t", idx, expected, tb_main.tbi_main.ctrl.cmd_line_state, $time);
+            $display("cmd_line_state[%0d] expected %0d observed %0d at %0t", idx, expected,
+                     tb_main.tbi_main.ctrl.cmd_line_state, $time);
         end
         cmd_line_state_seq_done = 1'b1;
     end
-    `ifdef SPI
-        always begin
-            @(posedge spi_master_txdone) begin
-                if (tb_main.tbi_main.ctrl.ready_for_data) begin
-                    if ((i < ($bits(myled_row) / 8))) begin
-                        thebyte <= myled_row[$bits(myled_row)-1 - (i*8) -: 8];
-                        i <= i+1;
-                    end else if ((i == ($bits(myled_row) / 8))) begin
-                        spi_clk_en = 1'b0;
-                    end
+`ifdef SPI
+    always begin
+        @(posedge spi_master_txdone) begin
+            if (tb_main.tbi_main.ctrl.ready_for_data) begin
+                if ((i < ($bits(myled_row) / 8))) begin
+                    thebyte <= myled_row[$bits(myled_row)-1-(i*8)-:8];
+                    i <= i + 1;
+                end else if ((i == ($bits(myled_row) / 8))) begin
+                    spi_clk_en = 1'b0;
                 end
             end
         end
-    `endif
+    end
+`endif
     always begin
         #SIM_HALF_PERIOD_NS clk <= !clk;
     end

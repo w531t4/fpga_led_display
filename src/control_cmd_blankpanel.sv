@@ -21,11 +21,12 @@ module control_cmd_blankpanel #(
     output logic ram_access_start,
     output logic done
 );
-    typedef enum {STATE_START,
-                  STATE_RUNNING,
-                  STATE_PREDONE,
-                  STATE_DONE
-                  } ctrl_fsm;
+    typedef enum {
+        STATE_START,
+        STATE_RUNNING,
+        STATE_PREDONE,
+        STATE_DONE
+    } ctrl_fsm;
     logic local_reset;
     ctrl_fsm state;
     logic subcmd_enable;
@@ -81,7 +82,7 @@ module control_cmd_blankpanel #(
         .y1(0),
         .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
         .height((_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT)),
-        .color({(BYTES_PER_PIXEL*8){1'b0}}),
+        .color({(BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
         .column(column),
         .pixel(pixel),

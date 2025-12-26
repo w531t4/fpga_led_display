@@ -48,7 +48,7 @@
 ////                                                                        ////
 ////////////////////////////////////////////////////////////////////////////////
 
-`timescale 1ns/10ps
+`timescale 1ns / 10ps
 module tb_spi #(
     `include "params.vh"
     // verilator lint_off UNUSEDPARAM
@@ -76,15 +76,15 @@ module tb_spi #(
     parameter real DUTY_CYCLE = 0.5;
     parameter OFFSET = 100;
     initial begin  // Clock process for clk
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
         $dumpvars(0, tb_spi);
         #OFFSET;
         forever begin
             clk = 1'b0;
-            #(PERIOD-(PERIOD*DUTY_CYCLE)) clk = 1'b1;
-            #(PERIOD*DUTY_CYCLE);
+            #(PERIOD - (PERIOD * DUTY_CYCLE)) clk = 1'b1;
+            #(PERIOD * DUTY_CYCLE);
         end
     end
     // to end simulation
@@ -123,19 +123,19 @@ module tb_spi #(
     initial begin
         #10 rstb = 1'b0;
         #100;
-            rstb = 1'b1;
-            start = 1'b0;
-            m_tdat = 8'b01111100;
-            cdiv = 2'b00;
+        rstb   = 1'b1;
+        start  = 1'b0;
+        m_tdat = 8'b01111100;
+        cdiv   = 2'b00;
 
         #100 start = 1'b1;
-             ten = 1; //s_tdata=8'hAC;
+        ten = 1;  //s_tdata=8'hAC;
         #100 start = 1'b0;
 
 
         #1800 mlb = 1'b1;
-              cdiv = 2'b01;
-              m_tdat = 8'b00011100; //s_tdata=8'h64;
+        cdiv   = 2'b01;
+        m_tdat = 8'b00011100;  //s_tdata=8'h64;
         #100 start = 1'b1;
         #100 start = 1'b0;
         #2202;
@@ -151,10 +151,10 @@ module tb_spi #(
         $finish;
     end
 
-    always @ (rstb or Mrdata) begin
-        if(rstb == 0) s_tdata = 8'hAA;
+    always @(rstb or Mrdata) begin
+        if (rstb == 0) s_tdata = 8'hAA;
         else begin
-            # 10 s_tdata = Mrdata;
+            #10 s_tdata = Mrdata;
         end
     end
 endmodule

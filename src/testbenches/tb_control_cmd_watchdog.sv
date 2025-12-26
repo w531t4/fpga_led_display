@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns/1ns
-`default_nettype none
+`timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
 
 module tb_control_cmd_watchdog #(
@@ -21,7 +20,7 @@ module tb_control_cmd_watchdog #(
     logic reset;
 
     control_cmd_watchdog #(
-        .WATCHDOG_CONTROL_TICKS(16*12)
+        .WATCHDOG_CONTROL_TICKS(16 * 12)
     ) cmd_watchdog (
         .reset(reset),
         .data_in(data_in),
@@ -32,9 +31,9 @@ module tb_control_cmd_watchdog #(
     );
 
     initial begin
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
         $dumpvars(0, tb_control_cmd_watchdog);
         clk = 0;
         slowclk = 0;
@@ -46,13 +45,13 @@ module tb_control_cmd_watchdog #(
         // finish reset for tb
         @(posedge clk) reset <= ~reset;
 
-        for (int i = 0; i < (WATCHDOG_SIGNATURE_BITS/8); i++) begin
+        for (int i = 0; i < (WATCHDOG_SIGNATURE_BITS / 8); i++) begin
             @(posedge slowclk) begin
-                data_in = WATCHDOG_SIGNATURE_PATTERN[(WATCHDOG_SIGNATURE_BITS-1) - (i*8) -: 8];
+                data_in = WATCHDOG_SIGNATURE_PATTERN[(WATCHDOG_SIGNATURE_BITS-1)-(i*8)-:8];
             end
         end
         @(posedge slowclk);
-        `WAIT_ASSERT(clk, (sysreset == 1), 128*4)
+        `WAIT_ASSERT(clk, (sysreset == 1), 128 * 4)
 
         repeat (25) begin
             @(posedge slowclk);

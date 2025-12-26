@@ -22,12 +22,15 @@ module control_cmd_readpixel #(
     output logic ram_access_start,
     output logic done
 );
-    localparam safe_bits_needed_for_column_byte_counter = _NUM_COLUMN_BYTES_NEEDED > 1 ? $clog2(_NUM_COLUMN_BYTES_NEEDED) : 1;
-    typedef enum {STATE_ROW_CAPTURE,
-                  STATE_COLUMN_CAPTURE,
-                  STATE_READ_PIXELBYTES,
-                  STATE_DONE
-                  } ctrl_fsm;
+    localparam safe_bits_needed_for_column_byte_counter = _NUM_COLUMN_BYTES_NEEDED > 1 ? $clog2(
+        _NUM_COLUMN_BYTES_NEEDED
+    ) : 1;
+    typedef enum {
+        STATE_ROW_CAPTURE,
+        STATE_COLUMN_CAPTURE,
+        STATE_READ_PIXELBYTES,
+        STATE_DONE
+    } ctrl_fsm;
     ctrl_fsm state;
     logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] column_bits;
     logic [safe_bits_needed_for_column_byte_counter-1:0] column_byte_counter;
@@ -44,7 +47,7 @@ module control_cmd_readpixel #(
             pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
             done <= 1'b0;
             column_byte_counter <= {safe_bits_needed_for_column_byte_counter{1'b0}};
-            column_bits <= {(_NUM_COLUMN_BYTES_NEEDED*8){1'b0}};
+            column_bits <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
         end else begin
             case (state)
                 STATE_ROW_CAPTURE: begin
@@ -60,7 +63,7 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         // load (potentially multibyte) column number
                         //   - if multibyte, expect little endian (LSB -> MSB)
-                        column_bits[((_NUM_COLUMN_BYTES_NEEDED-(32)'(column_byte_counter))*8)-1 -: 8] <= data_in[7:0];
+                        column_bits[((_NUM_COLUMN_BYTES_NEEDED-(32)'(column_byte_counter))*8)-1-:8] <= data_in[7:0];
                         if (column_byte_counter == 'b0) begin
                             state <= STATE_READ_PIXELBYTES;
                             ram_write_enable <= 1'b1;
@@ -78,7 +81,7 @@ module control_cmd_readpixel #(
                         ram_access_start <= !ram_access_start;
                         if (pixel != 'b0) begin
                             if ((pixel - 'd1) == 0) begin
-                                done <= 1'b1;
+                                done  <= 1'b1;
                                 state <= STATE_DONE;
                             end
                             pixel <= pixel - 1;
@@ -99,7 +102,6 @@ module control_cmd_readpixel #(
         end
     end
     wire _unused_ok = &{1'b0,
-                        // TODO: This breaks if width=256
-                        column_bits[(_NUM_COLUMN_BYTES_NEEDED*8)-1:_NUM_COLUMN_ADDRESS_BITS],
-                        1'b0};
+    // TODO: This breaks if width=256
+    column_bits[(_NUM_COLUMN_BYTES_NEEDED*8)-1:_NUM_COLUMN_ADDRESS_BITS], 1'b0};
 endmodule

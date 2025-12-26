@@ -38,12 +38,12 @@ module uart_tx #(
     assign o_done = done_flag;
     assign o_busy = busy_flag;
 
-    logic [7:0] tx_reg;
-    logic [3:0] tx_bit_counter;
+    logic [                      7:0] tx_reg;
+    logic [                      3:0] tx_bit_counter;
     logic [$clog2(TICKS_PER_BIT)-1:0] ticks_counter;
 
-    wire ticks_counter_ovf      = ticks_counter == ($clog2(TICKS_PER_BIT))'(TICKS_PER_BIT-1);
-    wire tx_bit_counter_ovf     = (tx_bit_counter[3]); // if equals >= 8
+    wire                              ticks_counter_ovf = ticks_counter == ($clog2(TICKS_PER_BIT))'(TICKS_PER_BIT - 1);
+    wire                              tx_bit_counter_ovf = (tx_bit_counter[3]);  // if equals >= 8
 
     //Init registers for testbench simulation
     initial begin
@@ -54,66 +54,58 @@ module uart_tx #(
     end
 
     always @(*) begin
-        case(currentState)
+        case (currentState)
             default: begin
                 nextState = STATE_IDLE;
                 done_flag = 0;
                 busy_flag = 0;
-                tx_output = 1; //idle line
+                tx_output = 1;  //idle line
             end
 
             STATE_IDLE: begin
                 done_flag = 0;
                 busy_flag = 0;
-                tx_output = 1; //idle line
+                tx_output = 1;  //idle line
 
-                if(i_start)
-                    nextState = STATE_SEND_START;
-                else
-                    nextState = STATE_IDLE;
-            end // -- END STATE_IDLE --
+                if (i_start) nextState = STATE_SEND_START;
+                else nextState = STATE_IDLE;
+            end  // -- END STATE_IDLE --
 
             STATE_SEND_START: begin
                 done_flag = 0;
                 busy_flag = 1;
-                tx_output = 0; //send low signal (start)
+                tx_output = 0;  //send low signal (start)
 
-                if(ticks_counter_ovf)
-                    nextState = STATE_SEND_BITS;
-                else
-                    nextState = STATE_SEND_START;
+                if (ticks_counter_ovf) nextState = STATE_SEND_BITS;
+                else nextState = STATE_SEND_START;
 
-            end // -- END STATE_SEND_START --
+            end  // -- END STATE_SEND_START --
 
             STATE_SEND_BITS: begin
                 done_flag = 0;
                 busy_flag = 1;
                 tx_output = tx_bit_counter_ovf ? 1'b1 : tx_reg[0];
 
-                if(tx_bit_counter_ovf)
-                    nextState = STATE_SEND_STOP;
-                else
-                    nextState = STATE_SEND_BITS;
+                if (tx_bit_counter_ovf) nextState = STATE_SEND_STOP;
+                else nextState = STATE_SEND_BITS;
 
-            end // -- END STATE_SEND_BITS --
+            end  // -- END STATE_SEND_BITS --
 
             STATE_SEND_STOP: begin
                 done_flag = 0;
                 busy_flag = 1;
-                tx_output = 1; //send high signal (stop)
+                tx_output = 1;  //send high signal (stop)
 
-                if(ticks_counter_ovf)
-                    nextState = STATE_DONE;
-                else
-                    nextState = STATE_SEND_STOP;
-            end // -- END STATE_SEND_STOP --
+                if (ticks_counter_ovf) nextState = STATE_DONE;
+                else nextState = STATE_SEND_STOP;
+            end  // -- END STATE_SEND_STOP --
 
             STATE_DONE: begin
                 done_flag = 1;
                 busy_flag = 1;
-                tx_output = 1; //idle line
+                tx_output = 1;  //idle line
                 nextState = STATE_IDLE;
-            end // -- END STATE_DONE --
+            end  // -- END STATE_DONE --
 
         endcase
     end
@@ -128,15 +120,13 @@ module uart_tx #(
 
             if (ticks_counter_ovf) begin
                 ticks_counter <= 0;
-            end
-            else
-                ticks_counter <= ticks_counter + 1;
+            end else ticks_counter <= ticks_counter + 1;
         end
 
         if (currentState == STATE_SEND_BITS) begin
             if (ticks_counter_ovf) begin
                 tx_bit_counter <= tx_bit_counter + 1;
-                tx_reg <= tx_reg >> 1; //LSB shift
+                tx_reg <= tx_reg >> 1;  //LSB shift
             end
         end
 

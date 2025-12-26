@@ -33,13 +33,11 @@ module debugger #(
         if (reset) begin
             debug_start <= 0;
             count <= 0;
-        end
-        else begin
+        end else begin
             if (count == DIVIDER_TICKS - 1) begin
                 debug_start <= 1;
                 count <= 0;
-            end
-            else begin
+            end else begin
                 debug_start <= 0;
                 count <= count + 1;
             end
@@ -57,10 +55,7 @@ module debugger #(
     // i'm guessing we're doing this in an attempt to not spam negotiate on the
     // serial channel. we're looking roughly 22times a second?. It's been awhie since
     // i last looked at this.
-    localparam      STATE_IDLE          = 5'b00001,
-                    STATE_START         = 5'b00010,
-                    STATE_SEND          = 5'b00100,
-                    STATE_WAIT          = 5'b01000;
+    localparam STATE_IDLE = 5'b00001, STATE_START = 5'b00010, STATE_SEND = 5'b00100, STATE_WAIT = 5'b01000;
     always @(posedge clk_in) begin
         if (reset) begin
             do_close <= 0;
@@ -69,55 +64,45 @@ module debugger #(
             current_position <= DATA_WIDTH;
             tx_start <= 0;
             debug_bits <= 0;
-        end
-        else begin
+        end else begin
             //            if (debug_start && currentState == STATE_IDLE) begin
             if (debug_start && currentState == STATE_IDLE) begin
                 current_position <= DATA_WIDTH;
                 data_copy <= data_in[DATA_WIDTH-1:0];
                 currentState <= STATE_START;
-            end
-            else if (currentState != STATE_IDLE) begin
+            end else if (currentState != STATE_IDLE) begin
                 if (currentState == STATE_START) begin
                     if (current_position == 0) begin
                         do_close <= 1;
-                    end
-                    else begin
+                    end else begin
                     end
                     currentState <= STATE_SEND;
-                end
-                else if (currentState == STATE_SEND) begin
+                end else if (currentState == STATE_SEND) begin
                     if (~tx_busy) begin
                         if (do_close) begin
-                            debug_bits <= 8'b00001010; // newline
-                        end
-                        else begin
-                            debug_bits <= data_copy[current_position-1 -: 8];
+                            debug_bits <= 8'b00001010;  // newline
+                        end else begin
+                            debug_bits <= data_copy[current_position-1-:8];
                             // latch 8 bits here from input
                         end
                         tx_start <= 1;
                         // latch bits onto tx here
                         currentState <= STATE_WAIT;
+                    end else begin
                     end
-                    else begin
-                    end
-                end
-                else if (currentState == STATE_WAIT) begin
+                end else if (currentState == STATE_WAIT) begin
                     tx_start <= 0;
                     if (~tx_busy) begin
                         if (do_close) begin
                             do_close <= 0;
                             currentState <= STATE_IDLE;
-                        end
-                        else begin
+                        end else begin
                             current_position <= current_position - 8;
                             currentState <= STATE_START;
                         end
+                    end else begin
                     end
-                    else begin
-                    end
-                end
-                else begin
+                end else begin
                 end
             end
         end
@@ -135,17 +120,15 @@ module debugger #(
         .o_busy(debug_command_busy)
     );
 
-    uart_tx  #(
+    uart_tx #(
         .TICKS_PER_BIT(UART_TICKS_PER_BIT)
     ) txuart (
-        .i_clk(clk_in),
+        .i_clk  (clk_in),
         .i_start(tx_start),
-        .i_data(debug_bits),
-        .o_done(tx_done),
-        .o_busy(tx_busy),
-        .o_dout(tx_out)
+        .i_data (debug_bits),
+        .o_done (tx_done),
+        .o_busy (tx_busy),
+        .o_dout (tx_out)
     );
-    wire _unused_ok = &{1'b0,
-                        tx_done,
-                        1'b0};
+    wire _unused_ok = &{1'b0, tx_done, 1'b0};
 endmodule

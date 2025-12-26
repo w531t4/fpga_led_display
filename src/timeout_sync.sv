@@ -33,15 +33,12 @@ module timeout_sync #(
         if (reset) begin
             counter <= 'b0;
             start_latch <= 1'b0;
-        end
-        else begin
+        end else begin
             if (start && !start_latch) begin
                 counter <= value;
-            end
-            else if (counter != 0) begin
+            end else if (counter != 0) begin
                 counter <= counter - 'd1;
-            end
-            else begin
+            end else begin
             end
             start_latch <= start;
         end

@@ -23,12 +23,13 @@ module control_cmd_fillpanel #(
     output logic ready_for_data,
     output logic done
 );
-    typedef enum {STATE_COLOR_CAPTURE,
-                  STATE_START,
-                  STATE_RUNNING,
-                  STATE_PREDONE,
-                  STATE_DONE
-                  } ctrl_fsm;
+    typedef enum {
+        STATE_COLOR_CAPTURE,
+        STATE_START,
+        STATE_RUNNING,
+        STATE_PREDONE,
+        STATE_DONE
+    } ctrl_fsm;
     logic local_reset;
     ctrl_fsm state;
     logic subcmd_enable;
@@ -54,13 +55,13 @@ module control_cmd_fillpanel #(
             done_inside <= 1'b0;
             capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
             ready_for_data <= 1'b1;
-            selected_color <= {(BYTES_PER_PIXEL*8){1'b0}};
+            selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
             local_reset <= 1'b0;
         end else begin
             case (state)
                 STATE_COLOR_CAPTURE: begin
                     if (enable) begin
-                        selected_color[(((32)'(capturebytes_remaining)+1)*8)-1 -: 8] <= data_in;
+                        selected_color[(((32)'(capturebytes_remaining)+1)*8)-1-:8] <= data_in;
                         if (capturebytes_remaining == 0) begin
                             state <= STATE_START;
                             ready_for_data <= 1'b0;
@@ -92,7 +93,7 @@ module control_cmd_fillpanel #(
                     ready_for_data <= 1'b1;
                     state <= STATE_COLOR_CAPTURE;
                     capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
-                    selected_color <= {(BYTES_PER_PIXEL*8){1'b0}};
+                    selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
                 end
                 default state <= state;
             endcase
@@ -119,7 +120,5 @@ module control_cmd_fillpanel #(
         .ram_access_start(ram_access_start),
         .done(cmd_blankpanel_done)
     );
-    wire _unused_ok = &{1'b0,
-                        done_level,
-                        1'b0};
+    wire _unused_ok = &{1'b0, done_level, 1'b0};
 endmodule

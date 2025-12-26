@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns/1ns
-`default_nettype none
+`timescale 1ns / 1ns `default_nettype none
 module tb_debugger #(
     `include "params.vh"
     // verilator lint_off UNUSEDPARAM
@@ -25,16 +24,15 @@ module tb_debugger #(
     clock_divider #(
         .CLK_DIV_COUNT(600)
     ) clkdiv_baudrate (
-        .reset(reset),
-        .clk_in(clk),
+        .reset  (reset),
+        .clk_in (clk),
         .clk_out(tb_clk_baudrate)
     );
 
     debugger #(
         .DIVIDER_TICKS(1023),
         .DATA_WIDTH(24)
-    )
-    debug_instance (
+    ) debug_instance (
         .clk_in(clk),
         .reset(reset),
         .data_in(data_in),
@@ -44,9 +42,9 @@ module tb_debugger #(
     );
 
     initial begin
-        `ifdef DUMP_FILE_NAME
-            $dumpfile(`DUMP_FILE_NAME);
-        `endif
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
         $dumpvars(0, tb_debugger);
         clk = 0;
         reset = 0;
@@ -59,38 +57,34 @@ module tb_debugger #(
     always @(posedge tb_clk_baudrate) begin
         if (i == 'd10) begin
             rx_line2 <= 1'b0;
-            if (j >= ($bits(mystring)-8)) begin
+            if (j >= ($bits(mystring) - 8)) begin
                 j <= 'd0;
-            end
-            else begin
+            end else begin
                 j <= j + 'd8;
             end
             i <= 'd0;
-        end
-        else if (i == 'd9) begin
+        end else if (i == 'd9) begin
             rx_line2 <= 1'b1;
-            i <= i+1;
-        end
-        else if (i == 'd8) begin
+            i <= i + 1;
+        end else if (i == 'd8) begin
             rx_line2 <= 1'b1;
-            i <= i+1;
-        end
-        else begin
-            rx_line2 <= mystring[i + j];
-            i <= i+1;
+            i <= i + 1;
+        end else begin
+            rx_line2 <= mystring[i+j];
+            i <= i + 1;
         end
     end
     initial begin
-        #2 reset = ! reset;
+        #2 reset = !reset;
     end
     initial begin
-        #3 reset = ! reset;
+        #3 reset = !reset;
     end
 
     initial #1000000 $finish;
 
     always begin
-        #SIM_HALF_PERIOD_NS  clk <=  ! clk; // 2 of these make a period
+        #SIM_HALF_PERIOD_NS clk <= !clk;  // 2 of these make a period
     end
     // always begin
     //     #400 reset <= ! reset;
