@@ -21,7 +21,7 @@ module ff_sync #(
     assign sync_level = sync;
     assign sync_pulse = sync & ~prev;
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
             temp <= INIT_STATE;
             sync <= INIT_STATE;

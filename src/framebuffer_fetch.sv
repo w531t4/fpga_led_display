@@ -67,7 +67,7 @@ module framebuffer_fetch #(
         .running(ram_clk_enable_real)
     );
 
-    always @(posedge clk_in) begin
+    always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             pixeldata_top    <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
             pixeldata_bottom <= {_NUM_BITS_PER_SUBPANEL{1'b0}};

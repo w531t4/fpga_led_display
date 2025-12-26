@@ -375,7 +375,7 @@ module control_module #(
     `ifdef DOUBLE_BUFFER
         logic frame_select_temp;
     `endif
-    always @(posedge clk_in) begin
+    always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             rgb_enable <= 3'b111;
             `ifdef DOUBLE_BUFFER

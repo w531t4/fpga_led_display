@@ -47,7 +47,7 @@ module control_cmd_fillpanel #(
         .sync_pulse(done)
     );
 
-    always @(posedge clk) begin
+    always @(posedge clk, posedge reset) begin
         if (reset) begin
             subcmd_enable <= 1'b0;
             state <= STATE_COLOR_CAPTURE;

@@ -29,7 +29,7 @@ module timeout #(
 
     assign running = counter != 0;
 
-    always @(posedge clk_in) begin
+    always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             counter <= 'b0;
             start_latch <= 1'b0;
