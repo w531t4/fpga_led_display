@@ -72,7 +72,8 @@
                 "[json][jsonc][yaml]": {
                     "editor.defaultFormatter": "esbenp.prettier-vscode"
                 },
-                "json.schemas": []
+                "json.schemas": [],
+                "prettier.tabWidth": 4
             }
         }
     }
