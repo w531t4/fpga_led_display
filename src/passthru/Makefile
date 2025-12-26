@@ -1,10 +1,6 @@
 # SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 # SPDX-License-Identifier: MIT
 
-# oss-cad-suite/bin/yosys -p "read_verilog ulx3s_v20_passthru_wifi_modified.v; synth_ecp5 -top ulx3s_v20_passthru_wifi_modified -json ulx3s_passthru_wifi.json;"
-# oss-cad-suite/bin/nextpnr-ecp5 --85k --package CABGA381 --json ulx3s_passthru_wifi.json --lpf src/constraints/ulx3s_v316.lpf --textcfg ulx3s_passthru_wifi.config --freq 25
-# oss-cad-suite/bin/ecppack --compress ulx3s_passthru_wifi.config ulx3s_passthru_wifi.bit
-
 # Toolchain
 
 # Directory containing this Makefile (absolute)
@@ -22,8 +18,8 @@ NEXTPNR := $(OSS_CAD)/nextpnr-ecp5
 ECPPACK := $(OSS_CAD)/ecppack
 
 # Design
-TOP := ulx3s_v20_passthru_wifi_modified
-SRC := $(SRC_DIR)/passthru/$(TOP).v
+TOP := ulx3s_esp32_passthru
+SRC := $(SRC_DIR)/passthru/$(TOP).sv
 
 # Board
 DEVICE  := --85k
@@ -32,9 +28,9 @@ LPF     := $(SRC_DIR)/constraints/ulx3s_v316.lpf
 FREQ    := 25
 
 # Outputs
-JSON   := $(BUILD_DIR)/ulx3s_passthru_wifi.json
-CONFIG := $(BUILD_DIR)/ulx3s_passthru_wifi.config
-BIT    := $(BUILD_DIR)/ulx3s_passthru_wifi.bit
+JSON   := $(BUILD_DIR)/ulx3s_esp32_passthru.json
+CONFIG := $(BUILD_DIR)/ulx3s_esp32_passthru.config
+BIT    := $(BUILD_DIR)/ulx3s_esp32_passthru.bit
 
 .PHONY: all clean dirs
 
