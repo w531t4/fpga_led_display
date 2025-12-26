@@ -6,3 +6,6 @@
 
 # whitespace adjustments, prettier (json/yaml)
 79a5ac5c0ee354f7dd92f01125c6f835366f5170
+
+# normalize to verible indent=4 column=120 (.sv/.v)
+734f709063cddb95c244254f3f339839151dd3b6
