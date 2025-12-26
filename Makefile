@@ -89,6 +89,10 @@ $(SIMULATION_DIR)/spi.vcd: $(SIMULATION_DIR)/spi.vvp Makefile | $(SIMULATION_DIR
 	$(VVP_BIN) $(VVP_FLAGS) $<
 $(SIMULATION_DIR)/spi.vvp: $(TB_DIR)/tb_spi.sv $(SRC_DIR)/spi_slave.sv $(SRC_DIR)/spi_master.sv $(INCLUDESRCS) Makefile | $(SIMULATION_DIR)
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_spi -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
+$(SIMULATION_DIR)/spi_cs_drop.vcd: $(SIMULATION_DIR)/spi_cs_drop.vvp Makefile | $(SIMULATION_DIR)
+	$(VVP_BIN) $(VVP_FLAGS) $<
+$(SIMULATION_DIR)/spi_cs_drop.vvp: $(TB_DIR)/tb_spi_cs_drop.sv $(SRC_DIR)/spi_slave.sv $(INCLUDESRCS) Makefile | $(SIMULATION_DIR)
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_spi_cs_drop -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
 endif
 
 $(ARTIFACT_DIR)/sim_args: $(ARTIFACT_DIR) Makefile
