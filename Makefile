@@ -6,6 +6,8 @@ SHELL:=/bin/bash
 
 ARTIFACT_DIR:=build
 SIMULATION_DIR:=$(ARTIFACT_DIR)/simulation
+# Dependency files for per-testbench rebuilds (generated via iverilog -M).
+DEPDIR:=$(ARTIFACT_DIR)/deps
 SRC_DIR:=src
 TB_DIR:=$(SRC_DIR)/testbenches
 CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
@@ -35,7 +37,8 @@ SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
 IVERILOG_BIN:=$(TOOLPATH)/iverilog
-IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement -Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector -Wsensitivity-entire-array -I$(VINCLUDE_DIR)
+IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement -Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector -Wsensitivity-entire-array -I$(VINCLUDE_DIR) -y $(SRC_DIR) -Y .sv -Y .v
+# -y/-Y let iverilog resolve module files under src/, enabling dependency discovery.
 VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=-n -N
 GTKWAVE_BIN:=gtkwave
@@ -69,6 +72,13 @@ VVPOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vvp, $(VVPOBJS))
 VCDOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vcd, $(VCDOBJS))
 endif
 
+# Include per-testbench deps so only affected TBs rebuild on source changes.
+# Skip dep includes for clean to avoid forcing dep generation.
+ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
+DEPFILES := $(VVPOBJS:$(SIMULATION_DIR)/%.vvp=$(DEPDIR)/%.d)
+-include $(DEPFILES)
+endif
+
 
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
@@ -79,17 +89,13 @@ all: $(ARTIFACT_DIR)/sim_args simulation lint
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
 	$(VVP_BIN) $(VVP_FLAGS) $<
 
-$(SIMULATION_DIR)/%.vvp: $(TB_DIR)/tb_%.sv $(SRC_DIR)/%.sv $(INCLUDESRCS) Makefile | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION_DIR) $(DEPDIR)
 #	$(info In a command script)
-	$(shell mkdir -p $(SIMULATION_DIR))
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
-
-ifeq ($(findstring -DSPI,$(BUILD_FLAGS)), -DSPI)
-$(SIMULATION_DIR)/spi.vcd: $(SIMULATION_DIR)/spi.vvp Makefile | $(SIMULATION_DIR)
-	$(VVP_BIN) $(VVP_FLAGS) $<
-$(SIMULATION_DIR)/spi.vvp: $(TB_DIR)/tb_spi.sv $(SRC_DIR)/spi_slave.sv $(SRC_DIR)/spi_master.sv $(INCLUDESRCS) Makefile | $(SIMULATION_DIR)
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_spi -D'DUMP_FILE_NAME="$(addprefix $(SIMULATION_DIR)/, $(subst .vvp,.vcd, $(notdir $@)))"' -o $@ $(VSOURCES) $<
-endif
+# Generate dep list from iverilog and translate it into a Makefile .d file.
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.vcd"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $<
+	@printf '%s: ' '$(SIMULATION_DIR)/$*.vvp' > $(DEPDIR)/$*.d
+	@tr '\n' ' ' < $(DEPDIR)/$*.deps >> $(DEPDIR)/$*.d
+	@printf '\n' >> $(DEPDIR)/$*.d
 
 $(ARTIFACT_DIR)/sim_args: $(ARTIFACT_DIR) Makefile
 	@printf '%s\n' '$(SIM_FLAGS)' > $@
@@ -102,6 +108,9 @@ $(ARTIFACT_DIR):
 
 $(SIMULATION_DIR):
 	mkdir -p $(SIMULATION_DIR)
+
+$(DEPDIR):
+	mkdir -p $(DEPDIR)
 
 clean:
 	rm -rf ${ARTIFACT_DIR}
