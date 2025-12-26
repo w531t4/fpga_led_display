@@ -28,6 +28,8 @@ if ! [ -x "$(command -v uv)" ]; then
   python3 -m pip install uv
 fi
 
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+
 .devcontainer/bootstrap
 
 pre-commit install
