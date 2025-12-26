@@ -85,7 +85,7 @@ module spi_slave #(
                 done = 1;
                 nb = 0;
             end
-        end	 //if(!ss)_END  if(nb==8)
+        end //if(!ss)_END  if(nb==8)
     end
 
     //send to  sdout
