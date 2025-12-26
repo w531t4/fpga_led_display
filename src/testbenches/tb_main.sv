@@ -174,7 +174,7 @@ module tb_main #(
         // get past undefined period for global_reset. look for rising edge.
         wait (tb_main.tbi_main.global_reset);
         // finish reset for tb
-        @(posedge clk) reset <= ~reset;
+        @(posedge clk) reset = ~reset;
         // wait for tb_main/global_reset to fall
         wait (!tb_main.tbi_main.global_reset);
 

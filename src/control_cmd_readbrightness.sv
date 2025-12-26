@@ -22,7 +22,7 @@ module control_cmd_readbrightness #(
                   STATE_DONE
                   } ctrl_fsm;
     ctrl_fsm state;
-    always @(posedge clk) begin
+    always @(posedge clk, posedge reset) begin
         if (reset) begin
             data_out <= {BRIGHTNESS_LEVELS{1'b0}};
             done <= 1'b0;

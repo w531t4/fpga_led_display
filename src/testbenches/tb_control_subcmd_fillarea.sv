@@ -63,14 +63,14 @@ module tb_control_subcmd_fillarea #(
         mem = {MEMBITS{1'b1}};
         subcmd_enable = 0;
         // finish reset for tb
-        @(posedge clk) reset <= ~reset;
+        @(posedge clk) reset = ~reset;
 
         @(posedge clk) begin
             subcmd_enable = 1;
         end
         @(posedge clk);
 
-        `WAIT_ASSERT(clk, (row == 3), 1)
+        `WAIT_ASSERT(clk, (row == 3), 0)
         assert(data_out == 8'b0) else begin
             $display("expected to see data_out as 0, but saw %d\n", data_out);
             $stop;
@@ -84,7 +84,7 @@ module tb_control_subcmd_fillarea #(
             done = 0;
             subcmd_enable = 0;
         end
-        `WAIT_ASSERT(clk, tb_control_subcmd_fillarea.subcmd_fillarea.state == 0, 1)
+        `WAIT_ASSERT(clk, tb_control_subcmd_fillarea.subcmd_fillarea.state == 0, 0)
         `WAIT_ASSERT(clk, |(mem) == 0, 30)
 
         repeat (5) begin

@@ -28,7 +28,7 @@ module control_cmd_readframe #(
                   STATE_DONE
                   } ctrl_fsm;
     ctrl_fsm state;
-    always @(posedge clk) begin
+    always @(posedge clk, posedge reset) begin
         if (reset) begin
             data_out <= 8'd0;
             ram_write_enable <= 1'b0;

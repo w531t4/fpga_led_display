@@ -61,7 +61,7 @@ module debugger	#(
                     STATE_START       	= 5'b00010,
                     STATE_SEND  		= 5'b00100,
                     STATE_WAIT      	= 5'b01000;
-    always @(posedge clk_in) begin
+    always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             do_close <= 0;
             data_copy <= 0;

@@ -41,7 +41,7 @@ module fm6126init #(
                     STATE_FINISH     = 8'b01000000,
                     STATE_FINISH2    = 8'b10000000;
 // End of default setup for RGB Matrix 64x32 panel
-    always @(posedge clk_in) begin
+    always @(posedge clk_in, posedge reset) begin
         if (reset) begin
             C12 <= 16'b0111111111111111;
             C13 <= 16'b0000000001000000;
