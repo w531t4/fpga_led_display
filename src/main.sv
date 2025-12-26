@@ -71,6 +71,7 @@ module main #(
     wire clk_matrix;
 
     wire global_reset;
+    logic global_reset_sync;
 
     wire clk_pixel_load;
     wire clk_pixel;
@@ -230,11 +231,15 @@ module main #(
         assign global_reset = alt_reset;
     `endif
 
+    always_ff @(posedge clk_root) begin
+        global_reset_sync <= global_reset;
+    end
+
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
         .CLK_DIV_COUNT(DIVIDE_CLK_BY_X_FOR_MATRIX)
     ) clkdiv_baudrate (
-        .reset(global_reset),
+        .reset(global_reset_sync),
         .clk_in(clk_root),
         .clk_out(clk_matrix)
     );
@@ -244,7 +249,7 @@ module main #(
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
     )  matscan1 (
-        .reset(global_reset),
+        .reset(global_reset_sync),
         .clk_in(clk_matrix),
         .column_address(column_address),
         .row_address(row_address),
@@ -277,7 +282,7 @@ module main #(
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) fb_f (
-        .reset(global_reset),
+        .reset(global_reset_sync),
         .clk_in(clk_root),
 
         .column_address(column_address),
@@ -388,12 +393,12 @@ module main #(
         `else
             .WrA(ram_a_write_enable),
         `endif
-        .ResetA(global_reset),
+        .ResetA(global_reset_sync),
         .ClockB(clk_root),
         .DataInB(16'b0),
         .AddressB(ram_b_address),
         .WrB(1'b0),
-        .ResetB(global_reset),
+        .ResetB(global_reset_sync),
         .QA(ram_a_data_out_frame1),
         .QB(ram_b_data_out_frame1),
         .ClockEnA(ram_a_clk_enable),
@@ -409,12 +414,12 @@ module main #(
             .AddressA(ram_a_address),
             .DataInA(ram_a_data_in),
             .WrA(ram_a_write_enable & ~frame_select),
-            .ResetA(global_reset),
+            .ResetA(global_reset_sync),
             .ClockB(clk_root),
             .DataInB(16'b0),
             .AddressB(ram_b_address),
             .WrB(1'b0),
-            .ResetB(global_reset),
+            .ResetB(global_reset_sync),
             .QA(ram_a_data_out_frame2),
             .QB(ram_b_data_out_frame2),
             .ClockEnA(ram_a_clk_enable),
