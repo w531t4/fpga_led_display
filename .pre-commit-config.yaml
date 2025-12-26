@@ -1,19 +1,19 @@
 repos:
-  - repo: https://github.com/fsfe/reuse-tool
-    rev: v6.2.0
-    hooks:
-      - id: reuse-lint-file
-  - repo: local
-    hooks:
-      - id: inline-command
-        name: Ensure testbenches build successfully
-        entry: bash -c 'make simulation'
-        language: system
-        pass_filenames: false
-        always_run: true
-      - id: inline-command
-        name: Ensure no linting issues
-        entry: bash -c 'make lint'
-        language: system
-        pass_filenames: false
-        always_run: true
+    - repo: https://github.com/fsfe/reuse-tool
+      rev: v6.2.0
+      hooks:
+          - id: reuse-lint-file
+    - repo: local
+      hooks:
+          - id: inline-command
+            name: Ensure testbenches build successfully
+            entry: bash -c 'make simulation'
+            language: system
+            pass_filenames: false
+            always_run: true
+          - id: inline-command
+            name: Ensure no linting issues
+            entry: bash -c 'make lint'
+            language: system
+            pass_filenames: false
+            always_run: true

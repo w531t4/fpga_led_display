@@ -8,7 +8,7 @@
         "depends/netlistsvg/node_modules": true,
         "depends": true,
         "images": true,
-        "**/__pycache__/**": true,
+        "**/__pycache__/**": true
     },
     "verilog.linting.verilator.includePath": ["src/include", "src"],
     "verilog.linting.linter": "verilator",
