@@ -62,24 +62,15 @@ module spi_slave #(
   assign sout = mlb ? treg[7] : treg[0];
   assign sdout = ( (!ss) && ten ) ? sout : 1'bz; //if 1=> send data  else TRI-STATE sdout
 
-    // RX: reset bit counter on CS deassert to drop partial bytes and realign.
-    // Prior behavior: if CS went high mid-byte, nb/rreg were not cleared, so the
-    // next transfer completed the old byte and all subsequent bytes were shifted.
-    // ss is the only async reset here; rstb stays sync to sck.
-    always @(posedge sck or posedge ss) begin
-        if (ss) begin
-            rreg = 8'h00;
-            rdata = 8'h00;
-            done = 0;
-            nb = 0;
-        end
-        else if (rstb == 0) begin
+    //read from  sdout
+    always @(posedge sck) begin
+        if (rstb == 0) begin
             rreg = 8'h00;
             rdata = 8'h00;
             done = 0;
             nb = 0;
         end   //
-        else begin
+        else if (!ss) begin
             if (mlb == 0) begin //LSB first, in@msb -> right shift
                 rreg = {sdin, rreg[7:1]};
             end
@@ -98,14 +89,12 @@ module spi_slave #(
     end
 
     //send to  sdout
-    always @(negedge sck or posedge ss) begin
-        if (ss) begin
-            treg = 8'hFF;
-        end
-        else if (rstb == 0) begin
+    always @(negedge sck) begin
+        if (rstb == 0) begin
             treg = 8'hFF;
         end
         else begin
+            if (!ss) begin
                 if (nb == 0) treg = tdata;
                 else begin
                     if(mlb == 0) begin //LSB first, out=lsb -> right shift
@@ -115,6 +104,7 @@ module spi_slave #(
                         treg = {treg[6:0],1'b1};
                     end
                 end
+            end //!ss
         end //rstb
     end //always
 
