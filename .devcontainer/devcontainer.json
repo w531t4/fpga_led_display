@@ -73,7 +73,8 @@
                     "editor.defaultFormatter": "esbenp.prettier-vscode"
                 },
                 "json.schemas": [],
-                "prettier.tabWidth": 4
+                "prettier.tabWidth": 4,
+                "verilog.formatting.veribleVerilogFormatter.arguments": "--indentation_spaces=4 --column_limit=120"
             }
         }
     }
