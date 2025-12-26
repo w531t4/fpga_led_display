@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 `timescale 1ns/1ns
 `default_nettype none
+`include "tb_helper.vh"
 module tb_main #(
     `include "params.vh"
     // verilator lint_off UNUSEDPARAM
@@ -34,6 +35,15 @@ module tb_main #(
     wire [7:0] debug_command;
 
     `include "row4.vh"
+    localparam integer TB_MAIN_WAIT_SECS = 2;
+    localparam integer TB_MAIN_WAIT_CYCLES = ROOT_CLOCK * TB_MAIN_WAIT_SECS;
+    localparam int CMD_LINE_STATE_SEQ_LEN = 18;
+    localparam integer CMD_LINE_STATE_STEP_SECS = 0; // use nanos below
+    localparam integer CMD_LINE_STATE_STEP_NS = 500_000; // 500us per step
+    localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
+        ? ((64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
+        : (64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
+    logic cmd_line_state_seq_done;
 
     wire rxdata;
     `ifdef SPI
@@ -195,7 +205,44 @@ module tb_main #(
         wait (tb_main.tbi_main.row_address_active == 4'b0101);
         wait (tb_main.tbi_main.row_address_active != 4'b0101);
         wait (tb_main.tbi_main.row_address_active == 4'b0101);
+        wait (cmd_line_state_seq_done);
         $finish;
+    end
+
+    function automatic logic [3:0] cmd_line_state_expected(input int idx);
+        case (idx)
+            0:  cmd_line_state_expected = 4'd3;
+            1:  cmd_line_state_expected = 4'd0;
+            2:  cmd_line_state_expected = 4'd8;
+            3:  cmd_line_state_expected = 4'd0;
+            4:  cmd_line_state_expected = 4'd4;
+            5:  cmd_line_state_expected = 4'd0;
+            6:  cmd_line_state_expected = 4'd5;
+            7:  cmd_line_state_expected = 4'd0;
+            8:  cmd_line_state_expected = 4'd6;
+            9:  cmd_line_state_expected = 4'd0;
+            10: cmd_line_state_expected = 4'd6;
+            11: cmd_line_state_expected = 4'd0;
+            12: cmd_line_state_expected = 4'd2;
+            13: cmd_line_state_expected = 4'd0;
+            14: cmd_line_state_expected = 4'd2;
+            15: cmd_line_state_expected = 4'd0;
+            16: cmd_line_state_expected = 4'd1;
+            17: cmd_line_state_expected = 4'd0;
+            default: cmd_line_state_expected = 4'hf;
+        endcase
+    endfunction
+
+    initial begin : assert_cmd_line_state_sequence
+        integer idx;
+        logic [3:0] expected;
+        cmd_line_state_seq_done = 1'b0;
+        for (idx = 0; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
+            expected = cmd_line_state_expected(idx);
+            `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state === expected, CMD_LINE_STATE_STEP_CYCLES)
+            $display("cmd_line_state[%0d] expected %0d observed %0d at %0t", idx, expected, tb_main.tbi_main.ctrl.cmd_line_state, $time);
+        end
+        cmd_line_state_seq_done = 1'b1;
     end
     `ifdef SPI
         always begin
