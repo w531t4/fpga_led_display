@@ -24,6 +24,10 @@ package params_pkg;
 `endif
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
+`ifdef USE_WATCHDOG
+    // reset control logic if watchdog isn't satisfied within x seconds
+    parameter real WATCHDOG_CONTROL_FREQ_GOAL = 0.1;  // 10 seconds
+`endif
 `ifdef RGB24
     parameter int unsigned BYTES_PER_PIXEL = 3;
     parameter int unsigned BRIGHTNESS_LEVELS = 8;

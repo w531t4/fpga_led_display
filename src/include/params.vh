@@ -6,9 +6,8 @@
 // tgt_hz variation (after rounding): 0.70%
 // 16000000hz / 246154hz = 65 ticks width=7
 `ifdef USE_WATCHDOG
-    // reset control logic if watchdog isn't satisfied within x seconds
-    parameter WATCHDOG_CONTROL_FREQ_GOAL = 0.1, // 10 seconds
-    parameter WATCHDOG_CONTROL_TICKS = $rtoi(params_pkg::ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0),
+    parameter WATCHDOG_CONTROL_TICKS =
+        $rtoi(params_pkg::ROOT_CLOCK / params_pkg::WATCHDOG_CONTROL_FREQ_GOAL * 1.0),
     parameter WATCHDOG_SIGNATURE_BITS = 64,
     parameter WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED,
 `endif
@@ -39,5 +38,6 @@
 `endif
 
 // ROOT_CLOCK, PLL_SPEED, CTRLR_UART_RX_FREQ_GOAL, CTRLR_CLK_TICKS_PER_BIT, DIVIDE_CLK_BY_X_FOR_MATRIX,
-// PIXEL_WIDTH, PIXEL_HEIGHT, PIXEL_HALFHEIGHT, BYTES_PER_PIXEL, and BRIGHTNESS_LEVELS now live in params_pkg.sv
+// WATCHDOG_CONTROL_FREQ_GOAL, PIXEL_WIDTH, PIXEL_HEIGHT, PIXEL_HALFHEIGHT, BYTES_PER_PIXEL, and
+// BRIGHTNESS_LEVELS now live in params_pkg.sv
 //verilator lint_on UNUSEDPARAM
