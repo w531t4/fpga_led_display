@@ -10,8 +10,6 @@
     // 16000000hz / 115200hz = 138.8889 ticks width=8
     // tgt_hz variation (after rounding): -0.08%
     // 16000000hz / 115108hz = 139 ticks width=8
-    parameter DEBUG_TX_UART_TICKS_PER_BIT = params_pkg::ROOT_CLOCK / params_pkg::DEBUG_UART_TX_FREQ_GOAL,
-
     // context: Debug msg rate
     // 16000000hz / 22hz = 727272.7273 ticks width=20
     // tgt_hz variation (after rounding): -0.00%
@@ -22,7 +20,7 @@
 
 // ROOT_CLOCK, PLL_SPEED, CTRLR_UART_RX_FREQ_GOAL, CTRLR_CLK_TICKS_PER_BIT, DIVIDE_CLK_BY_X_FOR_MATRIX,
 // WATCHDOG_SIGNATURE_BITS, WATCHDOG_SIGNATURE_PATTERN, WATCHDOG_CONTROL_FREQ_GOAL, WATCHDOG_CONTROL_TICKS,
-// DEBUG_UART_TX_FREQ_GOAL, SIM_HALF_PERIOD_NS,
+// DEBUG_UART_TX_FREQ_GOAL, DEBUG_TX_UART_TICKS_PER_BIT, SIM_HALF_PERIOD_NS,
 // PIXEL_WIDTH, PIXEL_HEIGHT,
 // PIXEL_HALFHEIGHT, BYTES_PER_PIXEL, and BRIGHTNESS_LEVELS now live in params_pkg.sv
 // DEBUG_MSGS_PER_SEC_TICKS_SIM now lives in params_pkg.sv

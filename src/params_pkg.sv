@@ -25,6 +25,7 @@ package params_pkg;
 `ifdef DEBUGGER
     // Describes the baudrate for sending messages to debugger client
     parameter int unsigned DEBUG_UART_TX_FREQ_GOAL = 115200;
+    parameter int unsigned DEBUG_TX_UART_TICKS_PER_BIT = ROOT_CLOCK / DEBUG_UART_TX_FREQ_GOAL;
 `endif
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
