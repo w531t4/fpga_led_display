@@ -163,7 +163,7 @@ module main #(
     // No wires past here
 
     new_pll #(
-        .SPEED(PLL_SPEED)
+        .SPEED(params_pkg::PLL_SPEED)
     ) new_pll_inst (
         .clock_in(clk_25mhz),
         .clock_out(clk_root),

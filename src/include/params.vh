@@ -5,18 +5,6 @@
 // 16000000hz / 244444hz = 65.4547 ticks width=7
 // tgt_hz variation (after rounding): 0.70%
 // 16000000hz / 246154hz = 65 ticks width=7
-`ifdef CLK_110
-    parameter PLL_SPEED = 4,
-`elsif CLK_100
-    parameter PLL_SPEED = 3,
-`elsif CLK_90
-    parameter PLL_SPEED = 2,
-`elsif CLK_50
-    parameter PLL_SPEED = 1,
-`else
-    parameter PLL_SPEED = 0,
-`endif
-
 `ifndef SPI
     // Use this to determine what baudrate to require at ctrl/rx_in
     parameter CTRLR_UART_RX_FREQ_GOAL = 244444,
@@ -59,5 +47,6 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
     parameter SIM_HALF_PERIOD_NS = ((1.0/params_pkg::ROOT_CLOCK) * 1000000000)/2.0, //31.25,
 `endif
 
-// PIXEL_WIDTH, PIXEL_HEIGHT, PIXEL_HALFHEIGHT, BYTES_PER_PIXEL, and BRIGHTNESS_LEVELS now live in params_pkg.sv
+// ROOT_CLOCK, PLL_SPEED, PIXEL_WIDTH, PIXEL_HEIGHT, PIXEL_HALFHEIGHT, BYTES_PER_PIXEL, and BRIGHTNESS_LEVELS
+// now live in params_pkg.sv
 //verilator lint_on UNUSEDPARAM
