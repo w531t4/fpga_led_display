@@ -33,6 +33,10 @@ package params_pkg;
     // verilator lint_off UNUSEDPARAM
     parameter real SIM_HALF_PERIOD_NS = ((1.0 / ROOT_CLOCK) * 1000000000) / 2.0;
     // verilator lint_on UNUSEDPARAM
+`ifndef SPI
+    // Use smaller value in testbench so we don't infinitely sim.
+    parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
+`endif
 `endif
 `ifdef RGB24
     parameter int unsigned BYTES_PER_PIXEL = 3;

@@ -26,14 +26,8 @@
     parameter DEBUG_MSGS_PER_SEC_TICKS = params_pkg::ROOT_CLOCK / DEBUG_UART_RX_FREQ_GOAL,
 `endif
 
-`ifdef SIM
-    `ifndef SPI
-        // use smaller value in testbench so we don't infinitely sim
-        parameter DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15,
-    `endif
-`endif
-
 // ROOT_CLOCK, PLL_SPEED, CTRLR_UART_RX_FREQ_GOAL, CTRLR_CLK_TICKS_PER_BIT, DIVIDE_CLK_BY_X_FOR_MATRIX,
 // WATCHDOG_CONTROL_FREQ_GOAL, WATCHDOG_CONTROL_TICKS, SIM_HALF_PERIOD_NS, PIXEL_WIDTH, PIXEL_HEIGHT,
 // PIXEL_HALFHEIGHT, BYTES_PER_PIXEL, and BRIGHTNESS_LEVELS now live in params_pkg.sv
+// DEBUG_MSGS_PER_SEC_TICKS_SIM now lives in params_pkg.sv
 //verilator lint_on UNUSEDPARAM

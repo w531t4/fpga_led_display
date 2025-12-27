@@ -94,7 +94,7 @@ module tb_control_module #(
         .DATA_WIDTH(1072),
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+        .DIVIDER_TICKS(params_pkg::DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
