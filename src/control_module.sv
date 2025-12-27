@@ -14,7 +14,7 @@ module control_module #(
     input [7:0] data_rx,
     input data_ready_n,
     output logic [2:0] rgb_enable,
-    output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
+    output logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_enable,
     output logic [_NUM_DATA_A_BITS-1:0] ram_data_out,
     output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,     // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
     output logic ram_write_enable,
@@ -52,7 +52,7 @@ module control_module #(
                               } ctrl_fsm;
     logic [7:0] data_rx_latch;
     logic ready_for_data_logic;
-    logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
+    logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
     ctrl_fsm cmd_line_state;
@@ -67,7 +67,7 @@ module control_module #(
                                       // NOTE: uart/alphabet.uart is BIG ENDIAN.
     logic state_done;
     logic brightness_change_enable;
-    logic [BRIGHTNESS_LEVELS-1:0] brightness_data_out;
+    logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_data_out;
 
     `ifdef DEBUGGER
         assign cmd_line_state2 = cmd_line_state;
@@ -151,7 +151,7 @@ module control_module #(
     );
 
     wire cmd_readbrightness_done, cmd_readbrightness_be;
-    wire [BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
+    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
     control_cmd_readbrightness #(
         .PIXEL_WIDTH(PIXEL_WIDTH)
     ) cmd_readbrightness (
@@ -296,7 +296,7 @@ module control_module #(
         ram_access_start = 1'b0;
         state_done = 1'b0;
         brightness_change_enable = 1'b0;
-        brightness_data_out = {BRIGHTNESS_LEVELS{1'b0}};
+        brightness_data_out = {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
         ready_for_data_logic = 1'b1;
         case (cmd_line_state)
             STATE_CMD_READBRIGHTNESS: begin
@@ -382,8 +382,8 @@ module control_module #(
                 frame_select <= 1'b0;
                 frame_select_temp <= 1'b0;
             `endif
-            brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
-            brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
+            brightness_enable <= {params_pkg::BRIGHTNESS_LEVELS{1'b1}};
+            brightness_temp <= {params_pkg::BRIGHTNESS_LEVELS{1'b1}};
 
             cmd_line_state <= STATE_IDLE;
             `ifdef DEBUGGER
@@ -435,45 +435,45 @@ module control_module #(
                         cmd_line_state <= STATE_IDLE;
                     end
                     "1": begin
-                        brightness_temp[BRIGHTNESS_LEVELS - 1] <= ~brightness_enable[BRIGHTNESS_LEVELS - 1];
+                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 1] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 1];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "2": begin
-                        brightness_temp[BRIGHTNESS_LEVELS - 2] <= ~brightness_enable[BRIGHTNESS_LEVELS - 2];
+                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 2] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 2];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "3": begin
-                        brightness_temp[BRIGHTNESS_LEVELS - 3] <= ~brightness_enable[BRIGHTNESS_LEVELS - 3];
+                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 3] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 3];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "4": begin
-                        brightness_temp[BRIGHTNESS_LEVELS - 4] <= ~brightness_enable[BRIGHTNESS_LEVELS - 4];
+                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 4] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 4];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "5": begin
-                        brightness_temp[BRIGHTNESS_LEVELS - 5] <= ~brightness_enable[BRIGHTNESS_LEVELS - 5];
+                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 5] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 5];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "6": begin
-                        brightness_temp[BRIGHTNESS_LEVELS - 6] <= ~brightness_enable[BRIGHTNESS_LEVELS - 6];
+                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 6] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 6];
                         cmd_line_state <= STATE_IDLE;
                     end
                     `ifdef RGB24
                         "7": begin
-                            brightness_temp[BRIGHTNESS_LEVELS - 7] <= ~brightness_enable[BRIGHTNESS_LEVELS - 7];
+                            brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 7] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 7];
                             cmd_line_state <= STATE_IDLE;
                         end
                         "8": begin
-                            brightness_temp[BRIGHTNESS_LEVELS - 8] <= ~brightness_enable[BRIGHTNESS_LEVELS - 8];
+                            brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 8] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 8];
                             cmd_line_state <= STATE_IDLE;
                         end
                     `endif
                     "0": begin
-                        brightness_temp <= {BRIGHTNESS_LEVELS{1'b0}};
+                        brightness_temp <= {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
                         cmd_line_state <= STATE_IDLE;
                     end
                     "9": begin
-                        brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
+                        brightness_temp <= {params_pkg::BRIGHTNESS_LEVELS{1'b1}};
                         cmd_line_state <= STATE_IDLE;
                     end
                     "T": cmd_line_state <= STATE_CMD_READBRIGHTNESS;

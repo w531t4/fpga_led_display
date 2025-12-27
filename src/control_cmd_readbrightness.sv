@@ -14,7 +14,7 @@ module control_cmd_readbrightness #(
     input clk,
     input enable,
 
-    output logic [BRIGHTNESS_LEVELS-1:0] data_out,
+    output logic [params_pkg::BRIGHTNESS_LEVELS-1:0] data_out,
     output logic brightness_change_en,
     output logic done
 );
@@ -25,7 +25,7 @@ module control_cmd_readbrightness #(
     ctrl_fsm state;
     always @(posedge clk) begin
         if (reset) begin
-            data_out <= {BRIGHTNESS_LEVELS{1'b0}};
+            data_out <= {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
             done <= 1'b0;
             state <= STATE_READY;
             brightness_change_en <= 1'b0;
@@ -35,14 +35,14 @@ module control_cmd_readbrightness #(
                     if (enable) begin
                         done <= 1'b1;
                         brightness_change_en <= 1'b1;
-                        data_out <= data_in[BRIGHTNESS_LEVELS-1:0];
+                        data_out <= data_in[params_pkg::BRIGHTNESS_LEVELS-1:0];
                         state <= STATE_DONE;
                     end
                 end
                 STATE_DONE: begin
                     done <= 1'b0;
                     brightness_change_en <= 1'b0;
-                    data_out <= {BRIGHTNESS_LEVELS{1'b0}};
+                    data_out <= {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
                     state <= STATE_READY;
                 end
             endcase
