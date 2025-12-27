@@ -4,15 +4,20 @@
 `include "tb_helper.vh"
 
 module tb_control_subcmd_fillarea #(
+    parameter int unsigned BYTES_PER_PIXEL = 2,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam BYTES_PER_PIXEL = 2;
     localparam WIDTH = 4;
     localparam HEIGHT = 4;
     localparam OUT_BITWIDTH = 8;
-    localparam MEMBITS = WIDTH * HEIGHT * BYTES_PER_PIXEL * 8;
+    localparam int PIXEL_BITS = $clog2(BYTES_PER_PIXEL);
+    localparam int MEM_BYTES = WIDTH * HEIGHT * (1 << PIXEL_BITS);
+    localparam MEMBITS = MEM_BYTES * 8;
+    localparam int ROW_ADVANCE_MAX_CYCLES = WIDTH * BYTES_PER_PIXEL;
+    localparam int DONE_MAX_CYCLES = (WIDTH * BYTES_PER_PIXEL) - 1;
+    localparam int MEM_CLEAR_MAX_CYCLES = (WIDTH * HEIGHT * BYTES_PER_PIXEL) + 2;
     logic clk;
     logic subcmd_enable;
     wire [$clog2(WIDTH)-1:0] column;
@@ -24,6 +29,7 @@ module tb_control_subcmd_fillarea #(
     wire pre_done;
     logic [$clog2(WIDTH) + $clog2(HEIGHT) + $clog2(BYTES_PER_PIXEL)-1:0] addr;
     logic [MEMBITS-1:0] mem;
+    logic [MEMBITS-1:0] valid_mask;
     wire [OUT_BITWIDTH-1:0] data_out;
     logic reset;
 
@@ -50,6 +56,16 @@ module tb_control_subcmd_fillarea #(
         .done(pre_done)
     );
 
+    initial begin : init_mask
+        int mask_idx;
+        valid_mask = '0;
+        for (mask_idx = 0; mask_idx < MEM_BYTES; mask_idx = mask_idx + 1) begin
+            if ((mask_idx & ((1 << PIXEL_BITS) - 1)) < BYTES_PER_PIXEL) begin
+                valid_mask[((mask_idx+1)*8)-1-:8] = 8'hFF;
+            end
+        end
+    end
+
     initial begin
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
@@ -58,7 +74,7 @@ module tb_control_subcmd_fillarea #(
         clk = 0;
         done = 0;
         reset = 1;
-        addr = {$clog2(MEMBITS) {1'b0}};
+        addr = '0;
         mem = {MEMBITS{1'b1}};
         subcmd_enable = 0;
         // finish reset for tb
@@ -75,17 +91,17 @@ module tb_control_subcmd_fillarea #(
             $display("expected to see data_out as 0, but saw %d\n", data_out);
             $stop;
         end
-        `WAIT_ASSERT(clk, (row == 2), 8)
-        `WAIT_ASSERT(clk, (row == 1), 8)
-        `WAIT_ASSERT(clk, (row == 0), 8)
-        `WAIT_ASSERT(clk, (pre_done == 1), 7)
+        `WAIT_ASSERT(clk, (row == 2), ROW_ADVANCE_MAX_CYCLES)
+        `WAIT_ASSERT(clk, (row == 1), ROW_ADVANCE_MAX_CYCLES)
+        `WAIT_ASSERT(clk, (row == 0), ROW_ADVANCE_MAX_CYCLES)
+        `WAIT_ASSERT(clk, (pre_done == 1), DONE_MAX_CYCLES)
         @(posedge clk) done = 1;
         @(posedge clk) begin
             done = 0;
             subcmd_enable = 0;
         end
         `WAIT_ASSERT(clk, tb_control_subcmd_fillarea.subcmd_fillarea.state == 0, 1)
-        `WAIT_ASSERT(clk, |(mem) == 0, 30)
+        `WAIT_ASSERT(clk, |(mem & valid_mask) == 0, MEM_CLEAR_MAX_CYCLES)
 
         repeat (5) begin
             @(posedge clk);
