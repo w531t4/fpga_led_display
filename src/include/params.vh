@@ -80,9 +80,8 @@ parameter PIXEL_HALFHEIGHT = 16,
 
 `ifdef RGB24
     parameter BYTES_PER_PIXEL = 3,
-    parameter BRIGHTNESS_LEVELS = 8,
 `else
     parameter BYTES_PER_PIXEL = 2,
-    parameter BRIGHTNESS_LEVELS = 6,
 `endif
+// BRIGHTNESS_LEVELS now lives in params_pkg.sv
 //verilator lint_on UNUSEDPARAM

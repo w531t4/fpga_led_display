@@ -10,15 +10,15 @@ module pixel_split #(
     // verilator lint_on UNUSEDPARAM
 ) (
     input [_NUM_BITS_PER_SUBPANEL-1:0] pixel_data,
-    input [BRIGHTNESS_LEVELS-1:0] brightness_mask,
-    input [BRIGHTNESS_LEVELS-1:0] brightness_enable,
+    input [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask,
+    input [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_enable,
     input [2:0] rgb_enable,
 
     output [2:0] rgb_output
 );
-    wire [BRIGHTNESS_LEVELS-1:0] red_gamma;
-    wire [BRIGHTNESS_LEVELS-1:0] green_gamma;
-    wire [BRIGHTNESS_LEVELS-1:0] blue_gamma;
+    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] red_gamma;
+    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] green_gamma;
+    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] blue_gamma;
 
 `ifdef RGB24
     rgb24 rgb_888 (
@@ -48,25 +48,19 @@ module pixel_split #(
 `endif
 
     /* apply the brightness mask to the gamma-corrected sub-pixel value */
-    brightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
-    ) b_red (
+    brightness b_red (
         .value(red_gamma),
         .mask(brightness_mask),
         .enable(rgb_enable[0]),
         .out(rgb_output[0])
     );
-    brightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
-    ) b_green (
+    brightness b_green (
         .value(green_gamma),
         .mask(brightness_mask),
         .enable(rgb_enable[1]),
         .out(rgb_output[1])
     );
-    brightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
-    ) b_blue (
+    brightness b_blue (
         .value(blue_gamma),
         .mask(brightness_mask),
         .enable(rgb_enable[2]),
