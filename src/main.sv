@@ -280,8 +280,7 @@ module main #(
     /* the fetch controller */
 
     framebuffer_fetch #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) fb_f (
         .reset(global_reset_sync),
         .clk_in(clk_root),
@@ -344,8 +343,7 @@ module main #(
 
     /* the control module */
     control_module #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) ctrl (
         .reset(global_reset),
         .clk_in(clk_root),
@@ -381,8 +379,7 @@ module main #(
     );
 
     multimem #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) fb (
         .ClockA(clk_root),
         .AddressA(ram_a_address),
@@ -405,8 +402,7 @@ module main #(
     );
     `ifdef DOUBLE_BUFFER
         multimem #(
-            .PIXEL_WIDTH(PIXEL_WIDTH),
-            .PIXEL_HEIGHT(PIXEL_HEIGHT)
+            .PIXEL_WIDTH(PIXEL_WIDTH)
         ) fb2 (
             .ClockA(clk_root),
             .AddressA(ram_a_address),
