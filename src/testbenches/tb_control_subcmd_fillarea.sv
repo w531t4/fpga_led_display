@@ -3,7 +3,7 @@
 `timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
 module tb_control_subcmd_fillarea #(
-    parameter int unsigned HEIGHT = 4,
+    parameter int unsigned PIXEL_HEIGHT = 4,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -11,21 +11,21 @@ module tb_control_subcmd_fillarea #(
     localparam WIDTH = 4;
     localparam OUT_BITWIDTH = 8;
     localparam int PIXEL_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
-    localparam int MEM_BYTES = WIDTH * HEIGHT * (1 << PIXEL_BITS);
+    localparam int MEM_BYTES = WIDTH * PIXEL_HEIGHT * (1 << PIXEL_BITS);
     localparam MEMBITS = MEM_BYTES * 8;
     localparam int ROW_ADVANCE_MAX_CYCLES = WIDTH * params_pkg::BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
-    localparam int MEM_CLEAR_MAX_CYCLES = (WIDTH * HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
+    localparam int MEM_CLEAR_MAX_CYCLES = (WIDTH * PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
     logic clk;
     logic subcmd_enable;
     wire [$clog2(WIDTH)-1:0] column;
-    wire [$clog2(HEIGHT)-1:0] row;
+    wire [$clog2(PIXEL_HEIGHT)-1:0] row;
     wire [$clog2(params_pkg::BYTES_PER_PIXEL)-1:0] pixel;
     wire ram_write_enable;
     wire ram_access_start;
     logic done;
     wire pre_done;
-    logic [$clog2(WIDTH) + $clog2(HEIGHT) + $clog2(params_pkg::BYTES_PER_PIXEL)-1:0] addr;
+    logic [$clog2(WIDTH) + $clog2(PIXEL_HEIGHT) + $clog2(params_pkg::BYTES_PER_PIXEL)-1:0] addr;
     logic [MEMBITS-1:0] mem;
     logic [MEMBITS-1:0] valid_mask;
     wire [OUT_BITWIDTH-1:0] data_out;
@@ -33,16 +33,16 @@ module tb_control_subcmd_fillarea #(
 
     control_subcmd_fillarea #(
         .PIXEL_WIDTH (WIDTH),
-        .PIXEL_HEIGHT(HEIGHT)
+        .PIXEL_HEIGHT(PIXEL_HEIGHT)
     ) subcmd_fillarea (
         .reset(reset),
         .enable(subcmd_enable),
         .clk(clk),
         .ack(done),
         .x1({$clog2(WIDTH) {1'b0}}),
-        .y1({$clog2(HEIGHT) {1'b0}}),
+        .y1({$clog2(PIXEL_HEIGHT) {1'b0}}),
         .width(($clog2(WIDTH))'(WIDTH)),
-        .height(($clog2(HEIGHT))'(HEIGHT)),
+        .height(($clog2(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
         .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
         .column(column),
@@ -83,10 +83,10 @@ module tb_control_subcmd_fillarea #(
         @(posedge clk);
 
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
-        for (int r = HEIGHT - 1; r >= 0; r = r - 1) begin
-            `WAIT_ASSERT(clk, (row == ($clog2(HEIGHT))'(r)), ROW_ADVANCE_MAX_CYCLES)
+        for (int r = PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
+            `WAIT_ASSERT(clk, (row == ($clog2(PIXEL_HEIGHT))'(r)), ROW_ADVANCE_MAX_CYCLES)
             // First row should output zeroed color data (color input is all zeros).
-            if (r == (HEIGHT - 1)) begin
+            if (r == (PIXEL_HEIGHT - 1)) begin
                 assert (data_out == 8'b0)
                 else begin
                     $display("expected to see data_out as 0, but saw %d\n", data_out);
