@@ -10,6 +10,7 @@ module tb_control_subcmd_fillarea #(
 );
     localparam WIDTH = 4;
     localparam OUT_BITWIDTH = 8;
+    localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT);
     localparam int PIXEL_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
     localparam int MEM_BYTES = WIDTH * PIXEL_HEIGHT * (1 << PIXEL_BITS);
     localparam MEMBITS = MEM_BYTES * 8;
@@ -19,13 +20,13 @@ module tb_control_subcmd_fillarea #(
     logic clk;
     logic subcmd_enable;
     wire [$clog2(WIDTH)-1:0] column;
-    wire [$clog2(PIXEL_HEIGHT)-1:0] row;
+    wire [_NUM_ROW_ADDRESS_BITS-1:0] row;
     wire [$clog2(params_pkg::BYTES_PER_PIXEL)-1:0] pixel;
     wire ram_write_enable;
     wire ram_access_start;
     logic done;
     wire pre_done;
-    logic [$clog2(WIDTH) + $clog2(PIXEL_HEIGHT) + $clog2(params_pkg::BYTES_PER_PIXEL)-1:0] addr;
+    logic [$clog2(WIDTH) + _NUM_ROW_ADDRESS_BITS + $clog2(params_pkg::BYTES_PER_PIXEL)-1:0] addr;
     logic [MEMBITS-1:0] mem;
     logic [MEMBITS-1:0] valid_mask;
     wire [OUT_BITWIDTH-1:0] data_out;
@@ -40,9 +41,9 @@ module tb_control_subcmd_fillarea #(
         .clk(clk),
         .ack(done),
         .x1({$clog2(WIDTH) {1'b0}}),
-        .y1({$clog2(PIXEL_HEIGHT) {1'b0}}),
+        .y1({_NUM_ROW_ADDRESS_BITS{1'b0}}),
         .width(($clog2(WIDTH))'(WIDTH)),
-        .height(($clog2(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
+        .height((_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT)),
         .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
         .column(column),
@@ -84,7 +85,7 @@ module tb_control_subcmd_fillarea #(
 
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
         for (int r = PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
-            `WAIT_ASSERT(clk, (row == ($clog2(PIXEL_HEIGHT))'(r)), ROW_ADVANCE_MAX_CYCLES)
+            `WAIT_ASSERT(clk, (row == (_NUM_ROW_ADDRESS_BITS)'(r)), ROW_ADVANCE_MAX_CYCLES)
             // First row should output zeroed color data (color input is all zeros).
             if (r == (PIXEL_HEIGHT - 1)) begin
                 assert (data_out == 8'b0)
