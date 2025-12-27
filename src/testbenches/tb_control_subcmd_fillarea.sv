@@ -4,7 +4,7 @@
 `include "tb_helper.vh"
 module tb_control_subcmd_fillarea #(
     parameter int unsigned PIXEL_HALFHEIGHT = 2,
-    parameter PIXEL_WIDTH = 4,
+    parameter PIXEL_WIDTH = 128,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -23,7 +23,6 @@ module tb_control_subcmd_fillarea #(
     // end section
     localparam int MEM_NUM_BYTES = (1 << _NUM_ADDRESS_A_BITS);
     localparam OUT_BITWIDTH = _NUM_DATA_A_BITS;
-    localparam MEM_BITSIZE = MEM_NUM_BYTES * OUT_BITWIDTH;
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
@@ -37,8 +36,8 @@ module tb_control_subcmd_fillarea #(
     logic done;
     wire pre_done;
     logic [_NUM_COLUMN_ADDRESS_BITS + _NUM_ROW_ADDRESS_BITS + _NUM_PIXELCOLORSELECT_BITS-1:0] addr;
-    logic [MEM_BITSIZE-1:0] mem;
-    logic [MEM_BITSIZE-1:0] valid_mask;
+    logic [MEM_NUM_BYTES-1:0] mem;
+    logic [MEM_NUM_BYTES-1:0] valid_mask;
     int remaining_valid_bytes;
     wire [OUT_BITWIDTH-1:0] data_out;
     logic reset;
@@ -80,6 +79,14 @@ module tb_control_subcmd_fillarea #(
         mask_row_idx = idx >> (_NUM_PIXELCOLORSELECT_BITS + _NUM_COLUMN_ADDRESS_BITS);
     endfunction
 
+    // We build a mask of bits representing where each byte written by the
+    // module is rep. by a single bit
+    //
+    // Based on the configuration of width/height/subdisplays, our addressing
+    // schema may have areas of memory that are unused..
+    //
+    // The following section determines which sections are valid (so we don't waste time)
+    // working on unused area.
     initial begin : init_mask
         int mask_idx;
         int mask_row;
@@ -94,7 +101,7 @@ module tb_control_subcmd_fillarea #(
             if (mask_pixel < params_pkg::BYTES_PER_PIXEL &&
                 mask_col < PIXEL_WIDTH &&
                 mask_row < params_pkg::PIXEL_HEIGHT) begin
-                valid_mask[((mask_idx+1)*8)-1-:8] = 8'hFF;
+                valid_mask[mask_idx] = 1'b1;
             end
         end
     end
@@ -108,7 +115,7 @@ module tb_control_subcmd_fillarea #(
         done = 0;
         reset = 1;
         addr = '0;
-        mem = {MEM_BITSIZE{1'b1}};
+        mem = {MEM_NUM_BYTES{1'b1}};
         remaining_valid_bytes = PIXEL_WIDTH * params_pkg::PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL;
         subcmd_enable = 0;
         // finish reset for tb
@@ -159,12 +166,12 @@ module tb_control_subcmd_fillarea #(
                              pixel);
                     $stop;
                 end
-                if (mem[((addr+1)*8)-1-:8] == 8'b0) begin
+                if (mem[addr] == 1'b0) begin
                     $display("duplicate clear write at row=%0d col=%0d pixel=%0d", row, column, pixel);
                     $stop;
                 end
-                remaining_valid_bytes  <= remaining_valid_bytes - 1;
-                mem[((addr+1)*8)-1-:8] <= data_out[7:0];
+                remaining_valid_bytes <= remaining_valid_bytes - 1;
+                mem[addr] <= 1'b0;
             end
         end
     end
