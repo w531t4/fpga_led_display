@@ -17,6 +17,9 @@ package params_pkg;
     parameter int unsigned ROOT_CLOCK = 16_000_000;
     parameter int unsigned PLL_SPEED = 0;
 `endif
+`ifndef SPI
+    parameter int unsigned CTRLR_UART_RX_FREQ_GOAL = 244444;
+`endif
 `ifdef RGB24
     parameter int unsigned BYTES_PER_PIXEL = 3;
     parameter int unsigned BRIGHTNESS_LEVELS = 8;
