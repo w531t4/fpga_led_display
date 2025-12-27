@@ -43,7 +43,7 @@ module tb_control_subcmd_fillarea #(
     logic reset;
 
     control_subcmd_fillarea #(
-        .PIXEL_WIDTH (PIXEL_WIDTH)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) subcmd_fillarea (
         .reset(reset),
         .enable(subcmd_enable),
