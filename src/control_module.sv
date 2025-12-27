@@ -153,7 +153,6 @@ module control_module #(
     wire cmd_readbrightness_done, cmd_readbrightness_be;
     wire [params_pkg::BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
     control_cmd_readbrightness #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) cmd_readbrightness (
         .reset(reset),
         .data_in(data_rx_latch),

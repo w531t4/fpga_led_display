@@ -1,12 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
 `default_nettype none
-module control_cmd_readbrightness #(
-    `include "params.vh"
-    // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
-    // verilator lint_on UNUSEDPARAM
-) (
+module control_cmd_readbrightness (
     input reset,
     // verilator lint_off UNUSEDSIGNAL
     input [7:0] data_in,
