@@ -39,6 +39,7 @@ module tb_control_subcmd_fillarea #(
     logic [_NUM_COLUMN_ADDRESS_BITS + _NUM_ROW_ADDRESS_BITS + _NUM_PIXELCOLORSELECT_BITS-1:0] addr;
     logic [MEM_BITSIZE-1:0] mem;
     logic [MEM_BITSIZE-1:0] valid_mask;
+    int remaining_valid_bytes;
     wire [OUT_BITWIDTH-1:0] data_out;
     logic reset;
 
@@ -108,6 +109,7 @@ module tb_control_subcmd_fillarea #(
         reset = 1;
         addr = '0;
         mem = {MEM_BITSIZE{1'b1}};
+        remaining_valid_bytes = PIXEL_WIDTH * params_pkg::PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL;
         subcmd_enable = 0;
         // finish reset for tb
         @(posedge clk) reset <= ~reset;
@@ -140,7 +142,12 @@ module tb_control_subcmd_fillarea #(
         // FSM should return to idle promptly after ack.
         `WAIT_ASSERT(clk, tb_control_subcmd_fillarea.subcmd_fillarea.state == 0, 1)
         // All valid memory bytes should be cleared to zero within the expected window.
-        `WAIT_ASSERT(clk, |(mem & valid_mask) == 0, MEM_CLEAR_MAX_CYCLES)
+        `WAIT_ASSERT(clk, (remaining_valid_bytes == 0), MEM_CLEAR_MAX_CYCLES)
+        assert (|(mem & valid_mask) == 0)
+        else begin
+            $display("expected all valid bytes cleared, but found non-zero data\n");
+            $stop;
+        end
 
         repeat (5) begin
             @(posedge clk);
@@ -149,7 +156,25 @@ module tb_control_subcmd_fillarea #(
     end
     always @(posedge clk) begin
         addr = {row, column, pixel};
-        if (ram_write_enable) mem[((addr+1)*8)-1-:8] <= data_out[7:0];
+        if (ram_write_enable && subcmd_enable) begin
+            // $display("processing row=%0d col=%0d pixel=%0d", row, column, pixel);
+            if (row >= params_pkg::PIXEL_HEIGHT || column >= PIXEL_WIDTH || pixel >= params_pkg::BYTES_PER_PIXEL) begin
+                $display("out-of-range write: row=%0d col=%0d pixel=%0d", row, column, pixel);
+                $stop;
+            end else begin
+                if (data_out != 8'b0) begin
+                    $display("expected clear data_out==0, got %0d at row=%0d col=%0d pixel=%0d", data_out, row, column,
+                             pixel);
+                    $stop;
+                end
+                if (mem[((addr+1)*8)-1-:8] == 8'b0) begin
+                    $display("duplicate clear write at row=%0d col=%0d pixel=%0d", row, column, pixel);
+                    $stop;
+                end
+                remaining_valid_bytes  <= remaining_valid_bytes - 1;
+                mem[((addr+1)*8)-1-:8] <= data_out[7:0];
+            end
+        end
     end
     always begin
         #2 clk <= !clk;
