@@ -74,16 +74,25 @@ module tb_control_subcmd_fillarea #(
         mask_col_idx = (idx >> _NUM_PIXELCOLORSELECT_BITS) & ((1 << _NUM_COLUMN_ADDRESS_BITS) - 1);
     endfunction
 
+    // Drop pixel + column bits; what's left is the row number.
+    function automatic int unsigned mask_row_idx(input int unsigned idx);
+        mask_row_idx = idx >> (_NUM_PIXELCOLORSELECT_BITS + _NUM_COLUMN_ADDRESS_BITS);
+    endfunction
+
     initial begin : init_mask
         int mask_idx;
+        int mask_row;
         int mask_col;
         int mask_pixel;
         valid_mask = '0;
         for (mask_idx = 0; mask_idx < MEM_NUM_BYTES; mask_idx = mask_idx + 1) begin
             mask_pixel = mask_pixel_idx(mask_idx);
             mask_col   = mask_col_idx(mask_idx);
-            // Only mark real columns; extra column codes are padding.
-            if (mask_pixel < params_pkg::BYTES_PER_PIXEL && mask_col < PIXEL_WIDTH) begin
+            mask_row   = mask_row_idx(mask_idx);
+            // Only mark real columns/rows; extra codes are padding.
+            if (mask_pixel < params_pkg::BYTES_PER_PIXEL &&
+                mask_col < PIXEL_WIDTH &&
+                mask_row < params_pkg::PIXEL_HEIGHT) begin
                 valid_mask[((mask_idx+1)*8)-1-:8] = 8'hFF;
             end
         end
