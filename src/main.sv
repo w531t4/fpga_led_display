@@ -442,7 +442,7 @@ module main #(
     `ifdef DEBUGGER
         debugger #(
             // Describes the sample rate of messages sent to debugger client
-            .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
+            .DIVIDER_TICKS(params_pkg::DEBUG_MSGS_PER_SEC_TICKS),
             .DATA_WIDTH(debug_data_width),
             // Describes the baudrate for sending messages to debugger client
             .UART_TICKS_PER_BIT(params_pkg::DEBUG_TX_UART_TICKS_PER_BIT)
