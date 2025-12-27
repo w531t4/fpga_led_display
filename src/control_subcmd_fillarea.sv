@@ -17,7 +17,7 @@ module control_subcmd_fillarea #(
     input [_NUM_ROW_ADDRESS_BITS-1:0] y1,
     input [_NUM_COLUMN_ADDRESS_BITS-1:0] width,
     input [_NUM_ROW_ADDRESS_BITS-1:0] height,
-    input [(BYTES_PER_PIXEL*8)-1:0] color,  // must be byte aligned
+    input [(params_pkg::BYTES_PER_PIXEL*8)-1:0] color,  // must be byte aligned
 
     output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
     output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
@@ -67,7 +67,7 @@ module control_subcmd_fillarea #(
                         state <= STATE_ROW_MEMWRITE;
                         row <= (_NUM_ROW_ADDRESS_BITS)'(y2 - 1);
                         column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(x2 - 1);
-                        pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
+                        pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
                         data_out <= color[(((32)'(pixel)+1)*8)-1-:8];
@@ -79,7 +79,7 @@ module control_subcmd_fillarea #(
                         ram_access_start <= !ram_access_start;
                         if (row > y1 || column > x1 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
+                                pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
                                 if (column == x1) begin
                                     column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(x2 - 1);
                                     row <= row - 'd1;

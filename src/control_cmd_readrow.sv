@@ -56,7 +56,7 @@ module control_cmd_readrow #(
 
                         state <= STATE_READ_ROWCONTENT;
                         column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
-                        pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
+                        pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
 
                         ram_write_enable <= 1'b1;
@@ -69,7 +69,7 @@ module control_cmd_readrow #(
                         ram_access_start <= !ram_access_start;
                         if (column != 'd0 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel  <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
+                                pixel  <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
                                 column <= column - 'd1;
                             end else begin
                                 if (column == 0 && ((pixel - 'd1) == 0)) begin

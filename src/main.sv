@@ -283,8 +283,7 @@ module main #(
     framebuffer_fetch #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
     ) fb_f (
         .reset(global_reset_sync),
         .clk_in(clk_root),
@@ -348,8 +347,7 @@ module main #(
     /* the control module */
     control_module #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+        .PIXEL_HEIGHT(PIXEL_HEIGHT)
     ) ctrl (
         .reset(global_reset),
         .clk_in(clk_root),
@@ -386,8 +384,7 @@ module main #(
 
     multimem #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+        .PIXEL_HEIGHT(PIXEL_HEIGHT)
     ) fb (
         .ClockA(clk_root),
         .AddressA(ram_a_address),
@@ -411,8 +408,7 @@ module main #(
     `ifdef DOUBLE_BUFFER
         multimem #(
             .PIXEL_WIDTH(PIXEL_WIDTH),
-            .PIXEL_HEIGHT(PIXEL_HEIGHT),
-            .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+            .PIXEL_HEIGHT(PIXEL_HEIGHT)
         ) fb2 (
             .ClockA(clk_root),
             .AddressA(ram_a_address),
@@ -435,7 +431,6 @@ module main #(
     `endif
     /* split the pixels and get the current brightness' bit */
     pixel_split #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) px_top (
         .pixel_data(pixeldata_top),
         .brightness_mask(brightness_mask),
@@ -448,7 +443,6 @@ module main #(
         `endif
     );
     pixel_split #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) px_bottom (
         .pixel_data(pixeldata_bottom),
         .brightness_mask(brightness_mask),

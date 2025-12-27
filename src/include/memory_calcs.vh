@@ -3,7 +3,7 @@
     // verilator lint_off UNUSEDPARAM
     localparam _NUM_SUBPANELS = PIXEL_HEIGHT / PIXEL_HALFHEIGHT,
     localparam _NUM_SUBPANELSELECT_BITS = $clog2(_NUM_SUBPANELS),
-    localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(BYTES_PER_PIXEL),
+    localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL),
     localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH),
     localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT),
     localparam _NUM_ADDRESS_B_BITS = $clog2(PIXEL_HALFHEIGHT) + _NUM_COLUMN_ADDRESS_BITS,

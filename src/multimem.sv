@@ -6,7 +6,6 @@ module multimem #(
     parameter PIXEL_WIDTH = 'd64,
     parameter PIXEL_HEIGHT = 'd32,
     parameter PIXEL_HALFHEIGHT = 'd16,
-    parameter BYTES_PER_PIXEL = 'd2,
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
@@ -15,7 +14,7 @@ module multimem #(
     input wire [_NUM_DATA_A_BITS-1:0] DataInA,
     input wire [15:0] DataInB,
     // 12 bits [11:0]      -5-                   -log( (64*2),2)=7-
-    // input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] AddressA,
+    // input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL)-1:0] AddressA,
     input wire [_NUM_ADDRESS_A_BITS-1:0] AddressA,
     // 11 bits [10:0] (-2, because this is 16bit, not 8bit), -3 because we're not pulling half panels anymore
     input wire [_NUM_ADDRESS_B_BITS-1:0] AddressB,

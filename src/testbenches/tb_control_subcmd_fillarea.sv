@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: MIT
 `timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
-
 module tb_control_subcmd_fillarea #(
-    parameter int unsigned BYTES_PER_PIXEL = 2,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -12,22 +10,22 @@ module tb_control_subcmd_fillarea #(
     localparam WIDTH = 4;
     localparam HEIGHT = 4;
     localparam OUT_BITWIDTH = 8;
-    localparam int PIXEL_BITS = $clog2(BYTES_PER_PIXEL);
+    localparam int PIXEL_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
     localparam int MEM_BYTES = WIDTH * HEIGHT * (1 << PIXEL_BITS);
     localparam MEMBITS = MEM_BYTES * 8;
-    localparam int ROW_ADVANCE_MAX_CYCLES = WIDTH * BYTES_PER_PIXEL;
-    localparam int DONE_MAX_CYCLES = (WIDTH * BYTES_PER_PIXEL) - 1;
-    localparam int MEM_CLEAR_MAX_CYCLES = (WIDTH * HEIGHT * BYTES_PER_PIXEL) + 2;
+    localparam int ROW_ADVANCE_MAX_CYCLES = WIDTH * params_pkg::BYTES_PER_PIXEL;
+    localparam int DONE_MAX_CYCLES = (WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
+    localparam int MEM_CLEAR_MAX_CYCLES = (WIDTH * HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
     logic clk;
     logic subcmd_enable;
     wire [$clog2(WIDTH)-1:0] column;
     wire [$clog2(HEIGHT)-1:0] row;
-    wire [$clog2(BYTES_PER_PIXEL)-1:0] pixel;
+    wire [$clog2(params_pkg::BYTES_PER_PIXEL)-1:0] pixel;
     wire ram_write_enable;
     wire ram_access_start;
     logic done;
     wire pre_done;
-    logic [$clog2(WIDTH) + $clog2(HEIGHT) + $clog2(BYTES_PER_PIXEL)-1:0] addr;
+    logic [$clog2(WIDTH) + $clog2(HEIGHT) + $clog2(params_pkg::BYTES_PER_PIXEL)-1:0] addr;
     logic [MEMBITS-1:0] mem;
     logic [MEMBITS-1:0] valid_mask;
     wire [OUT_BITWIDTH-1:0] data_out;
@@ -35,8 +33,7 @@ module tb_control_subcmd_fillarea #(
 
     control_subcmd_fillarea #(
         .PIXEL_WIDTH(WIDTH),
-        .PIXEL_HEIGHT(HEIGHT),
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
+        .PIXEL_HEIGHT(HEIGHT)
     ) subcmd_fillarea (
         .reset(reset),
         .enable(subcmd_enable),
@@ -46,7 +43,7 @@ module tb_control_subcmd_fillarea #(
         .y1({$clog2(HEIGHT) {1'b0}}),
         .width(($clog2(WIDTH))'(WIDTH)),
         .height(($clog2(HEIGHT))'(HEIGHT)),
-        .color({(BYTES_PER_PIXEL * 8) {1'b0}}),
+        .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
         .column(column),
         .pixel(pixel),
@@ -60,7 +57,7 @@ module tb_control_subcmd_fillarea #(
         int mask_idx;
         valid_mask = '0;
         for (mask_idx = 0; mask_idx < MEM_BYTES; mask_idx = mask_idx + 1) begin
-            if ((mask_idx & ((1 << PIXEL_BITS) - 1)) < BYTES_PER_PIXEL) begin
+            if ((mask_idx & ((1 << PIXEL_BITS) - 1)) < params_pkg::BYTES_PER_PIXEL) begin
                 valid_mask[((mask_idx+1)*8)-1-:8] = 8'hFF;
             end
         end

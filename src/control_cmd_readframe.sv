@@ -47,7 +47,7 @@ module control_cmd_readframe #(
                         state <= STATE_READ_FRAMECONTENT;
                         row <= (_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT - 1);
                         column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
-                        pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
+                        pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         data_out <= data_in;
                         ram_write_enable <= 1'b1;
@@ -60,7 +60,7 @@ module control_cmd_readframe #(
                         data_out <= data_in;
                         if (row > 'd0 || column > 'd0 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(BYTES_PER_PIXEL - 1);
+                                pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
                                 if (column == 'd0) begin
                                     column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
                                     row <= row - 'd1;

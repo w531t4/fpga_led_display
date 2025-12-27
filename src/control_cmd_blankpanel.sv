@@ -82,7 +82,7 @@ module control_cmd_blankpanel #(
         .y1(0),
         .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
         .height((_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT)),
-        .color({(BYTES_PER_PIXEL * 8) {1'b0}}),
+        .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
         .column(column),
         .pixel(pixel),
