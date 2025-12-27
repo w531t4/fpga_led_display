@@ -45,9 +45,9 @@ module tb_control_cmd_watchdog #(
         // finish reset for tb
         @(posedge clk) reset <= ~reset;
 
-        for (int i = 0; i < (WATCHDOG_SIGNATURE_BITS / 8); i++) begin
+        for (int i = 0; i < (params_pkg::WATCHDOG_SIGNATURE_BITS / 8); i++) begin
             @(posedge slowclk) begin
-                data_in = WATCHDOG_SIGNATURE_PATTERN[(WATCHDOG_SIGNATURE_BITS-1)-(i*8)-:8];
+                data_in = WATCHDOG_SIGNATURE_PATTERN[(params_pkg::WATCHDOG_SIGNATURE_BITS-1)-(i*8)-:8];
             end
         end
         @(posedge slowclk);
