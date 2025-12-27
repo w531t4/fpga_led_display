@@ -60,8 +60,7 @@ module tb_main #(
 
     main #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
+        .PIXEL_HEIGHT(PIXEL_HEIGHT)
     ) tbi_main (
         .gp11     (clk_pixel),
         .gp12     (row_latch),

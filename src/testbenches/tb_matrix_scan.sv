@@ -22,8 +22,7 @@ module tb_matrix_scan #(
 
 
     matrix_scan #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) matrix_scan_instance (
         .clk_in(clk),
         .reset(reset),

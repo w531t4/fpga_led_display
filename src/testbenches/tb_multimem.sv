@@ -18,7 +18,7 @@ module tb_multimem #(
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
     logic ram_a_wr;
-    wire [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * params_pkg::BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
+    wire [((PIXEL_HEIGHT / params_pkg::PIXEL_HALFHEIGHT) * params_pkg::BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
     logic ram_a_reset;
     logic ram_b_reset;
 
