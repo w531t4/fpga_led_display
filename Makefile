@@ -45,8 +45,11 @@ GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -I$(VINCLUDE_DIR)
+VERILATOR_FILELIST:=$(ARTIFACT_DIR)/verilator_files.f
 
 VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
+PKG_SOURCES := $(SRC_DIR)/params_pkg.sv
+VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh'))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
@@ -92,7 +95,7 @@ $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
 $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION_DIR) $(DEPDIR)
 #	$(info In a command script)
 # Generate dep list from iverilog and translate it into a Makefile .d file.
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.vcd"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $<
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.vcd"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $(PKG_SOURCES) $<
 	@printf '%s: ' '$(SIMULATION_DIR)/$*.vvp' > $(DEPDIR)/$*.d
 	@tr '\n' ' ' < $(DEPDIR)/$*.deps >> $(DEPDIR)/$*.d
 	@printf '\n' >> $(DEPDIR)/$*.d
@@ -100,8 +103,11 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION
 $(ARTIFACT_DIR)/sim_args: $(ARTIFACT_DIR) Makefile
 	@printf '%s\n' '$(SIM_FLAGS)' > $@
 
-lint: $(ARTIFACT_DIR)
-	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+$(VERILATOR_FILELIST): $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
+	@printf '%s\n' '$(PKG_SOURCES)' '-y $(SRC_DIR)' '-I$(VINCLUDE_DIR)' > $@
+
+lint: $(ARTIFACT_DIR) $(VERILATOR_FILELIST)
+	@set -o pipefail && $(TOOLPATH)/verilator $(VERILATOR_FLAGS) -f $(VERILATOR_FILELIST) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
