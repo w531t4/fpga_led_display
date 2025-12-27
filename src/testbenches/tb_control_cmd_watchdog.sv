@@ -59,7 +59,7 @@ module tb_control_cmd_watchdog #(
         $finish;
     end
     always begin
-        #SIM_HALF_PERIOD_NS clk <= !clk;
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
         divider = !clk ? divider + 'd1 : divider;
         slowclk = (divider == 'd0);
     end

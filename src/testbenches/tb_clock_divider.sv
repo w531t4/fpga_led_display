@@ -33,7 +33,7 @@ module tb_clock_divider #(
     initial #10000 $finish;
 
     always begin
-        #SIM_HALF_PERIOD_NS clk <= !clk;
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     always begin
         #400 reset <= !reset;

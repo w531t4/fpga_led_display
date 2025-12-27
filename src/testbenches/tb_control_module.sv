@@ -187,7 +187,7 @@ module tb_control_module #(
     end
 `endif
     always begin
-        #SIM_HALF_PERIOD_NS clk <= !clk;
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     wire _unused_ok = &{1'b0, rxdata_ready_level, 1'b0};
 

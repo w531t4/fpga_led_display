@@ -218,8 +218,8 @@ module tb_multimem #(
     endtask
 
     always begin
-        #SIM_HALF_PERIOD_NS clk_a <= ~clk_a;
-        #SIM_HALF_PERIOD_NS clk_b <= ~clk_b;
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk_a <= ~clk_a;
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk_b <= ~clk_b;
     end
 
 endmodule

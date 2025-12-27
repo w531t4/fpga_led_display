@@ -36,24 +36,24 @@ module tb_ff_sync #(
     initial #3 reset = !reset;
 
     initial begin
-        #SIM_HALF_PERIOD_NS signal = ~signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
-        #SIM_HALF_PERIOD_NS signal = ~signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
-        #SIM_HALF_PERIOD_NS signal = ~signal;
-        #SIM_HALF_PERIOD_NS signal = ~signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
-        #SIM_HALF_PERIOD_NS signal = ~signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
-        #SIM_HALF_PERIOD_NS signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
         #10 $finish;
     end
 
     always begin
-        #SIM_HALF_PERIOD_NS clk <= !clk;
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 endmodule

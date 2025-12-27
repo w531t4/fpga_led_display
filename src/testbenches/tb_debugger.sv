@@ -84,7 +84,7 @@ module tb_debugger #(
     initial #1000000 $finish;
 
     always begin
-        #SIM_HALF_PERIOD_NS clk <= !clk;  // 2 of these make a period
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;  // 2 of these make a period
     end
     // always begin
     //     #400 reset <= ! reset;
