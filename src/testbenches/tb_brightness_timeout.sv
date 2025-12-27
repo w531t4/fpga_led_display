@@ -14,12 +14,10 @@ module tb_brightness_timeout #(
     wire  output_enable;
     wire  exceeded_overlap_time;
     wire  clk_out;
-    localparam N = 8;
     localparam BASE_TIMEOUT = 23;
-    logic [N-1:0] brightness_mask_active;
-    wire [$clog2(BASE_TIMEOUT) + N:0] brightness_timeout;
+    logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask_active;
+    wire [$clog2(BASE_TIMEOUT) + params_pkg::BRIGHTNESS_LEVELS:0] brightness_timeout;
     brightness_timeout #(
-        .N(N),
         .BASE_TIMEOUT(BASE_TIMEOUT)
     ) btd (
         .clk_in(clk),
@@ -38,16 +36,16 @@ module tb_brightness_timeout #(
         clk = 0;
         reset = 1;
         row_latch = 0;
-        brightness_mask_active = 1 << (N - 1);
+        brightness_mask_active = 1 << (params_pkg::BRIGHTNESS_LEVELS - 1);
         @(posedge clk) reset <= 1'b0;
-        repeat (N * 2) begin
+        repeat (params_pkg::BRIGHTNESS_LEVELS * 2) begin
             @(posedge clk);
             brightness_mask_active = brightness_mask_active >> 1;
         end
         @(posedge clk) brightness_mask_active = 1 << 1;
         @(posedge clk) row_latch = 1;
         @(posedge clk) row_latch = 0;
-        repeat (N * 8) begin
+        repeat (params_pkg::BRIGHTNESS_LEVELS * 8) begin
             @(posedge clk);
         end
         $finish;

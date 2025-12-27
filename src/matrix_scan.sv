@@ -30,7 +30,7 @@ module matrix_scan #(
     output state_advance2,
     output clk_pixel_load_en2,
 `endif
-    output logic [BRIGHTNESS_LEVELS-1:0] brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
+    output logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
 );
 
 
@@ -45,7 +45,7 @@ module matrix_scan #(
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
     wire brightness_exceeded_overlap_time;
-    logic  [BRIGHTNESS_LEVELS-1:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
+    logic  [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
@@ -97,8 +97,8 @@ module matrix_scan #(
         if (reset) begin
             clk_pixel_en <= 1'b1;
             row_latch_state <= 2'b1;
-            brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
-            brightness_mask_active <= {BRIGHTNESS_LEVELS{1'b0}};
+            brightness_mask <= 1 << (params_pkg::BRIGHTNESS_LEVELS - 1);
+            brightness_mask_active <= {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
             // 4'd0
             row_address <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
             row_address_active <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
@@ -112,7 +112,7 @@ module matrix_scan #(
 
                 if ((brightness_mask == 'd0) || (brightness_mask == 'd1)) begin
                     // catch the initial value / oopsy //
-                    brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
+                    brightness_mask <= 1 << (params_pkg::BRIGHTNESS_LEVELS - 1);
                     // 4'd1
                     row_address <= row_address + 1;
                 end else begin
@@ -124,9 +124,7 @@ module matrix_scan #(
         end
     end
 
-    brightness_timeout #(
-        .N(BRIGHTNESS_LEVELS)
-    ) btd (
+    brightness_timeout btd (
         .clk_in(clk_in),
         .reset(reset),
         .row_latch(row_latch),

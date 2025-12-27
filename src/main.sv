@@ -128,10 +128,10 @@ module main #(
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
-    wire [BRIGHTNESS_LEVELS-1:0] brightness_mask;
+    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask;
 
     wire [2:0] rgb_enable;
-    wire [BRIGHTNESS_LEVELS-1:0] brightness_enable;
+    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_enable;
     `ifdef USE_BOARDLEDS_BRIGHTNESS
         assign led = brightness_enable;
     `endif
@@ -251,8 +251,7 @@ module main #(
 
     matrix_scan #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
     )  matscan1 (
         .reset(global_reset_sync),
         .clk_in(clk_matrix),
@@ -436,7 +435,6 @@ module main #(
     `endif
     /* split the pixels and get the current brightness' bit */
     pixel_split #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) px_top (
         .pixel_data(pixeldata_top),
@@ -450,7 +448,6 @@ module main #(
         `endif
     );
     pixel_split #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) px_bottom (
         .pixel_data(pixeldata_bottom),
