@@ -11,8 +11,8 @@ module tb_control_subcmd_fillarea #(
     localparam WIDTH = 4;
     localparam OUT_BITWIDTH = 8;
     localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT);
-    localparam int PIXEL_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
-    localparam int MEM_BYTES = WIDTH * PIXEL_HEIGHT * (1 << PIXEL_BITS);
+    localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
+    localparam int MEM_BYTES = WIDTH * PIXEL_HEIGHT * (1 << _NUM_PIXELCOLORSELECT_BITS);
     localparam MEMBITS = MEM_BYTES * 8;
     localparam int ROW_ADVANCE_MAX_CYCLES = WIDTH * params_pkg::BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
@@ -21,12 +21,12 @@ module tb_control_subcmd_fillarea #(
     logic subcmd_enable;
     wire [$clog2(WIDTH)-1:0] column;
     wire [_NUM_ROW_ADDRESS_BITS-1:0] row;
-    wire [$clog2(params_pkg::BYTES_PER_PIXEL)-1:0] pixel;
+    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel;
     wire ram_write_enable;
     wire ram_access_start;
     logic done;
     wire pre_done;
-    logic [$clog2(WIDTH) + _NUM_ROW_ADDRESS_BITS + $clog2(params_pkg::BYTES_PER_PIXEL)-1:0] addr;
+    logic [$clog2(WIDTH) + _NUM_ROW_ADDRESS_BITS + _NUM_PIXELCOLORSELECT_BITS-1:0] addr;
     logic [MEMBITS-1:0] mem;
     logic [MEMBITS-1:0] valid_mask;
     wire [OUT_BITWIDTH-1:0] data_out;
@@ -58,7 +58,7 @@ module tb_control_subcmd_fillarea #(
         int mask_idx;
         valid_mask = '0;
         for (mask_idx = 0; mask_idx < MEM_BYTES; mask_idx = mask_idx + 1) begin
-            if ((mask_idx & ((1 << PIXEL_BITS) - 1)) < params_pkg::BYTES_PER_PIXEL) begin
+            if ((mask_idx & ((1 << _NUM_PIXELCOLORSELECT_BITS) - 1)) < params_pkg::BYTES_PER_PIXEL) begin
                 valid_mask[((mask_idx+1)*8)-1-:8] = 8'hFF;
             end
         end
