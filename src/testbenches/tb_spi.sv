@@ -49,12 +49,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 `timescale 1ns / 10ps
-module tb_spi #(
-    `include "params.vh"
-    // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
-    // verilator lint_on UNUSEDPARAM
-);
+module tb_spi;
     reg rstb;
     reg clk = 1'b0;
     reg mlb = 1'b0;
