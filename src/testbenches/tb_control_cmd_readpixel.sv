@@ -83,6 +83,6 @@ module tb_control_cmd_readpixel #(
         $finish;
     end
     always begin
-        #SIM_HALF_PERIOD_NS clk <= !clk;
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 endmodule

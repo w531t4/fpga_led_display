@@ -190,7 +190,7 @@ module tb_main #(
         @(posedge clk)
         #(($bits(
             myled_row
-        ) + 1000) * SIM_HALF_PERIOD_NS * 2 *
+        ) + 1000) * params_pkg::SIM_HALF_PERIOD_NS * 2 *
             4);  // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
         `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
@@ -254,6 +254,6 @@ module tb_main #(
     end
 `endif
     always begin
-        #SIM_HALF_PERIOD_NS clk <= !clk;
+        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 endmodule

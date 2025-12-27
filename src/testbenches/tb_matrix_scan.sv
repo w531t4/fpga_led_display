@@ -8,7 +8,7 @@ module tb_matrix_scan #(
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam ADJUSTED_CLOCK = SIM_HALF_PERIOD_NS * params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX;
+    localparam ADJUSTED_CLOCK = params_pkg::SIM_HALF_PERIOD_NS * params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX;
     logic clk;
     logic reset;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address;

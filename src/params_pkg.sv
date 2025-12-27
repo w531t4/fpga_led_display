@@ -29,6 +29,11 @@ package params_pkg;
     parameter real WATCHDOG_CONTROL_FREQ_GOAL = 0.1;  // 10 seconds
     parameter int unsigned WATCHDOG_CONTROL_TICKS = $rtoi(ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0);
 `endif
+`ifdef SIM
+    // verilator lint_off UNUSEDPARAM
+    parameter real SIM_HALF_PERIOD_NS = ((1.0 / ROOT_CLOCK) * 1000000000) / 2.0;
+    // verilator lint_on UNUSEDPARAM
+`endif
 `ifdef RGB24
     parameter int unsigned BYTES_PER_PIXEL = 3;
     parameter int unsigned BRIGHTNESS_LEVELS = 8;
