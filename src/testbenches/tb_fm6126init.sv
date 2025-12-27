@@ -1,12 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
 `timescale 1ns / 1ns `default_nettype none
-module tb_fm6126init #(
-    `include "params.vh"
-    // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
-    // verilator lint_on UNUSEDPARAM
-);
+module tb_fm6126init;
     logic clk_root;
     logic reset;
     wire mask_en;
