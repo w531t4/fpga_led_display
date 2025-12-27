@@ -8,6 +8,15 @@ package params_pkg;
     parameter int unsigned BYTES_PER_PIXEL = 2;
     parameter int unsigned BRIGHTNESS_LEVELS = 6;
 `endif
+`ifdef W128
+`ifdef SIM
+    parameter int unsigned PIXEL_WIDTH = 64 * 6;
+`else
+    parameter int unsigned PIXEL_WIDTH = 64 * 12;
+`endif
+`else
+    parameter int unsigned PIXEL_WIDTH = 64;
+`endif
     parameter int unsigned PIXEL_HEIGHT = 32;
     parameter int unsigned PIXEL_HALFHEIGHT = 16;
 endpackage

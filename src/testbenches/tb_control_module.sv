@@ -120,10 +120,7 @@ module tb_control_module #(
         .reset(reset)
     );
 
-    control_module #(
-        // Picture/Video data RX baud rate
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) control_module_instance (
+    control_module control_module_instance (
         .reset(reset),
         .clk_in(clk),
         .busy(ctrl_busy),

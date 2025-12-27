@@ -64,16 +64,5 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
     parameter SIM_HALF_PERIOD_NS = ((1.0/ROOT_CLOCK) * 1000000000)/2.0, //31.25,
 `endif
 
-`ifdef W128
-    `ifdef SIM
-        parameter PIXEL_WIDTH = 64*6,
-    `else
-        parameter PIXEL_WIDTH = 64*12,
-    `endif
-`else
-    parameter PIXEL_WIDTH = 64,
-`endif
-// PIXEL_HEIGHT now lives in params_pkg.sv
-// PIXEL_HALFHEIGHT now lives in params_pkg.sv
-// BYTES_PER_PIXEL and BRIGHTNESS_LEVELS now live in params_pkg.sv
+// PIXEL_WIDTH, PIXEL_HEIGHT, PIXEL_HALFHEIGHT, BYTES_PER_PIXEL, and BRIGHTNESS_LEVELS now live in params_pkg.sv
 //verilator lint_on UNUSEDPARAM

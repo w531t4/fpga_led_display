@@ -155,9 +155,7 @@ module control_cmd_fillrect #(
         end
     end
 
-    control_subcmd_fillarea #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) subcmd_fillarea (
+    control_subcmd_fillarea subcmd_fillarea (
         .reset(reset || local_reset),
         .enable(subcmd_enable),
         .clk(mem_clk),
