@@ -29,6 +29,7 @@ package params_pkg;
     parameter real WATCHDOG_CONTROL_FREQ_GOAL = 0.1;  // 10 seconds
     parameter int unsigned WATCHDOG_CONTROL_TICKS = $rtoi(ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0);
     parameter int unsigned WATCHDOG_SIGNATURE_BITS = 64;
+    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED;
 `endif
 `ifdef SIM
     // verilator lint_off UNUSEDPARAM

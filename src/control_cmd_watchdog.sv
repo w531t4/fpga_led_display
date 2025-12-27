@@ -44,7 +44,7 @@ module control_cmd_watchdog #(
                         // Update memory
                         cache <= (cache << 8) + (params_pkg::WATCHDOG_SIGNATURE_BITS)'(data_in);
                         if (((cache << 8) + (params_pkg::WATCHDOG_SIGNATURE_BITS)'(data_in)) ==
-                            WATCHDOG_SIGNATURE_PATTERN) begin
+                            params_pkg::WATCHDOG_SIGNATURE_PATTERN) begin
                             watchdog_counter <= ($clog2(WATCHDOG_CONTROL_TICKS))'(WATCHDOG_CONTROL_TICKS);
                         end else begin
                             watchdog_counter <= watchdog_counter - 'd1;
