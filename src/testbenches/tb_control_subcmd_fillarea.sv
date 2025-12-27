@@ -63,12 +63,19 @@ module tb_control_subcmd_fillarea #(
         .done(pre_done)
     );
 
+    // [row bits][column bits][pixel]
+    // Take the tiny "pixel" chunk from the right end of idx.
+    function automatic int unsigned mask_pixel_idx(input int unsigned idx);
+        mask_pixel_idx = idx & ((1 << _NUM_PIXELCOLORSELECT_BITS) - 1);
+    endfunction
+
+
     initial begin : init_mask
         int mask_idx;
         int mask_pixel;
         valid_mask = '0;
         for (mask_idx = 0; mask_idx < MEM_NUM_BYTES; mask_idx = mask_idx + 1) begin
-            mask_pixel = mask_idx & ((1 << _NUM_PIXELCOLORSELECT_BITS) - 1);
+            mask_pixel = mask_pixel_idx(mask_idx);
             if (mask_pixel < params_pkg::BYTES_PER_PIXEL) begin
                 valid_mask[((mask_idx+1)*8)-1-:8] = 8'hFF;
             end
