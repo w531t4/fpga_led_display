@@ -5,12 +5,6 @@
 // 16000000hz / 244444hz = 65.4547 ticks width=7
 // tgt_hz variation (after rounding): 0.70%
 // 16000000hz / 246154hz = 65 ticks width=7
-`ifndef SPI
-    // Use this to determine what baudrate to require at ctrl/rx_in
-    parameter CTRLR_CLK_TICKS_PER_BIT =
-        $rtoi(params_pkg::ROOT_CLOCK / params_pkg::CTRLR_UART_RX_FREQ_GOAL * 1.0),
-`endif
-
 // Use this to tune what clock freq we expose to matrix_scan
 parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
 
@@ -47,6 +41,6 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
     parameter SIM_HALF_PERIOD_NS = ((1.0/params_pkg::ROOT_CLOCK) * 1000000000)/2.0, //31.25,
 `endif
 
-// ROOT_CLOCK, PLL_SPEED, CTRLR_UART_RX_FREQ_GOAL, PIXEL_WIDTH, PIXEL_HEIGHT, PIXEL_HALFHEIGHT,
-// BYTES_PER_PIXEL, and BRIGHTNESS_LEVELS now live in params_pkg.sv
+// ROOT_CLOCK, PLL_SPEED, CTRLR_UART_RX_FREQ_GOAL, CTRLR_CLK_TICKS_PER_BIT, PIXEL_WIDTH,
+// PIXEL_HEIGHT, PIXEL_HALFHEIGHT, BYTES_PER_PIXEL, and BRIGHTNESS_LEVELS now live in params_pkg.sv
 //verilator lint_on UNUSEDPARAM

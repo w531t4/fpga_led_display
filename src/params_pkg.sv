@@ -18,7 +18,9 @@ package params_pkg;
     parameter int unsigned PLL_SPEED = 0;
 `endif
 `ifndef SPI
+    // Use this to determine what baudrate to require at ctrl/rx_in
     parameter int unsigned CTRLR_UART_RX_FREQ_GOAL = 244444;
+    parameter int unsigned CTRLR_CLK_TICKS_PER_BIT = $rtoi(ROOT_CLOCK / CTRLR_UART_RX_FREQ_GOAL * 1.0);
 `endif
 `ifdef RGB24
     parameter int unsigned BYTES_PER_PIXEL = 3;
