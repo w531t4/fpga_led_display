@@ -15,7 +15,7 @@ module tb_control_subcmd_fillarea #(
     localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT);
     localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
     localparam int MEM_BYTES = PIXEL_WIDTH * PIXEL_HEIGHT * (1 << _NUM_PIXELCOLORSELECT_BITS);
-    localparam MEMBITS = MEM_BYTES * 8;
+    localparam MEMBITS = MEM_BYTES * OUT_BITWIDTH;
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
