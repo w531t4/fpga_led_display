@@ -242,7 +242,7 @@ module main #(
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
-        .CLK_DIV_COUNT(DIVIDE_CLK_BY_X_FOR_MATRIX)
+        .CLK_DIV_COUNT(params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX)
     ) clkdiv_baudrate (
         .reset(global_reset_sync),
         .clk_in(clk_root),
