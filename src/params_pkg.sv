@@ -27,6 +27,7 @@ package params_pkg;
     parameter int unsigned DEBUG_UART_TX_FREQ_GOAL = 115200;
     parameter int unsigned DEBUG_TX_UART_TICKS_PER_BIT = ROOT_CLOCK / DEBUG_UART_TX_FREQ_GOAL;
     parameter int unsigned DEBUG_UART_RX_FREQ_GOAL = 244444;
+    parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS = ROOT_CLOCK / DEBUG_UART_RX_FREQ_GOAL;
 `endif
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
