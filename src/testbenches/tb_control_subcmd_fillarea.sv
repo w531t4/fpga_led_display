@@ -14,8 +14,8 @@ module tb_control_subcmd_fillarea #(
     localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH);
     localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT);
     localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
-    localparam int MEM_BYTES = PIXEL_WIDTH * PIXEL_HEIGHT * (1 << _NUM_PIXELCOLORSELECT_BITS);
-    localparam MEMBITS = MEM_BYTES * OUT_BITWIDTH;
+    localparam int MEM_NUM_BYTES = PIXEL_WIDTH * PIXEL_HEIGHT * (1 << _NUM_PIXELCOLORSELECT_BITS);
+    localparam MEM_BITSIZE = MEM_NUM_BYTES * OUT_BITWIDTH;
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
@@ -29,8 +29,8 @@ module tb_control_subcmd_fillarea #(
     logic done;
     wire pre_done;
     logic [_NUM_COLUMN_ADDRESS_BITS + _NUM_ROW_ADDRESS_BITS + _NUM_PIXELCOLORSELECT_BITS-1:0] addr;
-    logic [MEMBITS-1:0] mem;
-    logic [MEMBITS-1:0] valid_mask;
+    logic [MEM_BITSIZE-1:0] mem;
+    logic [MEM_BITSIZE-1:0] valid_mask;
     wire [OUT_BITWIDTH-1:0] data_out;
     logic reset;
 
@@ -59,7 +59,7 @@ module tb_control_subcmd_fillarea #(
     initial begin : init_mask
         int mask_idx;
         valid_mask = '0;
-        for (mask_idx = 0; mask_idx < MEM_BYTES; mask_idx = mask_idx + 1) begin
+        for (mask_idx = 0; mask_idx < MEM_NUM_BYTES; mask_idx = mask_idx + 1) begin
             if ((mask_idx & ((1 << _NUM_PIXELCOLORSELECT_BITS) - 1)) < params_pkg::BYTES_PER_PIXEL) begin
                 valid_mask[((mask_idx+1)*8)-1-:8] = 8'hFF;
             end
@@ -75,7 +75,7 @@ module tb_control_subcmd_fillarea #(
         done = 0;
         reset = 1;
         addr = '0;
-        mem = {MEMBITS{1'b1}};
+        mem = {MEM_BITSIZE{1'b1}};
         subcmd_enable = 0;
         // finish reset for tb
         @(posedge clk) reset <= ~reset;
