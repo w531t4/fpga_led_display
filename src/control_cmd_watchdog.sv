@@ -2,12 +2,7 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_watchdog #(
-    `include "params.vh"
-    parameter int unsigned WATCHDOG_CONTROL_TICKS = params_pkg::WATCHDOG_CONTROL_TICKS,
-    `include "memory_calcs.vh"
-    // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
-    // verilator lint_on UNUSEDPARAM
+    parameter int unsigned WATCHDOG_CONTROL_TICKS = params_pkg::WATCHDOG_CONTROL_TICKS
 ) (
     // input cmd_enable,
     input reset,

@@ -3,12 +3,7 @@
 `timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
 
-module tb_control_cmd_watchdog #(
-    `include "params.vh"
-    // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
-    // verilator lint_on UNUSEDPARAM
-);
+module tb_control_cmd_watchdog;
     logic [3:0] divider;
     logic slowclk;
     logic clk;
