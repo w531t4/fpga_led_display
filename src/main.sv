@@ -249,9 +249,7 @@ module main #(
         .clk_out(clk_matrix)
     );
 
-    matrix_scan #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    )  matscan1 (
+    matrix_scan matscan1 (
         .reset(global_reset_sync),
         .clk_in(clk_matrix),
         .column_address(column_address),
@@ -279,9 +277,7 @@ module main #(
 
     /* the fetch controller */
 
-    framebuffer_fetch #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) fb_f (
+    framebuffer_fetch fb_f (
         .reset(global_reset_sync),
         .clk_in(clk_root),
 
@@ -342,9 +338,7 @@ module main #(
     );
 
     /* the control module */
-    control_module #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) ctrl (
+    control_module ctrl (
         .reset(global_reset),
         .clk_in(clk_root),
         /* clk_root =  133MHZ */
@@ -378,9 +372,7 @@ module main #(
         `endif
     );
 
-    multimem #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) fb (
+    multimem fb (
         .ClockA(clk_root),
         .AddressA(ram_a_address),
         .DataInA(ram_a_data_in),
@@ -401,9 +393,7 @@ module main #(
         .ClockEnB(ram_b_clk_enable)
     );
     `ifdef DOUBLE_BUFFER
-        multimem #(
-            .PIXEL_WIDTH(PIXEL_WIDTH)
-        ) fb2 (
+        multimem fb2 (
             .ClockA(clk_root),
             .AddressA(ram_a_address),
             .DataInA(ram_a_data_in),

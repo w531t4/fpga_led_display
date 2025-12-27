@@ -105,9 +105,7 @@ module control_module #(
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readrow_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readrow_pixel_addr;
 
-    control_cmd_readrow #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) cmd_readrow (
+    control_cmd_readrow cmd_readrow (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
         .reset(reset),
         .data_in(data_rx_latch),
@@ -131,9 +129,7 @@ module control_module #(
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readpixel_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readpixel_pixel_addr;
 
-    control_cmd_readpixel #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) cmd_readpixel (
+    control_cmd_readpixel cmd_readpixel (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
         .reset(reset),
         .data_in(data_rx_latch),
@@ -152,8 +148,7 @@ module control_module #(
 
     wire cmd_readbrightness_done, cmd_readbrightness_be;
     wire [params_pkg::BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
-    control_cmd_readbrightness #(
-    ) cmd_readbrightness (
+    control_cmd_readbrightness cmd_readbrightness (
         .reset(reset),
         .data_in(data_rx_latch),
         .clk(clk_in),
@@ -170,9 +165,7 @@ module control_module #(
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_blankpanel_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_blankpanel_pixel_addr;
 
-    control_cmd_blankpanel #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) cmd_blankpanel (
+    control_cmd_blankpanel cmd_blankpanel (
         .reset(reset),
         // This command requires no arguments, therefore it can operate at clock speed (no ~data_ready_n)
         .enable(cmd_line_state == STATE_CMD_BLANKPANEL),
@@ -197,9 +190,7 @@ module control_module #(
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillpanel_pixel_addr;
     wire                                  cmd_fillpanel_rfd;
 
-    control_cmd_fillpanel #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) cmd_fillpanel (
+    control_cmd_fillpanel cmd_fillpanel (
         .reset(reset),
         // .enable(cmd_line_state == STATE_CMD_FILLPANEL),
         .enable((cmd_line_state == STATE_CMD_FILLPANEL) && ~data_ready_n),
@@ -225,9 +216,7 @@ module control_module #(
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillrect_pixel_addr;
     wire                                  cmd_fillrect_rfd;
 
-    control_cmd_fillrect #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) cmd_fillrect (
+    control_cmd_fillrect cmd_fillrect (
         .reset(reset),
         // .enable(cmd_line_state == STATE_CMD_FILLRECT),
         .enable((cmd_line_state == STATE_CMD_FILLRECT) && ~data_ready_n),
@@ -252,9 +241,7 @@ module control_module #(
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0]   cmd_readframe_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readframe_pixel_addr;
 
-    control_cmd_readframe #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) cmd_readframe (
+    control_cmd_readframe cmd_readframe (
         .reset(reset),
         // .enable(cmd_line_state == STATE_CMD_FILLRECT),
         .enable((cmd_line_state == STATE_CMD_READFRAME) && ~data_ready_n),
@@ -273,9 +260,7 @@ module control_module #(
         wire                                  cmd_watchdog_done;
         wire                                  cmd_watchdog_sysreset;
 
-        control_cmd_watchdog #(
-            .PIXEL_WIDTH(PIXEL_WIDTH)
-        ) cmd_watchdog (
+        control_cmd_watchdog cmd_watchdog (
             .reset(reset),
             .enable((cmd_line_state == STATE_CMD_WATCHDOG) && ~data_ready_n),
             .clk(clk_in),

@@ -43,13 +43,7 @@ module tb_control_cmd_readrow #(
         .reset(reset)
     );
 
-    control_cmd_readrow #(
-`ifdef W128
-        .PIXEL_WIDTH(128)
-`else
-        .PIXEL_WIDTH(64)
-`endif
-    ) cmd_readrow (
+    control_cmd_readrow cmd_readrow (
         .reset(reset),
         .data_in(data_in),
         .clk(clk),

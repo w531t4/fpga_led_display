@@ -4,16 +4,14 @@
 `include "tb_helper.vh"
 module tb_control_subcmd_fillarea #(
     parameter int unsigned PIXEL_HALFHEIGHT = 2,
-    parameter PIXEL_WIDTH = 128,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
 
-    // section to be removed in future once PIXEL_WIDTH is in params pkg
-    // and we can safely include memcalcs
+    // section to be removed in future once we can safely include memcalcs
     localparam _NUM_DATA_A_BITS = 8;
-    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH);
+    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(params_pkg::PIXEL_WIDTH);
     localparam _NUM_ROW_ADDRESS_BITS = $clog2(params_pkg::PIXEL_HEIGHT);
     localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
     localparam _NUM_SUBPANELS = params_pkg::PIXEL_HEIGHT / PIXEL_HALFHEIGHT;
@@ -23,9 +21,10 @@ module tb_control_subcmd_fillarea #(
     // end section
     localparam int MEM_NUM_BYTES = (1 << _NUM_ADDRESS_A_BITS);
     localparam OUT_BITWIDTH = _NUM_DATA_A_BITS;
-    localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
-    localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
-    localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
+    localparam int ROW_ADVANCE_MAX_CYCLES = params_pkg::PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
+    localparam int DONE_MAX_CYCLES = (params_pkg::PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
+    localparam int MEM_CLEAR_MAX_CYCLES = (params_pkg::PIXEL_WIDTH * params_pkg::PIXEL_HEIGHT *
+        params_pkg::BYTES_PER_PIXEL) + 2;
     logic clk;
     logic subcmd_enable;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] column;
@@ -42,16 +41,14 @@ module tb_control_subcmd_fillarea #(
     wire [OUT_BITWIDTH-1:0] data_out;
     logic reset;
 
-    control_subcmd_fillarea #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) subcmd_fillarea (
+    control_subcmd_fillarea subcmd_fillarea (
         .reset(reset),
         .enable(subcmd_enable),
         .clk(clk),
         .ack(done),
         .x1({_NUM_COLUMN_ADDRESS_BITS{1'b0}}),
         .y1({_NUM_ROW_ADDRESS_BITS{1'b0}}),
-        .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
+        .width((_NUM_COLUMN_ADDRESS_BITS)'(params_pkg::PIXEL_WIDTH)),
         .height((_NUM_ROW_ADDRESS_BITS)'(params_pkg::PIXEL_HEIGHT)),
         .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
@@ -99,7 +96,7 @@ module tb_control_subcmd_fillarea #(
             mask_row   = mask_row_idx(mask_idx);
             // Only mark real columns/rows; extra codes are padding.
             if (mask_pixel < params_pkg::BYTES_PER_PIXEL &&
-                mask_col < PIXEL_WIDTH &&
+                mask_col < params_pkg::PIXEL_WIDTH &&
                 mask_row < params_pkg::PIXEL_HEIGHT) begin
                 valid_mask[mask_idx] = 1'b1;
             end
@@ -116,7 +113,7 @@ module tb_control_subcmd_fillarea #(
         reset = 1;
         addr = '0;
         mem = {MEM_NUM_BYTES{1'b1}};
-        remaining_valid_bytes = PIXEL_WIDTH * params_pkg::PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL;
+        remaining_valid_bytes = params_pkg::PIXEL_WIDTH * params_pkg::PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL;
         subcmd_enable = 0;
         // finish reset for tb
         @(posedge clk) reset <= ~reset;
@@ -157,7 +154,7 @@ module tb_control_subcmd_fillarea #(
         addr = {row, column, pixel};
         if (ram_write_enable && subcmd_enable) begin
             // $display("processing row=%0d col=%0d pixel=%0d", row, column, pixel);
-            if (row >= params_pkg::PIXEL_HEIGHT || column >= PIXEL_WIDTH || pixel >= params_pkg::BYTES_PER_PIXEL) begin
+            if (row >= params_pkg::PIXEL_HEIGHT || column >= params_pkg::PIXEL_WIDTH || pixel >= params_pkg::BYTES_PER_PIXEL) begin
                 $display("out-of-range write: row=%0d col=%0d pixel=%0d", row, column, pixel);
                 $stop;
             end else begin

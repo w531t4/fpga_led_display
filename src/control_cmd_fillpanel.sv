@@ -100,16 +100,14 @@ module control_cmd_fillpanel #(
         end
     end
 
-    control_subcmd_fillarea #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) subcmd_fillarea (
+    control_subcmd_fillarea subcmd_fillarea (
         .reset(reset || local_reset),
         .enable(subcmd_enable),
         .clk(mem_clk),
         .ack(done),
         .x1(0),
         .y1(0),
-        .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
+        .width((_NUM_COLUMN_ADDRESS_BITS)'(params_pkg::PIXEL_WIDTH)),
         .height((_NUM_ROW_ADDRESS_BITS)'(params_pkg::PIXEL_HEIGHT)),
         .color(selected_color),
         .row(row),

@@ -58,9 +58,7 @@ module tb_main #(
     wire uart_rx_dataready;
 `endif
 
-    main #(
-        .PIXEL_WIDTH(PIXEL_WIDTH)
-    ) tbi_main (
+    main tbi_main (
         .gp11     (clk_pixel),
         .gp12     (row_latch),
         .gp13     (OE),
