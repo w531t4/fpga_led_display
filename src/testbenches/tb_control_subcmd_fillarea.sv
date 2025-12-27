@@ -10,11 +10,11 @@ module tb_control_subcmd_fillarea #(
     // verilator lint_on UNUSEDPARAM
 );
 
-    localparam OUT_BITWIDTH = 8;
     localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH);
     localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT);
     localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
     localparam int MEM_NUM_BYTES = PIXEL_WIDTH * PIXEL_HEIGHT * (1 << _NUM_PIXELCOLORSELECT_BITS);
+    localparam OUT_BITWIDTH = 8;
     localparam MEM_BITSIZE = MEM_NUM_BYTES * OUT_BITWIDTH;
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
