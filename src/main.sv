@@ -445,7 +445,7 @@ module main #(
             .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
             .DATA_WIDTH(debug_data_width),
             // Describes the baudrate for sending messages to debugger client
-            .UART_TICKS_PER_BIT(DEBUG_TX_UART_TICKS_PER_BIT)
+            .UART_TICKS_PER_BIT(params_pkg::DEBUG_TX_UART_TICKS_PER_BIT)
         ) mydebug (
             .clk_in(clk_root),
             .reset(global_reset),
