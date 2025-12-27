@@ -110,7 +110,7 @@ module control_cmd_fillpanel #(
         .x1(0),
         .y1(0),
         .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
-        .height((_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT)),
+        .height((_NUM_ROW_ADDRESS_BITS)'(params_pkg::PIXEL_HEIGHT)),
         .color(selected_color),
         .row(row),
         .column(column),

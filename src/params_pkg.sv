@@ -8,5 +8,6 @@ package params_pkg;
     parameter int unsigned BYTES_PER_PIXEL = 2;
     parameter int unsigned BRIGHTNESS_LEVELS = 6;
 `endif
+    parameter int unsigned PIXEL_HEIGHT = 32;
     parameter int unsigned PIXEL_HALFHEIGHT = 16;
 endpackage

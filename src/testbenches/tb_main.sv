@@ -59,8 +59,7 @@ module tb_main #(
 `endif
 
     main #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) tbi_main (
         .gp11     (clk_pixel),
         .gp12     (row_latch),

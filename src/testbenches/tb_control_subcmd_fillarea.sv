@@ -3,7 +3,6 @@
 `timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
 module tb_control_subcmd_fillarea #(
-    parameter int unsigned PIXEL_HEIGHT = 4,
     parameter int unsigned PIXEL_HALFHEIGHT = 2,
     parameter PIXEL_WIDTH = 4,
     // verilator lint_off UNUSEDPARAM
@@ -11,13 +10,13 @@ module tb_control_subcmd_fillarea #(
     // verilator lint_on UNUSEDPARAM
 );
 
-    // section to be removed in future once PIXEL_WIDTH and PIXEL_HEIGHT are in params pkg
+    // section to be removed in future once PIXEL_WIDTH is in params pkg
     // and we can safely include memcalcs
     localparam _NUM_DATA_A_BITS = 8;
     localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH);
-    localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT);
+    localparam _NUM_ROW_ADDRESS_BITS = $clog2(params_pkg::PIXEL_HEIGHT);
     localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
-    localparam _NUM_SUBPANELS = PIXEL_HEIGHT / PIXEL_HALFHEIGHT;
+    localparam _NUM_SUBPANELS = params_pkg::PIXEL_HEIGHT / PIXEL_HALFHEIGHT;
     localparam _NUM_SUBPANELSELECT_BITS = $clog2(_NUM_SUBPANELS);
     localparam _NUM_ADDRESS_B_BITS = $clog2(PIXEL_HALFHEIGHT) + _NUM_COLUMN_ADDRESS_BITS;
     localparam _NUM_ADDRESS_A_BITS = _NUM_SUBPANELSELECT_BITS + _NUM_PIXELCOLORSELECT_BITS + _NUM_ADDRESS_B_BITS;
@@ -27,7 +26,7 @@ module tb_control_subcmd_fillarea #(
     localparam MEM_BITSIZE = MEM_NUM_BYTES * OUT_BITWIDTH;
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
-    localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
+    localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
     logic clk;
     logic subcmd_enable;
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] column;
@@ -44,8 +43,7 @@ module tb_control_subcmd_fillarea #(
     logic reset;
 
     control_subcmd_fillarea #(
-        .PIXEL_WIDTH (PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .PIXEL_WIDTH (PIXEL_WIDTH)
     ) subcmd_fillarea (
         .reset(reset),
         .enable(subcmd_enable),
@@ -54,7 +52,7 @@ module tb_control_subcmd_fillarea #(
         .x1({_NUM_COLUMN_ADDRESS_BITS{1'b0}}),
         .y1({_NUM_ROW_ADDRESS_BITS{1'b0}}),
         .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
-        .height((_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT)),
+        .height((_NUM_ROW_ADDRESS_BITS)'(params_pkg::PIXEL_HEIGHT)),
         .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
         .column(column),
@@ -95,10 +93,10 @@ module tb_control_subcmd_fillarea #(
         @(posedge clk);
 
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
-        for (int r = PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
+        for (int r = params_pkg::PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
             `WAIT_ASSERT(clk, (row == (_NUM_ROW_ADDRESS_BITS)'(r)), ROW_ADVANCE_MAX_CYCLES)
             // First row should output zeroed color data (color input is all zeros).
-            if (r == (PIXEL_HEIGHT - 1)) begin
+            if (r == (params_pkg::PIXEL_HEIGHT - 1)) begin
                 assert (data_out == 8'b0)
                 else begin
                     $display("expected to see data_out as 0, but saw %d\n", data_out);

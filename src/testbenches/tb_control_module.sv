@@ -122,8 +122,7 @@ module tb_control_module #(
 
     control_module #(
         // Picture/Video data RX baud rate
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) control_module_instance (
         .reset(reset),
         .clk_in(clk),

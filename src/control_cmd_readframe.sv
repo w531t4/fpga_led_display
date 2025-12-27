@@ -45,7 +45,7 @@ module control_cmd_readframe #(
                     if (enable) begin
                         /* first, get the row to write to */
                         state <= STATE_READ_FRAMECONTENT;
-                        row <= (_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT - 1);
+                        row <= (_NUM_ROW_ADDRESS_BITS)'(params_pkg::PIXEL_HEIGHT - 1);
                         column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH - 1);
                         pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
