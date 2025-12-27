@@ -127,7 +127,7 @@ module tb_main #(
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
         // receive at
-        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .UART_TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk),
         .reset(reset),

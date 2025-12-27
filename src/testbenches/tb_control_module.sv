@@ -80,7 +80,7 @@ module tb_control_module #(
     uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT)
     ) mycontrol_rxuart (
         .reset(reset),
         .i_clk(clk),
@@ -99,7 +99,7 @@ module tb_control_module #(
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
         // receive at
-        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .UART_TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk),
         .reset(local_reset),
