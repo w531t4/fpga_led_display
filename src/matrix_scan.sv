@@ -15,9 +15,9 @@ module matrix_scan #(
     // [5:0]  64 width
     output       [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,     /* the current column (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,        /* the current row (clocking out now) */
+    output logic [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address,        /* the current row (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address_active, /* the active row (LEDs enabled) */
+    output logic [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address_active, /* the active row (LEDs enabled) */
 
     output clk_pixel_load,
     output clk_pixel,
@@ -100,8 +100,8 @@ module matrix_scan #(
             brightness_mask <= 1 << (params_pkg::BRIGHTNESS_LEVELS - 1);
             brightness_mask_active <= {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
             // 4'd0
-            row_address <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
-            row_address_active <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
+            row_address <= {$clog2(params_pkg::PIXEL_HALFHEIGHT) {1'b0}};
+            row_address_active <= {$clog2(params_pkg::PIXEL_HALFHEIGHT) {1'b0}};
         end else begin
             clk_pixel_en <= clk_pixel_load_en;
             row_latch_state <= {row_latch_state[0], clk_pixel_load_en};

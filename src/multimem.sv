@@ -5,7 +5,6 @@
 module multimem #(
     parameter PIXEL_WIDTH = 'd64,
     parameter PIXEL_HEIGHT = 'd32,
-    parameter PIXEL_HALFHEIGHT = 'd16,
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
