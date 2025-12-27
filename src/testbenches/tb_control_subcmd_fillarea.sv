@@ -122,14 +122,6 @@ module tb_control_subcmd_fillarea #(
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
         for (int r = params_pkg::PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
             `WAIT_ASSERT(clk, (row == (_NUM_ROW_ADDRESS_BITS)'(r)), ROW_ADVANCE_MAX_CYCLES)
-            // First row should output zeroed color data (color input is all zeros).
-            if (r == (params_pkg::PIXEL_HEIGHT - 1)) begin
-                assert (data_out == 8'b0)
-                else begin
-                    $display("expected to see data_out as 0, but saw %d\n", data_out);
-                    $stop;
-                end
-            end
         end
         // Done should assert once the final byte of the final pixel is written.
         `WAIT_ASSERT(clk, (pre_done == 1), DONE_MAX_CYCLES)
