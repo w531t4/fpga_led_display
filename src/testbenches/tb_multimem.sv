@@ -12,19 +12,18 @@ module tb_multimem #(
     logic clk_b;
     logic reset;
     logic local_reset;
-    logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL)-1:0] ram_a_address;
-    logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL)-3:0] ram_b_address;
+    logic [$clog2(params_pkg::PIXEL_HEIGHT * PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL)-1:0] ram_a_address;
+    logic [$clog2(params_pkg::PIXEL_HEIGHT * PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL)-3:0] ram_b_address;
     logic [7:0] ram_a_data_in;
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
     logic ram_a_wr;
-    wire [((PIXEL_HEIGHT / params_pkg::PIXEL_HALFHEIGHT) * params_pkg::BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
+    wire [((params_pkg::PIXEL_HEIGHT / params_pkg::PIXEL_HALFHEIGHT) * params_pkg::BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
     logic ram_a_reset;
     logic ram_b_reset;
 
     multimem #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     ) A (
         .DataInA(ram_a_data_in),
         .AddressA(ram_a_address),
