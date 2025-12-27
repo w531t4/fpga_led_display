@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module matrix_scan #(
-    `include "params.vh"
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
@@ -13,11 +12,11 @@ module matrix_scan #(
     input clk_in,
 
     // [5:0]  64 width
-    output       [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,     /* the current column (clocking out now) */
+    output [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,  /* the current column (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address,        /* the current row (clocking out now) */
+    output logic [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address,  /* the current row (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address_active, /* the active row (LEDs enabled) */
+    output logic [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address_active,  /* the active row (LEDs enabled) */
 
     output clk_pixel_load,
     output clk_pixel,

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_module #(
-    `include "params.vh"
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
