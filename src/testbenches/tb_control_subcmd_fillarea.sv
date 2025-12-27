@@ -65,9 +65,11 @@ module tb_control_subcmd_fillarea #(
 
     initial begin : init_mask
         int mask_idx;
+        int mask_pixel;
         valid_mask = '0;
         for (mask_idx = 0; mask_idx < MEM_NUM_BYTES; mask_idx = mask_idx + 1) begin
-            if ((mask_idx & ((1 << _NUM_PIXELCOLORSELECT_BITS) - 1)) < params_pkg::BYTES_PER_PIXEL) begin
+            mask_pixel = mask_idx & ((1 << _NUM_PIXELCOLORSELECT_BITS) - 1);
+            if (mask_pixel < params_pkg::BYTES_PER_PIXEL) begin
                 valid_mask[((mask_idx+1)*8)-1-:8] = 8'hFF;
             end
         end
