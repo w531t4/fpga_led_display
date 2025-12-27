@@ -4,7 +4,6 @@
 `include "tb_helper.vh"
 
 module tb_control_cmd_readrow #(
-    `include "params.vh"
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
