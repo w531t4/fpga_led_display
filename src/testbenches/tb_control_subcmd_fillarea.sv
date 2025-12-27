@@ -4,45 +4,46 @@
 `include "tb_helper.vh"
 module tb_control_subcmd_fillarea #(
     parameter int unsigned PIXEL_HEIGHT = 4,
+    parameter PIXEL_WIDTH = 4,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam WIDTH = 4;
+
     localparam OUT_BITWIDTH = 8;
     localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT);
     localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
-    localparam int MEM_BYTES = WIDTH * PIXEL_HEIGHT * (1 << _NUM_PIXELCOLORSELECT_BITS);
+    localparam int MEM_BYTES = PIXEL_WIDTH * PIXEL_HEIGHT * (1 << _NUM_PIXELCOLORSELECT_BITS);
     localparam MEMBITS = MEM_BYTES * 8;
-    localparam int ROW_ADVANCE_MAX_CYCLES = WIDTH * params_pkg::BYTES_PER_PIXEL;
-    localparam int DONE_MAX_CYCLES = (WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
-    localparam int MEM_CLEAR_MAX_CYCLES = (WIDTH * PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
+    localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
+    localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL) - 1;
+    localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
     logic clk;
     logic subcmd_enable;
-    wire [$clog2(WIDTH)-1:0] column;
+    wire [$clog2(PIXEL_WIDTH)-1:0] column;
     wire [_NUM_ROW_ADDRESS_BITS-1:0] row;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel;
     wire ram_write_enable;
     wire ram_access_start;
     logic done;
     wire pre_done;
-    logic [$clog2(WIDTH) + _NUM_ROW_ADDRESS_BITS + _NUM_PIXELCOLORSELECT_BITS-1:0] addr;
+    logic [$clog2(PIXEL_WIDTH) + _NUM_ROW_ADDRESS_BITS + _NUM_PIXELCOLORSELECT_BITS-1:0] addr;
     logic [MEMBITS-1:0] mem;
     logic [MEMBITS-1:0] valid_mask;
     wire [OUT_BITWIDTH-1:0] data_out;
     logic reset;
 
     control_subcmd_fillarea #(
-        .PIXEL_WIDTH (WIDTH),
+        .PIXEL_WIDTH (PIXEL_WIDTH),
         .PIXEL_HEIGHT(PIXEL_HEIGHT)
     ) subcmd_fillarea (
         .reset(reset),
         .enable(subcmd_enable),
         .clk(clk),
         .ack(done),
-        .x1({$clog2(WIDTH) {1'b0}}),
+        .x1({$clog2(PIXEL_WIDTH) {1'b0}}),
         .y1({_NUM_ROW_ADDRESS_BITS{1'b0}}),
-        .width(($clog2(WIDTH))'(WIDTH)),
+        .width(($clog2(PIXEL_WIDTH))'(PIXEL_WIDTH)),
         .height((_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT)),
         .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
