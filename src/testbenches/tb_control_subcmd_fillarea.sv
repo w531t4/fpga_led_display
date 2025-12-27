@@ -3,22 +3,11 @@
 `timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
 module tb_control_subcmd_fillarea #(
-    parameter int unsigned PIXEL_HALFHEIGHT = 2,
+    `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-
-    // section to be removed in future once we can safely include memcalcs
-    localparam _NUM_DATA_A_BITS = 8;
-    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(params_pkg::PIXEL_WIDTH);
-    localparam _NUM_ROW_ADDRESS_BITS = $clog2(params_pkg::PIXEL_HEIGHT);
-    localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
-    localparam _NUM_SUBPANELS = params_pkg::PIXEL_HEIGHT / PIXEL_HALFHEIGHT;
-    localparam _NUM_SUBPANELSELECT_BITS = $clog2(_NUM_SUBPANELS);
-    localparam _NUM_ADDRESS_B_BITS = $clog2(PIXEL_HALFHEIGHT) + _NUM_COLUMN_ADDRESS_BITS;
-    localparam _NUM_ADDRESS_A_BITS = _NUM_SUBPANELSELECT_BITS + _NUM_PIXELCOLORSELECT_BITS + _NUM_ADDRESS_B_BITS;
-    // end section
     localparam int MEM_NUM_BYTES = (1 << _NUM_ADDRESS_A_BITS);
     localparam OUT_BITWIDTH = _NUM_DATA_A_BITS;
     localparam int ROW_ADVANCE_MAX_CYCLES = params_pkg::PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL;
