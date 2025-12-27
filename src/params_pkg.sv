@@ -3,14 +3,19 @@
 package params_pkg;
 `ifdef CLK_110
     parameter int unsigned ROOT_CLOCK = 110_000_000;
+    parameter int unsigned PLL_SPEED = 4;
 `elsif CLK_100
     parameter int unsigned ROOT_CLOCK = 100_000_000;
+    parameter int unsigned PLL_SPEED = 3;
 `elsif CLK_90
     parameter int unsigned ROOT_CLOCK = 90_000_000;
+    parameter int unsigned PLL_SPEED = 2;
 `elsif CLK_50
     parameter int unsigned ROOT_CLOCK = 50_000_000;
+    parameter int unsigned PLL_SPEED = 1;
 `else
     parameter int unsigned ROOT_CLOCK = 16_000_000;
+    parameter int unsigned PLL_SPEED = 0;
 `endif
 `ifdef RGB24
     parameter int unsigned BYTES_PER_PIXEL = 3;
