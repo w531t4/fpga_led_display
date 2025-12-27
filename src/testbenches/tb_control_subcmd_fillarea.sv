@@ -3,12 +3,12 @@
 `timescale 1ns / 1ns `default_nettype none
 `include "tb_helper.vh"
 module tb_control_subcmd_fillarea #(
+    parameter int unsigned HEIGHT = 4,
     // verilator lint_off UNUSEDPARAM
     parameter _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
     localparam WIDTH = 4;
-    localparam HEIGHT = 4;
     localparam OUT_BITWIDTH = 8;
     localparam int PIXEL_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
     localparam int MEM_BYTES = WIDTH * HEIGHT * (1 << PIXEL_BITS);
@@ -32,7 +32,7 @@ module tb_control_subcmd_fillarea #(
     logic reset;
 
     control_subcmd_fillarea #(
-        .PIXEL_WIDTH(WIDTH),
+        .PIXEL_WIDTH (WIDTH),
         .PIXEL_HEIGHT(HEIGHT)
     ) subcmd_fillarea (
         .reset(reset),
@@ -82,22 +82,29 @@ module tb_control_subcmd_fillarea #(
         end
         @(posedge clk);
 
-        `WAIT_ASSERT(clk, (row == 3), 1)
-        assert (data_out == 8'b0)
-        else begin
-            $display("expected to see data_out as 0, but saw %d\n", data_out);
-            $stop;
+        // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
+        for (int r = HEIGHT - 1; r >= 0; r = r - 1) begin
+            `WAIT_ASSERT(clk, (row == ($clog2(HEIGHT))'(r)), ROW_ADVANCE_MAX_CYCLES)
+            // First row should output zeroed color data (color input is all zeros).
+            if (r == (HEIGHT - 1)) begin
+                assert (data_out == 8'b0)
+                else begin
+                    $display("expected to see data_out as 0, but saw %d\n", data_out);
+                    $stop;
+                end
+            end
         end
-        `WAIT_ASSERT(clk, (row == 2), ROW_ADVANCE_MAX_CYCLES)
-        `WAIT_ASSERT(clk, (row == 1), ROW_ADVANCE_MAX_CYCLES)
-        `WAIT_ASSERT(clk, (row == 0), ROW_ADVANCE_MAX_CYCLES)
+        // Done should assert once the final byte of the final pixel is written.
         `WAIT_ASSERT(clk, (pre_done == 1), DONE_MAX_CYCLES)
+        // Handshake ack to let the DUT return to idle.
         @(posedge clk) done = 1;
         @(posedge clk) begin
             done = 0;
             subcmd_enable = 0;
         end
+        // FSM should return to idle promptly after ack.
         `WAIT_ASSERT(clk, tb_control_subcmd_fillarea.subcmd_fillarea.state == 0, 1)
+        // All valid memory bytes should be cleared to zero within the expected window.
         `WAIT_ASSERT(clk, |(mem & valid_mask) == 0, MEM_CLEAR_MAX_CYCLES)
 
         repeat (5) begin
