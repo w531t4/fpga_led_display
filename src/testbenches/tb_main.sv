@@ -35,13 +35,13 @@ module tb_main #(
 
     `include "row4.vh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
-    localparam integer TB_MAIN_WAIT_CYCLES = ROOT_CLOCK * TB_MAIN_WAIT_SECS;
+    localparam integer TB_MAIN_WAIT_CYCLES = params_pkg::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
     localparam int CMD_LINE_STATE_SEQ_LEN = 18;
     localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
     localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
-        ? ((64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
-        : (64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
+        ? ((64'd1 * params_pkg::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
+        : (64'd1 * params_pkg::ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
     logic cmd_line_state_seq_done;
 
     wire  rxdata;
