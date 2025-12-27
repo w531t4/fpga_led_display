@@ -13,6 +13,9 @@ TB_DIR:=$(SRC_DIR)/testbenches
 CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
 VINCLUDE_DIR:=$(SRC_DIR)/include
 
+# Ensure depfile includes don't override the default goal.
+.DEFAULT_GOAL := all
+
 # == NOTE == CHANGING THESE PARAMS REQUIRES A `make clean` and subsequent `make`
 # USE_FM6126A - enable behavior changes to acccomodate FM6126A (like multiple clk per latch, init, etc)
 # SIM - disable use of PLL in simulations
@@ -79,7 +82,7 @@ endif
 # Skip dep includes for clean to avoid forcing dep generation.
 ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
 DEPFILES := $(VVPOBJS:$(SIMULATION_DIR)/%.vvp=$(DEPDIR)/%.d)
--include $(DEPFILES)
+include $(DEPFILES)
 endif
 
 
