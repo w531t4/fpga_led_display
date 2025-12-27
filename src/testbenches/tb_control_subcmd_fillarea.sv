@@ -11,6 +11,7 @@ module tb_control_subcmd_fillarea #(
 );
 
     localparam OUT_BITWIDTH = 8;
+    localparam _NUM_COLUMN_ADDRESS_BITS = $clog2(PIXEL_WIDTH);
     localparam _NUM_ROW_ADDRESS_BITS = $clog2(PIXEL_HEIGHT);
     localparam _NUM_PIXELCOLORSELECT_BITS = $clog2(params_pkg::BYTES_PER_PIXEL);
     localparam int MEM_BYTES = PIXEL_WIDTH * PIXEL_HEIGHT * (1 << _NUM_PIXELCOLORSELECT_BITS);
@@ -20,14 +21,14 @@ module tb_control_subcmd_fillarea #(
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * params_pkg::BYTES_PER_PIXEL) + 2;
     logic clk;
     logic subcmd_enable;
-    wire [$clog2(PIXEL_WIDTH)-1:0] column;
+    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] column;
     wire [_NUM_ROW_ADDRESS_BITS-1:0] row;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel;
     wire ram_write_enable;
     wire ram_access_start;
     logic done;
     wire pre_done;
-    logic [$clog2(PIXEL_WIDTH) + _NUM_ROW_ADDRESS_BITS + _NUM_PIXELCOLORSELECT_BITS-1:0] addr;
+    logic [_NUM_COLUMN_ADDRESS_BITS + _NUM_ROW_ADDRESS_BITS + _NUM_PIXELCOLORSELECT_BITS-1:0] addr;
     logic [MEMBITS-1:0] mem;
     logic [MEMBITS-1:0] valid_mask;
     wire [OUT_BITWIDTH-1:0] data_out;
@@ -41,9 +42,9 @@ module tb_control_subcmd_fillarea #(
         .enable(subcmd_enable),
         .clk(clk),
         .ack(done),
-        .x1({$clog2(PIXEL_WIDTH) {1'b0}}),
+        .x1({_NUM_COLUMN_ADDRESS_BITS{1'b0}}),
         .y1({_NUM_ROW_ADDRESS_BITS{1'b0}}),
-        .width(($clog2(PIXEL_WIDTH))'(PIXEL_WIDTH)),
+        .width((_NUM_COLUMN_ADDRESS_BITS)'(PIXEL_WIDTH)),
         .height((_NUM_ROW_ADDRESS_BITS)'(PIXEL_HEIGHT)),
         .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
