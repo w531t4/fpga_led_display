@@ -22,6 +22,8 @@ package params_pkg;
     parameter int unsigned CTRLR_UART_RX_FREQ_GOAL = 244444;
     parameter int unsigned CTRLR_CLK_TICKS_PER_BIT = $rtoi(ROOT_CLOCK / CTRLR_UART_RX_FREQ_GOAL * 1.0);
 `endif
+    // Use this to tune what clock freq we expose to matrix_scan
+    parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
 `ifdef RGB24
     parameter int unsigned BYTES_PER_PIXEL = 3;
     parameter int unsigned BRIGHTNESS_LEVELS = 8;
