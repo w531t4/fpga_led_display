@@ -75,8 +75,8 @@ parameter DIVIDE_CLK_BY_X_FOR_MATRIX = 2,
 `endif
 
 parameter PIXEL_HEIGHT = 32,
-parameter PIXEL_HALFHEIGHT = 16,
 
 
+// PIXEL_HALFHEIGHT now lives in params_pkg.sv
 // BYTES_PER_PIXEL and BRIGHTNESS_LEVELS now live in params_pkg.sv
 //verilator lint_on UNUSEDPARAM

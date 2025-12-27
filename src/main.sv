@@ -250,8 +250,7 @@ module main #(
     );
 
     matrix_scan #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
+        .PIXEL_WIDTH(PIXEL_WIDTH)
     )  matscan1 (
         .reset(global_reset_sync),
         .clk_in(clk_matrix),
@@ -282,8 +281,7 @@ module main #(
 
     framebuffer_fetch #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT)
+        .PIXEL_HEIGHT(PIXEL_HEIGHT)
     ) fb_f (
         .reset(global_reset_sync),
         .clk_in(clk_root),
