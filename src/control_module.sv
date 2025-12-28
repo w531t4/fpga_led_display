@@ -3,7 +3,11 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_module #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
+    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -13,9 +17,11 @@ module control_module #(
     input [7:0] data_rx,
     input data_ready_n,
     output logic [2:0] rgb_enable,
-    output logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_enable,
-    output logic [_NUM_DATA_A_BITS-1:0] ram_data_out,
-    output logic [_NUM_ADDRESS_A_BITS-1:0] ram_address,     // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
+    output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
+    output logic [calc_pkg::num_data_a_bits()-1:0] ram_data_out,
+    output logic [calc_pkg::num_address_a_bits(
+PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+)-1:0] ram_address,  // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
     output logic ram_write_enable,
     output busy,
     output ready_for_data,
@@ -29,7 +35,9 @@ module control_module #(
     output [3:0] cmd_line_state2,
     output ram_access_start2,
     output ram_access_start_latch2,
-    output [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2,
+    output [calc_pkg::num_address_a_bits(
+PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+)-1:0] cmd_line_addr2,
     output logic [7:0] num_commands_processed,
 `endif
     output logic ram_clk_enable
@@ -51,21 +59,27 @@ module control_module #(
     } ctrl_fsm;
     logic [7:0] data_rx_latch;
     logic ready_for_data_logic;
-    logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_temp;
+    logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
     ctrl_fsm cmd_line_state;
-    logic [_NUM_ROW_ADDRESS_BITS-1:0] cmd_line_addr_row;  // For 32 bit high displays, [4:0]
-    logic [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_line_addr_col; // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
-    logic [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_line_pixelselect_num;
-    wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr = {
-        cmd_line_addr_row[_NUM_ROW_ADDRESS_BITS-1:0], cmd_line_addr_col, ~cmd_line_pixelselect_num
+    logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;  // For 32 bit high displays, [4:0]
+    logic [calc_pkg::num_column_address_bits(
+PIXEL_WIDTH
+)-1:0] cmd_line_addr_col;  // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
+    logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_line_pixelselect_num;
+    wire [calc_pkg::num_address_a_bits(
+PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+)-1:0] cmd_line_addr = {
+        cmd_line_addr_row[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0],
+        cmd_line_addr_col,
+        ~cmd_line_pixelselect_num
     };  // <-- use this to toggle endainness. ~ == little endain
         //                                      == bit endian
         // NOTE: uart/alphabet.uart is BIG ENDIAN.
     logic state_done;
     logic brightness_change_enable;
-    logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_data_out;
+    logic [BRIGHTNESS_LEVELS-1:0] brightness_data_out;
 
 `ifdef DEBUGGER
     assign cmd_line_state2 = cmd_line_state;
@@ -97,9 +111,9 @@ module control_module #(
 
     wire cmd_readrow_we, cmd_readrow_as, cmd_readrow_done;
     wire [7:0] cmd_readrow_do;
-    wire [_NUM_ROW_ADDRESS_BITS-1:0] cmd_readrow_row_addr;
-    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readrow_col_addr;
-    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readrow_pixel_addr;
+    wire [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
+    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readrow_col_addr;
+    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
 
     control_cmd_readrow #(
         .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
@@ -126,9 +140,9 @@ module control_module #(
 
     wire cmd_readpixel_we, cmd_readpixel_as, cmd_readpixel_done;
     wire [7:0] cmd_readpixel_do;
-    wire [_NUM_ROW_ADDRESS_BITS-1:0] cmd_readpixel_row_addr;
-    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readpixel_col_addr;
-    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readpixel_pixel_addr;
+    wire [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
+    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readpixel_col_addr;
+    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
 
     control_cmd_readpixel #(
         .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
@@ -153,7 +167,7 @@ module control_module #(
     );
 
     wire cmd_readbrightness_done, cmd_readbrightness_be;
-    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
+    wire [BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
     control_cmd_readbrightness #(
         .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
@@ -170,9 +184,9 @@ module control_module #(
 
     wire cmd_blankpanel_we, cmd_blankpanel_as, cmd_blankpanel_done;
     wire [7:0] cmd_blankpanel_do;
-    wire [_NUM_ROW_ADDRESS_BITS-1:0] cmd_blankpanel_row_addr;
-    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_blankpanel_col_addr;
-    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_blankpanel_pixel_addr;
+    wire [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_blankpanel_row_addr;
+    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_blankpanel_col_addr;
+    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_blankpanel_pixel_addr;
 
     control_cmd_blankpanel #(
         .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
@@ -195,14 +209,14 @@ module control_module #(
         .done(cmd_blankpanel_done)
     );
 
-    wire                                  cmd_fillpanel_we;
-    wire                                  cmd_fillpanel_as;
-    wire                                  cmd_fillpanel_done;
-    wire [                           7:0] cmd_fillpanel_do;
-    wire [     _NUM_ROW_ADDRESS_BITS-1:0] cmd_fillpanel_row_addr;
-    wire [  _NUM_COLUMN_ADDRESS_BITS-1:0] cmd_fillpanel_col_addr;
-    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillpanel_pixel_addr;
-    wire                                  cmd_fillpanel_rfd;
+    wire                                                            cmd_fillpanel_we;
+    wire                                                            cmd_fillpanel_as;
+    wire                                                            cmd_fillpanel_done;
+    wire [                                                     7:0] cmd_fillpanel_do;
+    wire [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillpanel_row_addr;
+    wire [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillpanel_col_addr;
+    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillpanel_pixel_addr;
+    wire                                                            cmd_fillpanel_rfd;
 
     control_cmd_fillpanel #(
         .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
@@ -226,14 +240,14 @@ module control_module #(
         .done            (cmd_fillpanel_done)
     );
 
-    wire                                  cmd_fillrect_we;
-    wire                                  cmd_fillrect_as;
-    wire                                  cmd_fillrect_done;
-    wire [                           7:0] cmd_fillrect_do;
-    wire [     _NUM_ROW_ADDRESS_BITS-1:0] cmd_fillrect_row_addr;
-    wire [  _NUM_COLUMN_ADDRESS_BITS-1:0] cmd_fillrect_col_addr;
-    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillrect_pixel_addr;
-    wire                                  cmd_fillrect_rfd;
+    wire                                                            cmd_fillrect_we;
+    wire                                                            cmd_fillrect_as;
+    wire                                                            cmd_fillrect_done;
+    wire [                                                     7:0] cmd_fillrect_do;
+    wire [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillrect_row_addr;
+    wire [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillrect_col_addr;
+    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillrect_pixel_addr;
+    wire                                                            cmd_fillrect_rfd;
 
     control_cmd_fillrect #(
         .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
@@ -257,13 +271,13 @@ module control_module #(
         .done            (cmd_fillrect_done)
     );
 
-    wire                                  cmd_readframe_we;
-    wire                                  cmd_readframe_as;
-    wire                                  cmd_readframe_done;
-    wire [                           7:0] cmd_readframe_do;
-    wire [     _NUM_ROW_ADDRESS_BITS-1:0] cmd_readframe_row_addr;
-    wire [  _NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readframe_col_addr;
-    wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readframe_pixel_addr;
+    wire                                                            cmd_readframe_we;
+    wire                                                            cmd_readframe_as;
+    wire                                                            cmd_readframe_done;
+    wire [                                                     7:0] cmd_readframe_do;
+    wire [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readframe_row_addr;
+    wire [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readframe_col_addr;
+    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readframe_pixel_addr;
 
     control_cmd_readframe #(
         .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
@@ -306,15 +320,15 @@ module control_module #(
 `endif
 
     always @(*) begin
-        cmd_line_addr_row = {_NUM_ROW_ADDRESS_BITS{1'b0}};
-        cmd_line_addr_col = {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
-        cmd_line_pixelselect_num = {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
+        cmd_line_addr_row = {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+        cmd_line_addr_col = {calc_pkg::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
+        cmd_line_pixelselect_num = {calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
         ram_data_out = 8'b0;
         ram_write_enable = 1'b0;
         ram_access_start = 1'b0;
         state_done = 1'b0;
         brightness_change_enable = 1'b0;
-        brightness_data_out = {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
+        brightness_data_out = {BRIGHTNESS_LEVELS{1'b0}};
         ready_for_data_logic = 1'b1;
         case (cmd_line_state)
             STATE_CMD_READBRIGHTNESS: begin
@@ -400,8 +414,8 @@ module control_module #(
             frame_select <= 1'b0;
             frame_select_temp <= 1'b0;
 `endif
-            brightness_enable <= {params_pkg::BRIGHTNESS_LEVELS{1'b1}};
-            brightness_temp <= {params_pkg::BRIGHTNESS_LEVELS{1'b1}};
+            brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
+            brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
 
             cmd_line_state <= STATE_IDLE;
 `ifdef DEBUGGER
@@ -451,45 +465,45 @@ module control_module #(
                         cmd_line_state <= STATE_IDLE;
                     end
                     "1": begin
-                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 1] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 1];
+                        brightness_temp[BRIGHTNESS_LEVELS-1] <= ~brightness_enable[BRIGHTNESS_LEVELS-1];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "2": begin
-                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 2] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 2];
+                        brightness_temp[BRIGHTNESS_LEVELS-2] <= ~brightness_enable[BRIGHTNESS_LEVELS-2];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "3": begin
-                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 3] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 3];
+                        brightness_temp[BRIGHTNESS_LEVELS-3] <= ~brightness_enable[BRIGHTNESS_LEVELS-3];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "4": begin
-                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 4] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 4];
+                        brightness_temp[BRIGHTNESS_LEVELS-4] <= ~brightness_enable[BRIGHTNESS_LEVELS-4];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "5": begin
-                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 5] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 5];
+                        brightness_temp[BRIGHTNESS_LEVELS-5] <= ~brightness_enable[BRIGHTNESS_LEVELS-5];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "6": begin
-                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 6] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 6];
+                        brightness_temp[BRIGHTNESS_LEVELS-6] <= ~brightness_enable[BRIGHTNESS_LEVELS-6];
                         cmd_line_state <= STATE_IDLE;
                     end
 `ifdef RGB24
 "7": begin
-                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 7] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 7];
+                        brightness_temp[BRIGHTNESS_LEVELS-7] <= ~brightness_enable[BRIGHTNESS_LEVELS-7];
                         cmd_line_state <= STATE_IDLE;
                     end
                     "8": begin
-                        brightness_temp[params_pkg::BRIGHTNESS_LEVELS - 8] <= ~brightness_enable[params_pkg::BRIGHTNESS_LEVELS - 8];
+                        brightness_temp[BRIGHTNESS_LEVELS-8] <= ~brightness_enable[BRIGHTNESS_LEVELS-8];
                         cmd_line_state <= STATE_IDLE;
                     end
 `endif
                     "0": begin
-                        brightness_temp <= {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
+                        brightness_temp <= {BRIGHTNESS_LEVELS{1'b0}};
                         cmd_line_state  <= STATE_IDLE;
                     end
                     "9": begin
-                        brightness_temp <= {params_pkg::BRIGHTNESS_LEVELS{1'b1}};
+                        brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
                         cmd_line_state  <= STATE_IDLE;
                     end
                     "T": cmd_line_state <= STATE_CMD_READBRIGHTNESS;
