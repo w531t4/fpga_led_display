@@ -27,33 +27,29 @@ module clock_divider #(
         end
     `endif
 
-    always @(posedge clk_in) begin
-
+    /*
+    CLK_DIV_WIDTH=2;CLK_DIV_COUNT=3;
+    t= 0:: clk_out=0;clk_count=0 => clk_out=0;clk_count=1
+    t= 1:: clk_out=0;clk_count=1 => clk_out=0;clk_count=2
+    t= 2:: clk_out=0;clk_count=2 => clk_out=1;clk_count=0
+    t= 3:: clk_out=1;clk_count=0 => clk_out=1;clk_count=1
+    t= 4:: clk_out=1;clk_count=1 => clk_out=1;clk_count=2
+    t= 5:: clk_out=1;clk_count=2 => clk_out=0;clk_count=0 <--- start of matrix_scan cycle
+    t= 6:: clk_out=0;clk_count=0 => clk_out=0;clk_count=1
+    t= 7:: clk_out=0;clk_count=1 => clk_out=1;clk_count=2
+    t= 8:: clk_out=0;clk_count=2 => clk_out=1;clk_count=0
+    t= 9:: clk_out=1;clk_count=0 => clk_out=1;clk_count=1
+    t=10:: clk_out=1;clk_count=1 => clk_out=1;clk_count=2
+    t=11:: clk_out=1;clk_count=2 => clk_out=0;clk_count=0 <--- start of matrix_scan cycle
+    */
     `ifdef SIM
+    always @(posedge clk_in) begin
         reset_prev <= (reset === 1'b1);
         if ((reset === 1'b1) && !reset_prev) begin
-    `else
-        if (reset) begin
-    `endif
             clk_out <= 1'b0;
             clk_count <= 'b0;
         end
         else begin
-            /*
-            CLK_DIV_WIDTH=2;CLK_DIV_COUNT=3;
-            t= 0:: clk_out=0;clk_count=0 => clk_out=0;clk_count=1
-            t= 1:: clk_out=0;clk_count=1 => clk_out=0;clk_count=2
-            t= 2:: clk_out=0;clk_count=2 => clk_out=1;clk_count=0
-            t= 3:: clk_out=1;clk_count=0 => clk_out=1;clk_count=1
-            t= 4:: clk_out=1;clk_count=1 => clk_out=1;clk_count=2
-            t= 5:: clk_out=1;clk_count=2 => clk_out=0;clk_count=0 <--- start of matrix_scan cycle
-            t= 6:: clk_out=0;clk_count=0 => clk_out=0;clk_count=1
-            t= 7:: clk_out=0;clk_count=1 => clk_out=1;clk_count=2
-            t= 8:: clk_out=0;clk_count=2 => clk_out=1;clk_count=0
-            t= 9:: clk_out=1;clk_count=0 => clk_out=1;clk_count=1
-            t=10:: clk_out=1;clk_count=1 => clk_out=1;clk_count=2
-            t=11:: clk_out=1;clk_count=2 => clk_out=0;clk_count=0 <--- start of matrix_scan cycle
-            */
             if (clk_count == ($clog2(CLK_DIV_COUNT))'(CLK_DIV_COUNT - 1)) begin
                 clk_out <= ~clk_out;
                 clk_count <= 'b0;
@@ -63,4 +59,22 @@ module clock_divider #(
             end
         end
     end
+    `else
+    always @(posedge clk_in) begin
+        if (reset) begin
+            clk_out <= 1'b0;
+            clk_count <= 'b0;
+        end
+        else begin
+            if (clk_count == ($clog2(CLK_DIV_COUNT))'(CLK_DIV_COUNT - 1)) begin
+                clk_out <= ~clk_out;
+                clk_count <= 'b0;
+            end
+            else begin
+                clk_count <= clk_count + 'd1;
+            end
+        end
+            end
+    `endif
+
 endmodule
