@@ -3,21 +3,24 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module pixel_split #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input [_NUM_BITS_PER_SUBPANEL-1:0] pixel_data,
-    input [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask,
-    input [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_enable,
+    input [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixel_data,
+    input [BRIGHTNESS_LEVELS-1:0] brightness_mask,
+    input [BRIGHTNESS_LEVELS-1:0] brightness_enable,
     input [2:0] rgb_enable,
 
     output [2:0] rgb_output
 );
-    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] red_gamma;
-    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] green_gamma;
-    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] blue_gamma;
+    wire [BRIGHTNESS_LEVELS-1:0] red_gamma;
+    wire [BRIGHTNESS_LEVELS-1:0] green_gamma;
+    wire [BRIGHTNESS_LEVELS-1:0] blue_gamma;
 
 `ifdef RGB24
     rgb24 rgb_888 (
