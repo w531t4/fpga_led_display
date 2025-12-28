@@ -7,7 +7,15 @@
 
 `include "tb_helper.vh"
 
-module tb_control_cmd_watchdog;
+module tb_control_cmd_watchdog #(
+    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
+    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    // verilator lint_off UNUSEDPARAM
+    parameter integer unsigned _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
+
     logic [3:0] divider;
     logic slowclk;
     logic clk;
@@ -44,9 +52,9 @@ module tb_control_cmd_watchdog;
         // finish reset for tb
         @(posedge clk) reset <= ~reset;
 
-        for (int i = 0; i < (params_pkg::WATCHDOG_SIGNATURE_BITS / 8); i++) begin
+        for (int i = 0; i < (WATCHDOG_SIGNATURE_BITS / 8); i++) begin
             @(posedge slowclk) begin
-                data_in = params_pkg::WATCHDOG_SIGNATURE_PATTERN[(params_pkg::WATCHDOG_SIGNATURE_BITS-1)-(i*8)-:8];
+                data_in = WATCHDOG_SIGNATURE_PATTERN[(WATCHDOG_SIGNATURE_BITS-1)-(i*8)-:8];
             end
         end
         @(posedge slowclk);
@@ -58,7 +66,7 @@ module tb_control_cmd_watchdog;
         $finish;
     end
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(SIM_HALF_PERIOD_NS) clk <= !clk;
         divider = !clk ? divider + 'd1 : divider;
         slowclk = (divider == 'd0);
     end
