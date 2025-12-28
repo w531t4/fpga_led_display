@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_fillrect #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -13,16 +15,16 @@ module control_cmd_fillrect #(
     input clk,
     input mem_clk,
 
-    output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
-    output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
-    output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
+    output logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output logic [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
     output logic ready_for_data,
     output logic done
 );
-    localparam _NUM_COLUMN_BYTES_NEEDED = ((_NUM_COLUMN_ADDRESS_BITS + 8 - 1) / 8);
+    localparam _NUM_COLUMN_BYTES_NEEDED = ((calc_pkg::num_column_address_bits(PIXEL_WIDTH) + 8 - 1) / 8);
     localparam safe_bits_needed_for_column_byte_counter = _NUM_COLUMN_BYTES_NEEDED > 1 ? $clog2(
         _NUM_COLUMN_BYTES_NEEDED
     ) : 1;
@@ -45,12 +47,12 @@ module control_cmd_fillrect #(
     // verilator lint_on UNUSEDSIGNAL
     logic [safe_bits_needed_for_column_byte_counter-1:0] x1_byte_counter;
     logic [safe_bits_needed_for_column_byte_counter-1:0] width_byte_counter;
-    logic [_NUM_ROW_ADDRESS_BITS-1:0] y1;
-    logic [_NUM_ROW_ADDRESS_BITS-1:0] height;
+    logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] y1;
+    logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] height;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
-    logic [(params_pkg::BYTES_PER_PIXEL*8)-1:0] selected_color;
-    logic [$clog2(params_pkg::BYTES_PER_PIXEL)-1:0] capturebytes_remaining;
+    logic [(BYTES_PER_PIXEL*8)-1:0] selected_color;
+    logic [$clog2(BYTES_PER_PIXEL)-1:0] capturebytes_remaining;
 
 
     logic done_inside, done_level;
@@ -70,14 +72,14 @@ module control_cmd_fillrect #(
             state <= STATE_X1_CAPTURE;
             done_inside <= 1'b0;
             ready_for_data <= 1'b1;
-            capturebytes_remaining <= ($clog2(params_pkg::BYTES_PER_PIXEL))'(params_pkg::BYTES_PER_PIXEL - 1);
-            selected_color <= {(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}};
+            capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+            selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
             x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
             width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
             x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
             width <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
-            y1 <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
-            height <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
+            y1 <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            height <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
             local_reset <= 1'b0;
         end else begin
             case (state)
@@ -91,7 +93,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_Y1_CAPTURE: begin
                     if (enable) begin
-                        y1 <= data_in[_NUM_ROW_ADDRESS_BITS-1:0];
+                        y1 <= data_in[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0];
                         state <= STATE_WIDTH_CAPTURE;
                     end
                 end
@@ -105,7 +107,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_HEIGHT_CAPTURE: begin
                     if (enable) begin
-                        height <= data_in[_NUM_ROW_ADDRESS_BITS-1:0];
+                        height <= data_in[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0];
                         state  <= STATE_COLOR_CAPTURE;
                     end
                 end
@@ -142,12 +144,12 @@ module control_cmd_fillrect #(
                     state <= STATE_X1_CAPTURE;
                     x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                     width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
-                    capturebytes_remaining <= ($clog2(params_pkg::BYTES_PER_PIXEL))'(params_pkg::BYTES_PER_PIXEL - 1);
-                    selected_color <= {(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}};
+                    capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                    selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
                     x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
                     width <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
-                    y1 <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
-                    height <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
+                    y1 <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+                    height <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
                 end
                 default state <= state;
             endcase
@@ -159,10 +161,10 @@ module control_cmd_fillrect #(
         .enable(subcmd_enable),
         .clk(mem_clk),
         .ack(done),
-        .x1((_NUM_COLUMN_ADDRESS_BITS)'(x1)),
+        .x1((calc_pkg::num_column_address_bits(PIXEL_WIDTH))'(x1)),
         .y1(y1),
-        .width((_NUM_COLUMN_ADDRESS_BITS)'(width)),
-        .height((_NUM_ROW_ADDRESS_BITS)'(height)),
+        .width((calc_pkg::num_column_address_bits(PIXEL_WIDTH))'(width)),
+        .height((calc_pkg::num_row_address_bits(PIXEL_HEIGHT))'(height)),
         .color(selected_color),
         .row(row),
         .column(column),
