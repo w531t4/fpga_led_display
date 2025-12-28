@@ -25,14 +25,12 @@ module framebuffer_fetch #(
     // [10:0]
     output [_NUM_ADDRESS_B_BITS-1:0] ram_address,
     output ram_clk_enable,
-
+    `ifdef DEBUGGER
+        output [3:0] pixel_load_counter2,
+    `endif
     // [15:0]
     output logic [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_top,
     output logic [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_bottom
-    `ifdef DEBUGGER
-        ,
-        output [3:0] pixel_load_counter2
-    `endif
 
 );
     wire ram_clk_enable_real;
