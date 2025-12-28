@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_readrow #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -13,9 +15,9 @@ module control_cmd_readrow #(
     input enable,
     input clk,
 
-    output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
-    output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
-    output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
+    output logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output logic [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
@@ -34,15 +36,15 @@ module control_cmd_readrow #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_CAPTURE;
-            row <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
-            column <= {_NUM_COLUMN_ADDRESS_BITS{1'b0}};
-            pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
+            row <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            column <= {calc_pkg::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
+            pixel <= {calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
         end else begin
             case (state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
-                        row[_NUM_ROW_ADDRESS_BITS-1:0] <= data_in[4:0];
+                        row[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] <= data_in[4:0];
                         ram_write_enable <= 1'b0;
                         data_out <= 8'b0;
                         state <= STATE_ROW_PRIMEMEMWRITE;
@@ -54,8 +56,12 @@ module control_cmd_readrow #(
                         /* first, get the row to write to */
 
                         state <= STATE_READ_ROWCONTENT;
-                        column[_NUM_COLUMN_ADDRESS_BITS-1:0] <= (_NUM_COLUMN_ADDRESS_BITS)'(params_pkg::PIXEL_WIDTH - 1);
-                        pixel <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
+                        column[calc_pkg::num_column_address_bits(
+                            PIXEL_WIDTH
+                        )-1:0] <= (calc_pkg::num_column_address_bits(
+                            PIXEL_WIDTH
+                        ))'(PIXEL_WIDTH - 1);
+                        pixel <= (calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears
 
                         ram_write_enable <= 1'b1;
@@ -68,7 +74,7 @@ module control_cmd_readrow #(
                         ram_access_start <= !ram_access_start;
                         if (column != 'd0 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel  <= (_NUM_PIXELCOLORSELECT_BITS)'(params_pkg::BYTES_PER_PIXEL - 1);
+                                pixel  <= (calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                                 column <= column - 'd1;
                             end else begin
                                 if (column == 0 && ((pixel - 'd1) == 0)) begin
