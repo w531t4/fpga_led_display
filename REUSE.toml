@@ -11,7 +11,8 @@ SPDX-License-Identifier = "CC0-1.0"
 path = [
     ".pre-commit-config.yaml",
     ".python-requirements",
-    ".python-version"
+    ".python-version",
+    "pyrightconfig.json"
 ]
 SPDX-FileCopyrightText = "2025 Aaron White <w531t4@gmail.com>"
 SPDX-License-Identifier = "MIT"

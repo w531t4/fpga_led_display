@@ -1,0 +1,6 @@
+{
+    "venvPath": "/home/vscode/.local",
+    "venv": "venv",
+    "extraPaths": ["tests/cocotb"],
+    "exclude": ["tests/cocotb/src"]
+}

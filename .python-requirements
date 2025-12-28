@@ -6,3 +6,5 @@ pytest
 pytest-cov
 coverage
 pyright
+cocotb-test
+pytest-xdist

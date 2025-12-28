@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import os
-from typing import Callable, Iterable
+from typing import Callable, Iterable, cast
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.handle import SimHandleBase
+from cocotb.handle import LogicObject
 from cocotb.triggers import Timer
+from cocotb.utils import get_sim_steps
 
 from dut_types import ScalarSignal, ValueSignal
 
@@ -84,18 +85,18 @@ def pixel_halfheight() -> int:
     return pixel_height() // 2
 
 
-async def start_clock(sig: SimHandleBase, period_ns: float | int) -> None:
-    if isinstance(period_ns, float) and not period_ns.is_integer():
-        period_ps = int(round(period_ns * 1000))
-        if period_ps % 2:
-            high = period_ps // 2
-            cocotb.start_soon(
-                Clock(sig, period_ps, unit="ps", period_high=high).start()
-            )
-        else:
-            cocotb.start_soon(Clock(sig, period_ps, unit="ps").start())
-        return
-    cocotb.start_soon(Clock(sig, int(period_ns), unit="ns").start())
+async def start_clock(sig: ScalarSignal, period_ns: float | int) -> None:
+    handle = cast(LogicObject, sig)
+    period_steps = get_sim_steps(period_ns, unit="ns", round_mode="round")
+    if period_steps <= 0:
+        raise ValueError(f"Clock period too small: {period_ns} ns")
+    if period_steps % 2:
+        high = period_steps // 2
+        cocotb.start_soon(
+            Clock(handle, period_steps, unit="step", period_high=high).start()
+        )
+    else:
+        cocotb.start_soon(Clock(handle, period_steps, unit="step").start())
 
 
 async def wait_cycles(clk: ScalarSignal, cycles: int) -> None:

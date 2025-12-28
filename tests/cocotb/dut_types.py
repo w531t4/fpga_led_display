@@ -15,6 +15,7 @@ class ScalarSignal(Protocol):
 class ValueSignal(Protocol):
     value: Any
     value_change: Any
+    def __len__(self) -> int: ...
 
 
 class BrightnessTimeoutDut(Protocol):
@@ -96,6 +97,23 @@ class Fm6126InitDut(Protocol):
     reset: ValueSignal
 
 
+class MainDut(Protocol):
+    global_reset: ValueSignal
+    clk_root: ValueSignal
+    row_address_active: ValueSignal
+    ctrl: ControlModuleDut
+
+
+class MainWrapperDut(Protocol):
+    clk: ScalarSignal
+    reset: ValueSignal
+    spi_start: ValueSignal
+    spi_clk_en: ValueSignal
+    thebyte: ValueSignal
+    spi_master_txdone: ScalarSignal
+    u_main: MainDut
+
+
 class MatrixScanDut(Protocol):
     clk_in: ScalarSignal
     reset: ValueSignal
@@ -129,27 +147,3 @@ class SpiDut(Protocol):
     mrdata: ValueSignal
     slvdone: ValueSignal
     slvrdata: ValueSignal
-
-
-class MainCtrlDut(Protocol):
-    cmd_line_state: ValueSignal
-    ready_for_data: ValueSignal
-    frame_select_temp: ValueSignal
-    frame_select: ValueSignal
-
-
-class MainUDut(Protocol):
-    global_reset: ValueSignal
-    clk_root: ValueSignal
-    row_address_active: ValueSignal
-    ctrl: MainCtrlDut
-
-
-class MainWrapperDut(Protocol):
-    clk: ScalarSignal
-    reset: ValueSignal
-    spi_start: ValueSignal
-    spi_clk_en: ValueSignal
-    thebyte: ValueSignal
-    spi_master_txdone: ScalarSignal
-    u_main: MainUDut
