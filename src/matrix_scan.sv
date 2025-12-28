@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module matrix_scan #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -12,11 +14,13 @@ module matrix_scan #(
     input clk_in,
 
     // [5:0]  64 width
-    output [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,  /* the current column (clocking out now) */
+    output [calc_pkg::num_column_address_bits(
+PIXEL_WIDTH
+)-1:0] column_address,  /* the current column (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address,  /* the current row (clocking out now) */
+    output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,  /* the current row (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address_active,  /* the active row (LEDs enabled) */
+    output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address_active,  /* the active row (LEDs enabled) */
 
     output clk_pixel_load,
     output clk_pixel,
@@ -29,7 +33,7 @@ module matrix_scan #(
     output state_advance2,
     output clk_pixel_load_en2,
 `endif
-    output logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
+    output logic [BRIGHTNESS_LEVELS-1:0] brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
 );
 
 
@@ -44,11 +48,11 @@ module matrix_scan #(
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
     wire brightness_exceeded_overlap_time;
-    logic  [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
+    logic  [BRIGHTNESS_LEVELS-1:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
-    wire [_NUM_COLUMN_ADDRESS_BITS:0] pixel_load_en_counter_output;
+    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH):0] pixel_load_en_counter_output;
     assign row_latch = row_latch_state[1:0] == 2'b10;
 
     assign clk_state = state == 2'b10;
@@ -63,13 +67,13 @@ module matrix_scan #(
        external logic should present the pixel value on the rising edge */
     timeout #(
         // 7
-        .COUNTER_WIDTH(_NUM_COLUMN_ADDRESS_BITS + 1)
+        .COUNTER_WIDTH(calc_pkg::num_column_address_bits(PIXEL_WIDTH) + 1)
     ) timeout_clk_pixel_load_en (
         .reset  (reset),
         .clk_in (clk_in),
         .start  (clk_state),
         // 7'd64
-        .value  ((_NUM_COLUMN_ADDRESS_BITS + 1)'(params_pkg::PIXEL_WIDTH)),
+        .value  ((calc_pkg::num_column_address_bits(PIXEL_WIDTH) + 1)'(PIXEL_WIDTH)),
         .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
     );
@@ -79,13 +83,13 @@ module matrix_scan #(
        advances out-of-phase with the pixel clock */
     timeout #(
         // 6
-        .COUNTER_WIDTH($clog2(params_pkg::PIXEL_WIDTH - 1))
+        .COUNTER_WIDTH($clog2(PIXEL_WIDTH - 1))
     ) timeout_column_address (
         .reset  (reset),
         .clk_in (clk_in),
         .start  (clk_state),
         // 6'd63
-        .value  (($clog2(params_pkg::PIXEL_WIDTH - 1))'(params_pkg::PIXEL_WIDTH - 1)),
+        .value  (($clog2(PIXEL_WIDTH - 1))'(PIXEL_WIDTH - 1)),
         .counter(column_address),
         .running(unused_timer_runpin)
     );
@@ -96,11 +100,11 @@ module matrix_scan #(
         if (reset) begin
             clk_pixel_en <= 1'b1;
             row_latch_state <= 2'b1;
-            brightness_mask <= 1 << (params_pkg::BRIGHTNESS_LEVELS - 1);
-            brightness_mask_active <= {params_pkg::BRIGHTNESS_LEVELS{1'b0}};
+            brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
+            brightness_mask_active <= {BRIGHTNESS_LEVELS{1'b0}};
             // 4'd0
-            row_address <= {$clog2(params_pkg::PIXEL_HALFHEIGHT) {1'b0}};
-            row_address_active <= {$clog2(params_pkg::PIXEL_HALFHEIGHT) {1'b0}};
+            row_address <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
+            row_address_active <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
         end else begin
             clk_pixel_en <= clk_pixel_load_en;
             row_latch_state <= {row_latch_state[0], clk_pixel_load_en};
@@ -111,7 +115,7 @@ module matrix_scan #(
 
                 if ((brightness_mask == 'd0) || (brightness_mask == 'd1)) begin
                     // catch the initial value / oopsy //
-                    brightness_mask <= 1 << (params_pkg::BRIGHTNESS_LEVELS - 1);
+                    brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
                     // 4'd1
                     row_address <= row_address + 1;
                 end else begin
