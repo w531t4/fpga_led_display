@@ -15,3 +15,6 @@ eb320365111c9c3d908345571cea2b13cdf57350
 
 # normalize to verible indent=4 column=120 (.sv/.v)
 734f709063cddb95c244254f3f339839151dd3b6
+
+# whitespace changes after verible-verilog-format
+226cec89bfd62dbeed39d3795cf3d3d43878460b
