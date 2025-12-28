@@ -5,7 +5,15 @@
 `default_nettype none
 // verilog_format: on
 `include "tb_helper.vh"
-module tb_main;
+module tb_main #(
+    parameter integer unsigned ROOT_CLOCK = params_pkg::ROOT_CLOCK,
+    parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params_pkg::CTRLR_CLK_TICKS_PER_BIT,
+    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params_pkg::DEBUG_MSGS_PER_SEC_TICKS_SIM,
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    // verilator lint_off UNUSEDPARAM
+    parameter integer unsigned _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
 
     logic clk;
     wire clk_pixel;
@@ -33,13 +41,13 @@ module tb_main;
 
     `include "row4.vh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
-    localparam integer TB_MAIN_WAIT_CYCLES = params_pkg::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
+    localparam integer TB_MAIN_WAIT_CYCLES = ROOT_CLOCK * TB_MAIN_WAIT_SECS;
     localparam int CMD_LINE_STATE_SEQ_LEN = 18;
     localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
     localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
-        ? ((64'd1 * params_pkg::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
-        : (64'd1 * params_pkg::ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
+        ? ((64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
+        : (64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
     logic cmd_line_state_seq_done;
 
     wire  rxdata;
@@ -120,12 +128,12 @@ module tb_main;
         .DATA_WIDTH($bits(myled_row)),
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-        .DIVIDER_TICKS(params_pkg::DEBUG_MSGS_PER_SEC_TICKS_SIM),
+        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
         // receive at
-        .UART_TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT)
+        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk),
         .reset(reset),
@@ -188,7 +196,7 @@ module tb_main;
         @(posedge clk)
         #(($bits(
             myled_row
-        ) + 1000) * params_pkg::SIM_HALF_PERIOD_NS * 2 *
+        ) + 1000) * SIM_HALF_PERIOD_NS * 2 *
             4);  // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
         `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
@@ -252,6 +260,6 @@ module tb_main;
     end
 `endif
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 endmodule
