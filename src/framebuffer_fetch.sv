@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module framebuffer_fetch #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -14,23 +17,23 @@ module framebuffer_fetch #(
 
     // appears that framebuffer fetch broke things, may have an issue here 20250710
     // [5:0] 64 width
-    input [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address,
+    input [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address,
     // [3:0] 16 height (top/bottom half)
-    input [$clog2(params_pkg::PIXEL_HALFHEIGHT)-1:0] row_address,
+    input [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,
 
     input pixel_load_start,
 
     // [15:0] each fetch is one pixel worth of data -- no longer true
-    input [_NUM_DATA_B_BITS-1:0] ram_data_in,
+    input [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_data_in,
     // [10:0]
-    output [_NUM_ADDRESS_B_BITS-1:0] ram_address,
+    output [calc_pkg::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_address,
     output ram_clk_enable,
 `ifdef DEBUGGER
     output [3:0] pixel_load_counter2,
 `endif
     // [15:0]
-    output logic [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_top,
-    output logic [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_bottom
+    output logic [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_top,
+    output logic [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_bottom
 
 );
     wire ram_clk_enable_real;
@@ -46,10 +49,12 @@ module framebuffer_fetch #(
     assign ram_address = {
         //    half_address,
         row_address[$clog2(
-            params_pkg::PIXEL_HALFHEIGHT
+            PIXEL_HALFHEIGHT
         )-1:0],
         // log2(128)==7-1=6
-        column_address[_NUM_COLUMN_ADDRESS_BITS-1:0]
+        column_address[calc_pkg::num_column_address_bits(
+            PIXEL_WIDTH
+        )-1:0]
     };
 
     timeout #(
@@ -69,8 +74,10 @@ module framebuffer_fetch #(
 
     always @(posedge clk_in) begin
         if (reset) begin
-            pixeldata_top    <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
-            pixeldata_bottom <= {_NUM_BITS_PER_SUBPANEL{1'b0}};
+            pixeldata_top <= {calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT) {1'b0}};
+            pixeldata_bottom <= {calc_pkg::num_bits_per_subpanel(
+                PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+            ) {1'b0}};
         end else begin
             if (pixel_load_counter == 'd2) begin
                 {pixeldata_bottom, pixeldata_top} <= ram_data_in;
