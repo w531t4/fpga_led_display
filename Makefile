@@ -109,7 +109,7 @@ all: $(ARTIFACT_DIR)/sim_args simulation lint
 #$(warning In a command script $(VVPOBJS))
 
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
-	$(VVP_BIN) $(VVP_FLAGS) $<
+	@set -o pipefail; $(VVP_BIN) $(VVP_FLAGS) $< 2>&1 | sed -u 's/^/[$*] /'
 
 $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION_DIR) $(DEPDIR)
 #	$(info In a command script)
