@@ -7,24 +7,27 @@
 `include "tb_helper.vh"
 
 module tb_control_cmd_readpixel #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    wire                                   slowclk;
-    logic                                  clk;
-    wire                                   subcmd_enable;
-    logic                                  done;
-    logic [                           7:0] data_in;
-    logic                                  reset;
-    wire                                   cmd_readpixel_we;
-    wire                                   cmd_readpixel_as;
-    wire                                   cmd_readpixel_done;
-    wire  [                           7:0] cmd_readpixel_do;
-    wire  [     _NUM_ROW_ADDRESS_BITS-1:0] cmd_readpixel_row_addr;
-    wire  [  _NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readpixel_col_addr;
-    wire  [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readpixel_pixel_addr;
+    wire                                                             slowclk;
+    logic                                                            clk;
+    wire                                                             subcmd_enable;
+    logic                                                            done;
+    logic [                                                     7:0] data_in;
+    logic                                                            reset;
+    wire                                                             cmd_readpixel_we;
+    wire                                                             cmd_readpixel_as;
+    wire                                                             cmd_readpixel_done;
+    wire  [                                                     7:0] cmd_readpixel_do;
+    wire  [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
+    wire  [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readpixel_col_addr;
+    wire  [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
     `include "row4.vh"
     localparam [$bits(myled_row_pixel)-8-1:0] myled_row_pixel_local = myled_row_pixel[$bits(myled_row_pixel)-8-1:0];
     wire junk1;
@@ -85,6 +88,6 @@ module tb_control_cmd_readpixel #(
         $finish;
     end
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 endmodule
