@@ -17,6 +17,18 @@ module main #(
     `ifdef USE_BOARDLEDS_BRIGHTNESS
         output [7:0] led,
     `endif
+    `ifdef SPI
+        `ifdef SPI_ESP32
+            input [3:0] sd_d, // sd_d[0]=mosi
+            input sd_clk,     // clk
+            input sd_cmd,     // ce
+        `else
+            input gp17,       // miso
+            //   output gp18, // mosi
+            input gp19,       // clk
+            input gp20,        // ce
+        `endif
+    `endif
     output gp0,
     output gp1,
     output gp2,
@@ -50,21 +62,7 @@ module main #(
     output gn14
     // output gn15,
     // output gn16
-    `ifdef SPI
-        ,
-        `ifdef SPI_ESP32
-            input [3:0] sd_d, // sd_d[0]=mosi
-            input sd_clk,     // clk
-            input sd_cmd      // ce
-        `else
-            input gp17,       // miso
-            //   output gp18, // mosi
-            input gp19,       // clk
-            input gp20        // ce
-        `endif
-    `endif
 );
-
 
     wire clk_root;
     wire clk_matrix;
@@ -518,13 +516,8 @@ module main #(
 
     // template
     //     assign {gn15, gn14, gn13, gn12, gn11, gn10, gn9, gn8, gn7, gn16, gn5, gn4, gn3, gn2, gn1, gn0}
-
-    wire _unused_ok = &{1'b0,
-                        pll_locked,
-                        rxdata_ready_level,
-                        ctrl_busy,
-                        ctrl_ready_for_data,
-                        `ifdef DEBUGGER
+`ifdef DEBUGGER
+    wire _unused_ok_debugger =  &{1'b0,
                             debugger_debug_start,
                             debugger_current_state,
                             debugger_do_close,
@@ -550,23 +543,44 @@ module main #(
                             clk_pixel_load_en,
                             matrix_row_latch2,
                             // end matrix_scan
-                        `else
-                            gp15,
-                        `endif
-                        ram_a_data_out_frame1,
-                        `ifdef DOUBLE_BUFFER
-                            ram_a_data_out_frame2,
-                        `endif
-                        `ifdef SPI
-                            `ifdef SPI_ESP32
-                                sd_d[3:1],
-                            `endif
+                            1'b0};
+`else
+    wire _unused_ok_debugger = &{1'b0,
+                                 gp15,
+                                 1'b0};
+`endif
+`ifdef DOUBLE_BUFFER
+    wire _unused_ok_double_buffer = &{1'b0,
+                                      ram_a_data_out_frame2,
+                                      1'b0};
+`endif
+
+`ifdef SPI
+`ifdef SPI_ESP32
+    wire _unused_ok_spi_esp32 = &{1'b0,
+                                  sd_d[3:1],
+                                  1'b0};
+`endif
+`endif
+`ifdef SPI
+    wire _unused_ok_spi = &{1'b0,
                             spi_slave_sdout,
-                        `else
+                            1'b0};
+`else
+    wire _unused_ok_spi = &{1'b0,
                             uart_rx_dataready,
-                        `endif
-                        `ifdef USE_FM6126A
-                            init_reset_strobe,
-                        `endif
+                            1'b0};
+`endif
+`ifdef USE_FM6126A
+    wire _unused_ok_fm6126a = &{1'b0,
+                                init_reset_strobe,
+                                1'b0};
+`endif
+    wire _unused_ok = &{1'b0,
+                        pll_locked,
+                        rxdata_ready_level,
+                        ctrl_busy,
+                        ctrl_ready_for_data,
+                        ram_a_data_out_frame1,
                         1'b0};
 endmodule
