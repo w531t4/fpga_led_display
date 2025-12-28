@@ -3,7 +3,18 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module main #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
+    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
+    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX,
+    parameter integer unsigned PLL_SPEED = params_pkg::PLL_SPEED,
+    // verilator lint_off UNUSEDPARAM
+    parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params_pkg::CTRLR_CLK_TICKS_PER_BIT,
+    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params_pkg::DEBUG_MSGS_PER_SEC_TICKS,
+    parameter integer unsigned DEBUG_TX_UART_TICKS_PER_BIT = params_pkg::DEBUG_TX_UART_TICKS_PER_BIT,
+    // verilator lint_on UNUSEDPARAM
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -76,22 +87,22 @@ module main #(
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out_frame1;
     //  [11:0]
-    wire [_NUM_ADDRESS_A_BITS-1:0] ram_a_address;
+    wire [calc_pkg::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
-    wire [_NUM_DATA_B_BITS-1:0] ram_b_data_out;
-    wire [_NUM_DATA_B_BITS-1:0] ram_b_data_out_frame1;
+    wire [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out;
+    wire [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame1;
 `ifdef DOUBLE_BUFFER
     wire frame_select;
     wire [7:0] ram_a_data_out_frame2;
-    wire [_NUM_DATA_B_BITS-1:0] ram_b_data_out_frame2;
+    wire [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame2;
 `endif
     //  [10:0]
-    wire [_NUM_ADDRESS_B_BITS-1:0] ram_b_address;
+    wire [calc_pkg::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_b_address;
     wire ram_b_clk_enable;
 
-    wire [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_top;
-    wire [_NUM_BITS_PER_SUBPANEL-1:0] pixeldata_bottom;
+    wire [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_top;
+    wire [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_bottom;
     wire ctrl_busy;
     wire ctrl_ready_for_data;
 
@@ -107,7 +118,9 @@ module main #(
     wire [3:0] cmd_line_state2;
     wire ram_access_start;
     wire ram_access_start_latch;
-    wire [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2;
+    wire [calc_pkg::num_address_a_bits(
+PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+)-1:0] cmd_line_addr2;
     wire [7:0] num_commands_processed;
     // end controller
     // from framebuffer_fetch
@@ -122,13 +135,13 @@ module main #(
 `endif
 
     // [5:0]
-    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address;
+    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
-    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask;
+    wire [BRIGHTNESS_LEVELS-1:0] brightness_mask;
 
     wire [2:0] rgb_enable;
-    wire [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_enable;
+    wire [BRIGHTNESS_LEVELS-1:0] brightness_enable;
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -160,7 +173,7 @@ module main #(
     // No wires past here
 
     new_pll #(
-        .SPEED(params_pkg::PLL_SPEED)
+        .SPEED(PLL_SPEED)
     ) new_pll_inst (
         .clock_in(clk_25mhz),
         .clock_out(clk_root),
@@ -239,7 +252,7 @@ module main #(
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
-        .CLK_DIV_COUNT(params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX)
+        .CLK_DIV_COUNT(DIVIDE_CLK_BY_X_FOR_MATRIX)
     ) clkdiv_baudrate (
         .reset  (global_reset_sync),
         .clk_in (clk_root),
@@ -321,7 +334,7 @@ module main #(
     uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT)
+        .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
     ) mycontrol_rxuart (
         .reset(global_reset),
         .i_clk(clk_root),
@@ -475,10 +488,10 @@ module main #(
 `ifdef DEBUGGER
     debugger #(
         // Describes the sample rate of messages sent to debugger client
-        .DIVIDER_TICKS(params_pkg::DEBUG_MSGS_PER_SEC_TICKS),
+        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
         .DATA_WIDTH(debug_data_width),
         // Describes the baudrate for sending messages to debugger client
-        .UART_TICKS_PER_BIT(params_pkg::DEBUG_TX_UART_TICKS_PER_BIT)
+        .UART_TICKS_PER_BIT(DEBUG_TX_UART_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk_root),
         .reset(global_reset),
