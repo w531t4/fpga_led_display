@@ -82,7 +82,17 @@ endif
 # Skip dep includes for clean to avoid forcing dep generation.
 ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
 DEPFILES := $(VVPOBJS:$(SIMULATION_DIR)/%.vvp=$(DEPDIR)/%.d)
-include $(DEPFILES)
+# Drop stale depfiles that reference removed sources so make can regenerate them.
+#	$$f <-- actualy bash $f
+#	the - in front of include makes the depfiles non-fatal
+$(shell \
+	for f in $(DEPFILES); do \
+		[ -f $$f ] || continue; \
+		for dep in $$(sed 's/^[^:]*: *//' $$f); do \
+			[ -e $$dep ] || { printf 'removing stale depfile: %s\n' $$f; rm -f $$f; break; }; \
+		done; \
+	done)
+-include $(DEPFILES)
 endif
 
 
@@ -102,6 +112,10 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION
 	@printf '%s: ' '$(SIMULATION_DIR)/$*.vvp' > $(DEPDIR)/$*.d
 	@tr '\n' ' ' < $(DEPDIR)/$*.deps >> $(DEPDIR)/$*.d
 	@printf '\n' >> $(DEPDIR)/$*.d
+	@# Append dummy targets for each dependency so removed files don't break make.
+	@for dep in $$(sed 's/^[^:]*: *//' $(DEPDIR)/$*.d); do \
+		printf '%s:\n' $$dep >> $(DEPDIR)/$*.d; \
+	done
 
 $(ARTIFACT_DIR)/sim_args: $(ARTIFACT_DIR) Makefile
 	@printf '%s\n' '$(SIM_FLAGS)' > $@
