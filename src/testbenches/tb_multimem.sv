@@ -4,19 +4,27 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-module tb_multimem;
-
+module tb_multimem #(
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    // verilator lint_off UNUSEDPARAM
+    parameter integer unsigned _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
     logic clk_a;
     logic clk_b;
     logic reset;
     logic local_reset;
-    logic [$clog2(params_pkg::PIXEL_HEIGHT * params_pkg::PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL)-1:0] ram_a_address;
-    logic [$clog2(params_pkg::PIXEL_HEIGHT * params_pkg::PIXEL_WIDTH * params_pkg::BYTES_PER_PIXEL)-3:0] ram_b_address;
+    logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] ram_a_address;
+    logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-3:0] ram_b_address;
     logic [7:0] ram_a_data_in;
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
     logic ram_a_wr;
-    wire [((params_pkg::PIXEL_HEIGHT / params_pkg::PIXEL_HALFHEIGHT) * params_pkg::BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
+    wire [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
     logic ram_a_reset;
     logic ram_b_reset;
 
@@ -216,8 +224,8 @@ module tb_multimem;
     endtask
 
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk_a <= ~clk_a;
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk_b <= ~clk_b;
+        #(SIM_HALF_PERIOD_NS) clk_a <= ~clk_a;
+        #(SIM_HALF_PERIOD_NS) clk_b <= ~clk_b;
     end
 
 endmodule
