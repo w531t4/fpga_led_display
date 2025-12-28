@@ -3,7 +3,6 @@
 `default_nettype none
 module control_cmd_readpixel #(
     `include "memory_calcs.vh"
-    localparam _NUM_COLUMN_BYTES_NEEDED = ((_NUM_COLUMN_ADDRESS_BITS + 8 - 1) / 8),
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -21,6 +20,7 @@ module control_cmd_readpixel #(
     output logic ram_access_start,
     output logic done
 );
+    localparam _NUM_COLUMN_BYTES_NEEDED = ((_NUM_COLUMN_ADDRESS_BITS + 8 - 1) / 8);
     localparam safe_bits_needed_for_column_byte_counter = _NUM_COLUMN_BYTES_NEEDED > 1 ? $clog2(
         _NUM_COLUMN_BYTES_NEEDED
     ) : 1;
