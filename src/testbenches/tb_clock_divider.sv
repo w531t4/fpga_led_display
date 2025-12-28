@@ -1,10 +1,16 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
 // verilog_format: off
+// Package params:
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-module tb_clock_divider;
+module tb_clock_divider #(
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    // verilator lint_off UNUSEDPARAM
+    parameter integer unsigned _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
 
     logic clk;
     logic reset;
@@ -31,7 +37,7 @@ module tb_clock_divider;
     initial #10000 $finish;
 
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     always begin
         #400 reset <= !reset;
