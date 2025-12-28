@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_blankpanel #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -12,9 +14,9 @@ module control_cmd_blankpanel #(
     input clk,
     input mem_clk,
 
-    output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
-    output logic [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
-    output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
+    output logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output logic [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
@@ -77,9 +79,9 @@ module control_cmd_blankpanel #(
         .ack(done),
         .x1(0),
         .y1(0),
-        .width((_NUM_COLUMN_ADDRESS_BITS)'(params_pkg::PIXEL_WIDTH)),
-        .height((_NUM_ROW_ADDRESS_BITS)'(params_pkg::PIXEL_HEIGHT)),
-        .color({(params_pkg::BYTES_PER_PIXEL * 8) {1'b0}}),
+        .width((calc_pkg::num_column_address_bits(PIXEL_WIDTH))'(PIXEL_WIDTH)),
+        .height((calc_pkg::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
+        .color({(BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),
         .column(column),
         .pixel(pixel),
