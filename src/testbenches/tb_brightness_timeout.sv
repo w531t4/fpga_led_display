@@ -4,8 +4,13 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-module tb_brightness_timeout;
-
+module tb_brightness_timeout #(
+    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    // verilator lint_off UNUSEDPARAM
+    parameter integer unsigned _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
     logic clk;
     logic reset;
     logic row_latch;
@@ -13,8 +18,8 @@ module tb_brightness_timeout;
     wire  exceeded_overlap_time;
     wire  clk_out;
     localparam BASE_TIMEOUT = 23;
-    logic [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask_active;
-    wire [$clog2(BASE_TIMEOUT) + params_pkg::BRIGHTNESS_LEVELS:0] brightness_timeout;
+    logic [BRIGHTNESS_LEVELS-1:0] brightness_mask_active;
+    wire [$clog2(BASE_TIMEOUT) + BRIGHTNESS_LEVELS:0] brightness_timeout;
     brightness_timeout #(
         .BASE_TIMEOUT(BASE_TIMEOUT)
     ) btd (
@@ -34,21 +39,21 @@ module tb_brightness_timeout;
         clk = 0;
         reset = 1;
         row_latch = 0;
-        brightness_mask_active = 1 << (params_pkg::BRIGHTNESS_LEVELS - 1);
+        brightness_mask_active = 1 << (BRIGHTNESS_LEVELS - 1);
         @(posedge clk) reset <= 1'b0;
-        repeat (params_pkg::BRIGHTNESS_LEVELS * 2) begin
+        repeat (BRIGHTNESS_LEVELS * 2) begin
             @(posedge clk);
             brightness_mask_active = brightness_mask_active >> 1;
         end
         @(posedge clk) brightness_mask_active = 1 << 1;
         @(posedge clk) row_latch = 1;
         @(posedge clk) row_latch = 0;
-        repeat (params_pkg::BRIGHTNESS_LEVELS * 8) begin
+        repeat (BRIGHTNESS_LEVELS * 8) begin
             @(posedge clk);
         end
         $finish;
     end
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 endmodule
