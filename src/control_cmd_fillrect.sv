@@ -5,7 +5,7 @@ module control_cmd_fillrect #(
     `include "memory_calcs.vh"
     localparam _NUM_COLUMN_BYTES_NEEDED = ((_NUM_COLUMN_ADDRESS_BITS + 8 - 1) / 8),
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input reset,

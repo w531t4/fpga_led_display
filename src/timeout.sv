@@ -13,7 +13,7 @@
 module timeout #(
     parameter COUNTER_WIDTH = 8,
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input reset,

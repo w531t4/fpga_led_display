@@ -7,7 +7,7 @@ module debugger #(
     // 22MHz / 191 = 115183 baud
     parameter UART_TICKS_PER_BIT = 191,
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input clk_in,

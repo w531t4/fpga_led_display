@@ -5,7 +5,7 @@
 module multimem #(
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input wire [_NUM_DATA_A_BITS-1:0] DataInA,

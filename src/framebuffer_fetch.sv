@@ -5,7 +5,7 @@
 module framebuffer_fetch #(
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input reset,

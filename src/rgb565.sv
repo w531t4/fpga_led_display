@@ -4,7 +4,7 @@
 `default_nettype none
 module rgb565 #(
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input [15:0] data_in,

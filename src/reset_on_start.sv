@@ -3,7 +3,7 @@
 `default_nettype none
 module reset_on_start #(
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input  wire clock_in,

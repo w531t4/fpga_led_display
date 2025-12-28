@@ -8,7 +8,7 @@
 module tb_control_subcmd_fillarea #(
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
     localparam int MEM_NUM_BYTES = (1 << _NUM_ADDRESS_A_BITS);

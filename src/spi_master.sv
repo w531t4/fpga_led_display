@@ -45,7 +45,7 @@ module spi_master #(
     parameter send = 2'b10,
     parameter finish = 2'b11,
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input            rstb,   // Asynchronous active-low reset — when 0, resets all internal state

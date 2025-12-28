@@ -5,7 +5,7 @@
 module pixel_split #(
     `include "memory_calcs.vh"
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input [_NUM_BITS_PER_SUBPANEL-1:0] pixel_data,
