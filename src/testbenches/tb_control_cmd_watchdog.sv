@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-`timescale 1ns / 1ns `default_nettype none
+// verilog_format: off
+`timescale 1ns / 1ns
+`default_nettype none
+// verilog_format: on
+
 `include "tb_helper.vh"
 
 module tb_control_cmd_watchdog;
