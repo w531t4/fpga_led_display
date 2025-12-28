@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_readpixel #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -12,15 +14,15 @@ module control_cmd_readpixel #(
     input clk,
     input enable,
 
-    output logic [_NUM_ROW_ADDRESS_BITS-1:0] row,
-    output [_NUM_COLUMN_ADDRESS_BITS-1:0] column,
-    output logic [_NUM_PIXELCOLORSELECT_BITS-1:0] pixel,
+    output logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
     output logic done
 );
-    localparam _NUM_COLUMN_BYTES_NEEDED = ((_NUM_COLUMN_ADDRESS_BITS + 8 - 1) / 8);
+    localparam _NUM_COLUMN_BYTES_NEEDED = ((calc_pkg::num_column_address_bits(PIXEL_WIDTH) + 8 - 1) / 8);
     localparam safe_bits_needed_for_column_byte_counter = _NUM_COLUMN_BYTES_NEEDED > 1 ? $clog2(
         _NUM_COLUMN_BYTES_NEEDED
     ) : 1;
@@ -34,7 +36,7 @@ module control_cmd_readpixel #(
     logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] column_bits;
     logic [safe_bits_needed_for_column_byte_counter-1:0] column_byte_counter;
 
-    assign column = column_bits[_NUM_COLUMN_ADDRESS_BITS-1:0];
+    assign column = column_bits[calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0];
 
     always @(posedge clk) begin
         if (reset) begin
@@ -42,8 +44,8 @@ module control_cmd_readpixel #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_CAPTURE;
-            row <= {_NUM_ROW_ADDRESS_BITS{1'b0}};
-            pixel <= {_NUM_PIXELCOLORSELECT_BITS{1'b0}};
+            row <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            pixel <= {calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
             column_byte_counter <= {safe_bits_needed_for_column_byte_counter{1'b0}};
             column_bits <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
@@ -55,7 +57,7 @@ module control_cmd_readpixel #(
                         done <= 1'b0;
                         column_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                         state <= STATE_COLUMN_CAPTURE;
-                        row[_NUM_ROW_ADDRESS_BITS-1:0] <= data_in[4:0];
+                        row[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] <= data_in[4:0];
                     end
                 end
                 STATE_COLUMN_CAPTURE: begin
@@ -68,7 +70,7 @@ module control_cmd_readpixel #(
                             ram_write_enable <= 1'b1;
                             ram_access_start <= !ram_access_start;
                             data_out <= data_in;
-                            pixel <= ($clog2(params_pkg::BYTES_PER_PIXEL))'(params_pkg::BYTES_PER_PIXEL - 1);
+                            pixel <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                         end else column_byte_counter <= column_byte_counter - 1;
                     end
                 end
@@ -102,5 +104,7 @@ module control_cmd_readpixel #(
     end
     wire _unused_ok = &{1'b0,
     // TODO: This breaks if width=256
-    column_bits[(_NUM_COLUMN_BYTES_NEEDED*8)-1:_NUM_COLUMN_ADDRESS_BITS], 1'b0};
+    column_bits[(_NUM_COLUMN_BYTES_NEEDED*8)-1:calc_pkg::num_column_address_bits(
+        PIXEL_WIDTH
+    )], 1'b0};
 endmodule
