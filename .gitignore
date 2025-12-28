@@ -12,3 +12,6 @@ build
 build_*
 waves/*
 waveforms_projects
+tests/cocotb/sim_build
+tests/cocotb/results.xml
+a.out

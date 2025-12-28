@@ -1,2 +1,8 @@
 requests
 pre-commit
+cocotb
+cocotb~=2.0
+pytest
+pytest-cov
+coverage
+pyright

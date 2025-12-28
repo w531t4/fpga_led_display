@@ -8,6 +8,8 @@
         "depends/netlistsvg/node_modules": true,
         "depends": true,
         "images": true,
+        "tests/cocotb/src": true,
+        "tests/cocotb/sim_build": true,
         "**/__pycache__/**": true
     },
     "verilog.linting.verilator.includePath": ["src/include", "src"],
@@ -16,5 +18,9 @@
     "verilog.languageServer.veribleVerilogLs.enabled": true,
     "verilog.formatting.verilogHDL.formatter": "verible-verilog-format",
     "verilog.languageServer.veribleVerilogLs.path": "/usr/local/bin/verible-verilog-ls",
-    "verilog.languageServer.veribleVerilogLs.arguments": "--rules_config=.rules.verible_lint"
+    "verilog.languageServer.veribleVerilogLs.arguments": "--rules_config=.rules.verible_lint",
+    "python.defaultInterpreterPath": "/home/vscode/.local/venv/bin/python3",
+    "pylint.importStrategy": "fromEnvironment",
+    "pylint.path": ["/home/vscode/.local/venv/bin/pylint"],
+    "python.analysis.extraPaths": ["${workspaceFolder}/tests/cocotb"]
 }
