@@ -5,15 +5,17 @@
 `default_nettype none
 // verilog_format: on
 module tb_matrix_scan #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam ADJUSTED_CLOCK = params_pkg::SIM_HALF_PERIOD_NS * params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX;
+    localparam ADJUSTED_CLOCK = SIM_HALF_PERIOD_NS * DIVIDE_CLK_BY_X_FOR_MATRIX;
     logic clk;
     logic reset;
-    wire [_NUM_COLUMN_ADDRESS_BITS-1:0] column_address;
+    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
     wire clk_pixel_load;
