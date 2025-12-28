@@ -39,7 +39,7 @@
 // verilator lint_off BLKSEQ
 module spi_slave #(
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input rstb,  // Active-low asynchronous reset. Resets internal registers like rreg, treg, nb, etc.

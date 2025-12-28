@@ -12,7 +12,7 @@
 module new_pll #(
     parameter SPEED = 0,  // 0 - 16mhz, 1 - 50mhz, 2 - 90mhz, 3 - 100mhz, 4 - 110mhz - else use the incoming 25mhz clock
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input  clock_in,   // 25 MHz, 0 deg

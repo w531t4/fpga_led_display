@@ -6,7 +6,7 @@
 // verilog_format: on
 module tb_debugger #(
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
 

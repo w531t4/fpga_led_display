@@ -3,7 +3,7 @@
 `default_nettype none
 module rgb24 #(
     // verilator lint_off UNUSEDPARAM
-    parameter _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input  [23:0] data_in,
