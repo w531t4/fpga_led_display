@@ -17,36 +17,45 @@ package params_pkg;
     parameter int unsigned ROOT_CLOCK = 16_000_000;
     parameter int unsigned PLL_SPEED = 0;
 `endif
-`ifndef SPI
+    // !SPI
     // Use this to determine what baudrate to require at ctrl/rx_in
+    // verilator lint_off UNUSEDPARAM
     parameter int unsigned CTRLR_UART_RX_FREQ_GOAL = 244444;
     parameter int unsigned CTRLR_CLK_TICKS_PER_BIT = $rtoi(ROOT_CLOCK / CTRLR_UART_RX_FREQ_GOAL * 1.0);
-`endif
-`ifdef DEBUGGER
+    // verilator lint_on UNUSEDPARAM
+
+    // DEBUGGER
     // Describes the baudrate for sending messages to debugger client
+    // verilator lint_off UNUSEDPARAM
     parameter int unsigned DEBUG_UART_TX_FREQ_GOAL = 115200;
     parameter int unsigned DEBUG_TX_UART_TICKS_PER_BIT = ROOT_CLOCK / DEBUG_UART_TX_FREQ_GOAL;
     parameter int unsigned DEBUG_UART_RX_FREQ_GOAL = 244444;
     parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS = ROOT_CLOCK / DEBUG_UART_RX_FREQ_GOAL;
-`endif
+    // verilator lint_on UNUSEDPARAM
+
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
-`ifdef USE_WATCHDOG
+
+    // USE_WATCHDOG
     // reset control logic if watchdog isn't satisfied within x seconds
+    // verilator lint_off UNUSEDPARAM
     parameter real WATCHDOG_CONTROL_FREQ_GOAL = 0.1;  // 10 seconds
     parameter int unsigned WATCHDOG_CONTROL_TICKS = $rtoi(ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0);
     parameter int unsigned WATCHDOG_SIGNATURE_BITS = 64;
     parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED;
-`endif
-`ifdef SIM
+    // verilator lint_on UNUSEDPARAM
+
+    // SIM
     // verilator lint_off UNUSEDPARAM
     parameter real SIM_HALF_PERIOD_NS = ((1.0 / ROOT_CLOCK) * 1000000000) / 2.0;
     // verilator lint_on UNUSEDPARAM
-`ifndef SPI
+
+    // SIM !SPI
     // Use smaller value in testbench so we don't infinitely sim.
+    // verilator lint_off UNUSEDPARAM
     parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = 'd15;
-`endif
-`endif
+    // verilator lint_on UNUSEDPARAM
+
 `ifdef RGB24
     parameter int unsigned BYTES_PER_PIXEL = 3;
     parameter int unsigned BRIGHTNESS_LEVELS = 8;
