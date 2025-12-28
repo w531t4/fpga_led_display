@@ -4,7 +4,12 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-module tb_ff_sync;
+module tb_ff_sync #(
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    // verilator lint_off UNUSEDPARAM
+    parameter integer unsigned _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
+);
 
     logic clk;
     logic reset;
@@ -34,24 +39,24 @@ module tb_ff_sync;
     initial #3 reset = !reset;
 
     initial begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
-        #(params_pkg::SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(SIM_HALF_PERIOD_NS) signal = signal;
         #10 $finish;
     end
 
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 endmodule
