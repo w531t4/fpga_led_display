@@ -51,7 +51,7 @@ VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv
 VERILATOR_FILELIST:=$(ARTIFACT_DIR)/verilator_files.f
 
 VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
-PKG_SOURCES := $(SRC_DIR)/params_pkg.sv
+PKG_SOURCES := $(SRC_DIR)/params_pkg.sv $(SRC_DIR)/calc_pkg.sv
 VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh'))
