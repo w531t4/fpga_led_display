@@ -7,7 +7,7 @@
      counts on positive edge of clk_in
      reset is active-high */
 
-     //so, essentially freq = clk_in / (clk_div_count * 2)
+//so, essentially freq = clk_in / (clk_div_count * 2)
 module clock_divider #(
     parameter CLK_DIV_COUNT = 3,
     // verilator lint_off UNUSEDPARAM
@@ -20,12 +20,12 @@ module clock_divider #(
 );
     logic [$clog2(CLK_DIV_COUNT) - 1:0] clk_count;
 
-    `ifdef SIM
-        logic reset_prev;
-        initial begin
-            reset_prev = 1'b0;
-        end
-    `endif
+`ifdef SIM
+    logic reset_prev;
+    initial begin
+        reset_prev = 1'b0;
+    end
+`endif
 
     /*
     CLK_DIV_WIDTH=2;CLK_DIV_COUNT=3;
@@ -42,39 +42,35 @@ module clock_divider #(
     t=10:: clk_out=1;clk_count=1 => clk_out=1;clk_count=2
     t=11:: clk_out=1;clk_count=2 => clk_out=0;clk_count=0 <--- start of matrix_scan cycle
     */
-    `ifdef SIM
+`ifdef SIM
     always @(posedge clk_in) begin
         reset_prev <= (reset === 1'b1);
         if ((reset === 1'b1) && !reset_prev) begin
-            clk_out <= 1'b0;
+            clk_out   <= 1'b0;
             clk_count <= 'b0;
-        end
-        else begin
+        end else begin
             if (clk_count == ($clog2(CLK_DIV_COUNT))'(CLK_DIV_COUNT - 1)) begin
-                clk_out <= ~clk_out;
+                clk_out   <= ~clk_out;
                 clk_count <= 'b0;
-            end
-            else begin
+            end else begin
                 clk_count <= clk_count + 'd1;
             end
         end
     end
-    `else
+`else
     always @(posedge clk_in) begin
         if (reset) begin
-            clk_out <= 1'b0;
+            clk_out   <= 1'b0;
             clk_count <= 'b0;
-        end
-        else begin
+        end else begin
             if (clk_count == ($clog2(CLK_DIV_COUNT))'(CLK_DIV_COUNT - 1)) begin
-                clk_out <= ~clk_out;
+                clk_out   <= ~clk_out;
                 clk_count <= 'b0;
-            end
-            else begin
+            end else begin
                 clk_count <= clk_count + 'd1;
             end
         end
-            end
-    `endif
+    end
+`endif
 
 endmodule
