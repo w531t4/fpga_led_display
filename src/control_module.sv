@@ -25,15 +25,15 @@ module control_module #(
     `ifdef USE_WATCHDOG
         output logic watchdog_reset,
     `endif
-    output logic ram_clk_enable
     `ifdef DEBUGGER
-        ,
         output [3:0] cmd_line_state2,
         output ram_access_start2,
         output ram_access_start_latch2,
         output [_NUM_ADDRESS_A_BITS-1:0] cmd_line_addr2,
-        output logic [7:0] num_commands_processed
+        output logic [7:0] num_commands_processed,
     `endif
+    output logic ram_clk_enable
+
 );
     // for now, if adding new states, ensure cmd_line_state2 is updated.
     typedef enum logic [3:0] {STATE_IDLE,               // 0
