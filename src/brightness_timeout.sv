@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module brightness_timeout #(
-    // parameter int unsigned BASE_TIMEOUT = 10,
     parameter integer BASE_TIMEOUT = 10,
-    // parameter int unsigned STATE_TIMEOUT_OVERLAP = 'd67
     parameter integer STATE_TIMEOUT_OVERLAP = 'd67
 ) (
     input wire [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask_active,
