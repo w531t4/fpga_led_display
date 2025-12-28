@@ -3,29 +3,30 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module brightness_timeout #(
+    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
     parameter integer BASE_TIMEOUT = 10,
     parameter integer STATE_TIMEOUT_OVERLAP = 'd67
 ) (
-    input wire [params_pkg::BRIGHTNESS_LEVELS-1:0] brightness_mask_active,
+    input wire [BRIGHTNESS_LEVELS-1:0] brightness_mask_active,
     input wire clk_in,
     input wire reset,
     input wire row_latch,
     output wire output_enable,
     output wire exceeded_overlap_time
 );
-    localparam int unsigned TIMEOUT_WIDTH = $clog2(BASE_TIMEOUT) + params_pkg::BRIGHTNESS_LEVELS;
+    localparam int unsigned TIMEOUT_WIDTH = $clog2(BASE_TIMEOUT) + BRIGHTNESS_LEVELS;
     wire [TIMEOUT_WIDTH-1:0] brightness_timeout;  /* used to time the output enable period */
-    wire [$clog2(params_pkg::BRIGHTNESS_LEVELS+1)-1:0] active_bits = $countones(brightness_mask_active);
+    wire [$clog2(BRIGHTNESS_LEVELS+1)-1:0] active_bits = $countones(brightness_mask_active);
     wire one_hot = (active_bits == 1);
     wire [TIMEOUT_WIDTH-1:0] brightness_counter;
 
     // Priority encoder
     integer i;
-    reg [$clog2(params_pkg::BRIGHTNESS_LEVELS)-1:0] bit_index;
+    reg [$clog2(BRIGHTNESS_LEVELS)-1:0] bit_index;
     always @* begin
         bit_index = 0;
-        for (i = params_pkg::BRIGHTNESS_LEVELS - 1; i >= 0; i = i - 1) begin
-            if (brightness_mask_active[i]) bit_index = ($clog2(params_pkg::BRIGHTNESS_LEVELS))'(i);
+        for (i = BRIGHTNESS_LEVELS - 1; i >= 0; i = i - 1) begin
+            if (brightness_mask_active[i]) bit_index = ($clog2(BRIGHTNESS_LEVELS))'(i);
         end
     end
 
