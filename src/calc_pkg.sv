@@ -42,8 +42,8 @@ package calc_pkg;
             - num_address_b_bits(pixel_width, pixel_halfheight);
     endfunction
 
-    function automatic int unsigned num_data_a_bits(input int unsigned data_a_bits);
-        num_data_a_bits = data_a_bits;
+    function automatic int unsigned num_data_a_bits();
+        num_data_a_bits = 8;
     endfunction
 
     function automatic int unsigned num_data_b_bits(input int unsigned pixel_height, input int unsigned bytes_per_pixel,
