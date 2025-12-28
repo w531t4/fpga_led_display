@@ -5,7 +5,13 @@
 `default_nettype none
 // verilog_format: on
 module tb_control_module #(
-    `include "memory_calcs.vh"
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params_pkg::CTRLR_CLK_TICKS_PER_BIT,
+    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params_pkg::DEBUG_MSGS_PER_SEC_TICKS_SIM,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -19,8 +25,8 @@ module tb_control_module #(
     //logic [7:0] ram_data_in = 8'b01100101;
     wire [2:0] rgb_enable;
     wire [5:0] brightness_enable;
-    wire [_NUM_DATA_A_BITS-1:0] ram_data_out;
-    wire [_NUM_ADDRESS_A_BITS-1:0] ram_address;
+    wire [calc_pkg::num_data_a_bits()-1:0] ram_data_out;
+    wire [calc_pkg::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_address;
     wire ram_write_enable;
     wire ctrl_busy;
     wire ram_clk_enable;
@@ -82,7 +88,7 @@ module tb_control_module #(
     uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT)
+        .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
     ) mycontrol_rxuart (
         .reset(reset),
         .i_clk(clk),
@@ -96,12 +102,12 @@ module tb_control_module #(
         .DATA_WIDTH(1072),
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-        .DIVIDER_TICKS(params_pkg::DEBUG_MSGS_PER_SEC_TICKS_SIM),
+        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
         // receive at
-        .UART_TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT)
+        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk),
         .reset(local_reset),
@@ -189,7 +195,7 @@ module tb_control_module #(
     end
 `endif
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     wire _unused_ok = &{1'b0, rxdata_ready_level, 1'b0};
 
