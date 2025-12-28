@@ -44,7 +44,7 @@ package params_pkg;
     // verilator lint_on UNUSEDPARAM
 `ifndef SPI
     // Use smaller value in testbench so we don't infinitely sim.
-    parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = 4'd15;
+    parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = 'd15;
 `endif
 `endif
 `ifdef RGB24
