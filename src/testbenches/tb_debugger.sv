@@ -5,6 +5,7 @@
 `default_nettype none
 // verilog_format: on
 module tb_debugger #(
+    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -86,7 +87,7 @@ module tb_debugger #(
     initial #1000000 $finish;
 
     always begin
-        #(params_pkg::SIM_HALF_PERIOD_NS) clk <= !clk;  // 2 of these make a period
+        #(SIM_HALF_PERIOD_NS) clk <= !clk;  // 2 of these make a period
     end
     // always begin
     //     #400 reset <= ! reset;
