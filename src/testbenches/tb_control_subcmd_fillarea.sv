@@ -159,7 +159,7 @@ BYTES_PER_PIXEL
         $finish;
     end
     always @(posedge clk) begin
-        addr = {row, column, pixel};
+        addr <= {row, column, pixel};
         if (ram_write_enable && subcmd_enable) begin
             // $display("processing row=%0d col=%0d pixel=%0d", row, column, pixel);
             if (row >= PIXEL_HEIGHT || column >= PIXEL_WIDTH || pixel >= BYTES_PER_PIXEL) begin
