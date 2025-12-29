@@ -49,11 +49,11 @@ VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=-n -N
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
+PKG_SOURCES := $(SRC_DIR)/params_pkg.sv $(SRC_DIR)/calc_pkg.sv
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD
 VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
 VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
-PKG_SOURCES := $(SRC_DIR)/params_pkg.sv $(SRC_DIR)/calc_pkg.sv
 VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh'))
