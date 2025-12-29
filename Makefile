@@ -52,13 +52,13 @@ GTKWAVE_FLAGS:=
 PKG_SOURCES := $(SRC_DIR)/params_pkg.sv $(SRC_DIR)/calc_pkg.sv
 VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
+TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD
 VERILATOR_FILEPARAM_ARGS:=$(SIM_FLAGS) $(PKG_SOURCES) -y $(SRC_DIR) $(VERILATOR_ADDITIONAL_ARGS)
 VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh'))
-TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
 SIM_JOBS ?= $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
