@@ -8,6 +8,8 @@ module tb_matrix_scan #(
     parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
     parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
     parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX,
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = params_pkg::BRIGHTNESS_BASE_TIMEOUT,
+    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params_pkg::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -29,6 +31,8 @@ module tb_matrix_scan #(
         .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
         .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
         .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT),
+        .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
         ._UNUSED('d0)
     ) matrix_scan_instance (
         .clk_in(clk),
