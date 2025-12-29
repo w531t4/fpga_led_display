@@ -73,9 +73,9 @@ module control_cmd_blankpanel #(
     end
 
     control_subcmd_fillarea #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset || local_reset),
