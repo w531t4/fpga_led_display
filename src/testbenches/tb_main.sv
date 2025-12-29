@@ -196,7 +196,7 @@ module tb_main #(
         // wait for global_reset pulse and its deassertion before releasing tb reset
         `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b1, TB_MAIN_WAIT_CYCLES)
         `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b0, TB_MAIN_WAIT_CYCLES)
-        @(posedge clk) reset <= 1'b0;
+        @(posedge clk) reset = 1'b0;
 
         // wait until next clk_root goes high
         `WAIT_ASSERT(clk, tb_main.tbi_main.clk_root === 1'b1, TB_MAIN_WAIT_CYCLES)
