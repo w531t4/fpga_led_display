@@ -105,7 +105,7 @@ endif
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
 .DELETE_ON_ERROR:
-all: $(ARTIFACT_DIR)/sim_args simulation lint
+all: $(ARTIFACT_DIR)/verilator_args simulation lint
 #$(warning In a command script $(VVPOBJS))
 
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
@@ -123,7 +123,7 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION
 		printf '%s:\n' $$dep >> $(DEPDIR)/$*.d; \
 	done
 
-$(ARTIFACT_DIR)/sim_args: $(ARTIFACT_DIR) Makefile
+$(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) Makefile
 	@printf '%s\n' '$(SIM_FLAGS)' > $@
 
 $(VERILATOR_FILELIST): $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
