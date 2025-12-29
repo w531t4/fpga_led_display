@@ -21,6 +21,7 @@ module new_pll #(
 );
 `ifdef SIM
     assign clock_out = clock_in;
+    assign locked = 1'b1;
 `else
     wire clkfb;
     if (SPEED == 0) begin
