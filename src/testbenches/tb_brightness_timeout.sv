@@ -59,4 +59,10 @@ module tb_brightness_timeout #(
     always begin
         #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        output_enable,
+                        exceeded_overlap_time,
+                        1'b0};
+    // verilog_format: on
 endmodule
