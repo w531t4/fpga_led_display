@@ -29,10 +29,10 @@ module tb_multimem #(
     logic ram_b_reset;
 
     multimem #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) A (
         .DataInA(ram_a_data_in),
