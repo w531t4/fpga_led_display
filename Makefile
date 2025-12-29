@@ -55,9 +55,12 @@ VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
 VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD
-VERILATOR_FILEPARAM_ARGS=$(SIM_FLAGS) $(PKG_SOURCES) -y $(SRC_DIR) $(VERILATOR_ADDITIONAL_ARGS)
-VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args --top main $(VSOURCES_WITHOUT_PKGS)
+VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP
+# Verilator needs full-paths otherwise vscode assumes they are in /src
+VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
+	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
+	$(abspath $(VSOURCES_WITHOUT_PKGS)) $(abspath $(TBSRCS))
+VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh'))
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
