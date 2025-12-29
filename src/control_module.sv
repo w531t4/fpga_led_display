@@ -191,7 +191,12 @@ module control_module #(
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillpanel_pixel_addr;
     wire                                  cmd_fillpanel_rfd;
 
-    control_cmd_fillpanel cmd_fillpanel (
+    control_cmd_fillpanel #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        ._UNUSED('d0)
+    ) cmd_fillpanel (
         .reset           (reset),
         // .enable(cmd_line_state == STATE_CMD_FILLPANEL),
         .enable          ((cmd_line_state == STATE_CMD_FILLPANEL) && ~data_ready_n),
