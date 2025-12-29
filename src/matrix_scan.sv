@@ -6,6 +6,8 @@ module matrix_scan #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
     parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
     parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = params_pkg::BRIGHTNESS_BASE_TIMEOUT,
+    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params_pkg::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -128,9 +130,9 @@ PIXEL_WIDTH
     end
 
     brightness_timeout #(
-        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
-        .BRIGHTNESS_BASE_TIMEOUT(params_pkg::BRIGHTNESS_BASE_TIMEOUT),
-        .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(params_pkg::BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
+        .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT),
+        .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
         ._UNUSED('d0)
     ) btd (
         .clk_in(clk_in),

@@ -17,6 +17,8 @@ module main #(
     parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
     parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params_pkg::WATCHDOG_CONTROL_TICKS,
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = params_pkg::BRIGHTNESS_BASE_TIMEOUT,
+    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params_pkg::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_on UNUSEDPARAM
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -266,6 +268,8 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
         .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
         .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT),
+        .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
         ._UNUSED('d0)
     ) matscan1 (
         .reset(global_reset_sync),
