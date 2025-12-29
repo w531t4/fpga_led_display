@@ -18,7 +18,6 @@ module tb_control_cmd_readpixel #(
     wire                                                             slowclk;
     logic                                                            clk;
     wire                                                             subcmd_enable;
-    logic                                                            done;
     logic [                                                     7:0] data_in;
     logic                                                            reset;
     wire                                                             cmd_readpixel_we;
