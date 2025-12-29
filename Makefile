@@ -126,7 +126,7 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION
 	done
 
 $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
-	@printf '%s %s %s %s %s\n' '$(SIM_FLAGS)' '$(PKG_SOURCES)' '-y $(SRC_DIR)' '-I$(VINCLUDE_DIR)' '$(VERILATOR_ADDITIONAL_ARGS)' > $@
+	@printf '%s %s %s %s\n' '$(SIM_FLAGS)' '$(PKG_SOURCES)' '-y $(SRC_DIR)' '$(VERILATOR_ADDITIONAL_ARGS)' > $@
 
 lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args
 	cat $(ARTIFACT_DIR)/verilator_args
