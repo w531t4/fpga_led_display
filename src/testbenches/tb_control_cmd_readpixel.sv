@@ -47,7 +47,12 @@ module tb_control_cmd_readpixel #(
         .reset(reset)
     );
 
-    control_cmd_readpixel #() cmd_readpixel (
+    control_cmd_readpixel #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        ._UNUSED('d0)
+    ) cmd_readpixel (
         .reset(reset),
         .data_in(data_in),
         .clk(clk),
