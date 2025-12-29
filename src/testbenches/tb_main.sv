@@ -276,4 +276,22 @@ module tb_main #(
     always begin
         #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        clk_pixel,
+                        OE,
+                        ROA0,
+                        ROA1,
+                        ROA2,
+                        ROA3,
+                        rgb1_0,
+                        rgb1_1,
+                        rgb1_2,
+                        rgb2_0,
+                        rgb2_1,
+                        rgb2_2,
+                        row_latch,
+                        debugger_txout,
+                        1'b0};
+    // verilog_format: on
 endmodule

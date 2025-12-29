@@ -96,4 +96,16 @@ module tb_control_cmd_readrow #(
     always begin
         #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        cmd_readrow_we,
+                        cmd_readrow_as,
+                        cmd_readrow_done,
+                        cmd_readrow_do,
+                        cmd_readrow_row_addr,
+                        cmd_readrow_col_addr,
+                        cmd_readrow_pixel_addr,
+                        junk1,
+                        1'b0};
+    // verilog_format: on
 endmodule

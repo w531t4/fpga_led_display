@@ -42,4 +42,9 @@ module tb_clock_divider #(
     always begin
         #400 reset <= !reset;
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        clk_out,
+                        1'b0};
+    // verilog_format: on
 endmodule

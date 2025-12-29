@@ -67,4 +67,16 @@ module tb_matrix_scan #(
     // always begin
     // #700 reset <= ! reset;
     // end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        column_address,
+                        row_address,
+                        row_address_active,
+                        clk_pixel_load,
+                        clk_pixel,
+                        row_latch,
+                        output_enable,
+                        brightness_mask,
+                        1'b0};
+    // verilog_format: on
 endmodule

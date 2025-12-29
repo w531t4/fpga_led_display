@@ -91,4 +91,11 @@ module tb_debugger #(
     // always begin
     //     #400 reset <= ! reset;
     // end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        tx_out,
+                        clk_out,
+                        debug_start,
+                        1'b0};
+    // verilog_format: on
 endmodule

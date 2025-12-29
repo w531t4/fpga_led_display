@@ -152,4 +152,11 @@ module tb_spi;
             #10 s_tdata = Mrdata;
         end
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        Mdone,
+                        SLVdone,
+                        SLVrdata,
+                        1'b0};
+    // verilog_format: on
 endmodule

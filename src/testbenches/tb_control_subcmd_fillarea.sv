@@ -182,4 +182,9 @@ BYTES_PER_PIXEL
     always begin
         #2 clk <= !clk;
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        ram_access_start,
+                        1'b0};
+    // verilog_format: on
 endmodule
