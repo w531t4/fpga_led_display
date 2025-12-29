@@ -252,7 +252,12 @@ module control_module #(
     wire [  _NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readframe_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readframe_pixel_addr;
 
-    control_cmd_readframe cmd_readframe (
+    control_cmd_readframe #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        ._UNUSED('d0)
+    ) cmd_readframe (
         .reset           (reset),
         // .enable(cmd_line_state == STATE_CMD_FILLRECT),
         .enable          ((cmd_line_state == STATE_CMD_READFRAME) && ~data_ready_n),
