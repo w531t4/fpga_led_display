@@ -130,7 +130,7 @@ $(VERILATOR_FILELIST): $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s\n' '$(PKG_SOURCES)' '-y $(SRC_DIR)' '-I$(VINCLUDE_DIR)' > $@
 
 lint: $(ARTIFACT_DIR) $(VERILATOR_FILELIST)
-	@set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) -f $(VERILATOR_FILELIST) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) -f $(VERILATOR_FILELIST) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
