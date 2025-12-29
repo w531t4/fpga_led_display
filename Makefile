@@ -40,7 +40,10 @@ SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
 IVERILOG_BIN:=$(TOOLPATH)/iverilog
-IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement -Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector -Wsensitivity-entire-array -I$(VINCLUDE_DIR) -y $(SRC_DIR) -Y .sv -Y .v
+IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement \
+				-Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector \
+				-Wsensitivity-entire-array \
+				-I$(VINCLUDE_DIR) -y $(SRC_DIR) -Y .sv -Y .v
 # -y/-Y let iverilog resolve module files under src/, enabling dependency discovery.
 VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=-n -N
