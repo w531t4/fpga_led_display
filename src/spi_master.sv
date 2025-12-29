@@ -121,6 +121,7 @@ module spi_master #(
 
     //setup falling edge (shift dout) sample rising edge (read din)
     always @(negedge clk or posedge clr) begin
+        // verilator lint_off BLKSEQ
         if (clr == 1) begin
             cnt = 0;
             sck = 1;
@@ -133,10 +134,13 @@ module spi_master #(
                 end  //mid
             end  //shift
         end  //rst
+        // verilator lint_on BLKSEQ
     end  //always
+
 
     //sample @ rising edge (read din)
     always @(posedge sck or posedge clr) begin  // or negedge rstb
+        // verilator lint_off BLKSEQ
         if (clr == 1) begin
             nbit = 0;
             rreg = 8'hFF;
@@ -148,9 +152,11 @@ module spi_master #(
             end
             nbit = nbit + 1;
         end  //rst
+        // verilator lint_on BLKSEQ
     end  //always
 
     always @(negedge sck or posedge clr) begin
+        // verilator lint_off BLKSEQ
         if (clr == 1) begin
             treg = 8'hFF;
             dout = 1;
@@ -169,6 +175,7 @@ module spi_master #(
                 end
             end
         end  //rst
+        // verilator lint_on BLKSEQ
     end  //always
 
 endmodule
