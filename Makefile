@@ -47,8 +47,8 @@ VVP_FLAGS:=-n -N
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_FLAGS:=--lint-only -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -I$(VINCLUDE_DIR) -f build/verilator_args
-
+VERILATOR_ADDITIONAL_ARGS:=-Wno-fatal -Wall -Wno-TIMESCALEMOD
+VERILATOR_FLAGS:=-sv --lint-only -y $(SRC_DIR) -I$(VINCLUDE_DIR) -f build/verilator_args
 VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 PKG_SOURCES := $(SRC_DIR)/params_pkg.sv $(SRC_DIR)/calc_pkg.sv
 VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
@@ -123,7 +123,7 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION
 	done
 
 $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
-	@printf '%s %s %s %s\n' '$(SIM_FLAGS)' '$(PKG_SOURCES)' '-y $(SRC_DIR)' '-I$(VINCLUDE_DIR)' > $@
+	@printf '%s %s %s %s %s\n' '$(SIM_FLAGS)' '$(PKG_SOURCES)' '-y $(SRC_DIR)' '-I$(VINCLUDE_DIR)' '$(VERILATOR_ADDITIONAL_ARGS)' > $@
 
 lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args
 	cat $(ARTIFACT_DIR)/verilator_args
