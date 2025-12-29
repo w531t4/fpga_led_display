@@ -8,6 +8,9 @@ module control_module #(
     parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
     parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
     parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
+    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
+    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
+    parameter int unsigned WATCHDOG_CONTROL_TICKS = params_pkg::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -116,9 +119,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
 
     control_cmd_readrow #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_readrow (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
@@ -145,9 +148,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
 
     control_cmd_readpixel #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_readpixel (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
@@ -169,7 +172,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire cmd_readbrightness_done, cmd_readbrightness_be;
     wire [BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
     control_cmd_readbrightness #(
-        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) cmd_readbrightness (
         .reset(reset),
@@ -189,9 +192,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_blankpanel_pixel_addr;
 
     control_cmd_blankpanel #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_blankpanel (
         .reset(reset),
@@ -219,9 +222,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire                                                            cmd_fillpanel_rfd;
 
     control_cmd_fillpanel #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_fillpanel (
         .reset           (reset),
@@ -250,9 +253,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire                                                            cmd_fillrect_rfd;
 
     control_cmd_fillrect #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_fillrect (
         .reset           (reset),
@@ -280,9 +283,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readframe_pixel_addr;
 
     control_cmd_readframe #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_readframe (
         .reset           (reset),
@@ -304,9 +307,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire cmd_watchdog_sysreset;
 
     control_cmd_watchdog #(
-        .WATCHDOG_SIGNATURE_BITS(params_pkg::WATCHDOG_SIGNATURE_BITS),
-        .WATCHDOG_SIGNATURE_PATTERN(params_pkg::WATCHDOG_SIGNATURE_PATTERN),
-        .WATCHDOG_CONTROL_TICKS(params_pkg::WATCHDOG_CONTROL_TICKS),
+        .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
+        .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),
+        .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
     ) cmd_watchdog (
         .reset    (reset),

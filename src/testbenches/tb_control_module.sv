@@ -12,6 +12,9 @@ module tb_control_module #(
     parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
     parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params_pkg::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params_pkg::DEBUG_MSGS_PER_SEC_TICKS_SIM,
+    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
+    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
+    parameter int unsigned WATCHDOG_CONTROL_TICKS = params_pkg::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -134,6 +137,9 @@ module tb_control_module #(
         .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
         .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
         .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
+        .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),
+        .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
     ) control_module_instance (
         .reset(reset),
