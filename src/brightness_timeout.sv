@@ -5,7 +5,7 @@
 module brightness_timeout #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
     parameter integer BRIGHTNESS_BASE_TIMEOUT = params_pkg::BRIGHTNESS_BASE_TIMEOUT,
-    parameter integer STATE_TIMEOUT_OVERLAP = 'd67,
+    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = 'd67,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -53,6 +53,6 @@ module brightness_timeout #(
         .running(output_enable)
     );
 
-    assign exceeded_overlap_time = (STATE_TIMEOUT_OVERLAP < brightness_counter);
+    assign exceeded_overlap_time = (BRIGHTNESS_STATE_TIMEOUT_OVERLAP < brightness_counter);
 
 endmodule
