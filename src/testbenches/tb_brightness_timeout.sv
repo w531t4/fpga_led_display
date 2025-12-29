@@ -21,7 +21,10 @@ module tb_brightness_timeout #(
     logic [BRIGHTNESS_LEVELS-1:0] brightness_mask_active;
     wire [$clog2(BRIGHTNESS_BASE_TIMEOUT) + BRIGHTNESS_LEVELS:0] brightness_timeout;
     brightness_timeout #(
-        .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT)
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
+        .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT),
+        .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(params_pkg::BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
+        ._UNUSED('d0)
     ) btd (
         .clk_in(clk),
         .reset(reset),
