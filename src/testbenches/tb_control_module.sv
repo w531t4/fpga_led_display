@@ -37,10 +37,6 @@ module tb_control_module #(
 `ifdef DEBUGGER
     wire [7:0] num_commands_processed;
 `endif
-    // debugger stuff
-    wire debug_command_busy;
-    wire debug_command_pulse;
-    wire [7:0] debug_command;
 
     wire [7:0] rxdata_to_controller;
     wire rxdata;

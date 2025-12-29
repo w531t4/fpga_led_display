@@ -24,7 +24,6 @@ module tb_control_cmd_watchdog #(
     logic subcmd_enable;
     logic done;
     logic [7:0] data_in;
-    wire pre_done;
     wire sysreset;
     logic reset;
 

@@ -17,7 +17,6 @@ module tb_debugger #(
     wire tx_out;
     logic clk_out;
     wire debug_start;
-    logic debug_uart_rx_in;
     logic [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
     wire tb_clk_baudrate;
     logic rx_line2;

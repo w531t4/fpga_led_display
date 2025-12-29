@@ -25,28 +25,23 @@ module tb_main #(
 );
 
     logic clk;
-    wire clk_pixel;
-    wire row_latch;
-    wire OE;
-    wire ROA0;
-    wire ROA1;
-    wire ROA2;
-    wire ROA3;
-    wire rgb2_0;
-    wire rgb2_1;
-    wire rgb2_2;
-    wire rgb1_0;
-    wire rgb1_1;
-    wire rgb1_2;
-    wire debugger_txout;
+    wire  clk_pixel;
+    wire  row_latch;
+    wire  OE;
+    wire  ROA0;
+    wire  ROA1;
+    wire  ROA2;
+    wire  ROA3;
+    wire  rgb2_0;
+    wire  rgb2_1;
+    wire  rgb2_2;
+    wire  rgb1_0;
+    wire  rgb1_1;
+    wire  rgb1_2;
+    wire  debugger_txout;
     logic debugger_rxin;
 
     logic reset;
-
-    // debugger stuff
-    wire debug_command_busy;
-    wire debug_command_pulse;
-    wire [7:0] debug_command;
 
     `include "row4.vh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
@@ -67,7 +62,6 @@ module tb_main #(
     logic spi_clk_en;
     wire spi_clk;
     wire spi_cs;
-    wire spi_data_ready;
     logic spi_start;
 `else
     wire uart_rx_dataready;
