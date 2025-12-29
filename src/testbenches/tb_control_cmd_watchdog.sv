@@ -27,7 +27,11 @@ module tb_control_cmd_watchdog #(
     logic reset;
 
     control_cmd_watchdog #(
-        .WATCHDOG_CONTROL_TICKS(16 * 12)
+        .WATCHDOG_SIGNATURE_BITS(params_pkg::WATCHDOG_SIGNATURE_BITS),
+        .WATCHDOG_SIGNATURE_PATTERN(params_pkg::WATCHDOG_SIGNATURE_PATTERN),
+        // .WATCHDOG_CONTROL_TICKS(params_pkg::WATCHDOG_CONTROL_TICKS),
+        .WATCHDOG_CONTROL_TICKS(16 * 12),
+        ._UNUSED('d0)
     ) cmd_watchdog (
         .reset(reset),
         .data_in(data_in),
