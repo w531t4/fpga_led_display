@@ -42,7 +42,8 @@ module tb_brightness_timeout #(
         reset = 1;
         row_latch = 0;
         brightness_mask_active = 1 << (BRIGHTNESS_LEVELS - 1);
-        @(posedge clk) reset <= 1'b0;
+        @(posedge clk);
+        @(posedge clk) reset = 1'b0;
         repeat (BRIGHTNESS_LEVELS * 2) begin
             @(posedge clk);
             brightness_mask_active = brightness_mask_active >> 1;
