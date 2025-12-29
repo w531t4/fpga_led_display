@@ -273,7 +273,13 @@ module main #(
 
     /* the fetch controller */
 
-    framebuffer_fetch fb_f (
+    framebuffer_fetch #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        ._UNUSED('d0)
+    ) fb_f (
         .reset (global_reset_sync),
         .clk_in(clk_root),
 
