@@ -4,7 +4,7 @@
 `default_nettype none
 module brightness_timeout #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
-    parameter integer BASE_TIMEOUT = 10,
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = 10,
     parameter integer STATE_TIMEOUT_OVERLAP = 'd67
 ) (
     input wire [BRIGHTNESS_LEVELS-1:0] brightness_mask_active,
@@ -14,7 +14,7 @@ module brightness_timeout #(
     output wire output_enable,
     output wire exceeded_overlap_time
 );
-    localparam int unsigned TIMEOUT_WIDTH = $clog2(BASE_TIMEOUT) + BRIGHTNESS_LEVELS;
+    localparam int unsigned TIMEOUT_WIDTH = $clog2(BRIGHTNESS_BASE_TIMEOUT) + BRIGHTNESS_LEVELS;
     wire [TIMEOUT_WIDTH-1:0] brightness_timeout;  /* used to time the output enable period */
     wire [$clog2(BRIGHTNESS_LEVELS+1)-1:0] active_bits = $countones(brightness_mask_active);
     wire one_hot = (active_bits == 1);
@@ -30,7 +30,7 @@ module brightness_timeout #(
         end
     end
 
-    wire [TIMEOUT_WIDTH-1:0] shifted = (TIMEOUT_WIDTH)'(BASE_TIMEOUT << bit_index);
+    wire [TIMEOUT_WIDTH-1:0] shifted = (TIMEOUT_WIDTH)'(BRIGHTNESS_BASE_TIMEOUT << bit_index);
 
     assign brightness_timeout = one_hot ? shifted : {{(TIMEOUT_WIDTH - 1) {1'b0}}, 1'b1};
 
