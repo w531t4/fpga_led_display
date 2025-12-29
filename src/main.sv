@@ -265,9 +265,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     );
 
     matrix_scan #(
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
-        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT),
         .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
         ._UNUSED('d0)
@@ -299,10 +299,10 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     /* the fetch controller */
 
     framebuffer_fetch #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb_f (
         .reset (global_reset_sync),
@@ -364,11 +364,11 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 
     /* the control module */
     control_module #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
-        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
         .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),
         .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
@@ -407,10 +407,10 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     );
 
     multimem #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb (
         .ClockA(clk_root),
@@ -434,10 +434,10 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     );
 `ifdef DOUBLE_BUFFER
     multimem #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb2 (
         .ClockA(clk_root),
@@ -461,10 +461,10 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 `endif
     /* split the pixels and get the current brightness' bit */
     pixel_split #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
-        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) px_top (
         .pixel_data(pixeldata_top),
@@ -478,10 +478,10 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 `endif
     );
     pixel_split #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
-        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) px_bottom (
         .pixel_data(pixeldata_bottom),
