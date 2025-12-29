@@ -289,7 +289,12 @@ module control_module #(
     wire cmd_watchdog_done;
     wire cmd_watchdog_sysreset;
 
-    control_cmd_watchdog cmd_watchdog (
+    control_cmd_watchdog #(
+        .WATCHDOG_SIGNATURE_BITS(params_pkg::WATCHDOG_SIGNATURE_BITS),
+        .WATCHDOG_SIGNATURE_PATTERN(params_pkg::WATCHDOG_SIGNATURE_PATTERN),
+        .WATCHDOG_CONTROL_TICKS(params_pkg::WATCHDOG_CONTROL_TICKS),
+        ._UNUSED('d0)
+    ) cmd_watchdog (
         .reset    (reset),
         .enable   ((cmd_line_state == STATE_CMD_WATCHDOG) && ~data_ready_n),
         .clk      (clk_in),
