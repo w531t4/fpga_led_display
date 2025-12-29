@@ -64,7 +64,18 @@ module tb_main #(
     wire uart_rx_dataready;
 `endif
 
-    main tbi_main (
+    main #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .DIVIDE_CLK_BY_X_FOR_MATRIX(params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX),
+        .PLL_SPEED(params_pkg::PLL_SPEED),
+        .CTRLR_CLK_TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT),
+        .DEBUG_MSGS_PER_SEC_TICKS(params_pkg::DEBUG_MSGS_PER_SEC_TICKS),
+        .DEBUG_TX_UART_TICKS_PER_BIT(params_pkg::DEBUG_TX_UART_TICKS_PER_BIT),
+        ._UNUSED('d0)
+    ) tbi_main (
         .gp11     (clk_pixel),
         .gp12     (row_latch),
         .gp13     (OE),
