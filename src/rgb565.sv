@@ -30,9 +30,9 @@ module rgb565 #(
     wire [11:0] g_prod = green_selected * k;
     wire [10:0] b_prod = blue_selected * k;
 
-    wire [4:0] r5_scaled = k_zero ? 5'd0 : ((r_prod + 11'd32) >> 6);
-    wire [5:0] g6_scaled = k_zero ? 6'd0 : ((g_prod + 12'd32) >> 6);
-    wire [4:0] b5_scaled = k_zero ? 5'd0 : ((b_prod + 11'd32) >> 6);
+    wire [4:0] r5_scaled = k_zero ? 5'd0 : 5'((r_prod + 11'd32) >> 6);
+    wire [5:0] g6_scaled = k_zero ? 6'd0 : 6'((g_prod + 12'd32) >> 6);
+    wire [4:0] b5_scaled = k_zero ? 5'd0 : 5'((b_prod + 11'd32) >> 6);
 
 `ifdef GAMMA
     gamma_correct #(
