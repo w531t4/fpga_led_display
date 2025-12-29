@@ -420,7 +420,13 @@ module main #(
     assign ram_b_data_out = ram_b_data_out_frame1;
 `endif
     /* split the pixels and get the current brightness' bit */
-    pixel_split #() px_top (
+    pixel_split #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) px_top (
         .pixel_data(pixeldata_top),
         .brightness_mask(brightness_mask),
         .brightness_enable(brightness_enable),
@@ -431,7 +437,13 @@ module main #(
         .rgb_output(rgb1)
 `endif
     );
-    pixel_split #() px_bottom (
+    pixel_split #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) px_bottom (
         .pixel_data(pixeldata_bottom),
         .brightness_mask(brightness_mask),
         .brightness_enable(brightness_enable),
