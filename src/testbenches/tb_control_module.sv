@@ -207,6 +207,16 @@ module tb_control_module #(
     always begin
         #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
-    wire _unused_ok = &{1'b0, rxdata_ready_level, 1'b0};
-
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        rxdata_ready_level,
+                        rgb_enable,
+                        brightness_enable,
+                        ram_data_out,
+                        ram_address,
+                        ram_write_enable,
+                        ctrl_busy,
+                        ram_clk_enable,
+                        1'b0};
+    // verilog_format: on
 endmodule

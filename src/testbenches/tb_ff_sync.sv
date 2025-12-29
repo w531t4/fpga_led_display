@@ -59,4 +59,10 @@ module tb_ff_sync #(
     always begin
         #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        sync_level,
+                        sync_pulse,
+                        1'b0};
+    // verilog_format: on
 endmodule

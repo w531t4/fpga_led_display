@@ -74,4 +74,10 @@ module tb_control_cmd_watchdog #(
         divider = !clk ? divider + 'd1 : divider;
         slowclk = (divider == 'd0);
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        subcmd_enable,
+                        done,
+                        1'b0};
+    // verilog_format: on
 endmodule

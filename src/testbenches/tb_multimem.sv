@@ -233,5 +233,9 @@ module tb_multimem #(
         #(SIM_HALF_PERIOD_NS) clk_a <= ~clk_a;
         #(SIM_HALF_PERIOD_NS) clk_b <= ~clk_b;
     end
-
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        ram_b_data_out,
+                        1'b0};
+    // verilog_format: on
 endmodule

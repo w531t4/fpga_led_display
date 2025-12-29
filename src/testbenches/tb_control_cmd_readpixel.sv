@@ -94,4 +94,16 @@ module tb_control_cmd_readpixel #(
     always begin
         #(SIM_HALF_PERIOD_NS) clk <= !clk;
     end
+    // verilog_format: off
+    wire _unused_ok = &{1'b0,
+                        cmd_readpixel_we,
+                        cmd_readpixel_as,
+                        cmd_readpixel_done,
+                        cmd_readpixel_do,
+                        cmd_readpixel_row_addr,
+                        cmd_readpixel_col_addr,
+                        cmd_readpixel_pixel_addr,
+                        junk1,
+                        1'b0};
+    // verilog_format: on
 endmodule
