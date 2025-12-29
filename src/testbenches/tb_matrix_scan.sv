@@ -25,7 +25,12 @@ module tb_matrix_scan #(
     wire [5:0] brightness_mask;
 
 
-    matrix_scan matrix_scan_instance (
+    matrix_scan #(
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) matrix_scan_instance (
         .clk_in(clk),
         .reset(reset),
         .column_address(column_address),
