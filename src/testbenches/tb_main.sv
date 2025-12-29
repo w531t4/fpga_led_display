@@ -6,9 +6,18 @@
 // verilog_format: on
 `include "tb_helper.vh"
 module tb_main #(
+    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
+    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
+    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX,
+    parameter integer unsigned PLL_SPEED = params_pkg::PLL_SPEED,
     parameter integer unsigned ROOT_CLOCK = params_pkg::ROOT_CLOCK,
     parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params_pkg::CTRLR_CLK_TICKS_PER_BIT,
+    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params_pkg::DEBUG_MSGS_PER_SEC_TICKS,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params_pkg::DEBUG_MSGS_PER_SEC_TICKS_SIM,
+    parameter integer unsigned DEBUG_TX_UART_TICKS_PER_BIT = params_pkg::DEBUG_TX_UART_TICKS_PER_BIT,
     parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -65,15 +74,15 @@ module tb_main #(
 `endif
 
     main #(
-        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
-        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
-        .DIVIDE_CLK_BY_X_FOR_MATRIX(params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX),
-        .PLL_SPEED(params_pkg::PLL_SPEED),
-        .CTRLR_CLK_TICKS_PER_BIT(params_pkg::CTRLR_CLK_TICKS_PER_BIT),
-        .DEBUG_MSGS_PER_SEC_TICKS(params_pkg::DEBUG_MSGS_PER_SEC_TICKS),
-        .DEBUG_TX_UART_TICKS_PER_BIT(params_pkg::DEBUG_TX_UART_TICKS_PER_BIT),
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(PIXEL_HEIGHT),
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
+        .DIVIDE_CLK_BY_X_FOR_MATRIX(DIVIDE_CLK_BY_X_FOR_MATRIX),
+        .PLL_SPEED(PLL_SPEED),
+        .CTRLR_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
+        .DEBUG_MSGS_PER_SEC_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
+        .DEBUG_TX_UART_TICKS_PER_BIT(DEBUG_TX_UART_TICKS_PER_BIT),
         ._UNUSED('d0)
     ) tbi_main (
         .gp11     (clk_pixel),
