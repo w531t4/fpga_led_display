@@ -5,7 +5,10 @@
 module brightness_timeout #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
     parameter integer BRIGHTNESS_BASE_TIMEOUT = params_pkg::BRIGHTNESS_BASE_TIMEOUT,
-    parameter integer STATE_TIMEOUT_OVERLAP = 'd67
+    parameter integer STATE_TIMEOUT_OVERLAP = 'd67,
+    // verilator lint_off UNUSEDPARAM
+    parameter integer unsigned _UNUSED = 0
+    // verilator lint_on UNUSEDPARAM
 ) (
     input wire [BRIGHTNESS_LEVELS-1:0] brightness_mask_active,
     input wire clk_in,
