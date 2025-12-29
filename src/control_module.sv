@@ -161,7 +161,12 @@ module control_module #(
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_blankpanel_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_blankpanel_pixel_addr;
 
-    control_cmd_blankpanel cmd_blankpanel (
+    control_cmd_blankpanel #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        ._UNUSED('d0)
+    ) cmd_blankpanel (
         .reset(reset),
         // This command requires no arguments, therefore it can operate at clock speed (no ~data_ready_n)
         .enable(cmd_line_state == STATE_CMD_BLANKPANEL),
