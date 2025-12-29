@@ -246,7 +246,12 @@ module main #(
         .clk_out(clk_matrix)
     );
 
-    matrix_scan matscan1 (
+    matrix_scan #(
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) matscan1 (
         .reset(global_reset_sync),
         .clk_in(clk_matrix),
         .column_address(column_address),
