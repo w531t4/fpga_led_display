@@ -7,7 +7,7 @@
 module tb_brightness_timeout #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
     parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
-    parameter BASE_TIMEOUT = 23,
+    parameter integer BASE_TIMEOUT = 23,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
