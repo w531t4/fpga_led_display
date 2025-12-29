@@ -248,4 +248,5 @@ module new_pll #(
         assign clock_out = clock_in;
     end
 `endif
+    logic _unused_ok = &{1'b0, 1'(SPEED), 1'b0};
 endmodule
