@@ -7,7 +7,7 @@
 module tb_brightness_timeout #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
     parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
-    parameter integer BASE_TIMEOUT = 23,
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = 23,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -19,9 +19,9 @@ module tb_brightness_timeout #(
     wire exceeded_overlap_time;
     wire clk_out;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_mask_active;
-    wire [$clog2(BASE_TIMEOUT) + BRIGHTNESS_LEVELS:0] brightness_timeout;
+    wire [$clog2(BRIGHTNESS_BASE_TIMEOUT) + BRIGHTNESS_LEVELS:0] brightness_timeout;
     brightness_timeout #(
-        .BASE_TIMEOUT(BASE_TIMEOUT)
+        .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT)
     ) btd (
         .clk_in(clk),
         .reset(reset),
