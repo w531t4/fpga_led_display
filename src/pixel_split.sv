@@ -50,19 +50,28 @@ module pixel_split #(
 `endif
 
     /* apply the brightness mask to the gamma-corrected sub-pixel value */
-    brightness b_red (
+    brightness #(
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) b_red (
         .value(red_gamma),
         .mask(brightness_mask),
         .enable(rgb_enable[0]),
         .out(rgb_output[0])
     );
-    brightness b_green (
+    brightness #(
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) b_green (
         .value(green_gamma),
         .mask(brightness_mask),
         .enable(rgb_enable[1]),
         .out(rgb_output[1])
     );
-    brightness b_blue (
+    brightness #(
+        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) b_blue (
         .value(blue_gamma),
         .mask(brightness_mask),
         .enable(rgb_enable[2]),
