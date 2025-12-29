@@ -52,11 +52,12 @@ GTKWAVE_FLAGS:=
 PKG_SOURCES := $(SRC_DIR)/params_pkg.sv $(SRC_DIR)/calc_pkg.sv
 VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
+VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD
-VERILATOR_FILEPARAM_ARGS:=$(SIM_FLAGS) $(PKG_SOURCES) -y $(SRC_DIR) $(VERILATOR_ADDITIONAL_ARGS)
-VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
+VERILATOR_FILEPARAM_ARGS=$(SIM_FLAGS) $(PKG_SOURCES) -y $(SRC_DIR) $(VERILATOR_ADDITIONAL_ARGS)
+VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args --top main $(VSOURCES_WITHOUT_PKGS)
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh'))
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
@@ -130,8 +131,8 @@ $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
 
 lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args
-	cat $(ARTIFACT_DIR)/verilator_args
-	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+	cat $(ARTIFACT_DIR)/verilator_args; printf "\n";
+	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
