@@ -127,7 +127,12 @@ PIXEL_WIDTH
         end
     end
 
-    brightness_timeout btd (
+    brightness_timeout #(
+        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        .BRIGHTNESS_BASE_TIMEOUT(params_pkg::BRIGHTNESS_BASE_TIMEOUT),
+        .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(params_pkg::BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
+        ._UNUSED('d0)
+    ) btd (
         .clk_in(clk_in),
         .reset(reset),
         .row_latch(row_latch),
