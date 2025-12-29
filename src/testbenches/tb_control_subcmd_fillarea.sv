@@ -43,7 +43,12 @@ BYTES_PER_PIXEL
     wire [OUT_BITWIDTH-1:0] data_out;
     logic reset;
 
-    control_subcmd_fillarea subcmd_fillarea (
+    control_subcmd_fillarea #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        ._UNUSED('d0)
+    ) subcmd_fillarea (
         .reset(reset),
         .enable(subcmd_enable),
         .clk(clk),
