@@ -10,6 +10,8 @@
 module tb_control_cmd_watchdog #(
     parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
     parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
+    // TODO: switch WATCHDOG_CONTROL_TICKS to params_pkg::WATCHDOG_CONTROL_TICKS,
+    parameter int unsigned WATCHDOG_CONTROL_TICKS = 16 * 12,
     parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -27,10 +29,9 @@ module tb_control_cmd_watchdog #(
     logic reset;
 
     control_cmd_watchdog #(
-        .WATCHDOG_SIGNATURE_BITS(params_pkg::WATCHDOG_SIGNATURE_BITS),
-        .WATCHDOG_SIGNATURE_PATTERN(params_pkg::WATCHDOG_SIGNATURE_PATTERN),
-        // .WATCHDOG_CONTROL_TICKS(params_pkg::WATCHDOG_CONTROL_TICKS),
-        .WATCHDOG_CONTROL_TICKS(16 * 12),
+        .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
+        .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),
+        .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
     ) cmd_watchdog (
         .reset(reset),
