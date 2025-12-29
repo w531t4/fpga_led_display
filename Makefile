@@ -47,8 +47,8 @@ VVP_FLAGS:=-n -N
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -I$(VINCLUDE_DIR)
 VERILATOR_FILELIST:=$(ARTIFACT_DIR)/verilator_files.f
+VERILATOR_FLAGS:=--lint-only $(SIM_FLAGS) -Wno-fatal -Wall -Wno-TIMESCALEMOD -sv -y $(SRC_DIR) -I$(VINCLUDE_DIR) -f $(VERILATOR_FILELIST)
 
 VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 PKG_SOURCES := $(SRC_DIR)/params_pkg.sv $(SRC_DIR)/calc_pkg.sv
@@ -130,7 +130,7 @@ $(VERILATOR_FILELIST): $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s\n' '$(PKG_SOURCES)' '-y $(SRC_DIR)' '-I$(VINCLUDE_DIR)' > $@
 
 lint: $(ARTIFACT_DIR) $(VERILATOR_FILELIST)
-	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) -f $(VERILATOR_FILELIST) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) --top main $(SRC_DIR)/main.sv |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
