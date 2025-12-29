@@ -15,9 +15,9 @@ module tb_brightness_timeout #(
     logic clk;
     logic reset;
     logic row_latch;
-    wire  output_enable;
-    wire  exceeded_overlap_time;
-    wire  clk_out;
+    wire output_enable;
+    wire exceeded_overlap_time;
+    wire clk_out;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_mask_active;
     wire [$clog2(BASE_TIMEOUT) + BRIGHTNESS_LEVELS:0] brightness_timeout;
     brightness_timeout #(
