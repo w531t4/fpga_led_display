@@ -154,7 +154,10 @@ module control_module #(
 
     wire cmd_readbrightness_done, cmd_readbrightness_be;
     wire [params_pkg::BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
-    control_cmd_readbrightness cmd_readbrightness (
+    control_cmd_readbrightness #(
+        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) cmd_readbrightness (
         .reset(reset),
         .data_in(data_rx_latch),
         .clk(clk_in),
