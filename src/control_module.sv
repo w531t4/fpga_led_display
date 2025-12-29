@@ -222,7 +222,12 @@ module control_module #(
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_fillrect_pixel_addr;
     wire                                  cmd_fillrect_rfd;
 
-    control_cmd_fillrect cmd_fillrect (
+    control_cmd_fillrect #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        ._UNUSED('d0)
+    ) cmd_fillrect (
         .reset           (reset),
         // .enable(cmd_line_state == STATE_CMD_FILLRECT),
         .enable          ((cmd_line_state == STATE_CMD_FILLRECT) && ~data_ready_n),
