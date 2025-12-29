@@ -74,4 +74,6 @@ package params_pkg;
 `endif
     parameter int unsigned PIXEL_HEIGHT = 32;
     parameter int unsigned PIXEL_HALFHEIGHT = 16;
+
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = 10;
 endpackage
