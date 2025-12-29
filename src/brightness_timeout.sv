@@ -4,7 +4,7 @@
 `default_nettype none
 module brightness_timeout #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
-    parameter integer BRIGHTNESS_BASE_TIMEOUT = 10,
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = params_pkg::BRIGHTNESS_BASE_TIMEOUT,
     parameter integer STATE_TIMEOUT_OVERLAP = 'd67
 ) (
     input wire [BRIGHTNESS_LEVELS-1:0] brightness_mask_active,
