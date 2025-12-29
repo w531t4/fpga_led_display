@@ -332,7 +332,14 @@ module main #(
     );
 
     /* the control module */
-    control_module ctrl (
+    control_module #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) ctrl (
         .reset(global_reset),
         .clk_in(clk_root),
         /* clk_root =  133MHZ */

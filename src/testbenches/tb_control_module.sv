@@ -128,7 +128,14 @@ module tb_control_module #(
         .reset(reset)
     );
 
-    control_module control_module_instance (
+    control_module #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        .BRIGHTNESS_LEVELS(params_pkg::BRIGHTNESS_LEVELS),
+        ._UNUSED('d0)
+    ) control_module_instance (
         .reset(reset),
         .clk_in(clk),
         .busy(ctrl_busy),
