@@ -76,4 +76,5 @@ package params_pkg;
     parameter int unsigned PIXEL_HALFHEIGHT = 16;
 
     parameter integer BRIGHTNESS_BASE_TIMEOUT = 10;
+    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = 'd67;
 endpackage
