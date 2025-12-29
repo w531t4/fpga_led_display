@@ -123,7 +123,8 @@ BYTES_PER_PIXEL
         remaining_valid_bytes = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
         subcmd_enable = 0;
         // finish reset for tb
-        @(posedge clk) reset <= ~reset;
+        @(posedge clk);
+        @(posedge clk) reset = ~reset;
 
         @(posedge clk) begin
             subcmd_enable = 1;
