@@ -33,11 +33,10 @@ module fm6126init #(
     localparam      STATE_INIT       = 8'b00000001,
                     STATE1_BEGIN     = 8'b00000010,
                     STATE1_END       = 8'b00000100,
-                    STATE2_PREBEGIN  = 8'b00001000,
-                    STATE2_BEGIN     = 8'b00010000,
-                    STATE2_END       = 8'b00100000,
-                    STATE_FINISH     = 8'b01000000,
-                    STATE_FINISH2    = 8'b10000000;
+                    STATE2_BEGIN     = 8'b00001000,
+                    STATE2_END       = 8'b00010000,
+                    STATE_FINISH     = 8'b00100000,
+                    STATE_FINISH2    = 8'b01000000;
     // End of default setup for RGB Matrix 64x32 panel
     always @(posedge clk_in) begin
         if (reset) begin
