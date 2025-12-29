@@ -116,7 +116,7 @@ module fm6126init #(
             end else if (currentState == STATE_INIT) begin
                 currentState <= STATE1_BEGIN;
                 // not setting clock low, because that happens automatically.
-                widthCounter <= 4'd0;
+                widthCounter <= 'd0;
                 // when widthState becomes all zero, set latch
                 // grow 1'b1 to LED_WIDTH bits in length. See description below
                 widthState <= ({LED_WIDTH{1'b1}}) >> (STAGE1_OFFSET + 1'b1);
