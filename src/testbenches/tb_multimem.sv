@@ -28,7 +28,13 @@ module tb_multimem #(
     logic ram_a_reset;
     logic ram_b_reset;
 
-    multimem A (
+    multimem #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        ._UNUSED('d0)
+    ) A (
         .DataInA(ram_a_data_in),
         .AddressA(ram_a_address),
         .AddressB(ram_b_address),

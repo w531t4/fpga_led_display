@@ -383,7 +383,13 @@ module main #(
 `endif
     );
 
-    multimem fb (
+    multimem #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        ._UNUSED('d0)
+    ) fb (
         .ClockA(clk_root),
         .AddressA(ram_a_address),
         .DataInA(ram_a_data_in),
@@ -404,7 +410,13 @@ module main #(
         .ClockEnB(ram_b_clk_enable)
     );
 `ifdef DOUBLE_BUFFER
-    multimem fb2 (
+    multimem #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        .PIXEL_HALFHEIGHT(params_pkg::PIXEL_HALFHEIGHT),
+        ._UNUSED('d0)
+    ) fb2 (
         .ClockA(clk_root),
         .AddressA(ram_a_address),
         .DataInA(ram_a_data_in),
