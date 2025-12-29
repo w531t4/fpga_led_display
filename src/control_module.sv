@@ -101,7 +101,12 @@ module control_module #(
     wire [_NUM_COLUMN_ADDRESS_BITS-1:0] cmd_readrow_col_addr;
     wire [_NUM_PIXELCOLORSELECT_BITS-1:0] cmd_readrow_pixel_addr;
 
-    control_cmd_readrow cmd_readrow (
+    control_cmd_readrow #(
+        .BYTES_PER_PIXEL(params_pkg::BYTES_PER_PIXEL),
+        .PIXEL_HEIGHT(params_pkg::PIXEL_HEIGHT),
+        .PIXEL_WIDTH(params_pkg::PIXEL_WIDTH),
+        ._UNUSED('d0)
+    ) cmd_readrow (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
         .reset(reset),
         .data_in(data_rx_latch),
