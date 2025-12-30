@@ -45,6 +45,7 @@ module control_cmd_readbrightness #(
                     data_out <= {BRIGHTNESS_LEVELS{1'b0}};
                     state <= STATE_READY;
                 end
+                default: state <= state;
             endcase
         end
     end
