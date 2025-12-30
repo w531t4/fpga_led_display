@@ -4,7 +4,7 @@
 module ff_sync #(
     // Double flop synchronizer with rising edge detection
     // verilator lint_off UNUSEDPARAM
-    parameter INIT_STATE = 1,
+    parameter logic INIT_STATE = 1,
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (

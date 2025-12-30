@@ -67,9 +67,9 @@ module tb_spi;
     wire SLVdone;
     wire [7:0] SLVrdata;
 
-    parameter PERIOD = 50;
+    parameter integer unsigned PERIOD = 50;
     parameter real DUTY_CYCLE = 0.5;
-    parameter OFFSET = 100;
+    parameter integer unsigned OFFSET = 100;
     initial begin  // Clock process for clk
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);

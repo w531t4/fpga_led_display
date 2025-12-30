@@ -9,7 +9,7 @@
 
 module uart_rx #(
     /* BEGIN PARAMETERS LIST */
-    parameter TICKS_PER_BIT = 32,
+    parameter integer unsigned TICKS_PER_BIT = 32,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -24,8 +24,8 @@ module uart_rx #(
     output logic o_busy
 );
     /* END MODULE IO LIST */
-    localparam TICKS_TO_BIT = $clog2(TICKS_PER_BIT)'(TICKS_PER_BIT - 1);
-    localparam TICKS_TO_MIDLE = $clog2(TICKS_PER_BIT)'(TICKS_TO_BIT / 2);
+    localparam logic [$clog2(TICKS_PER_BIT)-1:0] TICKS_TO_BIT = $clog2(TICKS_PER_BIT)'(TICKS_PER_BIT - 1);
+    localparam logic [$clog2(TICKS_PER_BIT)-1:0] TICKS_TO_MIDLE = $clog2(TICKS_PER_BIT)'(TICKS_TO_BIT / 2);
 
     logic [7:0] rx_data;
     assign o_rxdata = rx_data;
@@ -48,11 +48,11 @@ module uart_rx #(
     wire                              bit_counter_ovf_signal = (bit_counter[3]);  // if equals >= 8
     logic [4:0] currentState, nextState;
 
-    localparam    STATE_IDLE            = 5'b00001,
-                  STATE_RECEIVE_START   = 5'b00010,
-                  STATE_RECEIVE_DATA    = 5'b00100,
-                  STATE_RECEIVE_STOP    = 5'b01000,
-                  STATE_DONE            = 5'b10000;
+    localparam logic [4:0]   STATE_IDLE            = 5'b00001,
+                             STATE_RECEIVE_START   = 5'b00010,
+                             STATE_RECEIVE_DATA    = 5'b00100,
+                             STATE_RECEIVE_STOP    = 5'b01000,
+                             STATE_DONE            = 5'b10000;
 
     //Init registers for testbench simulation
     initial begin

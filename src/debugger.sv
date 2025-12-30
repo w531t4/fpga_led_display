@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module debugger #(
-    parameter DIVIDER_TICKS = 28'd67000000,
-    parameter DATA_WIDTH = 8,
+    parameter integer unsigned DIVIDER_TICKS = 28'd67000000,
+    parameter integer unsigned DATA_WIDTH = 8,
     // 22MHz / 191 = 115183 baud
-    parameter UART_TICKS_PER_BIT = 191,
+    parameter integer unsigned UART_TICKS_PER_BIT = 191,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -34,7 +34,7 @@ module debugger #(
             debug_start <= 0;
             count <= 0;
         end else begin
-            if (count == DIVIDER_TICKS - 1) begin
+            if (types_pkg::uint_t'(count) == DIVIDER_TICKS - 1) begin
                 debug_start <= 1;
                 count <= 0;
             end else begin
@@ -55,19 +55,19 @@ module debugger #(
     // i'm guessing we're doing this in an attempt to not spam negotiate on the
     // serial channel. we're looking roughly 22times a second?. It's been awhie since
     // i last looked at this.
-    localparam STATE_IDLE = 5'b00001, STATE_START = 5'b00010, STATE_SEND = 5'b00100, STATE_WAIT = 5'b01000;
+    localparam logic [4:0] STATE_IDLE = 5'b00001, STATE_START = 5'b00010, STATE_SEND = 5'b00100, STATE_WAIT = 5'b01000;
     always @(posedge clk_in) begin
         if (reset) begin
             do_close <= 0;
             data_copy <= 0;
             currentState <= STATE_IDLE;
-            current_position <= DATA_WIDTH;
+            current_position <= ($clog2(DATA_WIDTH))'(DATA_WIDTH);
             tx_start <= 0;
             debug_bits <= 0;
         end else begin
             //            if (debug_start && currentState == STATE_IDLE) begin
             if (debug_start && currentState == STATE_IDLE) begin
-                current_position <= DATA_WIDTH;
+                current_position <= ($clog2(DATA_WIDTH))'(DATA_WIDTH);
                 data_copy <= data_in[DATA_WIDTH-1:0];
                 currentState <= STATE_START;
             end else if (currentState != STATE_IDLE) begin

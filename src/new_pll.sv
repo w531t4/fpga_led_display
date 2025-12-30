@@ -10,7 +10,7 @@
 `timescale 1ns / 10ps
 `endif
 module new_pll #(
-    parameter SPEED = 0,  // 0 - 16mhz, 1 - 50mhz, 2 - 90mhz, 3 - 100mhz, 4 - 110mhz - else use the incoming 25mhz clock
+    parameter integer unsigned SPEED = 0,  // 0 - 16mhz, 1 - 50mhz, 2 - 90mhz, 3 - 100mhz, 4 - 110mhz - else use the incoming 25mhz clock
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

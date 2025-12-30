@@ -24,19 +24,19 @@ module fm6126init #(
     logic [ 5:0] widthCounter;  // 16 bits
 
     //TODO: how do i not manually specify 64 here?
-    localparam LED_WIDTH = 'd64;  // 64 pixel width led display
+    localparam integer unsigned LED_WIDTH = 'd64;  // 64 pixel width led display
     logic [LED_WIDTH - 1:0] widthState;
 
-    localparam STAGE1_OFFSET = 'd12, STAGE2_OFFSET = 'd13;
+    localparam integer unsigned STAGE1_OFFSET = 'd12, STAGE2_OFFSET = 'd13;
 
 
-    localparam      STATE_INIT       = 8'b00000001,
-                    STATE1_BEGIN     = 8'b00000010,
-                    STATE1_END       = 8'b00000100,
-                    STATE2_BEGIN     = 8'b00001000,
-                    STATE2_END       = 8'b00010000,
-                    STATE_FINISH     = 8'b00100000,
-                    STATE_FINISH2    = 8'b01000000;
+    localparam  logic [7:0]    STATE_INIT       = 8'b00000001,
+                               STATE1_BEGIN     = 8'b00000010,
+                               STATE1_END       = 8'b00000100,
+                               STATE2_BEGIN     = 8'b00001000,
+                               STATE2_END       = 8'b00010000,
+                               STATE_FINISH     = 8'b00100000,
+                               STATE_FINISH2    = 8'b01000000;
     // End of default setup for RGB Matrix 64x32 panel
     always @(posedge clk_in) begin
         if (reset) begin

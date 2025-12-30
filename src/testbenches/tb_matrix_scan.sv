@@ -16,7 +16,7 @@ module tb_matrix_scan #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam ADJUSTED_CLOCK = SIM_HALF_PERIOD_NS * DIVIDE_CLK_BY_X_FOR_MATRIX;
+    localparam real ADJUSTED_CLOCK = SIM_HALF_PERIOD_NS * DIVIDE_CLK_BY_X_FOR_MATRIX;
     logic clk;
     logic reset;
     wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;

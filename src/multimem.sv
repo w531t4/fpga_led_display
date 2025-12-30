@@ -53,7 +53,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     //      0 pixelcolorselect = 0
     //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
 
-    localparam LANES = (1 << calc_pkg::num_structure_bits(
+    localparam integer unsigned LANES = (1 << calc_pkg::num_structure_bits(
         PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     ));
     wire [LANES*calc_pkg::num_data_a_bits()-1:0] qb_lanes_w;

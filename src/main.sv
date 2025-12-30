@@ -113,7 +113,7 @@ module main #(
 
 `ifdef DEBUGGER
     // self
-    localparam debug_data_width = 32;
+    localparam integer unsigned debug_data_width = 32;
     wire debugger_debug_start;
     wire [4:0] debugger_current_state;
     wire debugger_do_close;

@@ -41,9 +41,9 @@
  START=1- starts data transmission cdiv 0=clk/4 1=/8   2=/16  3=/32
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 module spi_master #(
-    parameter idle = 2'b00,
-    parameter send = 2'b10,
-    parameter finish = 2'b11,
+    parameter logic [1:0] idle = 2'b00,
+    parameter logic [1:0] send = 2'b10,
+    parameter logic [1:0] finish = 2'b11,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

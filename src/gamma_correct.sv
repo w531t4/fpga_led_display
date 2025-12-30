@@ -3,9 +3,9 @@
 `default_nettype none
 module gamma_correct #(
     // verilator lint_off UNUSEDPARAM
-    parameter IN_BITS  = 5,
-    parameter OUT_BITS = 8,
-    parameter _UNUSED  = 0
+    parameter integer unsigned IN_BITS  = 5,
+    parameter integer unsigned OUT_BITS = 8,
+    parameter integer unsigned _UNUSED  = 0
     // verilator lint_on UNUSEDPARAM
 ) (
     input  [ IN_BITS-1:0] in,
