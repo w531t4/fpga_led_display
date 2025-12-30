@@ -58,6 +58,8 @@ module tb_control_module #(
     //logic tb_clk_baudrate;
 
 `ifdef SPI
+    wire [7:0] unused_rdata;
+    wire unused_sdout;
     spi_master #() spimaster (
         .rstb (~reset),
         .clk  (clk),
@@ -70,17 +72,17 @@ module tb_control_module #(
         .sck  (spi_clk),            // clock to send to slave
         .dout (rxdata),             // data to send to slave
         .done (spi_master_txdone),
-        .rdata()
+        .rdata(unused_rdata)
     );
     spi_slave spislave (
         .rstb (~reset),
         .ten  (1'b0),                 // transmit enable, 0 = disabled
-        .tdata(),
+        .tdata(8'b0),
         .mlb  (1'b1),                 // shift msb first
         .ss   (spi_cs),
         .sck  (spi_clk),
         .sdin (rxdata),               // data coming from master
-        .sdout(),
+        .sdout(unused_sdout),
         .done (rxdata_ready),         // data ready
         .rdata(rxdata_to_controller)  // data
     );
@@ -88,6 +90,8 @@ module tb_control_module #(
     wire _unused_ok_ifdef_spi = &{1'b0,
                                   1'(CTRLR_CLK_TICKS_PER_BIT),
                                   1'(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+                                  unused_rdata,
+                                  unused_sdout,
                                   1'b0};
     // verilog_format: on
 `else
