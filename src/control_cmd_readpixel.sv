@@ -33,8 +33,8 @@ module control_cmd_readpixel #(
         STATE_COLUMN_CAPTURE,
         STATE_READ_PIXELBYTES,
         STATE_DONE
-    } ctrl_fsm;
-    ctrl_fsm state;
+    } ctrl_fsm_t;
+    ctrl_fsm_t state;
     logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] column_bits;
     logic [safe_bits_needed_for_column_byte_counter-1:0] column_byte_counter;
 

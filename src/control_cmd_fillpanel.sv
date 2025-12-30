@@ -30,9 +30,9 @@ module control_cmd_fillpanel #(
         STATE_RUNNING,
         STATE_PREDONE,
         STATE_DONE
-    } ctrl_fsm;
+    } ctrl_fsm_t;
     logic local_reset;
-    ctrl_fsm state;
+    ctrl_fsm_t state;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
     logic [(BYTES_PER_PIXEL*8)-1:0] selected_color;

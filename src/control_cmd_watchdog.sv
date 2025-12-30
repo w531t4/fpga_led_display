@@ -22,8 +22,8 @@ module control_cmd_watchdog #(
     typedef enum {
         STATE_SIG_CAPTURE,
         STATE_DONE
-    } ctrl_fsm;
-    ctrl_fsm state;
+    } ctrl_fsm_t;
+    ctrl_fsm_t state;
     logic [WATCHDOG_SIGNATURE_BITS-1:0] cache;
     logic [$clog2(WATCHDOG_CONTROL_TICKS)-1:0] watchdog_counter;
     logic [$clog2(WATCHDOG_SIGBYTES)-1:0] sig_byte_counter;
