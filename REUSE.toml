@@ -12,6 +12,9 @@ path = [
     ".pre-commit-config.yaml",
     ".toolchain-version",
     ".python-requirements",
+    ".verilator_lint",
+    ".vscode/settings.json",
+    ".devcontainer/devcontainer.json",
     ".python-version"
 ]
 SPDX-FileCopyrightText = "2025 Aaron White <w531t4@gmail.com>"
