@@ -63,7 +63,7 @@ module tb_spi;
     wire Mdone;
     wire [7:0] Mrdata;
     reg ten = 1'b0;
-    reg [7:0] s_tdata = 8'b00000000;
+    reg [7:0] s_tdata;
     wire SLVdone;
     wire [7:0] SLVrdata;
 
@@ -75,6 +75,7 @@ module tb_spi;
         $dumpfile(`DUMP_FILE_NAME);
 `endif
         $dumpvars(0, tb_spi);
+        s_tdata = 8'b00000000;
         #OFFSET;
         forever begin
             clk = 1'b0;
