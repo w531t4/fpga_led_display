@@ -43,7 +43,7 @@ module tb_debugger #(
         .debug_uart_rx_in(rx_line2),
         .currentState(_unused_ok_main[4:0]),
         .tx_start(_unused_ok_main[5]),
-        .current_position(_unused_ok_main[11:6]),
+        .current_position(_unused_ok_main[10:6]),
         .debug_command(_unused_ok_main[19:12]),
         .debug_command_pulse(_unused_ok_main[20]),
         .debug_command_busy(_unused_ok_main[21]),
