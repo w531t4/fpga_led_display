@@ -105,6 +105,7 @@ module tb_control_cmd_readrow #(
                         cmd_readrow_row_addr,
                         cmd_readrow_col_addr,
                         cmd_readrow_pixel_addr,
+                        myled_row,
                         junk1,
                         1'b0};
     // verilog_format: on

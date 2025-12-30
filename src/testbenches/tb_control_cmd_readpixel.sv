@@ -103,6 +103,7 @@ module tb_control_cmd_readpixel #(
                         cmd_readpixel_row_addr,
                         cmd_readpixel_col_addr,
                         cmd_readpixel_pixel_addr,
+                        myled_row,
                         junk1,
                         1'b0};
     // verilog_format: on
