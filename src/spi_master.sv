@@ -82,7 +82,7 @@ module spi_master #(
         case (cur)
             idle: begin
                 if (start == 1) begin
-                    case (cdiv)
+                    unique case (cdiv)
                         2'b00: mid = 2;
                         2'b01: mid = 4;
                         2'b10: mid = 8;
