@@ -66,6 +66,7 @@ module tb_main #(
 `else
     wire uart_rx_dataready;
 `endif
+    wire [12:0] _unused_output;
 
     main #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -97,33 +98,39 @@ module tb_main #(
         .gp14     (rxdata),
         .gp16     (debugger_txout),
         .gp15     (debugger_rxin),
-        .gn11     (),
-        .gn12     (),
-        .gn13     (),
-        .gn7      (),
-        .gn8      (),
-        .gn9      (),
-        .gn10     (),
-        .gn0      (),
-        .gn1      (),
-        .gn2      (),
-        .gn3      (),
-        .gn4      (),
-        .gn5      ()
+        .gn11     (_unused_output[0]),
+        .gn12     (_unused_output[1]),
+        .gn13     (_unused_output[2]),
+        .gn7      (_unused_output[3]),
+        .gn8      (_unused_output[4]),
+        .gn9      (_unused_output[5]),
+        .gn10     (_unused_output[6]),
+        .gn0      (_unused_output[7]),
+        .gn1      (_unused_output[8]),
+        .gn2      (_unused_output[9]),
+        .gn3      (_unused_output[10]),
+        .gn4      (_unused_output[11]),
+        .gn5      (_unused_output[12])
 `ifdef SPI,
 `ifdef SPI_ESP32
-        .sd_d     ({3'b0, rxdata}),  // sd_d[0]=mosi
-        .sd_clk   (spi_clk),         // clk
-        .sd_cmd   (spi_cs)           // ce
+        .sd_d     ({3'b0, rxdata}),      // sd_d[0]=mosi
+        .sd_clk   (spi_clk),             // clk
+        .sd_cmd   (spi_cs)               // ce
 `else
-        .gp17     (rxdata),          // spi miso
+        .gp17     (rxdata),              // spi miso
         //.gp18()       // spi_mosi
-        .gp19     (spi_clk),         // spi_clk
-        .gp20     (spi_cs)           // spi_cs
+        .gp19     (spi_clk),             // spi_clk
+        .gp20     (spi_cs)               // spi_cs
 `endif
 `endif
     );
+    // verilog_format: off
+    wire _unused_ok_main = &{1'b0,
+                             _unused_output,
+                             1'b0};
+    // verilog_format: on
 `ifdef SPI
+    wire [7:0] _unused_ok_rdata;
     spi_master #() spimaster (
         .rstb (~reset),
         .clk  (clk && spi_clk_en),
@@ -136,7 +143,7 @@ module tb_main #(
         .sck  (spi_clk),            // clock to send to slave
         .dout (rxdata),             // data to send to slave
         .done (spi_master_txdone),
-        .rdata()
+        .rdata(_unused_ok_rdata)
     );
     // verilog_format: off
     wire _unused_ok_ifdef_spi = &{1'b0,
