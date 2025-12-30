@@ -1,6 +1,12 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-// multimem.sv
+
+// multimem: A banked framebuffer RAM
+//      - on ClockA, one byte written to single lane (subpanel + pixel‑color select) selected by AddressA
+//      - on ClockB:
+//          - AddressB reads that address from all lanes in parallel [2‑cycle read]
+//          - Concatenates the data read from lanes into QB (via mem_lane)
+
 `default_nettype none
 module multimem #(
     parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,

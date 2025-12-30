@@ -1,5 +1,12 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
+// mem_lane: Single‑lane dual‑clock byte RAM
+//      - writes on clka when enabled
+//      - on clka, writes dia when enabled
+//      - on clkb:
+//          - outputs dob after two pipeline stages
+//          - rstb forces dob to zero
+//      - used as the per‑lane storage block in multimem
 `default_nettype none (* keep_hierarchy = "yes" *)
 module mem_lane #(
     parameter integer ADDR_BITS = 11,
