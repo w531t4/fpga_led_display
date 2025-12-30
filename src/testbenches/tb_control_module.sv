@@ -137,7 +137,7 @@ module tb_control_module #(
         .sync_pulse(rxdata_ready_pulse),
         .reset(reset)
     );
-
+    wire [2:0] _unused_ok_main;
     control_module #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
@@ -160,6 +160,13 @@ module tb_control_module #(
 `endif
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
+        .ready_for_data(_unused_ok_main[0]),
+`ifdef DOUBLE_BUFFER
+        .frame_select(_unused_ok_main[1]),
+`endif
+`ifdef USE_WATCHDOG
+        .watchdog_reset(_unused_ok_main[2]),
+`endif
         //20220106
         //.ram_data_in(ram_data_in),
         .ram_data_out(ram_data_out),
