@@ -138,6 +138,11 @@ module tb_main #(
         .done (spi_master_txdone),
         .rdata()
     );
+    // verilog_format: off
+    wire _unused_ok_ifdef_spi = &{1'b0,
+                                  1'(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+                                  1'b0};
+    // verilog_format: on
 `else
     debugger #(
         .DATA_WIDTH($bits(myled_row)),
