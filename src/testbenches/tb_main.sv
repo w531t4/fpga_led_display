@@ -66,7 +66,7 @@ module tb_main #(
 `else
     wire uart_rx_dataready;
 `endif
-    wire [12:0] _unused_output;
+    wire [13:0] _unused_output;
 
     main #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -110,7 +110,8 @@ module tb_main #(
         .gn2      (_unused_output[9]),
         .gn3      (_unused_output[10]),
         .gn4      (_unused_output[11]),
-        .gn5      (_unused_output[12])
+        .gn5      (_unused_output[12]),
+        .gn14     (_unused_output[13])
 `ifdef SPI,
 `ifdef SPI_ESP32
         .sd_d     ({3'b0, rxdata}),      // sd_d[0]=mosi
