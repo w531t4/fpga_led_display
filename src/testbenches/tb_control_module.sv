@@ -84,6 +84,12 @@ module tb_control_module #(
         .done (rxdata_ready),         // data ready
         .rdata(rxdata_to_controller)  // data
     );
+    // verilog_format: off
+    wire _unused_ok_ifdef_spi = &{1'b0,
+                                  1'(CTRLR_CLK_TICKS_PER_BIT),
+                                  1'(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+                                  1'b0};
+    // verilog_format: on
 `else
     uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
