@@ -68,7 +68,7 @@ module tb_debugger #(
     always @(posedge tb_clk_baudrate) begin
         if (i == 'd10) begin
             rx_line2 <= 1'b0;
-            if (j >= ($bits(mystring) - 8)) begin
+            if (j >= $bits(j)'($bits(mystring) - 8)) begin
                 j <= 'd0;
             end else begin
                 j <= j + 'd8;
@@ -81,7 +81,7 @@ module tb_debugger #(
             rx_line2 <= 1'b1;
             i <= i + 1;
         end else begin
-            rx_line2 <= mystring[i+j];
+            rx_line2 <= mystring[$bits(j)'(i)+j];
             i <= i + 1;
         end
     end
