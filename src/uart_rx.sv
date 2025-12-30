@@ -74,6 +74,7 @@ module uart_rx #(
         end
     end
 
+    // verilog_lint: waive-start always-comb
     always @(*) begin
         case (currentState)
             default: begin
@@ -131,6 +132,7 @@ module uart_rx #(
             end  // -- END STATE_DONE --
         endcase
     end
+    // verilog_lint: waive-stop always-comb
 
     // assign bit_ticks_ovf_signal2 = bit_ticks_ovf_signal;
     // assign bit_counter_ovf_signal2 = bit_counter_ovf_signal;
