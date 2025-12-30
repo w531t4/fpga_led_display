@@ -267,7 +267,7 @@ module tb_main #(
         cmd_line_state_seq_done = 1'b0;
         for (idx = 0; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
             expected = cmd_line_state_expected(idx);
-            `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state === expected, CMD_LINE_STATE_STEP_CYCLES)
+            `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state === expected, int'(CMD_LINE_STATE_STEP_CYCLES))
             $display("cmd_line_state[%0d] expected %0d observed %0d at %0t", idx, expected,
                      tb_main.tbi_main.ctrl.cmd_line_state, $time);
         end
