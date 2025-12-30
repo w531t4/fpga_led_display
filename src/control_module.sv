@@ -59,13 +59,13 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 `ifdef USE_WATCHDOG,
         STATE_CMD_WATCHDOG         // 8
 `endif
-    } ctrl_fsm;
+    } ctrl_fsm_t;
     logic [7:0] data_rx_latch;
     logic ready_for_data_logic;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
-    ctrl_fsm cmd_line_state;
+    ctrl_fsm_t cmd_line_state;
     logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;  // For 32 bit high displays, [4:0]
     logic [calc_pkg::num_column_address_bits(
 PIXEL_WIDTH

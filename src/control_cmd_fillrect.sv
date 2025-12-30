@@ -40,8 +40,8 @@ module control_cmd_fillrect #(
         STATE_RUNNING,         // 6
         STATE_PREDONE,         // 7
         STATE_DONE             // 8
-    } ctrl_fsm;
-    ctrl_fsm state;
+    } ctrl_fsm_t;
+    ctrl_fsm_t state;
     logic local_reset;
     // verilator lint_off UNUSEDSIGNAL
     logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] x1;

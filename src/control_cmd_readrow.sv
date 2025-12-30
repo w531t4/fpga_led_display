@@ -28,8 +28,8 @@ module control_cmd_readrow #(
         STATE_ROW_PRIMEMEMWRITE,
         STATE_READ_ROWCONTENT,
         STATE_DONE
-    } ctrl_fsm;
-    ctrl_fsm state;
+    } ctrl_fsm_t;
+    ctrl_fsm_t state;
     always @(posedge clk) begin
         if (reset) begin
             data_out <= 8'd0;

@@ -48,8 +48,8 @@ module control_subcmd_fillarea #(
         STATE_ROW_PRIMEMEMWRITE,
         STATE_ROW_MEMWRITE,
         STATE_WAIT_FOR_RESET
-    } ctrl_fsm;
-    ctrl_fsm state;
+    } ctrl_fsm_t;
+    ctrl_fsm_t state;
     always @(posedge clk) begin
         if (reset) begin
             data_out <= 8'd0;
