@@ -10,6 +10,7 @@ SPDX-License-Identifier = "CC0-1.0"
 [[annotations]]
 path = [
     ".pre-commit-config.yaml",
+    ".toolchain-version",
     ".python-requirements",
     ".python-version"
 ]

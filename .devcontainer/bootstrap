@@ -13,7 +13,22 @@ uv pip install \
   colorlog \
   --upgrade \
   --config-settings editable_mode=compat
-python3 src/scripts/pull_oss_cad_suite_release.py --tag 2025-12-18 \
+
+DEFAULT_TOOLCHAIN_TAG=2025-12-18
+TOOLCHAIN_TAG=$DEFAULT_TOOLCHAIN_TAG
+if [ -f ".toolchain-version" ]; then
+  TOOLCHAIN_TAG="$(tr -d ' \t\r\n' < .toolchain-version)"
+  if [ -z "$TOOLCHAIN_TAG" ]; then
+    TOOLCHAIN_TAG=$DEFAULT_TOOLCHAIN_TAG
+  else
+    case "$TOOLCHAIN_TAG" in
+      [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) ;;
+      *) TOOLCHAIN_TAG=$DEFAULT_TOOLCHAIN_TAG ;;
+    esac
+  fi
+fi
+
+python3 src/scripts/pull_oss_cad_suite_release.py --tag "$TOOLCHAIN_TAG" \
                                                   --tarball \
                                                   --auto \
                                                   --extract \
