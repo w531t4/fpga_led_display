@@ -26,7 +26,7 @@ module brightness_timeout #(
     // Priority encoder
     integer i;
     reg [$clog2(BRIGHTNESS_LEVELS)-1:0] bit_index;
-    always @* begin
+    always_comb begin
         bit_index = 0;
         for (i = BRIGHTNESS_LEVELS - 1; i >= 0; i = i - 1) begin
             if (brightness_mask_active[i]) bit_index = ($clog2(BRIGHTNESS_LEVELS))'(i);

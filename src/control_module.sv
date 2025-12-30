@@ -322,7 +322,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     assign watchdog_reset = cmd_watchdog_sysreset;
 `endif
 
-    always @(*) begin
+    always_comb begin
         cmd_line_addr_row = {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
         cmd_line_addr_col = {calc_pkg::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
         cmd_line_pixelselect_num = {calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};

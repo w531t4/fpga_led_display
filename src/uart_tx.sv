@@ -53,6 +53,7 @@ module uart_tx #(
         ticks_counter = 0;
     end
 
+    // verilog_lint: waive-start always-comb
     always @(*) begin
         case (currentState)
             default: begin
@@ -109,6 +110,7 @@ module uart_tx #(
 
         endcase
     end
+    // verilog_lint: waive-stop always-comb
 
     always @(posedge i_clk) begin
         currentState <= nextState;
