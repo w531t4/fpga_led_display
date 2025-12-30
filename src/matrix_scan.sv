@@ -101,7 +101,7 @@ PIXEL_WIDTH
     always @(negedge clk_in) begin
         if (reset) begin
             clk_pixel_en <= 1'b1;
-            row_latch_state <= 2'b1;
+            row_latch_state <= 2'b01;
             brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
             brightness_mask_active <= {BRIGHTNESS_LEVELS{1'b0}};
             // 4'd0
@@ -149,7 +149,7 @@ PIXEL_WIDTH
     /* shift the state advance signal into the bitfield */
     always @(posedge clk_in) begin
         if (reset) begin
-            state <= 2'b1;
+            state <= 2'b01;
         end else begin
             state <= {state[0], state_advance};
         end
