@@ -24,7 +24,7 @@ module new_pll #(
     assign locked = 1'b1;
 `else
     wire clkfb;
-    if (SPEED == 0) begin
+    if (SPEED == 0) begin : g_speed0
         // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 16 -n pll --highres --file abc
         (* FREQUENCY_PIN_CLKI="25" *)
         (* FREQUENCY_PIN_CLKOS="16" *)
@@ -69,7 +69,7 @@ module new_pll #(
             .ENCLKOP(1'b0),
             .LOCK(locked)
         );
-    end else if (SPEED == 1) begin
+    end else if (SPEED == 1) begin : g_speed1
         // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 50 -n pll --highres --file abc
         (* FREQUENCY_PIN_CLKI="25" *)
         (* FREQUENCY_PIN_CLKOS="50" *)
@@ -114,7 +114,7 @@ module new_pll #(
             .ENCLKOP(1'b0),
             .LOCK(locked)
         );
-    end else if (SPEED == 2) begin
+    end else if (SPEED == 2) begin : g_speed2
         // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 90 -n pll --highres --file abc
         (* FREQUENCY_PIN_CLKI="25" *)
         (* FREQUENCY_PIN_CLKOS="90" *)
@@ -159,7 +159,7 @@ module new_pll #(
             .ENCLKOP(1'b0),
             .LOCK(locked)
         );
-    end else if (SPEED == 3) begin
+    end else if (SPEED == 3) begin : g_speed3
         // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 100 -n pll --highres --file abc
         (* FREQUENCY_PIN_CLKI="25" *)
         (* FREQUENCY_PIN_CLKOS="100" *)
@@ -204,7 +204,7 @@ module new_pll #(
             .ENCLKOP(1'b0),
             .LOCK(locked)
         );
-    end else if (SPEED == 4) begin
+    end else if (SPEED == 4) begin : g_speed4
         (* FREQUENCY_PIN_CLKI="25" *)
             (* FREQUENCY_PIN_CLKOS="110" *)
             (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
@@ -245,7 +245,7 @@ module new_pll #(
             .ENCLKOP(1'b0),
             .LOCK(locked)
         );
-    end else begin
+    end else begin : g_speedelse
         assign clock_out = clock_in;
     end
 `endif
