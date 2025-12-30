@@ -60,7 +60,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 
     genvar i;
     generate
-        for (i = 0; i < LANES; i = i + 1) begin : G
+        for (i = 0; i < LANES; i = i + 1) begin : g_lane
             wire [calc_pkg::num_structure_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] lane_idx_from_addr = {
