@@ -118,7 +118,7 @@ module main #(
     wire [4:0] debugger_current_state;
     wire debugger_do_close;
     wire debugger_tx_start;
-    wire [$clog2(debug_data_width):0] debugger_current_position;
+    wire [$clog2(debug_data_width)-1:0] debugger_current_position;
     // from controller
     wire [3:0] cmd_line_state2;
     wire ram_access_start;

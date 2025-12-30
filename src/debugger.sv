@@ -19,14 +19,14 @@ module debugger #(
     output logic [4:0] currentState,
     output logic do_close,
     output logic tx_start,
-    output logic [$clog2(DATA_WIDTH):0] current_position,
+    output logic [$clog2(DATA_WIDTH)-1:0] current_position,
     output [7:0] debug_command,
     output debug_command_pulse,
     output debug_command_busy
 );
 
     logic [7:0] debug_bits;
-    logic [$clog2(DIVIDER_TICKS):0] count;
+    logic [$clog2(DIVIDER_TICKS)-1:0] count;
 
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in) begin
