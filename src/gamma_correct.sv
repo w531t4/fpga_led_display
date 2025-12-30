@@ -12,7 +12,7 @@ module gamma_correct #(
     output [OUT_BITS-1:0] out
 );
 
-    reg [7:0] gamma_lut[0:(2**IN_BITS)-1];
+    reg [7:0] gamma_lut[(1 << IN_BITS)];
     wire [OUT_BITS-1:0] color_gamma = gamma_lut[in][7-:OUT_BITS];
     assign out = color_gamma;
     initial $readmemh($sformatf("src/memory/gamma_%0dbit.mem", IN_BITS), gamma_lut);
