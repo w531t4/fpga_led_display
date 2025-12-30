@@ -20,8 +20,8 @@ module tb_debugger #(
     logic [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
     wire tb_clk_baudrate;
     logic rx_line2;
-    logic [3:0] i = 'd0;
-    logic [10:0] j = 'd0;
+    logic [3:0] i;
+    logic [10:0] j;
     wire [22:0] _unused_ok_main;
     clock_divider #(
         .CLK_DIV_COUNT(600)
@@ -55,6 +55,8 @@ module tb_debugger #(
         $dumpfile(`DUMP_FILE_NAME);
 `endif
         $dumpvars(0, tb_debugger);
+        i = 'd0;
+        j = 'd0;
         clk = 0;
         reset = 0;
         rx_line2 = 0;
