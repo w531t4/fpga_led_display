@@ -24,13 +24,15 @@ module mem_lane #(
     input  wire [ADDR_BITS-1:0] addrb,
     output reg  [       DW-1:0] dob
 );
+    localparam int DEPTH = (1 << ADDR_BITS);
+
     // Force BRAM, avoid hazard glue
     (* ram_style="block", no_rw_check *)
-    reg [DW-1:0] mem[0:(1<<ADDR_BITS)-1];
+    reg [DW-1:0] mem[DEPTH];
 
     // synthesis translate_off
     initial begin
-        for (int i = 0; i < (1 << ADDR_BITS); i++) mem[i] = '0;
+        for (int i = 0; i < DEPTH; i++) mem[i] = '0;
     end
     // synthesis translate_on
 
