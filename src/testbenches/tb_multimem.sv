@@ -28,6 +28,7 @@ module tb_multimem #(
     logic ram_a_reset;
     logic ram_b_reset;
 
+    wire [calc_pkg::num_data_a_bits()-1:0] _unused_ok_QA;
     multimem #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
@@ -38,6 +39,9 @@ module tb_multimem #(
         .DataInA(ram_a_data_in),
         .AddressA(ram_a_address),
         .AddressB(ram_b_address),
+        .DataInB(16'b0),
+        .WrB(1'b0),
+        .QA(_unused_ok_QA),
         .ClockA(clk_a),
         .ClockB(clk_b),
         .ClockEnA(ram_a_clk_enable),

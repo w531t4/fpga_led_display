@@ -22,7 +22,7 @@ module tb_debugger #(
     logic rx_line2;
     logic [3:0] i = 'd0;
     logic [10:0] j = 'd0;
-
+    wire [22:0] _unused_ok_main;
     clock_divider #(
         .CLK_DIV_COUNT(600)
     ) clkdiv_baudrate (
@@ -40,7 +40,14 @@ module tb_debugger #(
         .data_in(data_in),
         .tx_out(tx_out),
         .debug_start(debug_start),
-        .debug_uart_rx_in(rx_line2)
+        .debug_uart_rx_in(rx_line2),
+        .currentState(_unused_ok_main[4:0]),
+        .tx_start(_unused_ok_main[5]),
+        .current_position(_unused_ok_main[11:6]),
+        .debug_command(_unused_ok_main[19:12]),
+        .debug_command_pulse(_unused_ok_main[20]),
+        .debug_command_busy(_unused_ok_main[21]),
+        .do_close(_unused_ok_main[22])
     );
 
     initial begin
