@@ -98,7 +98,9 @@ BYTES_PER_PIXEL
         int mask_row;
         int mask_col;
         int mask_pixel;
+        // verilator lint_off WIDTHCONCAT
         valid_mask = '0;
+        // verilator lint_on WIDTHCONCAT
         for (mask_idx = 0; mask_idx < MEM_NUM_BYTES; mask_idx = mask_idx + 1) begin
             mask_pixel = mask_pixel_idx(mask_idx);
             mask_col   = mask_col_idx(mask_idx);
@@ -119,7 +121,9 @@ BYTES_PER_PIXEL
         done = 0;
         reset = 1;
         addr = '0;
+        // verilator lint_off WIDTHCONCAT
         mem = {MEM_NUM_BYTES{1'b1}};
+        // verilator lint_on WIDTHCONCAT
         remaining_valid_bytes = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
         subcmd_enable = 0;
         // finish reset for tb
