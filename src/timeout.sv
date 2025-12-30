@@ -11,7 +11,7 @@
     running       - is the counter still running?
 */
 module timeout #(
-    parameter COUNTER_WIDTH = 8,
+    parameter integer unsigned COUNTER_WIDTH = 8,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

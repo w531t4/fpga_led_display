@@ -10,9 +10,9 @@ module reset_on_start #(
     output wire reset
 );
 `ifdef SIM
-    localparam counter = 8;
+    localparam integer unsigned counter = 8;
 `else
-    localparam counter = 2;
+    localparam integer unsigned counter = 2;
 `endif
     logic count;
     logic objective;
@@ -31,13 +31,14 @@ module reset_on_start #(
             count <= ~count;
         end
     end
+    // TODO: Is + 1 really neccessary here?
     timeout_sync #(
         .COUNTER_WIDTH($clog2(counter + 1))
     ) reset_on_start_timeout (
         .reset  (count),
         .clk_in (clock_in),
         .start  (objective),
-        .value  (counter),
+        .value  (($clog2(counter + 1))'(counter)),
         .counter(unused_timer_counter),
         .running(reset)
     );

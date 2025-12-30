@@ -18,7 +18,7 @@ module control_cmd_watchdog #(
     output logic sys_reset,
     output logic done
 );
-    localparam WATCHDOG_SIGBYTES = $rtoi(WATCHDOG_SIGNATURE_BITS / 8);
+    localparam integer unsigned WATCHDOG_SIGBYTES = $rtoi(WATCHDOG_SIGNATURE_BITS / 8);
     typedef enum {
         STATE_SIG_CAPTURE,
         STATE_DONE

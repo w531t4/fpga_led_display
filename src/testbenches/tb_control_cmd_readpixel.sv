@@ -28,7 +28,11 @@ module tb_control_cmd_readpixel #(
     wire  [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readpixel_col_addr;
     wire  [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
     `include "row4.vh"
-    localparam [$bits(myled_row_pixel)-8-1:0] myled_row_pixel_local = myled_row_pixel[$bits(myled_row_pixel)-8-1:0];
+    localparam logic [$bits(
+myled_row_pixel
+)-8-1:0] myled_row_pixel_local = myled_row_pixel[$bits(
+        myled_row_pixel
+    )-8-1:0];
     wire junk1;
     clock_divider #(
         .CLK_DIV_COUNT(16)

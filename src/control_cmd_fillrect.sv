@@ -24,8 +24,10 @@ module control_cmd_fillrect #(
     output logic ready_for_data,
     output logic done
 );
-    localparam _NUM_COLUMN_BYTES_NEEDED = ((calc_pkg::num_column_address_bits(PIXEL_WIDTH) + 8 - 1) / 8);
-    localparam safe_bits_needed_for_column_byte_counter = _NUM_COLUMN_BYTES_NEEDED > 1 ? $clog2(
+    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = ((calc_pkg::num_column_address_bits(
+        PIXEL_WIDTH
+    ) + 8 - 1) / 8);
+    localparam integer unsigned safe_bits_needed_for_column_byte_counter = _NUM_COLUMN_BYTES_NEEDED > 1 ? $clog2(
         _NUM_COLUMN_BYTES_NEEDED
     ) : 1;
     typedef enum {
