@@ -14,23 +14,41 @@ module tb_multimem #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
+    localparam int ADDR_A_BITS = calc_pkg::num_address_a_bits(
+        PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+    );
+    localparam int ADDR_B_BITS = calc_pkg::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT);
+    localparam int DATA_A_BITS = calc_pkg::num_data_a_bits();
+    localparam int DATA_B_BITS = calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
+    localparam int SUBPANEL_BITS = calc_pkg::num_subpanelselect_bits(PIXEL_HEIGHT, PIXEL_HALFHEIGHT);
+    localparam int PIXELSEL_BITS = calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL);
+    localparam int STRUCTURE_BITS = calc_pkg::num_structure_bits(
+        PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+    );
+    localparam int LANES = (1 << STRUCTURE_BITS);
+    localparam int DEPTH_B = (1 << ADDR_B_BITS);
+    localparam logic [SUBPANEL_BITS-1:0] SUBPANEL0 = {SUBPANEL_BITS{1'b0}};
+    localparam logic [SUBPANEL_BITS-1:0] SUBPANEL1 = {{(SUBPANEL_BITS - 1) {1'b0}}, 1'b1};
+    localparam logic [PIXELSEL_BITS-1:0] PIXSEL0 = {PIXELSEL_BITS{1'b0}};
+    localparam logic [PIXELSEL_BITS-1:0] PIXSEL1 = {{(PIXELSEL_BITS - 1) {1'b0}}, 1'b1};
+    localparam logic [ADDR_B_BITS-1:0] ADDR_B_MAX = {ADDR_B_BITS{1'b1}};
+    localparam logic [ADDR_B_BITS-1:0] ADDR_B_TOP0_MAX = {1'b0, {ADDR_B_BITS - 1{1'b1}}};
+
     logic clk_a;
     logic clk_b;
-    logic reset;
-    logic local_reset;
-    logic [calc_pkg::num_address_a_bits(
-PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-)-1:0] ram_a_address;
-    logic [calc_pkg::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_b_address;
-    logic [calc_pkg::num_data_a_bits()-1:0] ram_a_data_in;
+    logic [ADDR_A_BITS-1:0] ram_a_address;
+    logic [ADDR_B_BITS-1:0] ram_b_address;
+    logic [DATA_A_BITS-1:0] ram_a_data_in;
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
     logic ram_a_wr;
-    wire [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out;
+    wire [DATA_B_BITS-1:0] ram_b_data_out;
     logic ram_a_reset;
     logic ram_b_reset;
 
-    wire [calc_pkg::num_data_a_bits()-1:0] _unused_ok_QA;
+    wire [DATA_A_BITS-1:0] _unused_ok_QA;
+    logic [DATA_A_BITS-1:0] model_mem[LANES][DEPTH_B];
+
     multimem #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
@@ -54,6 +72,61 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .QB(ram_b_data_out)
     );
 
+    function automatic logic [ADDR_A_BITS-1:0] pack_addr_a(input logic [SUBPANEL_BITS-1:0] subpanel,
+                                                           input logic [ADDR_B_BITS-1:0] addr_b,
+                                                           input logic [PIXELSEL_BITS-1:0] pixel_sel);
+        pack_addr_a = {subpanel, addr_b, pixel_sel};
+    endfunction
+
+    function automatic logic [STRUCTURE_BITS-1:0] lane_index(input logic [SUBPANEL_BITS-1:0] subpanel,
+                                                             input logic [PIXELSEL_BITS-1:0] pixel_sel);
+        lane_index = {subpanel, pixel_sel};
+    endfunction
+
+    function automatic logic [DATA_B_BITS-1:0] build_expected(input logic [ADDR_B_BITS-1:0] addr_b);
+        logic [DATA_B_BITS-1:0] expected;
+        expected = '0;
+        for (int lane = 0; lane < LANES; lane = lane + 1) begin
+            expected[lane*DATA_A_BITS+:DATA_A_BITS] = model_mem[lane][addr_b];
+        end
+        build_expected = expected;
+    endfunction
+
+    task automatic write_lane(input logic [SUBPANEL_BITS-1:0] subpanel, input logic [PIXELSEL_BITS-1:0] pixel_sel,
+                              input logic [ADDR_B_BITS-1:0] addr_b, input logic [DATA_A_BITS-1:0] data);
+        logic [STRUCTURE_BITS-1:0] lane_idx;
+        logic [ADDR_A_BITS-1:0] addr_a;
+        lane_idx = lane_index(subpanel, pixel_sel);
+        addr_a   = pack_addr_a(subpanel, addr_b, pixel_sel);
+        @(negedge clk_a);
+        ram_a_address = addr_a;
+        ram_a_data_in = data;
+        ram_a_clk_enable = 1'b1;
+        ram_a_wr = 1'b1;
+        @(posedge clk_a);
+        @(posedge clk_a);
+        model_mem[lane_idx][addr_b] = data;
+        @(negedge clk_a);
+        ram_a_clk_enable = 1'b0;
+        ram_a_wr = 1'b0;
+    endtask
+
+    task automatic read_check(input logic [ADDR_B_BITS-1:0] addr_b);
+        logic [DATA_B_BITS-1:0] expected;
+        @(negedge clk_b);
+        ram_b_clk_enable = 1'b1;
+        ram_b_address = addr_b;
+        expected = build_expected(addr_b);
+        @(posedge clk_b);
+        @(posedge clk_b);
+        #1;
+        if (ram_b_data_out !== expected) begin  // check read bus matches model for this address
+            $fatal(1, "read mismatch addr_b=%0d expected=%0h got=%0h", addr_b, expected, ram_b_data_out);
+        end
+        @(negedge clk_b);
+        ram_b_clk_enable = 1'b0;
+    endtask
+
     initial begin
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
@@ -61,179 +134,55 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         $dumpvars(0, tb_multimem);
         clk_a = 0;
         clk_b = 0;
-        reset = 0;
-        local_reset = 0;
-        ram_a_address = 0;
-        ram_b_address = 0;
-        ram_a_data_in = 0;
+        ram_a_address = '0;
+        ram_b_address = '0;
+        ram_a_data_in = '0;
         ram_a_clk_enable = 0;
         ram_b_clk_enable = 0;
         ram_a_wr = 0;
         ram_a_reset = 0;
         ram_b_reset = 0;
 
-        @(posedge clk_a) begin
-            local_reset = !local_reset;
-            reset = !reset;
-            ram_a_reset = !ram_a_reset;
-            ram_b_reset = !ram_b_reset;
+        for (int lane = 0; lane < LANES; lane = lane + 1) begin
+            for (int idx = 0; idx < DEPTH_B; idx = idx + 1) begin
+                model_mem[lane][idx] = '0;
+            end
         end
-        @(posedge clk_a) begin
-            local_reset = !local_reset;
-            reset = !reset;
-            ram_a_reset = !ram_a_reset;
-            ram_b_reset = !ram_b_reset;
-            #10 $dumpoff;
-            #190000 $dumpon;
+
+        // Reset read data path and confirm it drives zero.
+        @(negedge clk_b);
+        ram_b_clk_enable = 1'b1;
+        ram_b_address = '0;
+        ram_a_reset = 1'b1;
+        ram_b_reset = 1'b1;
+        @(posedge clk_b);
+        #1;
+        if (ram_b_data_out !== '0) begin  // check reset forces read bus to zero
+            $fatal(1, "reset failed expected=0 got=%0h", ram_b_data_out);
         end
-        @(negedge clk_a) do_write_start(12'b1111_1111_1111, "A");
-        @(posedge clk_a) @(negedge clk_a) do_write_end();
-        //@(posedge clk_a)
+        ram_a_reset = 1'b0;
+        ram_b_reset = 1'b0;
+        @(negedge clk_b);
+        ram_b_clk_enable = 1'b0;
 
+        // Baseline readback should be all zeros.
+        read_check('0);
 
-        @(negedge clk_a) do_write_start(12'b1111_1111_1110, "B");
-        @(posedge clk_a) @(negedge clk_a) do_write_end();
-        //@(posedge clk_a)
+        // Write two lanes at the same address and read both back.
+        write_lane(SUBPANEL0, PIXSEL0, ADDR_B_MAX, 8'hA1);
+        write_lane(SUBPANEL0, PIXSEL1, ADDR_B_MAX, 8'hB2);
+        read_check(ADDR_B_MAX);
 
+        // Write a different subpanel at a different address.
+        write_lane(SUBPANEL1, PIXSEL0, ADDR_B_TOP0_MAX, 8'hC3);
+        read_check(ADDR_B_TOP0_MAX);
 
-        @(negedge clk_a) ram_b_clk_enable = 1;
-        do_read_start(11'b1111_1111_111);
-        @(posedge clk_a) @(posedge clk_a) do_read_end();
-        //@(posedge clk_a)
+        // Overwrite an existing lane/address.
+        write_lane(SUBPANEL0, PIXSEL0, ADDR_B_MAX, 8'h5A);
+        read_check(ADDR_B_MAX);
 
-
-        @(negedge clk_a) do_write_start(12'b1111_1111_1111, "C");
-        @(posedge clk_a) @(negedge clk_a) do_write_end();
-
-        @(negedge clk_a) do_read_start(11'b1111_1111_111);
-        @(posedge clk_a) @(negedge clk_a) do_read_end();
-
-
-
-        @(negedge clk_a) do_write_start(12'b1111_1111_1111, "D");
-        @(posedge clk_a)
-        @(negedge clk_a)
-        //do_write_end();
-        do_write_start(
-            12'b1111_1111_1110, "E");
-        do_read_start(11'b1111_1111_111);
-        @(posedge clk_a)
-        @(negedge clk_a)
-        //do_write_end();
-        do_write_start(
-            12'b1111_1111_1110, "F");
-        do_read_start(11'b1111_1111_111);
-        @(posedge clk_a) @(negedge clk_a) do_read_start(11'b1111_1111_111);
-        do_write_end();
-        @(posedge clk_a) do_read_end();
-
-
-        // test "half_address"
-        @(negedge clk_a) do_write_start(12'b0111_1111_1111, "Z");
-        @(posedge clk_a)
-        @(negedge clk_a)
-        //do_write_end();
-        do_write_start(
-            12'b0111_1111_1110, "Y");
-        do_read_start(11'b0111_1111_111);
-        @(posedge clk_a)
-        @(negedge clk_a)
-        //do_write_end();
-        do_write_start(
-            12'b0111_1111_1110, "R");
-        do_read_start(11'b0111_1111_111);
-        @(posedge clk_a) @(negedge clk_a) do_read_start(11'b0111_1111_111);
-        do_write_end();
-        @(posedge clk_a) do_read_end();
-        //@(posedge clk_a)
-
-        // end padding
-        #400;
-
-        //@(posedge clk_a)
-        //    ram_a_clk_enable = 1;
-        //    ram_b_clk_enable = 1;
-
-
-        // @(posedge clk_a)
-        //    ram_a_wr = 1'b1;
-        // @(posedge clk_a)
-        // @(posedge clk_a)
-        //    //ram_a_address = 0;
-        //    ram_a_address = 12'b1111_1111_1111;
-        //    ram_a_data_in = "A";
-        // @(posedge clk_a)
-        // @(posedge clk_a)
-        //    //ram_a_address = 0;
-        //    ram_a_address = 12'b1111_1111_1110;
-        //    ram_a_data_in = "B";
-        // @(posedge clk_a)
-        // //@(posedge clk_a)
-        // @(posedge clk_a)
-        //    ram_a_wr = 1'b0;
-        // @(posedge clk_a)
-        // @(posedge clk_a)
-        //    ram_a_address = 12'b1111_1111_1101;
-        //    ram_a_wr = 0;
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        //    ram_b_address =  11'b1111_1111_111;
-        // @(posedge clk_b)
-
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_a)
-        //    ram_a_wr = 1'b1;
-        // @(posedge clk_a)
-        //    //ram_a_address = 0;
-        //    ram_a_address = 12'b1111_1111_1111;
-        //    ram_a_data_in = "C";
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        // @(posedge clk_b)
-        $finish;
+        #200 $finish;
     end
-
-    task automatic do_write_start;
-        input [11:0] address;
-        input [7:0] data;
-        begin
-            ram_a_address = address;
-            ram_a_data_in = data;
-            ram_a_clk_enable = 1;
-            ram_a_wr = 1'b1;
-        end
-    endtask
-
-    task automatic do_write_end;
-        begin
-            ram_a_clk_enable = 0;
-            ram_a_wr = 1'b0;
-        end
-    endtask
-
-    task automatic do_read_start;
-        input [10:0] address;
-        begin
-            ram_b_clk_enable = 1;
-            ram_b_address = address;
-        end
-    endtask
-
-    task automatic do_read_end;
-        begin
-            ram_b_clk_enable = 0;
-        end
-    endtask
 
     always begin
         #(SIM_HALF_PERIOD_NS) clk_a <= ~clk_a;
