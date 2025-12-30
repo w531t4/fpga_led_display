@@ -18,13 +18,15 @@ module tb_multimem #(
     logic clk_b;
     logic reset;
     logic local_reset;
-    logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] ram_a_address;
-    logic [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-3:0] ram_b_address;
-    logic [7:0] ram_a_data_in;
+    logic [calc_pkg::num_address_a_bits(
+PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+)-1:0] ram_a_address;
+    logic [calc_pkg::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_b_address;
+    logic [calc_pkg::num_data_a_bits()-1:0] ram_a_data_in;
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
     logic ram_a_wr;
-    wire [((PIXEL_HEIGHT / PIXEL_HALFHEIGHT) * BYTES_PER_PIXEL * 8)-1:0] ram_b_data_out;
+    wire [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out;
     logic ram_a_reset;
     logic ram_b_reset;
 
