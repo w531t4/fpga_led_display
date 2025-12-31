@@ -43,7 +43,7 @@ module tb_main #(
 
     logic reset;
 
-    `include "row4.vh"
+    `include "row4.svh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = ROOT_CLOCK * TB_MAIN_WAIT_SECS;
     localparam int CMD_LINE_STATE_SEQ_LEN = 18;
