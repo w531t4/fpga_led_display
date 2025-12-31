@@ -56,4 +56,20 @@ package calc_pkg;
         num_bits_per_subpanel = num_data_b_bits(pixel_height, bytes_per_pixel, pixel_halfheight) >>
             num_subpanelselect_bits(pixel_height, pixel_halfheight);
     endfunction
+
+    function automatic int unsigned num_bytes_to_contain(input int unsigned num_bits);
+        // return the number of bytes needed to hold a n-bit number
+        // 128 - 7 bit (0-127), 1 byte
+        // 256 - 8 bit (0-255), 1 byte
+        // 257 - 9 bit (0-511), 2 bytes
+        num_bytes_to_contain = ((num_bits + 8 - 1) / 8);
+    endfunction
+
+    function automatic int unsigned safe_bits(input int unsigned number);
+        // consider     logic [safe_bits_needed_for_column_byte_counter-1:0] column_byte_counter;
+        // clog2(2) -> 1 <-- "you need 1 bits to represent qty 2" [clog2(n)-1:0] ==> [1-1:0] ==> [0:0] OK
+        // clog2(1) -> 0 <-- "you need 0 bits to represent qty 1" [clog2(n)-1:0] ==> [0-1:0] ==> [-1:0] NOK
+        // this function makes the NOK case OK [safe_bits(1)-1:0] ==> [1-1:0] ==> [0:0] OK
+        safe_bits = number > 1 ? $clog2(number) : 1;
+    endfunction
 endpackage
