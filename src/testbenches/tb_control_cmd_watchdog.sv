@@ -5,7 +5,7 @@
 `default_nettype none
 // verilog_format: on
 
-`include "tb_helper.vh"
+`include "tb_helper.svh"
 
 // Validates watchdog signature capture, done pulse timing, and deferred sys_reset assertion.
 module tb_control_cmd_watchdog #(

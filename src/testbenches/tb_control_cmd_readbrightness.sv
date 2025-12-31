@@ -4,7 +4,7 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-`include "tb_helper.vh"
+`include "tb_helper.svh"
 
 // Simple handshake test: captures brightness byte, asserts brightness_change_en/done,
 // then returns outputs to idle.

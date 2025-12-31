@@ -4,7 +4,7 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-`include "tb_helper.vh"
+`include "tb_helper.svh"
 
 // Ensures blankpanel drives a full-frame clear: every address written once with zero data,
 // done pulses, and the FSM returns idle.

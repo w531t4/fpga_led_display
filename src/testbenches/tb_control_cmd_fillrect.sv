@@ -4,7 +4,7 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-`include "tb_helper.vh"
+`include "tb_helper.svh"
 
 // Verifies fillrect captures x/y/width/height + color, writes only inside the rectangle,
 // and issues each address once before returning to idle.
