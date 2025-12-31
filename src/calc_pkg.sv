@@ -71,6 +71,12 @@ package calc_pkg;
         num_bytes_to_contain = ((num_bits + 8 - 1) / 8);
     endfunction
 
+    function automatic int unsigned num_padding_bits_needed_to_reach_byte_boundry(input int unsigned num_bits);
+        // Return the number of padding bits needed to align to a byte boundry.
+        // WARNING: things get ugly if this returns 0. Must mitigate that case with ifdef
+        num_padding_bits_needed_to_reach_byte_boundry = (num_bytes_to_contain(num_bits) * 8) - num_bits;
+    endfunction
+
     function automatic int unsigned safe_bits(input int unsigned number);
         // consider     logic [safe_bits_needed_for_column_byte_counter-1:0] column_byte_counter;
         // clog2(2) -> 1 <-- "you need 1 bits to represent qty 2" [clog2(n)-1:0] ==> [1-1:0] ==> [0:0] OK
