@@ -4,7 +4,7 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-`include "tb_helper.vh"
+`include "tb_helper.svh"
 module tb_main #(
     parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,

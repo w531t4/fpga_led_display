@@ -4,7 +4,7 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-`include "tb_helper.vh"
+`include "tb_helper.svh"
 
 module tb_control_cmd_readframe;
     localparam int unsigned BYTES_PER_PIXEL = 2;

@@ -4,7 +4,7 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-`include "tb_helper.vh"
+`include "tb_helper.svh"
 // Self-checking subcmd_fillarea: runs twice (zero fill + pattern fill) and
 // verifies every valid byte is written exactly once with the expected color,
 // rows advance in order, done/ack handoff completes, and the FSM returns idle.

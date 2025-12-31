@@ -4,7 +4,7 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-`include "tb_helper.vh"
+`include "tb_helper.svh"
 
 // Verifies fillpanel captures color bytes, fills the entire frame, writes each address once,
 // and returns to idle after done.
