@@ -15,7 +15,7 @@ module tb_control_cmd_readrow #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    `include "row4.vh"
+    `include "row4.svh"
     localparam logic [$bits(
 myled_row_basic
 )-8-1:0] myled_row_basic_local = myled_row_basic[$bits(

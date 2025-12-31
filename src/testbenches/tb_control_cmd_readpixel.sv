@@ -15,7 +15,7 @@ module tb_control_cmd_readpixel #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    `include "row4.vh"
+    `include "row4.svh"
     localparam logic [$bits(
 myled_row_pixel
 )-8-1:0] myled_row_pixel_local = myled_row_pixel[$bits(
