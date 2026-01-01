@@ -21,21 +21,21 @@ module tb_control_subcmd_fillarea #(
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL) + 2;
-    logic clk;
-    logic subcmd_enable;
-    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
-    wire [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
-    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
-    wire ram_write_enable;
-    wire ram_access_start;
-    logic done;
-    wire pre_done;
+    logic                                                                                       clk;
+    logic                                                                                       subcmd_enable;
+    wire  [                                 calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
+    wire  [                                   calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire  [                           calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
+    wire                                                                                        ram_write_enable;
+    wire                                                                                        ram_access_start;
+    logic                                                                                       done;
+    wire                                                                                        pre_done;
     logic [calc_pkg::num_row_column_pixel_bits(PIXEL_HEIGHT, PIXEL_WIDTH, BYTES_PER_PIXEL)-1:0] addr;
-    logic [MEM_NUM_BYTES-1:0] mem;
-    logic [MEM_NUM_BYTES-1:0] valid_mask;
-    int remaining_valid_bytes;
-    wire [OUT_BITWIDTH-1:0] data_out;
-    logic reset;
+    logic [                                                                  MEM_NUM_BYTES-1:0] mem;
+    logic [                                                                  MEM_NUM_BYTES-1:0] valid_mask;
+    int                                                                                         remaining_valid_bytes;
+    wire  [                                                                   OUT_BITWIDTH-1:0] data_out;
+    logic                                                                                       reset;
 
     control_subcmd_fillarea #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
