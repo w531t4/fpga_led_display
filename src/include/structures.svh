@@ -1,6 +1,9 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
 
+// Note: localparam X __X_ZERO = '0; lines are because yosys must have a
+//       typed object (when using bits)
+
 // ==== COLOR ====
 `ifdef RGB24
 typedef logic [7:0] red_t;
@@ -18,38 +21,41 @@ typedef struct packed {
     blue_t  blue;
 } color_t;
 
+localparam color_t __COLOR_T_ZERO = '0;
 typedef union packed {
-    logic [calc_pkg::num_bytes_to_contain($bits(color_t))*8-1:0]    raw;
-    logic [calc_pkg::num_bytes_to_contain($bits(color_t))-1:0][7:0] bytes;
-    color_t                                                         color;
+    logic [calc_pkg::num_bytes_to_contain($bits(__COLOR_T_ZERO))*8-1:0]    raw;
+    logic [calc_pkg::num_bytes_to_contain($bits(__COLOR_T_ZERO))-1:0][7:0] bytes;
+    color_t                                                                color;
 } color_field_t;
 // ==== /COLOR ====
 
 // ==== ROW ADDRESS ====
 typedef logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row_addr_t;
+localparam row_addr_t __ROW_ADDR_T_ZERO = '0;
 typedef struct packed {
-    logic [calc_pkg::num_padding_bits_needed_to_reach_byte_boundry($bits(row_addr_t))-1:0] pad;
-    row_addr_t                                                                             address;
+    logic [calc_pkg::num_padding_bits_needed_to_reach_byte_boundry($bits(__ROW_ADDR_T_ZERO))-1:0] pad;
+    row_addr_t                                                                                    address;
 } row_addr_view_t;
 
 typedef union packed {
-    logic [calc_pkg::num_bytes_to_contain($bits(row_addr_t))*8-1:0]    raw;
-    logic [calc_pkg::num_bytes_to_contain($bits(row_addr_t))-1:0][7:0] bytes;
-    row_addr_view_t                                                    addr;
+    logic [calc_pkg::num_bytes_to_contain($bits(__ROW_ADDR_T_ZERO))*8-1:0]    raw;
+    logic [calc_pkg::num_bytes_to_contain($bits(__ROW_ADDR_T_ZERO))-1:0][7:0] bytes;
+    row_addr_view_t                                                           addr;
 } row_field_t;
 // ==== /ROW ADDRESS ====
 
 // ==== COLUMN ADDRESS ====
 typedef logic [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] col_addr_t;
+localparam col_addr_t __COL_ADDR_T_ZERO = '0;
 typedef struct packed {
-    logic [calc_pkg::num_padding_bits_needed_to_reach_byte_boundry($bits(col_addr_t))-1:0] pad;      // unused MSBs
-    col_addr_t                                                                             address;  // LSBs
+    logic [calc_pkg::num_padding_bits_needed_to_reach_byte_boundry($bits(__COL_ADDR_T_ZERO))-1:0] pad;  // unused MSBs
+    col_addr_t address;  // LSBs
 } col_addr_view_t;
 
 typedef union packed {
-    logic [calc_pkg::num_bytes_to_contain($bits(col_addr_t))*8-1:0]    raw;
-    logic [calc_pkg::num_bytes_to_contain($bits(col_addr_t))-1:0][7:0] bytes;  // bytes[0] = LSB
-    col_addr_view_t                                                    addr;
+    logic [calc_pkg::num_bytes_to_contain($bits(__COL_ADDR_T_ZERO))*8-1:0]    raw;
+    logic [calc_pkg::num_bytes_to_contain($bits(__COL_ADDR_T_ZERO))-1:0][7:0] bytes;  // bytes[0] = LSB
+    col_addr_view_t                                                           addr;
 } col_field_t;
 // ==== /COLUMN ADDRESS ====
 
