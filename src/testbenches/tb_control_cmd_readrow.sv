@@ -21,6 +21,7 @@ myled_row_basic
 )-8-1:0] myled_row_basic_local = myled_row_basic[$bits(
         myled_row_basic
     )-8-1:0];
+    localparam int unsigned CLK_DIV_VALUE = 16;
     wire                                                             slowclk;
     logic                                                            clk;
     wire                                                             subcmd_enable;
@@ -36,7 +37,7 @@ myled_row_basic
     wire  [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
     logic                                                            junk1;
     clock_divider #(
-        .CLK_DIV_COUNT(16)
+        .CLK_DIV_COUNT(CLK_DIV_VALUE)
     ) clock_divider_instance (
         .reset  (reset),
         .clk_in (clk),
