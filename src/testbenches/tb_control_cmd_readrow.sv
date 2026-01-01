@@ -18,17 +18,19 @@ module tb_control_cmd_readrow #(
 );
     `include "structures.svh"
     `include "row4.svh"
-    localparam logic [$bits(
-myled_row_basic
-)-8-1:0] myled_row_basic_local = myled_row_basic[$bits(
-        myled_row_basic
-    )-8-1:0];
     localparam int unsigned CLK_DIV_VALUE = 16;
-    localparam int unsigned ROW_DATA_BYTES = PIXEL_WIDTH * BYTES_PER_PIXEL;
-    localparam int unsigned STREAM_BYTECOUNT = ROW_DATA_BYTES + 1;  // row selector + data payload
-    localparam int unsigned STREAM_BITCOUNT = STREAM_BYTECOUNT * 8;
+    localparam int unsigned STREAM_BITCOUNT = $bits(
+        myled_row_basic
+    ) - $bits(
+        commands_pkg::cmd_opcode_t
+    );  // row selector + data payload
+
+    localparam int unsigned STREAM_BYTECOUNT = calc_pkg::num_bytes_to_contain(STREAM_BITCOUNT);
     localparam int unsigned STREAM_TIMEOUT_CYCLES = STREAM_BYTECOUNT * (CLK_DIV_VALUE * 4);
 
+    // verilog_format: off
+    readrow_cmd_t myled_row_basic_local;
+    // verilog_format: on
     // === Testbench scaffolding ===
     wire                                                             slowclk;
     logic                                                            clk;
@@ -97,15 +99,12 @@ myled_row_basic
         $dumpfile(`DUMP_FILE_NAME);
 `endif
         $dumpvars(0, tb_control_cmd_readrow);
+        myled_row_basic_local = myled_row_basic;
         clk = 0;
         reset = 1;
         finished = 1;
         // subcmd_enable = 0;
         data_in = 8'b0;
-        // Prepare expected stream from the test vector.
-        if ($bits(myled_row_basic_local) != STREAM_BITCOUNT) begin
-            $fatal(1, "Expected %0d bits of row data, got %0d", STREAM_BITCOUNT, $bits(myled_row_basic_local));
-        end
         for (int __i = 0; __i < STREAM_BYTECOUNT; __i++) begin
             expected_bytes[__i] = myled_row_basic_local[STREAM_BITCOUNT-1-(__i*8)-:8];
         end
@@ -122,8 +121,8 @@ myled_row_basic
                      1);
 
         // Stream two rows back-to-back to ensure the FSM returns to capture cleanly.
-        `STREAM_BYTES_MSB(slowclk, data_in, myled_row_basic_local)
-        `STREAM_BYTES_MSB(slowclk, data_in, myled_row_basic_local)
+        `STREAM_COMMAND_MSB(slowclk, data_in, myled_row_basic_local)
+        `STREAM_COMMAND_MSB(slowclk, data_in, myled_row_basic_local)
         @(posedge slowclk);
         `WAIT_ASSERT(clk, (done_count == 2), STREAM_TIMEOUT_CYCLES);
         finished = 0;
@@ -221,8 +220,16 @@ myled_row_basic
 
             if (cmd_readrow_done) begin
                 done_count <= done_count + 1;
-                assert (next_data_count == ROW_DATA_BYTES)
-                else $fatal(1, "Done asserted after %0d data bytes, expected %0d", next_data_count, ROW_DATA_BYTES);
+                assert (next_data_count == calc_pkg::num_bytes_to_contain($bits(myled_row_basic_local.data)))
+                else
+                    $fatal(
+                        1,
+                        "Done asserted after %0d data bytes, expected %0d",
+                        next_data_count,
+                        calc_pkg::num_bytes_to_contain(
+                            $bits(myled_row_basic_local.data)
+                        )
+                    );
                 expect_cleanup <= 1'b1;
                 next_enable_count = 0;
                 next_data_count   = 0;
