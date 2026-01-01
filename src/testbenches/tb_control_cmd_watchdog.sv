@@ -17,6 +17,7 @@ module tb_control_cmd_watchdog #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
+    localparam int unsigned WATCHDOG_SIGBYTES = WATCHDOG_SIGNATURE_BITS / 8;
 
     logic [3:0] divider;
     logic       slowclk;
@@ -56,7 +57,7 @@ module tb_control_cmd_watchdog #(
         // finish reset for tb
         @(posedge clk) reset = ~reset;
 
-        for (int i = 0; i < (WATCHDOG_SIGNATURE_BITS / 8); i++) begin
+        for (int i = 0; i < WATCHDOG_SIGBYTES; i++) begin
             @(posedge slowclk) begin
                 data_in = WATCHDOG_SIGNATURE_PATTERN[(WATCHDOG_SIGNATURE_BITS-1)-(i*8)-:8];
             end
