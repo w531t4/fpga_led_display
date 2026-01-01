@@ -119,7 +119,6 @@ module tb_control_subcmd_fillarea #(
         // verilator lint_on WIDTHCONCAT
         remaining_valid_bytes = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
         subcmd_enable = 0;
-        // finish reset for tb
         @(posedge clk);
         @(posedge clk) reset = ~reset;
 
