@@ -7,6 +7,7 @@
 
 `include "tb_helper.vh"
 
+// Validates watchdog signature capture, done pulse timing, and deferred sys_reset assertion.
 module tb_control_cmd_watchdog #(
     parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
     parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
@@ -19,6 +20,7 @@ module tb_control_cmd_watchdog #(
 );
     localparam int unsigned WATCHDOG_SIGBYTES = WATCHDOG_SIGNATURE_BITS / 8;
 
+    // === Testbench scaffolding ===
     logic [3:0] divider;
     logic       slowclk;
     logic       clk;
@@ -27,7 +29,12 @@ module tb_control_cmd_watchdog #(
     logic [7:0] data_in;
     wire        sysreset;
     logic       reset;
+    int         signature_bytes_seen;
+    bit         done_seen;
+    bit         pending_done;
+    bit         sysreset_seen;
 
+    // === DUT wiring ===
     control_cmd_watchdog #(
         .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
         .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),
@@ -42,6 +49,7 @@ module tb_control_cmd_watchdog #(
         .done(done)
     );
 
+    // === Init ===
     initial begin
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
@@ -55,8 +63,13 @@ module tb_control_cmd_watchdog #(
         subcmd_enable = 0;
         data_in = 8'b0;
         // finish reset for tb
-        @(posedge clk) reset = ~reset;
+        repeat (2) @(posedge clk);
+        reset = 0;
+    end
 
+    // === Stimulus ===
+    initial begin
+        @(negedge reset);
         for (int i = 0; i < WATCHDOG_SIGBYTES; i++) begin
             @(posedge slowclk) begin
                 data_in = WATCHDOG_SIGNATURE_PATTERN[(WATCHDOG_SIGNATURE_BITS-1)-(i*8)-:8];
@@ -70,6 +83,46 @@ module tb_control_cmd_watchdog #(
         end
         $finish;
     end
+
+    // === Scoreboard / monitor ===
+    always @(posedge clk) begin
+        if (reset) begin
+            signature_bytes_seen <= 0;
+            done_seen <= 1'b0;
+            pending_done <= 1'b0;
+            sysreset_seen <= 1'b0;
+        end else begin
+            if (slowclk && (signature_bytes_seen < WATCHDOG_SIGBYTES)) begin
+                signature_bytes_seen <= signature_bytes_seen + 1;
+                if (signature_bytes_seen == WATCHDOG_SIGBYTES - 1) begin
+                    pending_done <= 1'b1;
+                end else begin
+                    assert (!done)
+                    else $fatal(1, "done asserted before final signature byte");
+                end
+            end
+
+            if (pending_done) begin
+                assert (done)
+                else $fatal(1, "done not asserted on final signature byte");
+                if (done) begin
+                    pending_done <= 1'b0;
+                    done_seen <= 1'b1;
+                end
+            end
+
+            if (!done_seen) begin
+                assert (sysreset == 1'b0)
+                else $fatal(1, "sys_reset asserted before signature completed");
+            end
+
+            if (sysreset) begin
+                sysreset_seen <= 1'b1;
+            end
+        end
+    end
+
+    // === Clock generation ===
     always begin
         #(SIM_HALF_PERIOD_NS) clk <= !clk;
         divider = !clk ? divider + 'd1 : divider;
@@ -78,7 +131,7 @@ module tb_control_cmd_watchdog #(
     // verilog_format: off
     wire _unused_ok = &{1'b0,
                         subcmd_enable,
-                        done,
+                        sysreset_seen,
                         1'b0};
     // verilog_format: on
 endmodule
