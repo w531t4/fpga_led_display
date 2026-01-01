@@ -19,13 +19,13 @@ module tb_control_cmd_watchdog #(
 );
 
     logic [3:0] divider;
-    logic slowclk;
-    logic clk;
-    logic subcmd_enable;
-    logic done;
+    logic       slowclk;
+    logic       clk;
+    logic       subcmd_enable;
+    logic       done;
     logic [7:0] data_in;
-    wire sysreset;
-    logic reset;
+    wire        sysreset;
+    logic       reset;
 
     control_cmd_watchdog #(
         .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
