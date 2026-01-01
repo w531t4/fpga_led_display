@@ -83,16 +83,10 @@ myled_row_basic
         data_in = 8'b0;
         // finish reset for tb
         @(posedge clk) @(posedge clk) reset = ~reset;
-
-        // @(posedge clk) begin
-        //     subcmd_enable = 1;
-        // end
         `STREAM_BYTES_MSB(slowclk, data_in, myled_row_basic_local)
         `STREAM_BYTES_MSB(slowclk, data_in, myled_row_basic_local)
         finished = 0;
         @(posedge slowclk);
-        // // `WAIT_ASSERT(clk, (sysreset == 1), 128*4)
-
         repeat (25) begin
             @(posedge slowclk);
         end
