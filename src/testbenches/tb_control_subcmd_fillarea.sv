@@ -105,7 +105,6 @@ module tb_control_subcmd_fillarea #(
             end
         end
     end
-
     initial begin
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
