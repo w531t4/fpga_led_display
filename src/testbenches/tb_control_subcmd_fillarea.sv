@@ -5,6 +5,9 @@
 `default_nettype none
 // verilog_format: on
 `include "tb_helper.vh"
+// Self-checking subcmd_fillarea: runs twice (zero fill + pattern fill) and
+// verifies every valid byte is written exactly once with the expected color,
+// rows advance in order, done/ack handoff completes, and the FSM returns idle.
 module tb_control_subcmd_fillarea #(
     parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
@@ -14,6 +17,7 @@ module tb_control_subcmd_fillarea #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
+    // Local parameters grouped for easy reference
     localparam int MEM_NUM_BYTES = (1 << calc_pkg::num_address_a_bits(
         PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     ));
@@ -21,6 +25,10 @@ module tb_control_subcmd_fillarea #(
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL) + 2;
+    localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR_ZERO = {(BYTES_PER_PIXEL * 8) {1'b0}};
+    localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR_ALT = {BYTES_PER_PIXEL{8'hA5}};
+
+    // === Testbench scaffolding ===
     logic                                                                                       clk;
     logic                                                                                       subcmd_enable;
     wire  [                                 calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
@@ -36,7 +44,9 @@ module tb_control_subcmd_fillarea #(
     int                                                                                         remaining_valid_bytes;
     wire  [                                                                   OUT_BITWIDTH-1:0] data_out;
     logic                                                                                       reset;
+    logic [                                                            (BYTES_PER_PIXEL*8)-1:0] color_in;
 
+    // === DUT wiring ===
     control_subcmd_fillarea #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
@@ -51,7 +61,7 @@ module tb_control_subcmd_fillarea #(
         .y1({calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}}),
         .width((calc_pkg::num_column_address_bits(PIXEL_WIDTH))'(PIXEL_WIDTH)),
         .height((calc_pkg::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
-        .color({(BYTES_PER_PIXEL * 8) {1'b0}}),
+        .color(color_in),
         .row(row),
         .column(column),
         .pixel(pixel),
@@ -61,6 +71,7 @@ module tb_control_subcmd_fillarea #(
         .done(pre_done)
     );
 
+    // === Init ===
     // [row bits][column bits][pixel]
     // Take the tiny "pixel" chunk from the right end of idx.
     function automatic int unsigned mask_pixel_idx(input int unsigned idx);
@@ -111,16 +122,23 @@ module tb_control_subcmd_fillarea #(
 `endif
         $dumpvars(0, tb_control_subcmd_fillarea);
         clk = 0;
+    end
+
+    // === Stimulus ===
+    // Drive a full-frame fill with the provided color and assert correctness/timing.
+    task automatic run_fill(input logic [(BYTES_PER_PIXEL*8)-1:0] color_bytes);
+        // Reset DUT and scoreboard state for each fill.
         done = 0;
         reset = 1;
         addr = '0;
+        color_in = color_bytes;
         // verilator lint_off WIDTHCONCAT
         mem = {MEM_NUM_BYTES{1'b1}};
         // verilator lint_on WIDTHCONCAT
         remaining_valid_bytes = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
         subcmd_enable = 0;
         @(posedge clk);
-        @(posedge clk) reset = ~reset;
+        @(posedge clk) reset = 0;
 
         @(posedge clk) begin
             subcmd_enable = 1;
@@ -148,23 +166,30 @@ module tb_control_subcmd_fillarea #(
             $display("expected all valid bytes cleared, but found non-zero data\n");
             $stop;
         end
-
+    endtask
+    initial begin
+        // First, clear to zero.
+        run_fill(COLOR_ZERO);
+        // Then fill with a non-zero pattern to confirm arbitrary data works.
+        run_fill(COLOR_ALT);
         repeat (5) begin
             @(posedge clk);
         end
         $finish;
     end
+
+    // === Scoreboard / monitor ===
     always @(posedge clk) begin
         addr <= {row, column, pixel};
         if (ram_write_enable && subcmd_enable) begin
-            // $display("processing row=%0d col=%0d pixel=%0d", row, column, pixel);
+            // Each write must be in-range, unique, and match the requested color byte for that pixel lane.
             if (types_pkg::uint_t'(row) >= PIXEL_HEIGHT || types_pkg::uint_t'(column) >= PIXEL_WIDTH || types_pkg::uint_t'(pixel) >= BYTES_PER_PIXEL) begin
                 $display("out-of-range write: row=%0d col=%0d pixel=%0d", row, column, pixel);
                 $stop;
             end else begin
-                if (data_out != 8'b0) begin
-                    $display("expected clear data_out==0, got %0d at row=%0d col=%0d pixel=%0d", data_out, row, column,
-                             pixel);
+                if (data_out != color_in[(((32)'(pixel)+1)*8)-1-:8]) begin
+                    $display("expected data_out=0x%0h, got 0x%0h at row=%0d col=%0d pixel=%0d",
+                             color_in[(((32)'(pixel)+1)*8)-1-:8], data_out, row, column, pixel);
                     $stop;
                 end
                 if (mem[addr] == 1'b0) begin
@@ -176,6 +201,8 @@ module tb_control_subcmd_fillarea #(
             end
         end
     end
+
+    // === Clock generation ===
     always begin
         #2 clk <= !clk;
     end
