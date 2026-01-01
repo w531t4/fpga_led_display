@@ -34,7 +34,7 @@ myled_row_basic
     wire  [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
     wire  [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readrow_col_addr;
     wire  [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
-    wire junk1;
+    logic                                                            junk1;
     clock_divider #(
         .CLK_DIV_COUNT(16)
     ) clock_divider_instance (
