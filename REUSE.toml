@@ -15,6 +15,7 @@ path = [
     ".verilator_lint",
     ".vscode/settings.json",
     ".devcontainer/devcontainer.json",
+    ".verible-flags",
     ".python-version"
 ]
 SPDX-FileCopyrightText = "2025 Aaron White <w531t4@gmail.com>"

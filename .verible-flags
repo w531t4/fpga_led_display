@@ -1,0 +1,6 @@
+--rules_config=.rules.verible_lint
+--file_list_path=build/verible.files
+--lsp_enable_hover=true
+--variables_in_outline=false
+--verilog_trace_parser=false
+--push_diagnostic_notifications=false

@@ -61,6 +61,7 @@ VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
 	$(abspath $(VSOURCES_WITHOUT_PKGS)) $(abspath $(TBSRCS))
 VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
+VERIBLE_FILE_LIST := $(sort $(abspath $(PKG_SOURCES) $(VSOURCES) $(TBSRCS)))
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh'))
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
@@ -112,7 +113,7 @@ endif
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
 .DELETE_ON_ERROR:
-all: $(ARTIFACT_DIR)/verilator_args simulation lint
+all: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verible.files simulation lint
 #$(warning In a command script $(VVPOBJS))
 
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
@@ -132,6 +133,9 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION
 
 $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
+
+$(ARTIFACT_DIR)/verible.files: $(ARTIFACT_DIR) $(PKG_SOURCES) $(VSOURCES) $(TBSRCS) Makefile
+	@printf '%s\n' $(VERIBLE_FILE_LIST) > $@
 
 lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args
 	cat $(ARTIFACT_DIR)/verilator_args; printf "\n";
