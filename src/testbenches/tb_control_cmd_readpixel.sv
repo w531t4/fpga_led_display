@@ -18,11 +18,13 @@ module tb_control_cmd_readpixel #(
 );
     `include "structures.svh"
     `include "row4.svh"
-    localparam logic [$bits(
-myled_row_pixel
-)-8-1:0] myled_row_pixel_local = myled_row_pixel[$bits(
-        myled_row_pixel
-    )-8-1:0];
+    localparam integer unsigned command_without_opcode_bits = $bits(
+        readpixel_cmd_t
+    ) - $bits(
+        commands_pkg::cmd_opcode_t
+    );
+    localparam logic [command_without_opcode_bits-1:0] myled_row_pixel_local = myled_row_pixel[
+        command_without_opcode_bits-1:0];
     localparam int unsigned STREAM_BYTES = ($bits(myled_row_pixel_local) / 8);
     localparam int ROW_IDX = 0;
     localparam int COL_LSB_IDX = 1;
