@@ -12,8 +12,26 @@ module gamma_correct #(
     output [OUT_BITS-1:0] out
 );
 
+`ifdef USE_SLANG
+    generate
+        if (IN_BITS == 5) begin : gen_lut5
+            `include "gamma_5bit.svh"
+            const logic [7:0] gamma_lut[32] = `GAMMA_5BIT_LUT;
+            assign out = gamma_lut[in][7-:OUT_BITS];
+        end else if (IN_BITS == 6) begin : gen_lut6
+            `include "gamma_6bit.svh"
+            const logic [7:0] gamma_lut[64] = `GAMMA_6BIT_LUT;
+            assign out = gamma_lut[in][7-:OUT_BITS];
+        end else begin : gen_lut8
+            `include "gamma_8bit.svh"
+            const logic [7:0] gamma_lut[256] = `GAMMA_8BIT_LUT;
+            assign out = gamma_lut[in][7-:OUT_BITS];
+        end
+    endgenerate
+`else
     reg [7:0] gamma_lut[(1 << IN_BITS)];
     wire [OUT_BITS-1:0] color_gamma = gamma_lut[in][7-:OUT_BITS];
     assign out = color_gamma;
     initial $readmemh($sformatf("src/memory/gamma_%0dbit.mem", IN_BITS), gamma_lut);
+`endif
 endmodule

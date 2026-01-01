@@ -34,8 +34,9 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # DOUBLE_BUFFER - Allow image to be written to one buffer while displaying the other buffer at led's.
 # USE_INFER_BRAM_PLUGIN - Compile and use Yosys plugin to assist with inferring OUTREG for BRAM's
 # USE_WATCHDOG - Requires recurring command sequence to be present, otherwise board resets
+# USE SLANG - use yosys read_slang engine instead of read_verilog
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DUSE_SLANG
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
@@ -63,6 +64,8 @@ VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
+GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
+GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
 VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
 SIM_JOBS ?= $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
@@ -110,7 +113,7 @@ endif
 
 
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build gamma_lut
 .DELETE_ON_ERROR:
 all: $(ARTIFACT_DIR)/verilator_args simulation lint
 #$(warning In a command script $(VVPOBJS))
@@ -183,10 +186,13 @@ ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 endif
 
 YOSYS_READVERILOG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) -sv ${VSOURCES}
+YOSYS_READSLANG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) ${VSOURCES}
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_READVERILOG_ARGS:=-debug $(YOSYS_READVERILOG_ARGS)
+	YOSYS_READSLANG_ARGS:=--diag-source --diag-location --diag-include-stack $(YOSYS_READVERILOG_ARGS)
 endif
 YOSYS_READVERILOG_CMD:=read_verilog $(YOSYS_READVERILOG_ARGS)
+YOSYS_READSLANG_CMD:=read_slang $(YOSYS_READSLANG_ARGS)
 
 YOSYS_READVERILOGLIB_ARGS:=-lib +/lattice/cells_bb_ecp5.v
 ifeq ($(YOSYS_DEBUG), true)
@@ -200,8 +206,12 @@ YOSYS_SCRIPT:=
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_SCRIPT +=echo on;
 endif
+ifeq ($(findstring -DUSE_SLANG,$(BUILD_FLAGS)), -DUSE_SLANG)
+YOSYS_SCRIPT +=$(YOSYS_READSLANG_CMD);
+else
 YOSYS_SCRIPT +=$(YOSYS_READVERILOGLIB_CMD);
 YOSYS_SCRIPT +=$(YOSYS_READVERILOG_CMD);
+endif
 YOSYS_SCRIPT +=$(YOSYS_EXTRA);
 YOSYS_SCRIPT +=$(YOSYS_SYNTHECP5_CMD);
 ifeq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)), -DUSE_INFER_BRAM_PLUGIN)
@@ -214,6 +224,9 @@ YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il;
 YOSYS_SCRIPT +=write_verilog -selected $(ARTIFACT_DIR)/mydesign_final.sv;
 
 YOSYS_CMD_ARGS:=-L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_SCRIPT)"
+ifeq ($(findstring -DUSE_SLANG,$(BUILD_FLAGS)), -DUSE_SLANG)
+YOSYS_CMD_ARGS += -m slang
+endif
 ifeq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)), -DUSE_INFER_BRAM_PLUGIN)
 YOSYS_CMD_ARGS += -m depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so
 endif
@@ -222,7 +235,7 @@ ifeq ($(YOSYS_DEBUG), true)
 endif
 
 compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) Makefile  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)
+$(YOSYS_TARGETS): gamma_lut ${VSOURCES} $(INCLUDESRCS) Makefile  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)
 	echo "$(YOSYS_SCRIPT)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_CMD_ARGS)
 
@@ -304,3 +317,9 @@ esp32_flash: restore
 	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py flash
 
 esp32: esp32_flash memprog
+gamma_lut: $(GAMMA_INCLUDES)
+
+ifeq ($(findstring -DUSE_SLANG,$(BUILD_FLAGS)), -DUSE_SLANG)
+$(VINCLUDE_DIR)/%.svh: $(SRC_DIR)/memory/%.mem $(SRC_DIR)/scripts/gen_gamma_svh.py
+	python3 $(SRC_DIR)/scripts/gen_gamma_svh.py "$<" "$@"
+endif

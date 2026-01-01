@@ -2,7 +2,10 @@ version = 1
 
 [[annotations]]
 path = [
-    "depends/netlistsvg/package-lock.json"
+    "depends/netlistsvg/package-lock.json",
+    "src/include/gamma_5bit.svh",
+    "src/include/gamma_6bit.svh",
+    "src/include/gamma_8bit.svh"
 ]
 SPDX-FileCopyrightText = "NONE"
 SPDX-License-Identifier = "CC0-1.0"
