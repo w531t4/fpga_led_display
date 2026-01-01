@@ -10,11 +10,13 @@ module tb_control_cmd_readpixel #(
     parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
+    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
     parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
+    `include "structures.svh"
     `include "row4.svh"
     localparam logic [$bits(
 myled_row_pixel
