@@ -14,10 +14,11 @@ module reset_on_start #(
 `else
     localparam integer unsigned counter = 2;
 `endif
+    typedef logic [$clog2(counter+1)-1:0] counter_count_t;
     logic count;
     logic objective;
 
-    wire [$clog2(counter+1)-1:0] unused_timer_counter;
+    wire counter_count_t unused_timer_counter;
     initial begin
         count = 1'b0;
         objective = 1'b0;
@@ -33,12 +34,12 @@ module reset_on_start #(
     end
     // TODO: Is + 1 really neccessary here?
     timeout_sync #(
-        .COUNTER_WIDTH($clog2(counter + 1))
+        .COUNTER_WIDTH($bits(counter_count_t))
     ) reset_on_start_timeout (
         .reset  (count),
         .clk_in (clock_in),
         .start  (objective),
-        .value  (($clog2(counter + 1))'(counter)),
+        .value  (counter_count_t'(counter)),
         .counter(unused_timer_counter),
         .running(reset)
     );
