@@ -39,6 +39,6 @@ package commands_pkg;
     } opcode_t;
     typedef union packed {
         opcode_t opcode;
-        logic [7:0]  data;
+        logic [7:0] data;
     } indata8_t;
 endpackage
