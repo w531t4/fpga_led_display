@@ -3,23 +3,23 @@
 `include "sim_data.svh"
 `ifdef RGB24
 `ifdef W128
-localparam readrow_cmd_t myled_row_basic = readrow_cmd_t'({
+localparam readrow_cmd_t cmd_readrow = readrow_cmd_t'({
     commands_pkg::READROW, row_addr_view_t'('h04), row_data_t'('h`W384_RGB24_ROW_HEX)
 });
 `else  // W128
-localparam readrow_cmd_t myled_row_basic = readrow_cmd_t'({
+localparam readrow_cmd_t cmd_readrow = readrow_cmd_t'({
     commands_pkg::READROW, row_addr_view_t'('h04), row_data_t'('h`W64_RGB24_ROW_HEX)
 });
 
 `endif  // W128
 `else  // RGB24
 `ifdef W128
-localparam readrow_cmd_t myled_row_basic = readrow_cmd_t'({
+localparam readrow_cmd_t cmd_readrow = readrow_cmd_t'({
     commands_pkg::READROW, row_addr_view_t'('h04), row_data_t'('h`W384_RGB565_ROW_HEX)
 });
 
 `else  // W128
-localparam readrow_cmd_t myled_row_basic = readrow_cmd_t'({
+localparam readrow_cmd_t cmd_readrow = readrow_cmd_t'({
     commands_pkg::READROW, row_addr_view_t'('h04), row_data_t'('h`W64_RGB565_ROW_HEX)
 });
 `endif  // W128
@@ -121,5 +121,5 @@ localparam fillpanel_cmd_t cmd_fillpanel = fillpanel_cmd_t'({commands_pkg::FILLP
     cmd_brightness_1, \
     cmd_brightness_2, \
     cmd_brightness_3, \
-    myled_row_basic
+    cmd_readrow
 localparam logic [$bits({`MYLED_ROW_FIELDS})-1:0] myled_row = {`MYLED_ROW_FIELDS};

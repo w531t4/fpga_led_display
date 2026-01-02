@@ -20,7 +20,7 @@ module tb_control_cmd_readrow #(
     `include "row4.svh"
     localparam int unsigned CLK_DIV_VALUE = 16;
     localparam int unsigned STREAM_BITCOUNT = $bits(
-        myled_row_basic
+        cmd_readrow
     ) - $bits(
         commands_pkg::cmd_opcode_t
     );  // row selector + data payload
@@ -29,7 +29,7 @@ module tb_control_cmd_readrow #(
     localparam int unsigned STREAM_TIMEOUT_CYCLES = STREAM_BYTECOUNT * (CLK_DIV_VALUE * 4);
 
     // verilog_format: off
-    readrow_cmd_t myled_row_basic_local;
+    readrow_cmd_t cmd_readrow_local;
     // verilog_format: on
     // === Testbench scaffolding ===
     wire                                                             slowclk;
@@ -99,14 +99,14 @@ module tb_control_cmd_readrow #(
         $dumpfile(`DUMP_FILE_NAME);
 `endif
         $dumpvars(0, tb_control_cmd_readrow);
-        myled_row_basic_local = myled_row_basic;
+        cmd_readrow_local = cmd_readrow;
         clk = 0;
         reset = 1;
         finished = 1;
         // subcmd_enable = 0;
         data_in = 8'b0;
         for (int __i = 0; __i < STREAM_BYTECOUNT; __i++) begin
-            expected_bytes[__i] = myled_row_basic_local[STREAM_BITCOUNT-1-(__i*8)-:8];
+            expected_bytes[__i] = cmd_readrow_local[STREAM_BITCOUNT-1-(__i*8)-:8];
         end
         // finish reset for tb
         @(posedge clk) @(posedge clk) reset = ~reset;
@@ -121,8 +121,8 @@ module tb_control_cmd_readrow #(
                      1);
 
         // Stream two rows back-to-back to ensure the FSM returns to capture cleanly.
-        `STREAM_COMMAND_MSB(slowclk, data_in, myled_row_basic_local)
-        `STREAM_COMMAND_MSB(slowclk, data_in, myled_row_basic_local)
+        `STREAM_COMMAND_MSB(slowclk, data_in, cmd_readrow_local)
+        `STREAM_COMMAND_MSB(slowclk, data_in, cmd_readrow_local)
         @(posedge slowclk);
         `WAIT_ASSERT(clk, (done_count == 2), STREAM_TIMEOUT_CYCLES);
         finished = 0;
@@ -220,14 +220,14 @@ module tb_control_cmd_readrow #(
 
             if (cmd_readrow_done) begin
                 done_count <= done_count + 1;
-                assert (next_data_count == calc_pkg::num_bytes_to_contain($bits(myled_row_basic_local.data)))
+                assert (next_data_count == calc_pkg::num_bytes_to_contain($bits(cmd_readrow_local.data)))
                 else
                     $fatal(
                         1,
                         "Done asserted after %0d data bytes, expected %0d",
                         next_data_count,
                         calc_pkg::num_bytes_to_contain(
-                            $bits(myled_row_basic_local.data)
+                            $bits(cmd_readrow_local.data)
                         )
                     );
                 expect_cleanup <= 1'b1;
