@@ -37,7 +37,7 @@ localparam readbrightness_cmd_t cmd_brightness_3 = readbrightness_cmd_t'({
 localparam blankpanel_cmd_t myled_row_blankpanel = blankpanel_cmd_t'({commands_pkg::BLANKPANEL});
 
 `ifdef USE_WATCHDOG
-localparam watchdog_cmd_t myled_row_watchdog = watchdog_cmd_t'({
+localparam watchdog_cmd_t cmd_watchdog = watchdog_cmd_t'({
     commands_pkg::WATCHDOG, watchdog_pattern_t'(params_pkg::WATCHDOG_SIGNATURE_PATTERN)
 });  // "W" + "DEADBEEFFEEBDAED"
 `endif  // USE_WATCHDOG
@@ -112,7 +112,7 @@ localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg:
 `define MYLED_ROW_FIELDS \
     myled_row_blankpanel, \
 `ifdef USE_WATCHDOG \
-    myled_row_watchdog, \
+    cmd_watchdog, \
 `endif \
     myled_row_fillpanel, \
     cmd_fillrect, \
