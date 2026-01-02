@@ -20,14 +20,19 @@ module rgb24 #(
     assign green_selected = data_in[15:8];
     assign blue_selected  = data_in[7:0];
 
-    // Rounded multiply (uses one 8x8 -> 16 DSP per channel)
-    wire [15:0] r_mul = red_selected * brightness;
-    wire [15:0] g_mul = green_selected * brightness;
-    wire [15:0] b_mul = blue_selected * brightness;
+    // Rounded multiply (force full product width for read_slang)
+    wire [8:0] red_u = {1'b0, red_selected};
+    wire [8:0] green_u = {1'b0, green_selected};
+    wire [8:0] blue_u = {1'b0, blue_selected};
+    wire [8:0] bright_u = {1'b0, brightness};
 
-    wire [ 7:0] r_eff = 8'((r_mul + 16'd127) >> 8);
-    wire [ 7:0] g_eff = 8'((g_mul + 16'd127) >> 8);
-    wire [ 7:0] b_eff = 8'((b_mul + 16'd127) >> 8);
+    wire [17:0] r_mul = red_u * bright_u;
+    wire [17:0] g_mul = green_u * bright_u;
+    wire [17:0] b_mul = blue_u * bright_u;
+
+    wire [ 7:0] r_eff = (r_mul + 18'd127) >> 8;
+    wire [ 7:0] g_eff = (g_mul + 18'd127) >> 8;
+    wire [ 7:0] b_eff = (b_mul + 18'd127) >> 8;
 
 `ifdef GAMMA
     gamma_correct #(
