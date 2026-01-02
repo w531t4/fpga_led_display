@@ -38,7 +38,7 @@ localparam blankpanel_cmd_t cmd_blankpanel = blankpanel_cmd_t'({commands_pkg::BL
 
 `ifdef USE_WATCHDOG
 localparam watchdog_cmd_t cmd_watchdog = watchdog_cmd_t'({
-    commands_pkg::WATCHDOG, watchdog_pattern_t'(params_pkg::WATCHDOG_SIGNATURE_PATTERN)
+    commands_pkg::WATCHDOG, watchdog_pattern_t'(params::WATCHDOG_SIGNATURE_PATTERN)
 });  // "W" + "DEADBEEFFEEBDAED"
 `endif  // USE_WATCHDOG
 `ifdef RGB24

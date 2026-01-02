@@ -9,11 +9,11 @@
 
 // Validates watchdog signature capture, done pulse timing, and deferred sys_reset assertion.
 module tb_control_cmd_watchdog #(
-    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
-    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
-    // TODO: switch WATCHDOG_CONTROL_TICKS to params_pkg::WATCHDOG_CONTROL_TICKS,
+    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params::WATCHDOG_SIGNATURE_BITS,
+    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
+    // TODO: switch WATCHDOG_CONTROL_TICKS to params::WATCHDOG_CONTROL_TICKS,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = 16 * 12,
-    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
