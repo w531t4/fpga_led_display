@@ -12,7 +12,7 @@ module tb_control_cmd_blankpanel;
     localparam int unsigned BYTES_PER_PIXEL = 2;
     localparam int unsigned PIXEL_HEIGHT = 4;
     localparam int unsigned PIXEL_HALFHEIGHT = PIXEL_HEIGHT;
-    localparam int unsigned PIXEL_WIDTH = 4;
+    localparam int unsigned PIXEL_WIDTH = params::PIXEL_WIDTH;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
     localparam int MEM_NUM_BYTES = (1 << calc::num_address_a_bits(
         PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
@@ -20,18 +20,18 @@ module tb_control_cmd_blankpanel;
     localparam int TOTAL_WRITES = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
-    logic                                                        clk;
-    logic                                                        reset;
-    logic                                                        enable;
-    wire  [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
-    wire  [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
-    wire  [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
-    wire                                                         ram_write_enable;
-    wire                                                         ram_access_start;
-    wire                                                         done;
-    wire  [                                                 7:0] data_out;
-    logic [                                   MEM_NUM_BYTES-1:0] mem;
-    int                                                          writes_seen;
+    logic                                                                         clk;
+    logic                                                                         reset;
+    logic                                                                         enable;
+    wire                   [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire types::col_addr_t                                                        column;
+    wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
+    wire                                                                          ram_write_enable;
+    wire                                                                          ram_access_start;
+    wire                                                                          done;
+    wire                   [                                                 7:0] data_out;
+    logic                  [                                   MEM_NUM_BYTES-1:0] mem;
+    int                                                                           writes_seen;
 
     // === DUT wiring ===
     control_cmd_blankpanel #(

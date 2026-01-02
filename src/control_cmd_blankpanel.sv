@@ -15,7 +15,7 @@ module control_cmd_blankpanel #(
     input mem_clk,
 
     output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
-    output logic [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
@@ -75,7 +75,6 @@ module control_cmd_blankpanel #(
     control_subcmd_fillarea #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset || local_reset),
@@ -84,7 +83,7 @@ module control_cmd_blankpanel #(
         .ack(done),
         .x1(0),
         .y1(0),
-        .width((calc::num_column_address_bits(PIXEL_WIDTH))'(PIXEL_WIDTH)),
+        .width(types::col_addr_t'(PIXEL_WIDTH)),
         .height((calc::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
         .color({(BYTES_PER_PIXEL * 8) {1'b0}}),
         .row(row),

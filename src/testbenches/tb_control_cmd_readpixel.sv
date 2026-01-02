@@ -9,7 +9,6 @@
 module tb_control_cmd_readpixel #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -24,30 +23,32 @@ module tb_control_cmd_readpixel #(
     localparam int COL_MSB_IDX = 2;
 
     // === Testbench scaffolding ===
-    wire                                                         slowclk;
-    logic                                                        clk;
-    wire                                                         subcmd_enable;
-    logic [                                                 7:0] data_in;
-    logic                                                        reset;
-    wire                                                         cmd_readpixel_we;
-    wire                                                         cmd_readpixel_as;
-    wire                                                         cmd_readpixel_done;
-    wire  [                                                 7:0] cmd_readpixel_do;
-    wire  [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
-    wire  [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readpixel_col_addr;
-    wire  [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
-    wire                                                         junk1;
+    wire slowclk;
+    logic clk;
+    wire subcmd_enable;
+    logic [7:0] data_in;
+    logic reset;
+    wire cmd_readpixel_we;
+    wire cmd_readpixel_as;
+    wire cmd_readpixel_done;
+    wire [7:0] cmd_readpixel_do;
+    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
+
+    wire types::col_addr_t cmd_readpixel_col_addr;
+
+    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
+    wire junk1;
     // verilator lint_off UNUSEDSIGNAL
-    logic [                                                 7:0] expected_bytes           [STREAM_BYTES];
+    logic [7:0] expected_bytes[STREAM_BYTES];
     // verilator lint_on UNUSEDSIGNAL
-    int                                                          enable_count;
-    int                                                          data_count;
-    int                                                          done_count;
-    logic [                                                 7:0] last_enable_byte;
-    int                                                          last_enable_idx;
-    int                                                          last_data_idx;
-    logic                                                        last_enable_pulse;
-    logic                                                        prev_ram_as;
+    int enable_count;
+    int data_count;
+    int done_count;
+    logic [7:0] last_enable_byte;
+    int last_enable_idx;
+    int last_data_idx;
+    logic last_enable_pulse;
+    logic prev_ram_as;
 
     // === DUT wiring ===
     clock_divider #(
@@ -69,7 +70,6 @@ module tb_control_cmd_readpixel #(
     control_cmd_readpixel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_readpixel (
         .reset(reset),
