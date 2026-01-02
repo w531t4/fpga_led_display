@@ -79,7 +79,7 @@ module tb_control_cmd_readrow #(
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
-    ) cmd_readrow (
+    ) dut (
         .reset(reset),
         .data_in(data_in),
         .clk(clk),
