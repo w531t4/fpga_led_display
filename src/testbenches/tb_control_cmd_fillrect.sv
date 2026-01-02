@@ -9,7 +9,7 @@
 // Verifies fillrect captures x/y/width/height + color, writes only inside the rectangle,
 // and issues each address once before returning to idle.
 module tb_control_cmd_fillrect;
-    localparam int unsigned BYTES_PER_PIXEL = 2;
+    localparam int unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL;
     localparam int unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT;
     localparam int unsigned PIXEL_HALFHEIGHT = PIXEL_HEIGHT;
     localparam int unsigned PIXEL_WIDTH = params::PIXEL_WIDTH;
@@ -25,20 +25,20 @@ module tb_control_cmd_fillrect;
     localparam int TOTAL_WRITES = RECT_W * RECT_H * BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
-    logic                                                                         clk;
-    logic                                                                         reset;
-    logic                                                                         enable;
-    logic                  [                                                 7:0] data_in;
-    wire types::row_addr_t                                                        row;
-    wire types::col_addr_t                                                        column;
-    wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
-    wire                                                                          ram_write_enable;
-    wire                                                                          ram_access_start;
-    wire                                                                          done;
-    wire                                                                          ready_for_data;
-    wire                   [                                                 7:0] data_out;
-    logic                  [                                   MEM_NUM_BYTES-1:0] mem;
-    int                                                                           writes_seen;
+    logic                                        clk;
+    logic                                        reset;
+    logic                                        enable;
+    logic                    [              7:0] data_in;
+    wire types::row_addr_t                       row;
+    wire types::col_addr_t                       column;
+    wire types::pixel_addr_t                     pixel;
+    wire                                         ram_write_enable;
+    wire                                         ram_access_start;
+    wire                                         done;
+    wire                                         ready_for_data;
+    wire                     [              7:0] data_out;
+    logic                    [MEM_NUM_BYTES-1:0] mem;
+    int                                          writes_seen;
 
     // === DUT wiring ===
     control_cmd_fillrect #(

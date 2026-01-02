@@ -69,7 +69,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
                 )-1-:calc::num_subpanelselect_bits(
                     PIXEL_HEIGHT, PIXEL_HALFHEIGHT
                 )],
-                AddressA[calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0]
+                types::pixel_addr_t'(AddressA)
             };
 
             wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[calc::num_structure_bits(

@@ -14,22 +14,22 @@ module tb_control_cmd_readframe;
     localparam int unsigned TOTAL_BYTES = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
-    logic                                                                         clk;
-    logic                                                                         reset;
-    logic                                                                         enable;
-    logic                  [                                                 7:0] data_in;
-    wire types::row_addr_t                                                        row;
-    wire types::col_addr_t                                                        column;
-    wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
-    wire                   [                                                 7:0] data_out;
-    wire                                                                          ram_write_enable;
-    wire                                                                          ram_access_start;
-    wire                                                                          done;
-    byte                                                                          expected_bytes   [TOTAL_BYTES];
-    byte                                                                          data_in_q;
-    int                                                                           payload_idx;
-    int                                                                           done_count;
-    logic                                                                         prev_as;
+    logic                          clk;
+    logic                          reset;
+    logic                          enable;
+    logic                    [7:0] data_in;
+    wire types::row_addr_t         row;
+    wire types::col_addr_t         column;
+    wire types::pixel_addr_t       pixel;
+    wire                     [7:0] data_out;
+    wire                           ram_write_enable;
+    wire                           ram_access_start;
+    wire                           done;
+    byte                           expected_bytes   [TOTAL_BYTES];
+    byte                           data_in_q;
+    int                            payload_idx;
+    int                            done_count;
+    logic                          prev_as;
 
     // === DUT wiring ===
     control_cmd_readframe #(
