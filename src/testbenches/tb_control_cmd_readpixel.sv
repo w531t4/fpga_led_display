@@ -23,9 +23,8 @@ module tb_control_cmd_readpixel #(
     ) - $bits(
         commands_pkg::cmd_opcode_t
     );
-    localparam logic [command_without_opcode_bits-1:0] myled_row_pixel_local = myled_row_pixel[
-        command_without_opcode_bits-1:0];
-    localparam int unsigned STREAM_BYTES = ($bits(myled_row_pixel_local) / 8);
+    localparam logic [command_without_opcode_bits-1:0] cmd_pixel_1_local = cmd_pixel_1[command_without_opcode_bits-1:0];
+    localparam int unsigned STREAM_BYTES = ($bits(cmd_pixel_1_local) / 8);
     localparam int ROW_IDX = 0;
     localparam int COL_LSB_IDX = 1;
     localparam int COL_MSB_IDX = 2;
@@ -109,16 +108,16 @@ module tb_control_cmd_readpixel #(
         //     subcmd_enable = 1;
         // end
         // Precompute expected stream for monitoring.
-        expected_bytes[ROW_IDX]     = myled_row_pixel_local[$bits(myled_row_pixel_local)-1-:8];
-        expected_bytes[COL_LSB_IDX] = myled_row_pixel_local[$bits(myled_row_pixel_local)-1-8-:8];
+        expected_bytes[ROW_IDX]     = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-:8];
+        expected_bytes[COL_LSB_IDX] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-8-:8];
 `ifdef W128
-        expected_bytes[COL_MSB_IDX] = myled_row_pixel_local[$bits(myled_row_pixel_local)-1-16-:8];
+        expected_bytes[COL_MSB_IDX] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-16-:8];
         for (int __i = 3; __i < STREAM_BYTES; __i++) begin
-            expected_bytes[__i] = myled_row_pixel_local[$bits(myled_row_pixel_local)-1-(__i*8)-:8];
+            expected_bytes[__i] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-(__i*8)-:8];
         end
 `else
         for (int __i = 2; __i < STREAM_BYTES; __i++) begin
-            expected_bytes[__i] = myled_row_pixel_local[$bits(myled_row_pixel_local)-1-(__i*8)-:8];
+            expected_bytes[__i] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-(__i*8)-:8];
         end
 `endif
     end
@@ -126,8 +125,8 @@ module tb_control_cmd_readpixel #(
     // === Stimulus ===
     initial begin
         @(negedge reset);
-        `STREAM_BYTES_MSB(slowclk, data_in, myled_row_pixel_local)
-        `STREAM_BYTES_MSB(slowclk, data_in, myled_row_pixel_local)
+        `STREAM_BYTES_MSB(slowclk, data_in, cmd_pixel_1_local)
+        `STREAM_BYTES_MSB(slowclk, data_in, cmd_pixel_1_local)
 
         @(posedge slowclk);
         // // `WAIT_ASSERT(clk, (sysreset == 1), 128*4)
