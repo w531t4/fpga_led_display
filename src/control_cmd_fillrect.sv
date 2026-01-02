@@ -27,9 +27,7 @@ module control_cmd_fillrect #(
     localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain(
         calc::num_column_address_bits(PIXEL_WIDTH)
     );
-    localparam integer unsigned safe_bits_needed_for_column_byte_counter = calc::safe_bits(
-        _NUM_COLUMN_BYTES_NEEDED
-    );
+    localparam integer unsigned safe_bits_needed_for_column_byte_counter = calc::safe_bits(_NUM_COLUMN_BYTES_NEEDED);
     typedef enum {
         STATE_X1_CAPTURE,      // 0
         STATE_Y1_CAPTURE,      // 1

@@ -20,18 +20,18 @@ module tb_control_cmd_blankpanel;
     localparam int TOTAL_WRITES = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
-    logic                                                            clk;
-    logic                                                            reset;
-    logic                                                            enable;
+    logic                                                        clk;
+    logic                                                        reset;
+    logic                                                        enable;
     wire  [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
     wire  [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
     wire  [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
-    wire                                                             ram_write_enable;
-    wire                                                             ram_access_start;
-    wire                                                             done;
-    wire  [                                                     7:0] data_out;
-    logic [                                       MEM_NUM_BYTES-1:0] mem;
-    int                                                              writes_seen;
+    wire                                                         ram_write_enable;
+    wire                                                         ram_access_start;
+    wire                                                         done;
+    wire  [                                                 7:0] data_out;
+    logic [                                   MEM_NUM_BYTES-1:0] mem;
+    int                                                          writes_seen;
 
     // === DUT wiring ===
     control_cmd_blankpanel #(
