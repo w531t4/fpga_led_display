@@ -122,7 +122,8 @@ all: $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_source
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
 	@set -o pipefail; stdbuf -oL -eL $(VVP_BIN) $(VVP_FLAGS) $< 2>&1 | sed -u 's/^/[$*] /'
 
-$(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv $(TB_DIR)/tb_%.args Makefile | $(SIMULATION_DIR) $(DEPDIR)
+.SECONDEXPANSION:
+$(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv $$(wildcard $(TB_DIR)/tb_%.args) Makefile | $(SIMULATION_DIR) $(DEPDIR)
 #	$(info In a command script)
 # Generate dep list from iverilog and translate it into a Makefile .d file.
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
