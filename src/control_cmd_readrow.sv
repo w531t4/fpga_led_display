@@ -44,7 +44,11 @@ module control_cmd_readrow #(
             case (state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
-                        row[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] <= data_in[4:0];
+                        row[calc::num_row_address_bits(
+                            PIXEL_HEIGHT
+                        )-1:0] <= data_in[calc::num_row_address_bits(
+                            PIXEL_HEIGHT
+                        )-1:0];
                         ram_write_enable <= 1'b0;
                         data_out <= 8'b0;
                         state <= STATE_ROW_PRIMEMEMWRITE;

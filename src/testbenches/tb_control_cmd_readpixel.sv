@@ -151,12 +151,14 @@ module tb_control_cmd_readpixel #(
             if (last_enable_pulse) begin
                 if (last_enable_idx == 0) begin
                     // Row capture byte
-                    assert (cmd_readpixel_row_addr == last_enable_byte[4:0])
+                    assert (cmd_readpixel_row_addr == last_enable_byte[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0])
                     else
                         $fatal(
                             1,
                             "Row latch mismatch: expected %0d, got %0d",
-                            last_enable_byte[4:0],
+                            last_enable_byte[calc::num_row_address_bits(
+                                PIXEL_HEIGHT
+                            )-1:0],
                             cmd_readpixel_row_addr
                         );
                     assert (cmd_readpixel_we == 1'b0 && cmd_readpixel_do == 8'b0)
