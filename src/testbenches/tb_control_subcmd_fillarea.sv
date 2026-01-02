@@ -33,7 +33,7 @@ module tb_control_subcmd_fillarea #(
     logic subcmd_enable;
     wire types::col_addr_t column;
     wire types::row_addr_t row;
-    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
+    wire types::pixel_addr_t pixel;
     wire ram_write_enable;
     wire ram_access_start;
     logic done;
@@ -73,18 +73,17 @@ module tb_control_subcmd_fillarea #(
     // [row bits][column bits][pixel]
     // Take the tiny "pixel" chunk from the right end of idx.
     function automatic int unsigned mask_pixel_idx(input int unsigned idx);
-        mask_pixel_idx = idx & ((1 << calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)) - 1);
+        mask_pixel_idx = idx & ((1 << $bits(types::pixel_addr_t)) - 1);
     endfunction
 
     // Drop the pixel bits, then take the next chunk: the column number.
     function automatic int unsigned mask_col_idx(input int unsigned idx);
-        mask_col_idx = (idx >> calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)) &
-            ((1 << $bits(types::col_addr_t)) - 1);
+        mask_col_idx = (idx >> $bits(types::pixel_addr_t)) & ((1 << $bits(types::col_addr_t)) - 1);
     endfunction
 
     // Drop pixel + column bits; what's left is the row number.
     function automatic int unsigned mask_row_idx(input int unsigned idx);
-        mask_row_idx = idx >> (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) + $bits(types::col_addr_t));
+        mask_row_idx = idx >> ($bits(types::pixel_addr_t) + $bits(types::col_addr_t));
     endfunction
 
     // We build a mask of bits representing where each byte written by the
