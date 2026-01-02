@@ -20,19 +20,25 @@ module rgb24 #(
     assign green_selected = data_in[15:8];
     assign blue_selected  = data_in[7:0];
 
+    // TODO: Remove hack for read_slang issue
+    //       0f95c47ff8186741f968eede5cdce49766d3eba7
+    //       c9c937ce11248cf963f1716be59b714cecf4aa1d
+
     // Rounded multiply (force full product width for read_slang)
-    wire [8:0] red_u = {1'b0, red_selected};
-    wire [8:0] green_u = {1'b0, green_selected};
-    wire [8:0] blue_u = {1'b0, blue_selected};
-    wire [8:0] bright_u = {1'b0, brightness};
+    wire [ 8:0] red_u = {1'b0, red_selected};
+    wire [ 8:0] green_u = {1'b0, green_selected};
+    wire [ 8:0] blue_u = {1'b0, blue_selected};
+    wire [ 8:0] bright_u = {1'b0, brightness};
 
     wire [17:0] r_mul = red_u * bright_u;
     wire [17:0] g_mul = green_u * bright_u;
     wire [17:0] b_mul = blue_u * bright_u;
 
+    // verilator lint_off WIDTHTRUNC
     wire [ 7:0] r_eff = (r_mul + 18'd127) >> 8;
     wire [ 7:0] g_eff = (g_mul + 18'd127) >> 8;
     wire [ 7:0] b_eff = (b_mul + 18'd127) >> 8;
+    // verilator lint_on WIDTHTRUNC
 
 `ifdef GAMMA
     gamma_correct #(
