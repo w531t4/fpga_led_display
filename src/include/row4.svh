@@ -59,32 +59,18 @@ localparam blankpanel_cmd_t myled_row_blankpanel = blankpanel_cmd_t'({commands_p
     `endif
     localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg::FILLPANEL, color_t'('h3142)});
 `endif
-logic [
-        ($bits(myled_row_blankpanel)
-            + $bits(myled_row_fillpanel)
-            + $bits(myled_row_fillrect)
-            `ifdef USE_WATCHDOG
-                + $bits(myled_row_watchdog)
-            `endif
-            `ifdef RGB24
-                + $bits(myled_row_basic)
-            `endif
-            + $bits(myled_row_pixel)
-            + $bits(myled_row_pixel2)
-            + $bits(myled_row_brightness_1)
-            + $bits(myled_row_brightness_2)
-            + $bits(myled_row_brightness_3)
-        )-1:0] myled_row = {
-                                            myled_row_blankpanel,
-                                            `ifdef USE_WATCHDOG
-                                                myled_row_watchdog,
-                                            `endif
-                                            myled_row_fillpanel,
-                                            myled_row_fillrect,
-                                            myled_row_pixel,
-                                            myled_row_pixel2,
-                                            myled_row_brightness_1,
-                                            myled_row_brightness_2,
-                                            myled_row_brightness_3,
-                                            myled_row_basic
-                                        };
+
+`define MYLED_ROW_FIELDS \
+    myled_row_blankpanel, \
+`ifdef USE_WATCHDOG \
+    myled_row_watchdog, \
+`endif \
+    myled_row_fillpanel, \
+    myled_row_fillrect, \
+    myled_row_pixel, \
+    myled_row_pixel2, \
+    myled_row_brightness_1, \
+    myled_row_brightness_2, \
+    myled_row_brightness_3, \
+    myled_row_basic
+localparam logic [$bits({`MYLED_ROW_FIELDS})-1:0] myled_row = {`MYLED_ROW_FIELDS};
