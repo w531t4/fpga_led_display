@@ -24,9 +24,9 @@ module debugger #(
     output debug_command_pulse,
     output debug_command_busy
 );
-
+    typedef logic [$clog2(DIVIDER_TICKS)-1:0] divider_ticks_index_t;
     logic [7:0] debug_bits;
-    logic [$clog2(DIVIDER_TICKS)-1:0] count;
+    divider_ticks_index_t count;
 
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in) begin
