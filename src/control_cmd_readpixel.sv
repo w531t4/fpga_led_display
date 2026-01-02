@@ -14,7 +14,7 @@ module control_cmd_readpixel #(
 
     output types::row_addr_t row,
     output types::col_addr_t column,
-    output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
+    output types::pixel_addr_t pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
@@ -41,7 +41,7 @@ module control_cmd_readpixel #(
             ram_access_start <= 1'b0;
             state <= STATE_ROW_CAPTURE;
             row <= 'b0;
-            pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
+            pixel <= 'b0;
             done <= 1'b0;
             column_byte_counter <= {safe_bits_needed_for_column_byte_counter{1'b0}};
             column_bits <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};

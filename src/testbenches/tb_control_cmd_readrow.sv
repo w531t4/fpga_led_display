@@ -37,7 +37,7 @@ module tb_control_cmd_readrow #(
     wire  [                                                     7:0] cmd_readrow_do;
     wire types::row_addr_t                                           cmd_readrow_row_addr;
     wire types::col_addr_t                                           cmd_readrow_col_addr;
-    wire  [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
+    wire types::pixel_addr_t                                         cmd_readrow_pixel_addr;
     logic                                                            junk1;
     logic [                                                     7:0] expected_bytes         [STREAM_BYTECOUNT];
     int                                                              enable_count;
@@ -140,7 +140,7 @@ module tb_control_cmd_readrow #(
         else $fatal(1, "Data mismatch at byte %0d: expected 0x%0h got 0x%0h", byte_idx, data_byte, cmd_readrow_do);
         assert (cmd_readrow_col_addr == types::col_addr_t'(exp_col))
         else $fatal(1, "Column mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_col, cmd_readrow_col_addr);
-        assert (cmd_readrow_pixel_addr == (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(exp_pix))
+        assert (cmd_readrow_pixel_addr == types::pixel_addr_t'(exp_pix))
         else $fatal(1, "Pixel mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_pix, cmd_readrow_pixel_addr);
         assert (cmd_readrow_as != prev_ram_as)
         else $fatal(1, "ram_access_start failed to toggle at byte %0d", byte_idx);

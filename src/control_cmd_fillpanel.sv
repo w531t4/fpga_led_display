@@ -17,7 +17,7 @@ module control_cmd_fillpanel #(
 
     output types::row_addr_t row,
     output types::col_addr_t column,
-    output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
+    output types::pixel_addr_t pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,

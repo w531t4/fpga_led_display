@@ -19,7 +19,7 @@ module tb_multimem #(
     localparam int DATA_A_BITS = calc::num_data_a_bits();
     localparam int DATA_B_BITS = calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int SUBPANEL_BITS = calc::num_subpanelselect_bits(PIXEL_HEIGHT, PIXEL_HALFHEIGHT);
-    localparam int PIXELSEL_BITS = calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL);
+    localparam int PIXELSEL_BITS = $bits(types::pixel_addr_t);
     localparam int STRUCTURE_BITS = calc::num_structure_bits(
         PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     );

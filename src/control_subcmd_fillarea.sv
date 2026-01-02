@@ -20,7 +20,7 @@ module control_subcmd_fillarea #(
 
     output types::row_addr_t row,
     output types::col_addr_t column,
-    output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
+    output types::pixel_addr_t pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
@@ -56,7 +56,7 @@ module control_subcmd_fillarea #(
             state <= STATE_ROW_PRIMEMEMWRITE;
             row <= 'b0;
             column <= 'b0;
-            pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
+            pixel <= 'b0;
             done <= 1'b0;
         end else begin
             case (state)
@@ -66,7 +66,7 @@ module control_subcmd_fillarea #(
                         state <= STATE_ROW_MEMWRITE;
                         row <= y2 - 1;
                         column <= x2 - 1;
-                        pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                        pixel <= types::pixel_addr_t'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
                         data_out <= color[(((32)'(pixel)+1)*8)-1-:8];
@@ -78,7 +78,7 @@ module control_subcmd_fillarea #(
                         ram_access_start <= !ram_access_start;
                         if (row > y1 || column > x1 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                                pixel <= types::pixel_addr_t'(BYTES_PER_PIXEL - 1);
                                 if (column == x1) begin
                                     column <= x2 - 1;
                                     row <= row - 'd1;
