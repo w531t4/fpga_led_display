@@ -17,7 +17,7 @@ end
   end
 
 `define STREAM_COMMAND_MSB(_clk, _dst, _vec)                                           \
-  for (int __i = 0; __i < (($bits(_vec)-$bits(commands_pkg::cmd_opcode_t))/8); __i++) begin \
+  for (int __i = 0; __i < (($bits(_vec)-$bits(commands_pkg::opcode_t))/8); __i++) begin \
     @(posedge _clk);                                                                  \
-    _dst = _vec[(($bits(_vec)-$bits(commands_pkg::cmd_opcode_t))-1) - (__i*8) -: 8];  \
+    _dst = _vec[(($bits(_vec)-$bits(commands_pkg::opcode_t))-1) - (__i*8) -: 8];  \
   end

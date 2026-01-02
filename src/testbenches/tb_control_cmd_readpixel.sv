@@ -21,7 +21,7 @@ module tb_control_cmd_readpixel #(
     localparam integer unsigned command_without_opcode_bits = $bits(
         readpixel_cmd_t
     ) - $bits(
-        commands_pkg::cmd_opcode_t
+        commands_pkg::opcode_t
     );
     localparam logic [command_without_opcode_bits-1:0] cmd_pixel_1_local = cmd_pixel_1[command_without_opcode_bits-1:0];
     localparam int unsigned STREAM_BYTES = ($bits(cmd_pixel_1_local) / 8);
