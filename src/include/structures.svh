@@ -151,13 +151,3 @@ typedef struct packed {
 
 // TODO: change opcode only commands to something like opcode_cmd_t
 typedef struct packed {commands_pkg::cmd_opcode_t opcode;} brightness3_cmd_t;
-
-/*
-
-readframe
-watchdog
-fillarea
-*/
-
-//localparam row_pixel_cmd_t myled_row_pixel2 = '{opcode: 8'h50, row: 8'h01, col: 8'h32, pixel: 8'h30, value: 8'h40};
-
