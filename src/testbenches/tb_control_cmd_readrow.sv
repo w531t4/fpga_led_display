@@ -10,13 +10,11 @@ module tb_control_cmd_readrow #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    `include "structures.svh"
     `include "row4.svh"
     localparam int unsigned CLK_DIV_VALUE = 16;
     localparam int unsigned STREAM_BITCOUNT = $bits(cmd_readrow) - $bits(cmd::opcode_t);  // row selector + data payload
@@ -25,7 +23,7 @@ module tb_control_cmd_readrow #(
     localparam int unsigned STREAM_TIMEOUT_CYCLES = STREAM_BYTECOUNT * (CLK_DIV_VALUE * 4);
 
     // verilog_format: off
-    readrow_cmd_t cmd_readrow_local;
+    types::readrow_cmd_t cmd_readrow_local;
     // verilog_format: on
     // === Testbench scaffolding ===
     wire                                                             slowclk;

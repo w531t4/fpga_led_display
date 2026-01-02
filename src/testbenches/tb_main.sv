@@ -42,7 +42,6 @@ module tb_main #(
     logic debugger_rxin;
 
     logic reset;
-    `include "structures.svh"
     `include "row4.svh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = ROOT_CLOCK * TB_MAIN_WAIT_SECS;
