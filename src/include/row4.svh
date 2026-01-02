@@ -65,12 +65,7 @@ localparam readpixel_cmd_t cmd_pixel_2 = readpixel_cmd_t'({
     cmd::READPIXEL, row_addr_view_t'('h01), col_addr_view_t'('h32), color_t'('h304013)
 });
 localparam fillrect_cmd_t cmd_fillrect = fillrect_cmd_t'({
-    cmd::FILLRECT,
-    col_field_t'('h05),
-    row_field_t'('h0A),
-    col_field_t'('h10),
-    row_field_t'('h05),
-    color_t'('hE0A932)
+    cmd::FILLRECT, col_field_t'('h05), row_field_t'('h0A), col_field_t'('h10), row_field_t'('h05), color_t'('hE0A932)
 });
 `endif  // W128
 localparam fillpanel_cmd_t cmd_fillpanel = fillpanel_cmd_t'({cmd::FILLPANEL, color_t'('h314287)});
@@ -83,12 +78,7 @@ localparam readpixel_cmd_t cmd_pixel_2 = readpixel_cmd_t'({
     cmd::READPIXEL, row_addr_view_t'('h01), col_addr_view_t'('h0079), color_t'('h3040)
 });
 localparam fillrect_cmd_t cmd_fillrect = fillrect_cmd_t'({
-    cmd::FILLRECT,
-    col_field_t'('h0001),
-    row_field_t'('h0A),
-    col_field_t'('h0071),
-    row_field_t'('h05),
-    color_t'('hE0A9)
+    cmd::FILLRECT, col_field_t'('h0001), row_field_t'('h0A), col_field_t'('h0071), row_field_t'('h05), color_t'('hE0A9)
 });
 `else  // W128
 localparam readpixel_cmd_t cmd_pixel_1 = readpixel_cmd_t'({
@@ -98,12 +88,7 @@ localparam readpixel_cmd_t cmd_pixel_2 = readpixel_cmd_t'({
     cmd::READPIXEL, row_addr_view_t'('h01), col_addr_view_t'('h32), color_t'('h3040)
 });
 localparam fillrect_cmd_t cmd_fillrect = fillrect_cmd_t'({
-    cmd::FILLRECT,
-    col_field_t'('h05),
-    row_field_t'('h0A),
-    col_field_t'('h10),
-    row_field_t'('h05),
-    color_t'('hE0A9)
+    cmd::FILLRECT, col_field_t'('h05), row_field_t'('h0A), col_field_t'('h10), row_field_t'('h05), color_t'('hE0A9)
 });
 `endif  // W128
 localparam fillpanel_cmd_t cmd_fillpanel = fillpanel_cmd_t'({cmd::FILLPANEL, color_t'('h3142)});
