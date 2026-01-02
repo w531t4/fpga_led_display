@@ -148,10 +148,12 @@ module tb_spi;
     end
 
     always @(rstb or Mrdata) begin
+        // verilator lint_off BLKSEQ
         if (rstb == 0) s_tdata = 8'hAA;
         else begin
             #10 s_tdata = Mrdata;
         end
+        // verilator lint_on BLKSEQ
     end
     // verilog_format: off
     wire _unused_ok = &{1'b0,
