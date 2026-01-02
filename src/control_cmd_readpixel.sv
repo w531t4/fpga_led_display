@@ -66,7 +66,7 @@ module control_cmd_readpixel #(
                             ram_write_enable <= 1'b1;
                             ram_access_start <= !ram_access_start;
                             data_out <= data_in;
-                            pixel <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                            pixel <= types::color_index_t'(BYTES_PER_PIXEL - 1);
                         end else column_byte_counter <= column_byte_counter - 1;
                     end
                 end

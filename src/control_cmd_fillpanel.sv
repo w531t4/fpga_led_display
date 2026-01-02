@@ -36,7 +36,7 @@ module control_cmd_fillpanel #(
     logic subcmd_enable;
     wire cmd_blankpanel_done;
     logic [(BYTES_PER_PIXEL*8)-1:0] selected_color;
-    logic [$clog2(BYTES_PER_PIXEL)-1:0] capturebytes_remaining;
+    types::color_index_t capturebytes_remaining;
 
     logic done_inside, done_level;
     ff_sync #(
@@ -54,7 +54,7 @@ module control_cmd_fillpanel #(
             subcmd_enable <= 1'b0;
             state <= STATE_COLOR_CAPTURE;
             done_inside <= 1'b0;
-            capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+            capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
             ready_for_data <= 1'b1;
             selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
             local_reset <= 1'b0;
@@ -93,7 +93,7 @@ module control_cmd_fillpanel #(
                     local_reset <= 1'b0;
                     ready_for_data <= 1'b1;
                     state <= STATE_COLOR_CAPTURE;
-                    capturebytes_remaining <= ($clog2(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                    capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
                     selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
                 end
                 default state <= state;
