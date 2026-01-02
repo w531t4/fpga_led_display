@@ -140,7 +140,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 `endif
 
     // [5:0]
-    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;
+    wire types::col_addr_t column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
     wire types::brightness_level_t brightness_mask;

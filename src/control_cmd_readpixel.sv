@@ -4,7 +4,6 @@
 module control_cmd_readpixel #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -15,16 +14,14 @@ module control_cmd_readpixel #(
     input enable,
 
     output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
-    output [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
     output logic done
 );
-    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain(
-        calc::num_column_address_bits(PIXEL_WIDTH)
-    );
+    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain($bits(types::col_addr_t));
     localparam integer unsigned safe_bits_needed_for_column_byte_counter = calc::safe_bits(_NUM_COLUMN_BYTES_NEEDED);
     typedef enum {
         STATE_ROW_CAPTURE,
@@ -36,7 +33,7 @@ module control_cmd_readpixel #(
     logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] column_bits;
     logic [safe_bits_needed_for_column_byte_counter-1:0] column_byte_counter;
 
-    assign column = column_bits[calc::num_column_address_bits(PIXEL_WIDTH)-1:0];
+    assign column = column_bits[$bits(types::col_addr_t)-1:0];
 
     always @(posedge clk) begin
         if (reset) begin
@@ -104,7 +101,7 @@ module control_cmd_readpixel #(
     end
     wire _unused_ok = &{1'b0,
     // TODO: This breaks if width=256
-    column_bits[(_NUM_COLUMN_BYTES_NEEDED*8)-1:calc::num_column_address_bits(
-        PIXEL_WIDTH
+    column_bits[(_NUM_COLUMN_BYTES_NEEDED*8)-1:$bits(
+        types::col_addr_t
     )], 1'b0};
 endmodule

@@ -67,9 +67,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     logic ram_access_start_latch;
     ctrl_fsm_t cmd_line_state;
     logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;  // For 32 bit high displays, [4:0]
-    logic [calc::num_column_address_bits(
-PIXEL_WIDTH
-)-1:0] cmd_line_addr_col;  // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
+    types::col_addr_t cmd_line_addr_col;  // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
     logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_line_pixelselect_num;
     wire [calc::num_address_a_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
@@ -113,7 +111,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire cmd_readrow_we, cmd_readrow_as, cmd_readrow_done;
     wire [7:0] cmd_readrow_do;
     wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
-    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readrow_col_addr;
+    wire types::col_addr_t cmd_readrow_col_addr;
     wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
 
     control_cmd_readrow #(
@@ -142,13 +140,12 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire cmd_readpixel_we, cmd_readpixel_as, cmd_readpixel_done;
     wire [7:0] cmd_readpixel_do;
     wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
-    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readpixel_col_addr;
+    wire types::col_addr_t cmd_readpixel_col_addr;
     wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
 
     control_cmd_readpixel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_readpixel (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
@@ -185,7 +182,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire cmd_blankpanel_we, cmd_blankpanel_as, cmd_blankpanel_done;
     wire [7:0] cmd_blankpanel_do;
     wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_blankpanel_row_addr;
-    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_blankpanel_col_addr;
+    wire types::col_addr_t cmd_blankpanel_col_addr;
     wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_blankpanel_pixel_addr;
 
     control_cmd_blankpanel #(
@@ -209,14 +206,14 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .done(cmd_blankpanel_done)
     );
 
-    wire                                                        cmd_fillpanel_we;
-    wire                                                        cmd_fillpanel_as;
-    wire                                                        cmd_fillpanel_done;
-    wire [                                                 7:0] cmd_fillpanel_do;
-    wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillpanel_row_addr;
-    wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillpanel_col_addr;
-    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillpanel_pixel_addr;
-    wire                                                        cmd_fillpanel_rfd;
+    wire                                                                          cmd_fillpanel_we;
+    wire                                                                          cmd_fillpanel_as;
+    wire                                                                          cmd_fillpanel_done;
+    wire                   [                                                 7:0] cmd_fillpanel_do;
+    wire                   [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillpanel_row_addr;
+    wire types::col_addr_t                                                        cmd_fillpanel_col_addr;
+    wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillpanel_pixel_addr;
+    wire                                                                          cmd_fillpanel_rfd;
 
     control_cmd_fillpanel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -240,19 +237,18 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .done            (cmd_fillpanel_done)
     );
 
-    wire                                                        cmd_fillrect_we;
-    wire                                                        cmd_fillrect_as;
-    wire                                                        cmd_fillrect_done;
-    wire [                                                 7:0] cmd_fillrect_do;
-    wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillrect_row_addr;
-    wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillrect_col_addr;
-    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillrect_pixel_addr;
-    wire                                                        cmd_fillrect_rfd;
+    wire                                                                          cmd_fillrect_we;
+    wire                                                                          cmd_fillrect_as;
+    wire                                                                          cmd_fillrect_done;
+    wire                   [                                                 7:0] cmd_fillrect_do;
+    wire                   [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillrect_row_addr;
+    wire types::col_addr_t                                                        cmd_fillrect_col_addr;
+    wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillrect_pixel_addr;
+    wire                                                                          cmd_fillrect_rfd;
 
     control_cmd_fillrect #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_fillrect (
         .reset           (reset),
@@ -271,13 +267,13 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .done            (cmd_fillrect_done)
     );
 
-    wire                                                        cmd_readframe_we;
-    wire                                                        cmd_readframe_as;
-    wire                                                        cmd_readframe_done;
-    wire [                                                 7:0] cmd_readframe_do;
-    wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readframe_row_addr;
-    wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readframe_col_addr;
-    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readframe_pixel_addr;
+    wire                                                                          cmd_readframe_we;
+    wire                                                                          cmd_readframe_as;
+    wire                                                                          cmd_readframe_done;
+    wire                   [                                                 7:0] cmd_readframe_do;
+    wire                   [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readframe_row_addr;
+    wire types::col_addr_t                                                        cmd_readframe_col_addr;
+    wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readframe_pixel_addr;
 
     control_cmd_readframe #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -321,7 +317,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 
     always_comb begin
         cmd_line_addr_row = {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-        cmd_line_addr_col = {calc::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
+        cmd_line_addr_col = 'b0;
         cmd_line_pixelselect_num = {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
         ram_data_out = 8'b0;
         ram_write_enable = 1'b0;
