@@ -19,11 +19,7 @@ module tb_control_cmd_readrow #(
     `include "structures.svh"
     `include "row4.svh"
     localparam int unsigned CLK_DIV_VALUE = 16;
-    localparam int unsigned STREAM_BITCOUNT = $bits(
-        cmd_readrow
-    ) - $bits(
-        cmd::opcode_t
-    );  // row selector + data payload
+    localparam int unsigned STREAM_BITCOUNT = $bits(cmd_readrow) - $bits(cmd::opcode_t);  // row selector + data payload
 
     localparam int unsigned STREAM_BYTECOUNT = calc::num_bytes_to_contain(STREAM_BITCOUNT);
     localparam int unsigned STREAM_TIMEOUT_CYCLES = STREAM_BYTECOUNT * (CLK_DIV_VALUE * 4);
