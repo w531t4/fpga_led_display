@@ -121,10 +121,15 @@ all: $(ARTIFACT_DIR)/verilator_args simulation lint
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
 	@set -o pipefail; stdbuf -oL -eL $(VVP_BIN) $(VVP_FLAGS) $< 2>&1 | sed -u 's/^/[$*] /'
 
-$(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION_DIR) $(DEPDIR)
+$(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv $(TB_DIR)/tb_%.args Makefile | $(SIMULATION_DIR) $(DEPDIR)
 #	$(info In a command script)
 # Generate dep list from iverilog and translate it into a Makefile .d file.
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.vcd"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $(PKG_SOURCES) $<
+	@tb_args_file=$(TB_DIR)/tb_$*.args; \
+	tb_args=""; \
+	if [ -f $$tb_args_file ]; then \
+		tb_args="$$(tr '\n' ' ' < $$tb_args_file)"; \
+	fi; \
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) $$tb_args -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.vcd"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $(PKG_SOURCES) $<
 	@printf '%s: ' '$(SIMULATION_DIR)/$*.vvp' > $(DEPDIR)/$*.d
 	@tr '\n' ' ' < $(DEPDIR)/$*.deps >> $(DEPDIR)/$*.d
 	@printf '\n' >> $(DEPDIR)/$*.d
