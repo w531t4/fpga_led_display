@@ -18,7 +18,7 @@ module tb_control_cmd_readpixel #(
 );
     `include "structures.svh"
     `include "row4.svh"
-    localparam integer unsigned command_without_opcode_bits = $bits(readpixel_cmd_t) - $bits(commands_pkg::opcode_t);
+    localparam integer unsigned command_without_opcode_bits = $bits(readpixel_cmd_t) - $bits(cmd::opcode_t);
     localparam logic [command_without_opcode_bits-1:0] cmd_pixel_1_local = cmd_pixel_1[command_without_opcode_bits-1:0];
     localparam int unsigned STREAM_BYTES = ($bits(cmd_pixel_1_local) / 8);
     localparam int ROW_IDX = 0;
