@@ -18,7 +18,8 @@ module clock_divider #(
     input clk_in,
     output logic clk_out
 );
-    logic [$clog2(CLK_DIV_COUNT) - 1:0] clk_count;
+    typedef logic [$clog2(CLK_DIV_COUNT)-1:0] clk_div_count_t;
+    clk_div_count_t clk_count;
 
 `ifdef SIM
     logic reset_prev;
@@ -49,7 +50,7 @@ module clock_divider #(
             clk_out   <= 1'b0;
             clk_count <= 'b0;
         end else begin
-            if (clk_count == ($clog2(CLK_DIV_COUNT))'(CLK_DIV_COUNT - 1)) begin
+            if (clk_count == clk_div_count_t'(CLK_DIV_COUNT - 1)) begin
                 clk_out   <= ~clk_out;
                 clk_count <= 'b0;
             end else begin
@@ -63,7 +64,7 @@ module clock_divider #(
             clk_out   <= 1'b0;
             clk_count <= 'b0;
         end else begin
-            if (clk_count == ($clog2(CLK_DIV_COUNT))'(CLK_DIV_COUNT - 1)) begin
+            if (clk_count == clk_div_count_t'(CLK_DIV_COUNT - 1)) begin
                 clk_out   <= ~clk_out;
                 clk_count <= 'b0;
             end else begin
