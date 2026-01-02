@@ -29,22 +29,22 @@ module tb_control_subcmd_fillarea #(
     localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR_ALT = {BYTES_PER_PIXEL{8'hA5}};
 
     // === Testbench scaffolding ===
-    logic                                                                                       clk;
-    logic                                                                                       subcmd_enable;
+    logic                                                                                   clk;
+    logic                                                                                   subcmd_enable;
     wire  [                                 calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
     wire  [                                   calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
     wire  [                           calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
-    wire                                                                                        ram_write_enable;
-    wire                                                                                        ram_access_start;
-    logic                                                                                       done;
-    wire                                                                                        pre_done;
+    wire                                                                                    ram_write_enable;
+    wire                                                                                    ram_access_start;
+    logic                                                                                   done;
+    wire                                                                                    pre_done;
     logic [calc::num_row_column_pixel_bits(PIXEL_HEIGHT, PIXEL_WIDTH, BYTES_PER_PIXEL)-1:0] addr;
-    logic [                                                                  MEM_NUM_BYTES-1:0] mem;
-    logic [                                                                  MEM_NUM_BYTES-1:0] valid_mask;
-    int                                                                                         remaining_valid_bytes;
-    wire  [                                                                   OUT_BITWIDTH-1:0] data_out;
-    logic                                                                                       reset;
-    logic [                                                            (BYTES_PER_PIXEL*8)-1:0] color_in;
+    logic [                                                              MEM_NUM_BYTES-1:0] mem;
+    logic [                                                              MEM_NUM_BYTES-1:0] valid_mask;
+    int                                                                                     remaining_valid_bytes;
+    wire  [                                                               OUT_BITWIDTH-1:0] data_out;
+    logic                                                                                   reset;
+    logic [                                                        (BYTES_PER_PIXEL*8)-1:0] color_in;
 
     // === DUT wiring ===
     control_subcmd_fillarea #(

@@ -14,9 +14,7 @@ module tb_multimem #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam int ADDR_A_BITS = calc::num_address_a_bits(
-        PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-    );
+    localparam int ADDR_A_BITS = calc::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int ADDR_B_BITS = calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT);
     localparam int DATA_A_BITS = calc::num_data_a_bits();
     localparam int DATA_B_BITS = calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);

@@ -74,9 +74,7 @@ PIXEL_WIDTH
     wire [calc::num_address_a_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] cmd_line_addr = {
-        cmd_line_addr_row[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0],
-        cmd_line_addr_col,
-        ~cmd_line_pixelselect_num
+        cmd_line_addr_row[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0], cmd_line_addr_col, ~cmd_line_pixelselect_num
     };  // <-- use this to toggle endainness. ~ == little endain
         //                                      == bit endian
         // NOTE: uart/alphabet.uart is BIG ENDIAN.
@@ -212,14 +210,14 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .done(cmd_blankpanel_done)
     );
 
-    wire                                                            cmd_fillpanel_we;
-    wire                                                            cmd_fillpanel_as;
-    wire                                                            cmd_fillpanel_done;
-    wire [                                                     7:0] cmd_fillpanel_do;
+    wire                                                        cmd_fillpanel_we;
+    wire                                                        cmd_fillpanel_as;
+    wire                                                        cmd_fillpanel_done;
+    wire [                                                 7:0] cmd_fillpanel_do;
     wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillpanel_row_addr;
     wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillpanel_col_addr;
     wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillpanel_pixel_addr;
-    wire                                                            cmd_fillpanel_rfd;
+    wire                                                        cmd_fillpanel_rfd;
 
     control_cmd_fillpanel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -243,14 +241,14 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .done            (cmd_fillpanel_done)
     );
 
-    wire                                                            cmd_fillrect_we;
-    wire                                                            cmd_fillrect_as;
-    wire                                                            cmd_fillrect_done;
-    wire [                                                     7:0] cmd_fillrect_do;
+    wire                                                        cmd_fillrect_we;
+    wire                                                        cmd_fillrect_as;
+    wire                                                        cmd_fillrect_done;
+    wire [                                                 7:0] cmd_fillrect_do;
     wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillrect_row_addr;
     wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillrect_col_addr;
     wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillrect_pixel_addr;
-    wire                                                            cmd_fillrect_rfd;
+    wire                                                        cmd_fillrect_rfd;
 
     control_cmd_fillrect #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -274,10 +272,10 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .done            (cmd_fillrect_done)
     );
 
-    wire                                                            cmd_readframe_we;
-    wire                                                            cmd_readframe_as;
-    wire                                                            cmd_readframe_done;
-    wire [                                                     7:0] cmd_readframe_do;
+    wire                                                        cmd_readframe_we;
+    wire                                                        cmd_readframe_as;
+    wire                                                        cmd_readframe_done;
+    wire [                                                 7:0] cmd_readframe_do;
     wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readframe_row_addr;
     wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readframe_col_addr;
     wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readframe_pixel_addr;
