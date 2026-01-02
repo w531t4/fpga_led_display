@@ -17,23 +17,23 @@ module framebuffer_fetch #(
 
     // appears that framebuffer fetch broke things, may have an issue here 20250710
     // [5:0] 64 width
-    input [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address,
+    input [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address,
     // [3:0] 16 height (top/bottom half)
     input [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,
 
     input pixel_load_start,
 
     // [15:0] each fetch is one pixel worth of data -- no longer true
-    input [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_data_in,
+    input [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_data_in,
     // [10:0]
-    output [calc_pkg::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_address,
+    output [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_address,
     output ram_clk_enable,
 `ifdef DEBUGGER
     output [3:0] pixel_load_counter2,
 `endif
     // [15:0]
-    output logic [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_top,
-    output logic [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_bottom
+    output logic [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_top,
+    output logic [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_bottom
 
 );
     wire ram_clk_enable_real;
@@ -52,7 +52,7 @@ module framebuffer_fetch #(
             PIXEL_HALFHEIGHT
         )-1:0],
         // log2(128)==7-1=6
-        column_address[calc_pkg::num_column_address_bits(
+        column_address[calc::num_column_address_bits(
             PIXEL_WIDTH
         )-1:0]
     };
@@ -74,8 +74,8 @@ module framebuffer_fetch #(
 
     always @(posedge clk_in) begin
         if (reset) begin
-            pixeldata_top <= {calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT) {1'b0}};
-            pixeldata_bottom <= {calc_pkg::num_bits_per_subpanel(
+            pixeldata_top <= {calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT) {1'b0}};
+            pixeldata_bottom <= {calc::num_bits_per_subpanel(
                 PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
             ) {1'b0}};
         end else begin

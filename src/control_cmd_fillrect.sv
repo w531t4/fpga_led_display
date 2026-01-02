@@ -15,19 +15,19 @@ module control_cmd_fillrect #(
     input clk,
     input mem_clk,
 
-    output logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
-    output logic [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
-    output logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
+    output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output logic [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
     output logic ready_for_data,
     output logic done
 );
-    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc_pkg::num_bytes_to_contain(
-        calc_pkg::num_column_address_bits(PIXEL_WIDTH)
+    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain(
+        calc::num_column_address_bits(PIXEL_WIDTH)
     );
-    localparam integer unsigned safe_bits_needed_for_column_byte_counter = calc_pkg::safe_bits(
+    localparam integer unsigned safe_bits_needed_for_column_byte_counter = calc::safe_bits(
         _NUM_COLUMN_BYTES_NEEDED
     );
     typedef enum {
@@ -49,8 +49,8 @@ module control_cmd_fillrect #(
     // verilator lint_on UNUSEDSIGNAL
     logic [safe_bits_needed_for_column_byte_counter-1:0] x1_byte_counter;
     logic [safe_bits_needed_for_column_byte_counter-1:0] width_byte_counter;
-    logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] y1;
-    logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] height;
+    logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y1;
+    logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] height;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
     logic [(BYTES_PER_PIXEL*8)-1:0] selected_color;
@@ -80,8 +80,8 @@ module control_cmd_fillrect #(
             width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
             x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
             width <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
-            y1 <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-            height <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            y1 <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            height <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
             local_reset <= 1'b0;
         end else begin
             case (state)
@@ -95,7 +95,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_Y1_CAPTURE: begin
                     if (enable) begin
-                        y1 <= data_in[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0];
+                        y1 <= data_in[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0];
                         state <= STATE_WIDTH_CAPTURE;
                     end
                 end
@@ -109,7 +109,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_HEIGHT_CAPTURE: begin
                     if (enable) begin
-                        height <= data_in[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0];
+                        height <= data_in[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0];
                         state  <= STATE_COLOR_CAPTURE;
                     end
                 end
@@ -150,8 +150,8 @@ module control_cmd_fillrect #(
                     selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
                     x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
                     width <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
-                    y1 <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-                    height <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+                    y1 <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+                    height <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
                 end
                 default state <= state;
             endcase
@@ -168,10 +168,10 @@ module control_cmd_fillrect #(
         .enable(subcmd_enable),
         .clk(mem_clk),
         .ack(done),
-        .x1((calc_pkg::num_column_address_bits(PIXEL_WIDTH))'(x1)),
+        .x1((calc::num_column_address_bits(PIXEL_WIDTH))'(x1)),
         .y1(y1),
-        .width((calc_pkg::num_column_address_bits(PIXEL_WIDTH))'(width)),
-        .height((calc_pkg::num_row_address_bits(PIXEL_HEIGHT))'(height)),
+        .width((calc::num_column_address_bits(PIXEL_WIDTH))'(width)),
+        .height((calc::num_row_address_bits(PIXEL_HEIGHT))'(height)),
         .color(selected_color),
         .row(row),
         .column(column),

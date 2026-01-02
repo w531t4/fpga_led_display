@@ -21,8 +21,8 @@ module control_module #(
     input data_ready_n,
     output logic [2:0] rgb_enable,
     output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
-    output logic [calc_pkg::num_data_a_bits()-1:0] ram_data_out,
-    output logic [calc_pkg::num_address_a_bits(
+    output logic [calc::num_data_a_bits()-1:0] ram_data_out,
+    output logic [calc::num_address_a_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] ram_address,  // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
     output logic ram_write_enable,
@@ -38,7 +38,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     output [3:0] cmd_line_state2,
     output ram_access_start2,
     output ram_access_start_latch2,
-    output [calc_pkg::num_address_a_bits(
+    output [calc::num_address_a_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] cmd_line_addr2,
     output logic [7:0] num_commands_processed,
@@ -66,15 +66,15 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     logic ram_access_start;
     logic ram_access_start_latch;
     ctrl_fsm_t cmd_line_state;
-    logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;  // For 32 bit high displays, [4:0]
-    logic [calc_pkg::num_column_address_bits(
+    logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_line_addr_row;  // For 32 bit high displays, [4:0]
+    logic [calc::num_column_address_bits(
 PIXEL_WIDTH
 )-1:0] cmd_line_addr_col;  // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
-    logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_line_pixelselect_num;
-    wire [calc_pkg::num_address_a_bits(
+    logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_line_pixelselect_num;
+    wire [calc::num_address_a_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] cmd_line_addr = {
-        cmd_line_addr_row[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0],
+        cmd_line_addr_row[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0],
         cmd_line_addr_col,
         ~cmd_line_pixelselect_num
     };  // <-- use this to toggle endainness. ~ == little endain
@@ -114,9 +114,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 
     wire cmd_readrow_we, cmd_readrow_as, cmd_readrow_done;
     wire [7:0] cmd_readrow_do;
-    wire [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
-    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readrow_col_addr;
-    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
+    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
+    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readrow_col_addr;
+    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
 
     control_cmd_readrow #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -143,9 +143,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 
     wire cmd_readpixel_we, cmd_readpixel_as, cmd_readpixel_done;
     wire [7:0] cmd_readpixel_do;
-    wire [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
-    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readpixel_col_addr;
-    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
+    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
+    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readpixel_col_addr;
+    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
 
     control_cmd_readpixel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -187,9 +187,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 
     wire cmd_blankpanel_we, cmd_blankpanel_as, cmd_blankpanel_done;
     wire [7:0] cmd_blankpanel_do;
-    wire [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_blankpanel_row_addr;
-    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_blankpanel_col_addr;
-    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_blankpanel_pixel_addr;
+    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_blankpanel_row_addr;
+    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_blankpanel_col_addr;
+    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_blankpanel_pixel_addr;
 
     control_cmd_blankpanel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -216,9 +216,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire                                                            cmd_fillpanel_as;
     wire                                                            cmd_fillpanel_done;
     wire [                                                     7:0] cmd_fillpanel_do;
-    wire [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillpanel_row_addr;
-    wire [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillpanel_col_addr;
-    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillpanel_pixel_addr;
+    wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillpanel_row_addr;
+    wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillpanel_col_addr;
+    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillpanel_pixel_addr;
     wire                                                            cmd_fillpanel_rfd;
 
     control_cmd_fillpanel #(
@@ -247,9 +247,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire                                                            cmd_fillrect_as;
     wire                                                            cmd_fillrect_done;
     wire [                                                     7:0] cmd_fillrect_do;
-    wire [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillrect_row_addr;
-    wire [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillrect_col_addr;
-    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillrect_pixel_addr;
+    wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_fillrect_row_addr;
+    wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_fillrect_col_addr;
+    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_fillrect_pixel_addr;
     wire                                                            cmd_fillrect_rfd;
 
     control_cmd_fillrect #(
@@ -278,9 +278,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire                                                            cmd_readframe_as;
     wire                                                            cmd_readframe_done;
     wire [                                                     7:0] cmd_readframe_do;
-    wire [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readframe_row_addr;
-    wire [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readframe_col_addr;
-    wire [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readframe_pixel_addr;
+    wire [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readframe_row_addr;
+    wire [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readframe_col_addr;
+    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readframe_pixel_addr;
 
     control_cmd_readframe #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -323,9 +323,9 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 `endif
 
     always_comb begin
-        cmd_line_addr_row = {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-        cmd_line_addr_col = {calc_pkg::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
-        cmd_line_pixelselect_num = {calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
+        cmd_line_addr_row = {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+        cmd_line_addr_col = {calc::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
+        cmd_line_pixelselect_num = {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
         ram_data_out = 8'b0;
         ram_write_enable = 1'b0;
         ram_access_start = 1'b0;

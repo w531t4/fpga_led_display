@@ -14,15 +14,15 @@ module control_subcmd_fillarea #(
     input enable,
     input clk,
     input ack,
-    input [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] x1,
-    input [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] y1,
-    input [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] width,
-    input [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] height,
+    input [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] x1,
+    input [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y1,
+    input [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] width,
+    input [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] height,
     input [(BYTES_PER_PIXEL*8)-1:0] color,  // must be byte aligned
 
-    output logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
-    output logic [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
-    output logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
+    output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output logic [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
@@ -38,8 +38,8 @@ module control_subcmd_fillarea #(
             |    -------.
             |           ^(x1+width, y1+height)
     */
-    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] x2;
-    wire [  calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] y2;
+    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] x2;
+    wire [  calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y2;
 
     assign x2 = x1 + width;
     assign y2 = y1 + height;
@@ -56,9 +56,9 @@ module control_subcmd_fillarea #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_PRIMEMEMWRITE;
-            row <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-            column <= {calc_pkg::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
-            pixel <= {calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
+            row <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            column <= {calc::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
+            pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
         end else begin
             case (state)
@@ -66,13 +66,13 @@ module control_subcmd_fillarea #(
                     if (enable) begin
 
                         state <= STATE_ROW_MEMWRITE;
-                        row <= (calc_pkg::num_row_address_bits(PIXEL_HEIGHT))'(y2 - 1);
-                        column[calc_pkg::num_column_address_bits(
+                        row <= (calc::num_row_address_bits(PIXEL_HEIGHT))'(y2 - 1);
+                        column[calc::num_column_address_bits(
                             PIXEL_WIDTH
-                        )-1:0] <= (calc_pkg::num_column_address_bits(
+                        )-1:0] <= (calc::num_column_address_bits(
                             PIXEL_WIDTH
                         ))'(x2 - 1);
-                        pixel <= (calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                        pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
                         data_out <= color[(((32)'(pixel)+1)*8)-1-:8];
@@ -84,11 +84,11 @@ module control_subcmd_fillarea #(
                         ram_access_start <= !ram_access_start;
                         if (row > y1 || column > x1 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel <= (calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                                pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                                 if (column == x1) begin
-                                    column[calc_pkg::num_column_address_bits(
+                                    column[calc::num_column_address_bits(
                                         PIXEL_WIDTH
-                                    )-1:0] <= (calc_pkg::num_column_address_bits(
+                                    )-1:0] <= (calc::num_column_address_bits(
                                         PIXEL_WIDTH
                                     ))'(x2 - 1);
                                     row <= row - 'd1;

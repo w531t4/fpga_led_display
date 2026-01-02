@@ -29,8 +29,8 @@ module tb_control_module #(
     //logic [7:0] ram_data_in = 8'b01100101;
     wire [2:0] rgb_enable;
     wire [BRIGHTNESS_LEVELS-1:0] brightness_enable;
-    wire [calc_pkg::num_data_a_bits()-1:0] ram_data_out;
-    wire [calc_pkg::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_address;
+    wire [calc::num_data_a_bits()-1:0] ram_data_out;
+    wire [calc::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_address;
     wire ram_write_enable;
     wire ctrl_busy;
     wire ram_clk_enable;

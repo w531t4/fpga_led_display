@@ -16,9 +16,9 @@ module control_cmd_readframe #(
     input enable,
     input clk,
 
-    output logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
-    output logic [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
-    output logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
+    output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output logic [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
     output logic ram_access_start,
@@ -36,9 +36,9 @@ module control_cmd_readframe #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_FRAME_PRIMEMEMWRITE;
-            row <= {calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-            column <= {calc_pkg::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
-            pixel <= {calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
+            row <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            column <= {calc::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
+            pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
         end else begin
             case (state)
@@ -46,13 +46,13 @@ module control_cmd_readframe #(
                     if (enable) begin
                         /* first, get the row to write to */
                         state <= STATE_READ_FRAMECONTENT;
-                        row <= (calc_pkg::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT - 1);
-                        column[calc_pkg::num_column_address_bits(
+                        row <= (calc::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT - 1);
+                        column[calc::num_column_address_bits(
                             PIXEL_WIDTH
-                        )-1:0] <= (calc_pkg::num_column_address_bits(
+                        )-1:0] <= (calc::num_column_address_bits(
                             PIXEL_WIDTH
                         ))'(PIXEL_WIDTH - 1);
-                        pixel <= (calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                        pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         data_out <= data_in;
                         ram_write_enable <= 1'b1;
@@ -65,11 +65,11 @@ module control_cmd_readframe #(
                         data_out <= data_in;
                         if (row > 'd0 || column > 'd0 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel <= (calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
+                                pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                                 if (column == 'd0) begin
-                                    column[calc_pkg::num_column_address_bits(
+                                    column[calc::num_column_address_bits(
                                         PIXEL_WIDTH
-                                    )-1:0] <= (calc_pkg::num_column_address_bits(
+                                    )-1:0] <= (calc::num_column_address_bits(
                                         PIXEL_WIDTH
                                     ))'(PIXEL_WIDTH - 1);
                                     row <= row - 'd1;

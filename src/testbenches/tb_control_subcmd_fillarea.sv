@@ -18,10 +18,10 @@ module tb_control_subcmd_fillarea #(
     // verilator lint_on UNUSEDPARAM
 );
     // Local parameters grouped for easy reference
-    localparam int MEM_NUM_BYTES = (1 << calc_pkg::num_address_a_bits(
+    localparam int MEM_NUM_BYTES = (1 << calc::num_address_a_bits(
         PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     ));
-    localparam integer unsigned OUT_BITWIDTH = calc_pkg::num_data_a_bits();
+    localparam integer unsigned OUT_BITWIDTH = calc::num_data_a_bits();
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL) + 2;
@@ -31,14 +31,14 @@ module tb_control_subcmd_fillarea #(
     // === Testbench scaffolding ===
     logic                                                                                       clk;
     logic                                                                                       subcmd_enable;
-    wire  [                                 calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
-    wire  [                                   calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
-    wire  [                           calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
+    wire  [                                 calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
+    wire  [                                   calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire  [                           calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
     wire                                                                                        ram_write_enable;
     wire                                                                                        ram_access_start;
     logic                                                                                       done;
     wire                                                                                        pre_done;
-    logic [calc_pkg::num_row_column_pixel_bits(PIXEL_HEIGHT, PIXEL_WIDTH, BYTES_PER_PIXEL)-1:0] addr;
+    logic [calc::num_row_column_pixel_bits(PIXEL_HEIGHT, PIXEL_WIDTH, BYTES_PER_PIXEL)-1:0] addr;
     logic [                                                                  MEM_NUM_BYTES-1:0] mem;
     logic [                                                                  MEM_NUM_BYTES-1:0] valid_mask;
     int                                                                                         remaining_valid_bytes;
@@ -57,10 +57,10 @@ module tb_control_subcmd_fillarea #(
         .enable(subcmd_enable),
         .clk(clk),
         .ack(done),
-        .x1({calc_pkg::num_column_address_bits(PIXEL_WIDTH) {1'b0}}),
-        .y1({calc_pkg::num_row_address_bits(PIXEL_HEIGHT) {1'b0}}),
-        .width((calc_pkg::num_column_address_bits(PIXEL_WIDTH))'(PIXEL_WIDTH)),
-        .height((calc_pkg::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
+        .x1({calc::num_column_address_bits(PIXEL_WIDTH) {1'b0}}),
+        .y1({calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}}),
+        .width((calc::num_column_address_bits(PIXEL_WIDTH))'(PIXEL_WIDTH)),
+        .height((calc::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
         .color(color_in),
         .row(row),
         .column(column),
@@ -75,19 +75,19 @@ module tb_control_subcmd_fillarea #(
     // [row bits][column bits][pixel]
     // Take the tiny "pixel" chunk from the right end of idx.
     function automatic int unsigned mask_pixel_idx(input int unsigned idx);
-        mask_pixel_idx = idx & ((1 << calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)) - 1);
+        mask_pixel_idx = idx & ((1 << calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)) - 1);
     endfunction
 
     // Drop the pixel bits, then take the next chunk: the column number.
     function automatic int unsigned mask_col_idx(input int unsigned idx);
-        mask_col_idx = (idx >> calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)) &
-            ((1 << calc_pkg::num_column_address_bits(PIXEL_WIDTH)) - 1);
+        mask_col_idx = (idx >> calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)) &
+            ((1 << calc::num_column_address_bits(PIXEL_WIDTH)) - 1);
     endfunction
 
     // Drop pixel + column bits; what's left is the row number.
     function automatic int unsigned mask_row_idx(input int unsigned idx);
         mask_row_idx = idx >>
-            (calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL) + calc_pkg::num_column_address_bits(PIXEL_WIDTH));
+            (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) + calc::num_column_address_bits(PIXEL_WIDTH));
     endfunction
 
     // We build a mask of bits representing where each byte written by the
@@ -147,7 +147,7 @@ module tb_control_subcmd_fillarea #(
 
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
         for (int r = PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
-            `WAIT_ASSERT(clk, (row == (calc_pkg::num_row_address_bits(PIXEL_HEIGHT))'(r)), ROW_ADVANCE_MAX_CYCLES)
+            `WAIT_ASSERT(clk, (row == (calc::num_row_address_bits(PIXEL_HEIGHT))'(r)), ROW_ADVANCE_MAX_CYCLES)
         end
         // Done should assert once the final byte of the final pixel is written.
         `WAIT_ASSERT(clk, (pre_done == 1), DONE_MAX_CYCLES)
