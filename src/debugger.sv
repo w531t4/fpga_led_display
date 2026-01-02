@@ -57,6 +57,7 @@ module debugger #(
     // i'm guessing we're doing this in an attempt to not spam negotiate on the
     // serial channel. we're looking roughly 22times a second?. It's been awhie since
     // i last looked at this.
+    // TODO: Add ENUM for states
     localparam logic [4:0] STATE_IDLE = 5'b00001, STATE_START = 5'b00010, STATE_SEND = 5'b00100, STATE_WAIT = 5'b01000;
     always @(posedge clk_in) begin
         if (reset) begin
