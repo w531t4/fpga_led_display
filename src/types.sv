@@ -48,6 +48,21 @@ package types;
     } row_field_t;
     // ==== /ROW ADDRESS ====
 
+    // ==== ROW SUBPANEL ADDRESS ====
+    typedef logic [calc::num_row_address_bits(params::PIXEL_HALFHEIGHT)-1:0] row_subpanel_addr_t;
+    row_subpanel_addr_t __ROW_SUBPANEL_ADDR_T_ZERO = '0;
+    typedef struct packed {
+        logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(__ROW_SUBPANEL_ADDR_T_ZERO))-1:0] pad;
+        row_subpanel_addr_t                                                                                address;
+    } row_subpanel_addr_view_t;
+
+    typedef union packed {
+        logic [calc::num_bytes_to_contain($bits(__ROW_SUBPANEL_ADDR_T_ZERO))*8-1:0]    raw;
+        logic [calc::num_bytes_to_contain($bits(__ROW_SUBPANEL_ADDR_T_ZERO))-1:0][7:0] bytes;
+        row_subpanel_addr_view_t                                                       addr;
+    } row_subpanel_field_t;
+    // ==== /ROW SUBPANEL ADDRESS ====
+
     // ==== COLUMN ADDRESS ====
     typedef logic [calc::num_column_address_bits(params::PIXEL_WIDTH)-1:0] col_addr_t;
     col_addr_t __COL_ADDR_T_ZERO = '0;
