@@ -20,7 +20,7 @@ module control_module #(
     input cmd::indata8_t data_rx,
     input data_ready_n,
     output logic [2:0] rgb_enable,
-    output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
+    output types::brightness_level_t brightness_enable,
     output logic [calc::num_data_a_bits()-1:0] ram_data_out,
     output logic [calc::num_address_a_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
@@ -62,7 +62,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     } ctrl_fsm_t;
     cmd::indata8_t data_rx_latch;
     logic ready_for_data_logic;
-    logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
+    types::brightness_level_t brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
     ctrl_fsm_t cmd_line_state;
@@ -80,7 +80,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         // NOTE: uart/alphabet.uart is BIG ENDIAN.
     logic state_done;
     logic brightness_change_enable;
-    logic [BRIGHTNESS_LEVELS-1:0] brightness_data_out;
+    types::brightness_level_t brightness_data_out;
 
 `ifdef DEBUGGER
     assign cmd_line_state2 = cmd_line_state;
@@ -170,7 +170,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire cmd_readbrightness_done, cmd_readbrightness_be;
     wire [BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
     control_cmd_readbrightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) cmd_readbrightness (
         .reset(reset),

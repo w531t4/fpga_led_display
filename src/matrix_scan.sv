@@ -35,7 +35,7 @@ PIXEL_WIDTH
     output state_advance2,
     output clk_pixel_load_en2,
 `endif
-    output logic [BRIGHTNESS_LEVELS-1:0] brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
+    output types::brightness_level_t brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
 );
 
 
@@ -52,7 +52,7 @@ PIXEL_WIDTH
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
     wire brightness_exceeded_overlap_time;
-    logic  [BRIGHTNESS_LEVELS-1:0] brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
+    types::brightness_level_t brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;

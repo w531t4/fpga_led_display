@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module pixel_split #(
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
@@ -12,15 +11,15 @@ module pixel_split #(
     // verilator lint_on UNUSEDPARAM
 ) (
     input [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixel_data,
-    input [BRIGHTNESS_LEVELS-1:0] brightness_mask,
-    input [BRIGHTNESS_LEVELS-1:0] brightness_enable,
+    input types::brightness_level_t brightness_mask,
+    input types::brightness_level_t brightness_enable,
     input [2:0] rgb_enable,
 
     output [2:0] rgb_output
 );
-    wire [BRIGHTNESS_LEVELS-1:0] red_gamma;
-    wire [BRIGHTNESS_LEVELS-1:0] green_gamma;
-    wire [BRIGHTNESS_LEVELS-1:0] blue_gamma;
+    wire types::brightness_level_t red_gamma;
+    wire types::brightness_level_t green_gamma;
+    wire types::brightness_level_t blue_gamma;
 
 `ifdef RGB24
     rgb24 rgb_888 (
@@ -51,7 +50,6 @@ module pixel_split #(
 
     /* apply the brightness mask to the gamma-corrected sub-pixel value */
     brightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) b_red (
         .value(red_gamma),
@@ -60,7 +58,6 @@ module pixel_split #(
         .out(rgb_output[0])
     );
     brightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) b_green (
         .value(green_gamma),
@@ -69,7 +66,6 @@ module pixel_split #(
         .out(rgb_output[1])
     );
     brightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) b_blue (
         .value(blue_gamma),

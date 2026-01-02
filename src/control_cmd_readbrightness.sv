@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_readbrightness #(
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -14,7 +13,7 @@ module control_cmd_readbrightness #(
     input clk,
     input enable,
 
-    output logic [BRIGHTNESS_LEVELS-1:0] data_out,
+    output types::brightness_level_t data_out,
     output logic brightness_change_en,
     output logic done
 );
@@ -25,7 +24,7 @@ module control_cmd_readbrightness #(
     ctrl_fsm_t state;
     always @(posedge clk) begin
         if (reset) begin
-            data_out <= {BRIGHTNESS_LEVELS{1'b0}};
+            data_out <= 'b0;
             done <= 1'b0;
             state <= STATE_READY;
             brightness_change_en <= 1'b0;
@@ -35,14 +34,14 @@ module control_cmd_readbrightness #(
                     if (enable) begin
                         done <= 1'b1;
                         brightness_change_en <= 1'b1;
-                        data_out <= data_in[BRIGHTNESS_LEVELS-1:0];
+                        data_out <= data_in;
                         state <= STATE_DONE;
                     end
                 end
                 STATE_DONE: begin
                     done <= 1'b0;
                     brightness_change_en <= 1'b0;
-                    data_out <= {BRIGHTNESS_LEVELS{1'b0}};
+                    data_out <= 'b0;
                     state <= STATE_READY;
                 end
                 default: state <= state;
