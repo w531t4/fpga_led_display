@@ -46,7 +46,7 @@ localparam watchdog_cmd_t myled_row_watchdog = watchdog_cmd_t'({
 localparam readpixel_cmd_t cmd_pixel_1 = readpixel_cmd_t'({
     commands_pkg::READPIXEL, row_addr_view_t'('h00), col_addr_view_t'('h0078), color_t'('h132040)
 });
-localparam readpixel_cmd_t myled_row_pixel2 = readpixel_cmd_t'({
+localparam readpixel_cmd_t cmd_pixel_2 = readpixel_cmd_t'({
     commands_pkg::READPIXEL, row_addr_view_t'('h01), col_addr_view_t'('h0079), color_t'('h304013)
 });
 localparam fillrect_cmd_t myled_row_fillrect = fillrect_cmd_t'({
@@ -61,7 +61,7 @@ localparam fillrect_cmd_t myled_row_fillrect = fillrect_cmd_t'({
 localparam readpixel_cmd_t cmd_pixel_1 = readpixel_cmd_t'({
     commands_pkg::READPIXEL, row_addr_view_t'('h00), col_addr_view_t'('h30), color_t'('h132040)
 });
-localparam readpixel_cmd_t myled_row_pixel2 = readpixel_cmd_t'({
+localparam readpixel_cmd_t cmd_pixel_2 = readpixel_cmd_t'({
     commands_pkg::READPIXEL, row_addr_view_t'('h01), col_addr_view_t'('h32), color_t'('h304013)
 });
 localparam fillrect_cmd_t myled_row_fillrect = fillrect_cmd_t'({
@@ -79,7 +79,7 @@ localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg:
 localparam readpixel_cmd_t cmd_pixel_1 = readpixel_cmd_t'({
     commands_pkg::READPIXEL, row_addr_view_t'('h00), col_addr_view_t'('h0078), color_t'('h1020)
 });
-localparam readpixel_cmd_t myled_row_pixel2 = readpixel_cmd_t'({
+localparam readpixel_cmd_t cmd_pixel_2 = readpixel_cmd_t'({
     commands_pkg::READPIXEL, row_addr_view_t'('h01), col_addr_view_t'('h0079), color_t'('h3040)
 });
 localparam fillrect_cmd_t myled_row_fillrect = fillrect_cmd_t'({
@@ -94,7 +94,7 @@ localparam fillrect_cmd_t myled_row_fillrect = fillrect_cmd_t'({
 localparam readpixel_cmd_t cmd_pixel_1 = readpixel_cmd_t'({
     commands_pkg::READPIXEL, row_addr_view_t'('h00), col_addr_view_t'('h30), color_t'('h1020)
 });
-localparam readpixel_cmd_t myled_row_pixel2 = readpixel_cmd_t'({
+localparam readpixel_cmd_t cmd_pixel_2 = readpixel_cmd_t'({
     commands_pkg::READPIXEL, row_addr_view_t'('h01), col_addr_view_t'('h32), color_t'('h3040)
 });
 localparam fillrect_cmd_t myled_row_fillrect = fillrect_cmd_t'({
@@ -117,7 +117,7 @@ localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg:
     myled_row_fillpanel, \
     myled_row_fillrect, \
     cmd_pixel_1, \
-    myled_row_pixel2, \
+    cmd_pixel_2, \
     myled_row_brightness_1, \
     myled_row_brightness_2, \
     myled_row_brightness_3, \
