@@ -25,7 +25,7 @@ localparam readrow_cmd_t myled_row_basic = readrow_cmd_t'({
 `endif  // W128
 `endif  // RGB24
 // Add tests for pixel set command
-localparam brightness3_cmd_t myled_row_brightness_1 = brightness3_cmd_t'({commands_pkg::BRIGHTNESS_THREE});
+localparam brightness3_cmd_t cmd_brightness_1 = brightness3_cmd_t'({commands_pkg::BRIGHTNESS_THREE});
 
 localparam readbrightness_cmd_t myled_row_brightness_2 = readbrightness_cmd_t'({
     commands_pkg::READBRIGHTNESS, brightness_level_view_t'('h23)
@@ -118,7 +118,7 @@ localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg:
     myled_row_fillrect, \
     cmd_pixel_1, \
     cmd_pixel_2, \
-    myled_row_brightness_1, \
+    cmd_brightness_1, \
     myled_row_brightness_2, \
     myled_row_brightness_3, \
     myled_row_basic
