@@ -16,9 +16,7 @@ module matrix_scan #(
     input clk_in,
 
     // [5:0]  64 width
-    output [calc::num_column_address_bits(
-PIXEL_WIDTH
-)-1:0] column_address,  /* the current column (clocking out now) */
+    output types::col_addr_t column_address,  /* the current column (clocking out now) */
     // [3:0] 16 height rows (two of them)
     output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,  /* the current row (clocking out now) */
     // [3:0] 16 height rows (two of them)
@@ -56,6 +54,8 @@ PIXEL_WIDTH
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
+    // TODO: This is missing the -1... it's a bit larger.. and apparently needed by timeout_clk_pixel_load_en (below)
+    //       Device is functional without it, but worth clarifying exactly what the need is
     wire [calc::num_column_address_bits(PIXEL_WIDTH):0] pixel_load_en_counter_output;
     assign row_latch = row_latch_state == 2'b10;
 
@@ -71,13 +71,13 @@ PIXEL_WIDTH
        external logic should present the pixel value on the rising edge */
     timeout #(
         // 7
-        .COUNTER_WIDTH(calc::num_column_address_bits(PIXEL_WIDTH) + 1)
+        .COUNTER_WIDTH($bits(types::col_addr_t) + 1)
     ) timeout_clk_pixel_load_en (
         .reset  (reset),
         .clk_in (clk_in),
         .start  (clk_state),
         // 7'd64
-        .value  ((calc::num_column_address_bits(PIXEL_WIDTH) + 1)'(PIXEL_WIDTH)),
+        .value  (($bits(types::col_addr_t) + 1)'(PIXEL_WIDTH)),
         .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
     );

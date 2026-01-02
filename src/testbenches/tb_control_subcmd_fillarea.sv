@@ -29,37 +29,36 @@ module tb_control_subcmd_fillarea #(
     localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR_ALT = {BYTES_PER_PIXEL{8'hA5}};
 
     // === Testbench scaffolding ===
-    logic                                                                                   clk;
-    logic                                                                                   subcmd_enable;
-    wire  [                                 calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
-    wire  [                                   calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
-    wire  [                           calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
-    wire                                                                                    ram_write_enable;
-    wire                                                                                    ram_access_start;
-    logic                                                                                   done;
-    wire                                                                                    pre_done;
+    logic clk;
+    logic subcmd_enable;
+    wire types::col_addr_t column;
+    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
+    wire ram_write_enable;
+    wire ram_access_start;
+    logic done;
+    wire pre_done;
     logic [calc::num_row_column_pixel_bits(PIXEL_HEIGHT, PIXEL_WIDTH, BYTES_PER_PIXEL)-1:0] addr;
-    logic [                                                              MEM_NUM_BYTES-1:0] mem;
-    logic [                                                              MEM_NUM_BYTES-1:0] valid_mask;
-    int                                                                                     remaining_valid_bytes;
-    wire  [                                                               OUT_BITWIDTH-1:0] data_out;
-    logic                                                                                   reset;
-    logic [                                                        (BYTES_PER_PIXEL*8)-1:0] color_in;
+    logic [MEM_NUM_BYTES-1:0] mem;
+    logic [MEM_NUM_BYTES-1:0] valid_mask;
+    int remaining_valid_bytes;
+    wire [OUT_BITWIDTH-1:0] data_out;
+    logic reset;
+    logic [(BYTES_PER_PIXEL*8)-1:0] color_in;
 
     // === DUT wiring ===
     control_subcmd_fillarea #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset),
         .enable(subcmd_enable),
         .clk(clk),
         .ack(done),
-        .x1({calc::num_column_address_bits(PIXEL_WIDTH) {1'b0}}),
+        .x1(types::col_addr_t'(0)),
         .y1({calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}}),
-        .width((calc::num_column_address_bits(PIXEL_WIDTH))'(PIXEL_WIDTH)),
+        .width(types::col_addr_t'(PIXEL_WIDTH)),
         .height((calc::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
         .color(color_in),
         .row(row),
@@ -81,13 +80,12 @@ module tb_control_subcmd_fillarea #(
     // Drop the pixel bits, then take the next chunk: the column number.
     function automatic int unsigned mask_col_idx(input int unsigned idx);
         mask_col_idx = (idx >> calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)) &
-            ((1 << calc::num_column_address_bits(PIXEL_WIDTH)) - 1);
+            ((1 << $bits(types::col_addr_t)) - 1);
     endfunction
 
     // Drop pixel + column bits; what's left is the row number.
     function automatic int unsigned mask_row_idx(input int unsigned idx);
-        mask_row_idx = idx >>
-            (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) + calc::num_column_address_bits(PIXEL_WIDTH));
+        mask_row_idx = idx >> (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) + $bits(types::col_addr_t));
     endfunction
 
     // We build a mask of bits representing where each byte written by the

@@ -4,7 +4,6 @@
 module control_cmd_fillrect #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -16,7 +15,7 @@ module control_cmd_fillrect #(
     input mem_clk,
 
     output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
-    output logic [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
@@ -24,9 +23,7 @@ module control_cmd_fillrect #(
     output logic ready_for_data,
     output logic done
 );
-    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain(
-        calc::num_column_address_bits(PIXEL_WIDTH)
-    );
+    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain($bits(types::col_addr_t));
     localparam integer unsigned safe_bits_needed_for_column_byte_counter = calc::safe_bits(_NUM_COLUMN_BYTES_NEEDED);
     typedef enum {
         STATE_X1_CAPTURE,      // 0
@@ -159,16 +156,15 @@ module control_cmd_fillrect #(
     control_subcmd_fillarea #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset || local_reset),
         .enable(subcmd_enable),
         .clk(mem_clk),
         .ack(done),
-        .x1((calc::num_column_address_bits(PIXEL_WIDTH))'(x1)),
+        .x1(types::col_addr_t'(x1)),
         .y1(y1),
-        .width((calc::num_column_address_bits(PIXEL_WIDTH))'(width)),
+        .width(types::col_addr_t'(width)),
         .height((calc::num_row_address_bits(PIXEL_HEIGHT))'(height)),
         .color(selected_color),
         .row(row),
