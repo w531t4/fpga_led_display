@@ -34,7 +34,7 @@ module debugger #(
             debug_start <= 0;
             count <= 0;
         end else begin
-            if (types_pkg::uint_t'(count) == DIVIDER_TICKS - 1) begin
+            if (types::uint_t'(count) == DIVIDER_TICKS - 1) begin
                 debug_start <= 1;
                 count <= 0;
             end else begin
