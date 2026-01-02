@@ -22,7 +22,7 @@ module tb_control_cmd_readrow #(
     localparam int unsigned STREAM_BITCOUNT = $bits(
         cmd_readrow
     ) - $bits(
-        commands_pkg::cmd_opcode_t
+        commands_pkg::opcode_t
     );  // row selector + data payload
 
     localparam int unsigned STREAM_BYTECOUNT = calc_pkg::num_bytes_to_contain(STREAM_BITCOUNT);

@@ -36,9 +36,9 @@ package commands_pkg;
         BRIGHTNESS_EIGHT = "8",
 `endif
         BRIGHTNESS_NINE  = "9"
-    } cmd_opcode_t;
+    } opcode_t;
     typedef union packed {
-        cmd_opcode_t opcode;
+        opcode_t opcode;
         logic [7:0]  data;
     } indata8_t;
 endpackage
