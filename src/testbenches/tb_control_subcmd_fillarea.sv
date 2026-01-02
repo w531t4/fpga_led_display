@@ -183,7 +183,7 @@ module tb_control_subcmd_fillarea #(
         addr <= {row, column, pixel};
         if (ram_write_enable && subcmd_enable) begin
             // Each write must be in-range, unique, and match the requested color byte for that pixel lane.
-            if (types_pkg::uint_t'(row) >= PIXEL_HEIGHT || types_pkg::uint_t'(column) >= PIXEL_WIDTH || types_pkg::uint_t'(pixel) >= BYTES_PER_PIXEL) begin
+            if (types::uint_t'(row) >= PIXEL_HEIGHT || types::uint_t'(column) >= PIXEL_WIDTH || types::uint_t'(pixel) >= BYTES_PER_PIXEL) begin
                 $display("out-of-range write: row=%0d col=%0d pixel=%0d", row, column, pixel);
                 $stop;
             end else begin
