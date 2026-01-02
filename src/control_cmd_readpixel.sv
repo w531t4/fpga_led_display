@@ -3,7 +3,6 @@
 `default_nettype none
 module control_cmd_readpixel #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -13,7 +12,7 @@ module control_cmd_readpixel #(
     input clk,
     input enable,
 
-    output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output types::row_addr_t row,
     output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
@@ -41,7 +40,7 @@ module control_cmd_readpixel #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_CAPTURE;
-            row <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            row <= 'b0;
             pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
             column_byte_counter <= {safe_bits_needed_for_column_byte_counter{1'b0}};
@@ -54,11 +53,7 @@ module control_cmd_readpixel #(
                         done <= 1'b0;
                         column_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                         state <= STATE_COLUMN_CAPTURE;
-                        row[calc::num_row_address_bits(
-                            PIXEL_HEIGHT
-                        )-1:0] <= data_in[calc::num_row_address_bits(
-                            PIXEL_HEIGHT
-                        )-1:0];
+                        row <= types::row_addr_t'(data_in);
                     end
                 end
                 STATE_COLUMN_CAPTURE: begin

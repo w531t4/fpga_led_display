@@ -10,7 +10,7 @@
 // and issues each address once before returning to idle.
 module tb_control_cmd_fillrect;
     localparam int unsigned BYTES_PER_PIXEL = 2;
-    localparam int unsigned PIXEL_HEIGHT = 4;
+    localparam int unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT;
     localparam int unsigned PIXEL_HALFHEIGHT = PIXEL_HEIGHT;
     localparam int unsigned PIXEL_WIDTH = params::PIXEL_WIDTH;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
@@ -29,7 +29,7 @@ module tb_control_cmd_fillrect;
     logic                                                                         reset;
     logic                                                                         enable;
     logic                  [                                                 7:0] data_in;
-    wire                   [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire types::row_addr_t                                                        row;
     wire types::col_addr_t                                                        column;
     wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
     wire                                                                          ram_write_enable;
@@ -42,8 +42,7 @@ module tb_control_cmd_fillrect;
 
     // === DUT wiring ===
     control_cmd_fillrect #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT)
+        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
     ) dut (
         .reset(reset),
         .data_in(data_in),

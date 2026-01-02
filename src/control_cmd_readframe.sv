@@ -16,7 +16,7 @@ module control_cmd_readframe #(
     input enable,
     input clk,
 
-    output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output types::row_addr_t row,
     output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
@@ -36,7 +36,7 @@ module control_cmd_readframe #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_FRAME_PRIMEMEMWRITE;
-            row <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            row <= 'b0;
             column <= 'b0;
             pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
@@ -46,7 +46,7 @@ module control_cmd_readframe #(
                     if (enable) begin
                         /* first, get the row to write to */
                         state <= STATE_READ_FRAMECONTENT;
-                        row <= (calc::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT - 1);
+                        row <= types::row_addr_t'(PIXEL_HEIGHT - 1);
                         column <= types::col_addr_t'(PIXEL_WIDTH - 1);
                         pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears

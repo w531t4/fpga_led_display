@@ -3,7 +3,6 @@
 `default_nettype none
 module control_cmd_readrow #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -15,7 +14,7 @@ module control_cmd_readrow #(
     input enable,
     input clk,
 
-    output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output types::row_addr_t row,
     output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
@@ -36,7 +35,7 @@ module control_cmd_readrow #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_CAPTURE;
-            row <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            row <= 'b0;
             column <= 'b0;
             pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
@@ -44,11 +43,7 @@ module control_cmd_readrow #(
             case (state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
-                        row[calc::num_row_address_bits(
-                            PIXEL_HEIGHT
-                        )-1:0] <= data_in[calc::num_row_address_bits(
-                            PIXEL_HEIGHT
-                        )-1:0];
+                        row <= types::row_addr_t'(data_in);
                         ram_write_enable <= 1'b0;
                         data_out <= 8'b0;
                         state <= STATE_ROW_PRIMEMEMWRITE;

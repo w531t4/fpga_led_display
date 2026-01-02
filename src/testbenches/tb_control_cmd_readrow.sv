@@ -8,7 +8,6 @@
 
 module tb_control_cmd_readrow #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
@@ -36,7 +35,7 @@ module tb_control_cmd_readrow #(
     wire                                                             cmd_readrow_as;
     wire                                                             cmd_readrow_done;
     wire  [                                                     7:0] cmd_readrow_do;
-    wire  [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
+    wire types::row_addr_t                                           cmd_readrow_row_addr;
     wire types::col_addr_t                                           cmd_readrow_col_addr;
     wire  [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
     logic                                                            junk1;
@@ -70,7 +69,6 @@ module tb_control_cmd_readrow #(
 
     control_cmd_readrow #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) dut (
@@ -128,7 +126,7 @@ module tb_control_cmd_readrow #(
 
     // === Scoreboard / monitor ===
     // Task helpers to keep the scoreboard readable.
-    task automatic expect_row_capture(input logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] sel_bits);
+    task automatic expect_row_capture(input types::row_addr_t sel_bits);
         assert (cmd_readrow_row_addr == sel_bits)
         else $fatal(1, "Row latch mismatch: expected %0d, got %0d", sel_bits, cmd_readrow_row_addr);
         assert (cmd_readrow_we == 1'b0 && cmd_readrow_do == 8'b0)
@@ -170,7 +168,7 @@ module tb_control_cmd_readrow #(
             // Check the effects of the previous enable pulse (sampled one cycle ago).
             if (last_enable_pulse) begin
                 if (last_enable_idx == 0) begin
-                    expect_row_capture(last_enable_byte[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0]);
+                    expect_row_capture(types::row_addr_t'(last_enable_byte));
                 end else begin
                     int exp_col;
                     int exp_pix;

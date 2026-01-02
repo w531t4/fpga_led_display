@@ -18,7 +18,7 @@ module tb_control_cmd_readframe;
     logic                                                                         reset;
     logic                                                                         enable;
     logic                  [                                                 7:0] data_in;
-    wire                   [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire types::row_addr_t                                                        row;
     wire types::col_addr_t                                                        column;
     wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
     wire                   [                                                 7:0] data_out;

@@ -8,7 +8,6 @@
 
 module tb_control_cmd_readpixel #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -32,7 +31,7 @@ module tb_control_cmd_readpixel #(
     wire cmd_readpixel_as;
     wire cmd_readpixel_done;
     wire [7:0] cmd_readpixel_do;
-    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readpixel_row_addr;
+    wire types::row_addr_t cmd_readpixel_row_addr;
 
     wire types::col_addr_t cmd_readpixel_col_addr;
 
@@ -69,7 +68,6 @@ module tb_control_cmd_readpixel #(
 
     control_cmd_readpixel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
         ._UNUSED('d0)
     ) cmd_readpixel (
         .reset(reset),
@@ -151,14 +149,12 @@ module tb_control_cmd_readpixel #(
             if (last_enable_pulse) begin
                 if (last_enable_idx == 0) begin
                     // Row capture byte
-                    assert (cmd_readpixel_row_addr == last_enable_byte[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0])
+                    assert (cmd_readpixel_row_addr == types::row_addr_t'(last_enable_byte))
                     else
                         $fatal(
                             1,
                             "Row latch mismatch: expected %0d, got %0d",
-                            last_enable_byte[calc::num_row_address_bits(
-                                PIXEL_HEIGHT
-                            )-1:0],
+                            types::row_addr_t'(last_enable_byte),
                             cmd_readpixel_row_addr
                         );
                     assert (cmd_readpixel_we == 1'b0 && cmd_readpixel_do == 8'b0)

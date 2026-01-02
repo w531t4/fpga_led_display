@@ -3,7 +3,6 @@
 `default_nettype none
 module control_cmd_fillrect #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -14,7 +13,7 @@ module control_cmd_fillrect #(
     input clk,
     input mem_clk,
 
-    output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output types::row_addr_t row,
     output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
@@ -44,8 +43,8 @@ module control_cmd_fillrect #(
     // verilator lint_on UNUSEDSIGNAL
     logic [safe_bits_needed_for_column_byte_counter-1:0] x1_byte_counter;
     logic [safe_bits_needed_for_column_byte_counter-1:0] width_byte_counter;
-    logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y1;
-    logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] height;
+    types::row_addr_t y1;
+    types::row_addr_t height;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
     logic [(BYTES_PER_PIXEL*8)-1:0] selected_color;
@@ -75,8 +74,8 @@ module control_cmd_fillrect #(
             width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
             x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
             width <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
-            y1 <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-            height <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            y1 <= 'b0;
+            height <= 'b0;
             local_reset <= 1'b0;
         end else begin
             case (state)
@@ -90,7 +89,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_Y1_CAPTURE: begin
                     if (enable) begin
-                        y1 <= data_in[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0];
+                        y1 <= types::row_addr_t'(data_in);
                         state <= STATE_WIDTH_CAPTURE;
                     end
                 end
@@ -104,7 +103,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_HEIGHT_CAPTURE: begin
                     if (enable) begin
-                        height <= data_in[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0];
+                        height <= types::row_addr_t'(data_in);
                         state  <= STATE_COLOR_CAPTURE;
                     end
                 end
@@ -145,8 +144,8 @@ module control_cmd_fillrect #(
                     selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
                     x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
                     width <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
-                    y1 <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-                    height <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+                    y1 <= 'b0;
+                    height <= 'b0;
                 end
                 default state <= state;
             endcase
@@ -155,7 +154,6 @@ module control_cmd_fillrect #(
 
     control_subcmd_fillarea #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset || local_reset),
@@ -165,7 +163,7 @@ module control_cmd_fillrect #(
         .x1(types::col_addr_t'(x1)),
         .y1(y1),
         .width(types::col_addr_t'(width)),
-        .height((calc::num_row_address_bits(PIXEL_HEIGHT))'(height)),
+        .height(types::row_addr_t'(height)),
         .color(selected_color),
         .row(row),
         .column(column),

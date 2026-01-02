@@ -32,7 +32,7 @@ module tb_control_subcmd_fillarea #(
     logic clk;
     logic subcmd_enable;
     wire types::col_addr_t column;
-    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire types::row_addr_t row;
     wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
     wire ram_write_enable;
     wire ram_access_start;
@@ -49,7 +49,6 @@ module tb_control_subcmd_fillarea #(
     // === DUT wiring ===
     control_subcmd_fillarea #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset),
@@ -57,9 +56,9 @@ module tb_control_subcmd_fillarea #(
         .clk(clk),
         .ack(done),
         .x1(types::col_addr_t'(0)),
-        .y1({calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}}),
+        .y1(types::row_addr_t'(0)),
         .width(types::col_addr_t'(PIXEL_WIDTH)),
-        .height((calc::num_row_address_bits(PIXEL_HEIGHT))'(PIXEL_HEIGHT)),
+        .height(types::row_addr_t'(PIXEL_HEIGHT)),
         .color(color_in),
         .row(row),
         .column(column),
@@ -145,7 +144,7 @@ module tb_control_subcmd_fillarea #(
 
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
         for (int r = PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
-            `WAIT_ASSERT(clk, (row == (calc::num_row_address_bits(PIXEL_HEIGHT))'(r)), ROW_ADVANCE_MAX_CYCLES)
+            `WAIT_ASSERT(clk, (row == types::row_addr_t'(r)), ROW_ADVANCE_MAX_CYCLES)
         end
         // Done should assert once the final byte of the final pixel is written.
         `WAIT_ASSERT(clk, (pre_done == 1), DONE_MAX_CYCLES)

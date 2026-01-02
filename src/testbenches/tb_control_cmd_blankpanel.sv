@@ -10,7 +10,7 @@
 // done pulses, and the FSM returns idle.
 module tb_control_cmd_blankpanel;
     localparam int unsigned BYTES_PER_PIXEL = 2;
-    localparam int unsigned PIXEL_HEIGHT = 4;
+    localparam int unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT;
     localparam int unsigned PIXEL_HALFHEIGHT = PIXEL_HEIGHT;
     localparam int unsigned PIXEL_WIDTH = params::PIXEL_WIDTH;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
@@ -23,7 +23,7 @@ module tb_control_cmd_blankpanel;
     logic                                                                         clk;
     logic                                                                         reset;
     logic                                                                         enable;
-    wire                   [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire types::row_addr_t                                                        row;
     wire types::col_addr_t                                                        column;
     wire                   [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
     wire                                                                          ram_write_enable;
