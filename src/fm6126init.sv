@@ -29,7 +29,7 @@ module fm6126init #(
 
     localparam integer unsigned STAGE1_OFFSET = 'd12, STAGE2_OFFSET = 'd13;
 
-
+    // TODO: Add enum for state
     localparam  logic [7:0]    STATE_INIT       = 8'b00000001,
                                STATE1_BEGIN     = 8'b00000010,
                                STATE1_END       = 8'b00000100,
