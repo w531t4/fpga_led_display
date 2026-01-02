@@ -3,7 +3,6 @@
 `default_nettype none
 module control_subcmd_fillarea #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -14,12 +13,12 @@ module control_subcmd_fillarea #(
     input clk,
     input ack,
     input types::col_addr_t x1,
-    input [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y1,
+    input types::row_addr_t y1,
     input types::col_addr_t width,
-    input [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] height,
+    input types::row_addr_t height,
     input [(BYTES_PER_PIXEL*8)-1:0] color,  // must be byte aligned
 
-    output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
+    output types::row_addr_t row,
     output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
@@ -38,7 +37,7 @@ module control_subcmd_fillarea #(
             |           ^(x1+width, y1+height)
     */
     wire types::col_addr_t x2;
-    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y2;
+    wire types::row_addr_t y2;
 
     assign x2 = x1 + width;
     assign y2 = y1 + height;
@@ -55,7 +54,7 @@ module control_subcmd_fillarea #(
             ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_ROW_PRIMEMEMWRITE;
-            row <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
+            row <= 'b0;
             column <= 'b0;
             pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
@@ -65,7 +64,7 @@ module control_subcmd_fillarea #(
                     if (enable) begin
 
                         state <= STATE_ROW_MEMWRITE;
-                        row <= (calc::num_row_address_bits(PIXEL_HEIGHT))'(y2 - 1);
+                        row <= y2 - 1;
                         column <= x2 - 1;
                         pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears
