@@ -58,10 +58,11 @@ TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing
 # Verilator needs full-paths otherwise vscode assumes they are in /src
-VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
-	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
-	$(abspath $(VSOURCES_WITHOUT_PKGS)) $(abspath $(TBSRCS))
-VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
+VERILATOR_ARGS_COMMON = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
+	-I$(abspath $(VINCLUDE_DIR)) -I$(abspath $(SRC_DIR)) \
+	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS)
+VERILATOR_ARGS_SOURCES = $(abspath $(VSOURCES_WITHOUT_PKGS)) $(abspath $(TBSRCS))
+VERILATOR_FLAGS:=-sv --lint-only -f build/verilator_args_common -f build/verilator_args_sources
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
 GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
@@ -115,7 +116,7 @@ endif
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build gamma_lut
 .DELETE_ON_ERROR:
-all: $(ARTIFACT_DIR)/verilator_args simulation lint
+all: $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources simulation lint
 #$(warning In a command script $(VVPOBJS))
 
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
@@ -138,11 +139,14 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv $(TB_DIR)/tb_%.args Mak
 		printf '%s:\n' $$dep >> $(DEPDIR)/$*.d; \
 	done
 
-$(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
-	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
+$(ARTIFACT_DIR)/verilator_args_common: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
+	@printf '%s' '$(VERILATOR_ARGS_COMMON)' > $@
 
-lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args
-	cat $(ARTIFACT_DIR)/verilator_args; printf "\n";
+$(ARTIFACT_DIR)/verilator_args_sources: $(ARTIFACT_DIR) $(VSOURCES_WITHOUT_PKGS) $(TBSRCS) Makefile
+	@printf '%s' '$(VERILATOR_ARGS_SOURCES)' > $@
+
+lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources
+	cat $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources; printf "\n";
 	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):
