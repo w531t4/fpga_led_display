@@ -24,6 +24,7 @@ package types;
         green_t green;
         blue_t  blue;
     } color_t;
+    typedef logic [$clog2(calc::num_bytes_to_contain($bits(color_t)))-1:0] color_index_t;
 
     typedef union packed {
         logic [calc::num_bytes_to_contain($bits(color_t))*8-1:0]    raw;
