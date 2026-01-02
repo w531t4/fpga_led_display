@@ -111,21 +111,21 @@ typedef union packed {
 //
 typedef struct packed {
     // TODO: consistent ordering of row/column across commands
-    commands_pkg::opcode_t opcode;
+    cmd::opcode_t opcode;
     row_field_t            y1;
     col_field_t            x1;
     color_field_t          color;
 } readpixel_cmd_t;
 
 typedef struct packed {
-    commands_pkg::opcode_t opcode;
+    cmd::opcode_t opcode;
     color_t color;
 } fillpanel_cmd_t;
 
-typedef struct packed {commands_pkg::opcode_t opcode;} blankpanel_cmd_t;
+typedef struct packed {cmd::opcode_t opcode;} blankpanel_cmd_t;
 
 typedef struct packed {
-    commands_pkg::opcode_t opcode;
+    cmd::opcode_t opcode;
     col_field_t            x1;
     row_field_t            y1;
     col_field_t            width;
@@ -134,20 +134,20 @@ typedef struct packed {
 } fillrect_cmd_t;
 
 typedef struct packed {
-    commands_pkg::opcode_t opcode;
+    cmd::opcode_t opcode;
     brightness_field_t     level;
 } readbrightness_cmd_t;
 
 typedef struct packed {
-    commands_pkg::opcode_t opcode;
+    cmd::opcode_t opcode;
     row_field_t            y1;
     row_data_field_t       data;
 } readrow_cmd_t;
 
 typedef struct packed {
-    commands_pkg::opcode_t opcode;
+    cmd::opcode_t opcode;
     watchdog_field_t       data;
 } watchdog_cmd_t;
 
 // TODO: change opcode only commands to something like opcode_cmd_t
-typedef struct packed {commands_pkg::opcode_t opcode;} brightness3_cmd_t;
+typedef struct packed {cmd::opcode_t opcode;} brightness3_cmd_t;

@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-package commands_pkg;
+package cmd;
 
     // Command opcodes accepted by control_module.
     typedef enum logic [7:0] {

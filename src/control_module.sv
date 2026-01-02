@@ -17,7 +17,7 @@ module control_module #(
 ) (
     input reset,
     input clk_in,
-    input commands_pkg::indata8_t data_rx,
+    input cmd::indata8_t data_rx,
     input data_ready_n,
     output logic [2:0] rgb_enable,
     output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
@@ -60,7 +60,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         STATE_CMD_WATCHDOG         // 8
 `endif
     } ctrl_fsm_t;
-    commands_pkg::indata8_t data_rx_latch;
+    cmd::indata8_t data_rx_latch;
     logic ready_for_data_logic;
     logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
     logic ram_access_start;
@@ -104,7 +104,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     // this prevents testbench from continuing to send data (even though we're not ready to accept)
     always_ff @(posedge clk_in) begin
         if (reset) begin
-            data_rx_latch <= commands_pkg::indata8_t'(0);
+            data_rx_latch <= cmd::indata8_t'(0);
         end else if (ready_for_data) begin
             data_rx_latch <= data_rx;
         end
@@ -441,86 +441,86 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
             /* CMD: Main */
             if ((cmd_line_state == STATE_IDLE || state_done) && ~data_ready_n) begin
                 case (data_rx_latch.opcode)
-                    commands_pkg::RED_ENABLE: begin
+                    cmd::RED_ENABLE: begin
                         rgb_enable[0]  <= 1'b1;
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::RED_DISABLE: begin
+                    cmd::RED_DISABLE: begin
                         rgb_enable[0]  <= 1'b0;
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::GREEN_ENABLE: begin
+                    cmd::GREEN_ENABLE: begin
                         rgb_enable[1]  <= 1'b1;
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::GREEN_DISABLE: begin
+                    cmd::GREEN_DISABLE: begin
                         rgb_enable[1]  <= 1'b0;
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BLUE_ENABLE: begin
+                    cmd::BLUE_ENABLE: begin
                         rgb_enable[2]  <= 1'b1;
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BLUE_DISABLE: begin
+                    cmd::BLUE_DISABLE: begin
                         rgb_enable[2]  <= 1'b0;
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BRIGHTNESS_ONE: begin
+                    cmd::BRIGHTNESS_ONE: begin
                         brightness_temp[BRIGHTNESS_LEVELS-1] <= ~brightness_enable[BRIGHTNESS_LEVELS-1];
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BRIGHTNESS_TWO: begin
+                    cmd::BRIGHTNESS_TWO: begin
                         brightness_temp[BRIGHTNESS_LEVELS-2] <= ~brightness_enable[BRIGHTNESS_LEVELS-2];
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BRIGHTNESS_THREE: begin
+                    cmd::BRIGHTNESS_THREE: begin
                         brightness_temp[BRIGHTNESS_LEVELS-3] <= ~brightness_enable[BRIGHTNESS_LEVELS-3];
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BRIGHTNESS_FOUR: begin
+                    cmd::BRIGHTNESS_FOUR: begin
                         brightness_temp[BRIGHTNESS_LEVELS-4] <= ~brightness_enable[BRIGHTNESS_LEVELS-4];
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BRIGHTNESS_FIVE: begin
+                    cmd::BRIGHTNESS_FIVE: begin
                         brightness_temp[BRIGHTNESS_LEVELS-5] <= ~brightness_enable[BRIGHTNESS_LEVELS-5];
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BRIGHTNESS_SIX: begin
+                    cmd::BRIGHTNESS_SIX: begin
                         brightness_temp[BRIGHTNESS_LEVELS-6] <= ~brightness_enable[BRIGHTNESS_LEVELS-6];
                         cmd_line_state <= STATE_IDLE;
                     end
 `ifdef RGB24
-                    commands_pkg::BRIGHTNESS_SEVEN: begin
+                    cmd::BRIGHTNESS_SEVEN: begin
                         brightness_temp[BRIGHTNESS_LEVELS-7] <= ~brightness_enable[BRIGHTNESS_LEVELS-7];
                         cmd_line_state <= STATE_IDLE;
                     end
-                    commands_pkg::BRIGHTNESS_EIGHT: begin
+                    cmd::BRIGHTNESS_EIGHT: begin
                         brightness_temp[BRIGHTNESS_LEVELS-8] <= ~brightness_enable[BRIGHTNESS_LEVELS-8];
                         cmd_line_state <= STATE_IDLE;
                     end
 `endif
-                    commands_pkg::BRIGHTNESS_ZERO: begin
+                    cmd::BRIGHTNESS_ZERO: begin
                         brightness_temp <= {BRIGHTNESS_LEVELS{1'b0}};
                         cmd_line_state  <= STATE_IDLE;
                     end
-                    commands_pkg::BRIGHTNESS_NINE: begin
+                    cmd::BRIGHTNESS_NINE: begin
                         brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
                         cmd_line_state  <= STATE_IDLE;
                     end
-                    commands_pkg::READBRIGHTNESS: cmd_line_state <= STATE_CMD_READBRIGHTNESS;
-                    commands_pkg::BLANKPANEL: cmd_line_state <= STATE_CMD_BLANKPANEL;
-                    commands_pkg::FILLPANEL: cmd_line_state <= STATE_CMD_FILLPANEL;
-                    commands_pkg::FILLRECT: cmd_line_state <= STATE_CMD_FILLRECT;
-                    commands_pkg::READFRAME: cmd_line_state <= STATE_CMD_READFRAME;
-                    commands_pkg::READROW: begin
+                    cmd::READBRIGHTNESS: cmd_line_state <= STATE_CMD_READBRIGHTNESS;
+                    cmd::BLANKPANEL: cmd_line_state <= STATE_CMD_BLANKPANEL;
+                    cmd::FILLPANEL: cmd_line_state <= STATE_CMD_FILLPANEL;
+                    cmd::FILLRECT: cmd_line_state <= STATE_CMD_FILLRECT;
+                    cmd::READFRAME: cmd_line_state <= STATE_CMD_READFRAME;
+                    cmd::READROW: begin
                         cmd_line_state <= STATE_CMD_READROW;
                     end
-                    commands_pkg::READPIXEL: cmd_line_state <= STATE_CMD_READPIXEL;
+                    cmd::READPIXEL: cmd_line_state <= STATE_CMD_READPIXEL;
 `ifdef USE_WATCHDOG
-                    commands_pkg::WATCHDOG: cmd_line_state <= STATE_CMD_WATCHDOG;
+                    cmd::WATCHDOG: cmd_line_state <= STATE_CMD_WATCHDOG;
 `endif
 `ifdef DOUBLE_BUFFER
-                    commands_pkg::TOGGLE_FRAME: frame_select_temp <= ~frame_select;
+                    cmd::TOGGLE_FRAME: frame_select_temp <= ~frame_select;
 `endif
                     default: begin
                         cmd_line_state <= STATE_IDLE;
