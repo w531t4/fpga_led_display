@@ -73,7 +73,7 @@ localparam fillrect_cmd_t cmd_fillrect = fillrect_cmd_t'({
     color_t'('hE0A932)
 });
 `endif  // W128
-localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg::FILLPANEL, color_t'('h314287)});
+localparam fillpanel_cmd_t cmd_fillpanel = fillpanel_cmd_t'({commands_pkg::FILLPANEL, color_t'('h314287)});
 `else  // RGB24
 `ifdef W128
 localparam readpixel_cmd_t cmd_pixel_1 = readpixel_cmd_t'({
@@ -106,7 +106,7 @@ localparam fillrect_cmd_t cmd_fillrect = fillrect_cmd_t'({
     color_t'('hE0A9)
 });
 `endif  // W128
-localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg::FILLPANEL, color_t'('h3142)});
+localparam fillpanel_cmd_t cmd_fillpanel = fillpanel_cmd_t'({commands_pkg::FILLPANEL, color_t'('h3142)});
 `endif  // RGB24
 
 `define MYLED_ROW_FIELDS \
@@ -114,7 +114,7 @@ localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg:
 `ifdef USE_WATCHDOG \
     cmd_watchdog, \
 `endif \
-    myled_row_fillpanel, \
+    cmd_fillpanel, \
     cmd_fillrect, \
     cmd_pixel_1, \
     cmd_pixel_2, \
