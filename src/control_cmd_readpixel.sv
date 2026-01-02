@@ -54,7 +54,11 @@ module control_cmd_readpixel #(
                         done <= 1'b0;
                         column_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                         state <= STATE_COLUMN_CAPTURE;
-                        row[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] <= data_in[4:0];
+                        row[calc::num_row_address_bits(
+                            PIXEL_HEIGHT
+                        )-1:0] <= data_in[calc::num_row_address_bits(
+                            PIXEL_HEIGHT
+                        )-1:0];
                     end
                 end
                 STATE_COLUMN_CAPTURE: begin
