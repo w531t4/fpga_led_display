@@ -35,7 +35,7 @@ module tb_control_cmd_readpixel #(
 
     wire types::col_addr_t cmd_readpixel_col_addr;
 
-    wire [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readpixel_pixel_addr;
+    wire types::pixel_addr_t cmd_readpixel_pixel_addr;
     wire junk1;
     // verilator lint_off UNUSEDSIGNAL
     logic [7:0] expected_bytes[STREAM_BYTES];
@@ -179,7 +179,7 @@ module tb_control_cmd_readpixel #(
                             last_enable_byte,
                             cmd_readpixel_do
                         );
-                    assert (cmd_readpixel_pixel_addr == (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(exp_pix))
+                    assert (cmd_readpixel_pixel_addr == types::pixel_addr_t'(exp_pix))
                     else
                         $fatal(
                             1,
