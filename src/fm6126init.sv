@@ -17,10 +17,18 @@ module fm6126init #(
     output logic pixclock_out,
     output logic reset_notify
 );
-
+    typedef enum logic [2:0] {
+        STATE_INIT,
+        STATE1_BEGIN,
+        STATE1_END,
+        STATE2_BEGIN,
+        STATE2_END,
+        STATE_FINISH,
+        STATE_FINISH2
+    } state_e;
     logic [15:0] C12;
     logic [15:0] C13;
-    logic [ 7:0] currentState;
+    state_e currentState;
     logic [ 5:0] widthCounter;  // 16 bits
 
     //TODO: how do i not manually specify 64 here?
@@ -29,14 +37,6 @@ module fm6126init #(
 
     localparam integer unsigned STAGE1_OFFSET = 'd12, STAGE2_OFFSET = 'd13;
 
-    // TODO: Add enum for state
-    localparam  logic [7:0]    STATE_INIT       = 8'b00000001,
-                               STATE1_BEGIN     = 8'b00000010,
-                               STATE1_END       = 8'b00000100,
-                               STATE2_BEGIN     = 8'b00001000,
-                               STATE2_END       = 8'b00010000,
-                               STATE_FINISH     = 8'b00100000,
-                               STATE_FINISH2    = 8'b01000000;
     // End of default setup for RGB Matrix 64x32 panel
     always @(posedge clk_in) begin
         if (reset) begin
