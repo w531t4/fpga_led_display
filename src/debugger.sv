@@ -28,6 +28,7 @@ module debugger #(
     logic [7:0] debug_bits;
     divider_ticks_index_t count;
     typedef logic [DATA_WIDTH-1:0] data_t;
+    typedef logic [$clog2(DATA_WIDTH)-1:0] data_index_t;
 
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in) begin
@@ -62,13 +63,13 @@ module debugger #(
             do_close <= 0;
             data_copy <= 0;
             currentState <= STATE_IDLE;
-            current_position <= ($clog2(DATA_WIDTH))'(DATA_WIDTH);
+            current_position <= data_index_t'(DATA_WIDTH);
             tx_start <= 0;
             debug_bits <= 0;
         end else begin
             //            if (debug_start && currentState == STATE_IDLE) begin
             if (debug_start && currentState == STATE_IDLE) begin
-                current_position <= ($clog2(DATA_WIDTH))'(DATA_WIDTH);
+                current_position <= data_index_t'(DATA_WIDTH);
                 data_copy <= data_in;
                 currentState <= STATE_START;
             end else if (currentState != STATE_IDLE) begin
