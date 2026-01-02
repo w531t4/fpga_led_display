@@ -34,7 +34,7 @@ localparam readbrightness_cmd_t cmd_brightness_3 = readbrightness_cmd_t'({
     commands_pkg::READBRIGHTNESS, brightness_level_view_t'('h38)
 });  // "T" + \x38
 
-localparam blankpanel_cmd_t myled_row_blankpanel = blankpanel_cmd_t'({commands_pkg::BLANKPANEL});
+localparam blankpanel_cmd_t cmd_blankpanel = blankpanel_cmd_t'({commands_pkg::BLANKPANEL});
 
 `ifdef USE_WATCHDOG
 localparam watchdog_cmd_t cmd_watchdog = watchdog_cmd_t'({
@@ -110,7 +110,7 @@ localparam fillpanel_cmd_t myled_row_fillpanel = fillpanel_cmd_t'({commands_pkg:
 `endif  // RGB24
 
 `define MYLED_ROW_FIELDS \
-    myled_row_blankpanel, \
+    cmd_blankpanel, \
 `ifdef USE_WATCHDOG \
     cmd_watchdog, \
 `endif \
