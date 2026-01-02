@@ -46,7 +46,8 @@ PIXEL_WIDTH
 
     wire clk_pixel_load_en;  /* enables the pixel load clock */
     logic clk_pixel_en;  /* enables the pixel clock, delayed by one cycle from the load clock */
-    logic [1:0] row_latch_state;
+    typedef logic [1:0] row_latch_state_t;
+    row_latch_state_t row_latch_state;
 
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
@@ -56,7 +57,7 @@ PIXEL_WIDTH
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
     wire [calc::num_column_address_bits(PIXEL_WIDTH):0] pixel_load_en_counter_output;
-    assign row_latch = row_latch_state[1:0] == 2'b10;
+    assign row_latch = row_latch_state == 2'b10;
 
     assign clk_state = state == 2'b10;
 `ifdef DEBUGGER
