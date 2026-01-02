@@ -143,10 +143,10 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
-    wire [BRIGHTNESS_LEVELS-1:0] brightness_mask;
+    wire types::brightness_level_t brightness_mask;
 
     wire [2:0] rgb_enable;
-    wire [BRIGHTNESS_LEVELS-1:0] brightness_enable;
+    wire types::brightness_level_t brightness_enable;
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -464,7 +464,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) px_top (
         .pixel_data(pixeldata_top),
@@ -481,7 +480,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) px_bottom (
         .pixel_data(pixeldata_bottom),

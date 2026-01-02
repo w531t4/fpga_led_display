@@ -26,7 +26,7 @@ module tb_matrix_scan #(
     wire clk_pixel;
     wire row_latch;
     wire output_enable;
-    wire [BRIGHTNESS_LEVELS-1:0] brightness_mask;
+    wire types::brightness_level_t brightness_mask;
 
 
     matrix_scan #(

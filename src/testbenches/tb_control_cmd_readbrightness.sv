@@ -9,22 +9,19 @@
 // Simple handshake test: captures brightness byte, asserts brightness_change_en/done,
 // then returns outputs to idle.
 module tb_control_cmd_readbrightness;
-    localparam int unsigned BRIGHTNESS_LEVELS = 6;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
 
     // === Testbench scaffolding ===
-    logic                         clk;
-    logic                         reset;
-    logic                         enable;
-    logic [                  7:0] data_in;
-    wire  [BRIGHTNESS_LEVELS-1:0] data_out;
-    wire                          brightness_change_en;
-    wire                          done;
+    logic                                clk;
+    logic                                reset;
+    logic                                enable;
+    logic                          [7:0] data_in;
+    wire types::brightness_level_t       data_out;
+    wire                                 brightness_change_en;
+    wire                                 done;
 
     // === DUT wiring ===
-    control_cmd_readbrightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS)
-    ) dut (
+    control_cmd_readbrightness #() dut (
         .reset(reset),
         .data_in(data_in),
         .clk(clk),
@@ -57,7 +54,7 @@ module tb_control_cmd_readbrightness;
         else $fatal(1, "done not asserted");
         assert (brightness_change_en == 1'b1)
         else $fatal(1, "brightness_change_en not asserted");
-        assert (data_out == data_in[BRIGHTNESS_LEVELS-1:0])
+        assert (data_out == data_in)
         else $fatal(1, "Unexpected data_out: %0b", data_out);
         enable = 1'b0;
         @(posedge clk);  // clear handshake on next edge
@@ -77,7 +74,7 @@ module tb_control_cmd_readbrightness;
             else $fatal(1, "done not asserted on enable");
             assert (brightness_change_en == 1'b1)
             else $fatal(1, "brightness_change_en not asserted on enable");
-            assert (data_out == data_in[BRIGHTNESS_LEVELS-1:0])
+            assert (data_out == data_in)
             else $fatal(1, "Unexpected data_out on enable: %0b", data_out);
         end
     end
