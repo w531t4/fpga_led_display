@@ -61,7 +61,9 @@ module tb_control_cmd_blankpanel;
         clk = 0;
         reset = 1;
         enable = 0;
+        // verilator lint_off WIDTHCONCAT
         mem = {MEM_NUM_BYTES{1'b1}};
+        // verilator lint_on WIDTHCONCAT
         writes_seen = 0;
         @(posedge clk) @(posedge clk) reset = 0;
     end
@@ -83,7 +85,9 @@ module tb_control_cmd_blankpanel;
     always @(posedge clk) begin
         if (reset) begin
             writes_seen <= 0;
+            // verilator lint_off WIDTHCONCAT
             mem <= {MEM_NUM_BYTES{1'b1}};
+            // verilator lint_on WIDTHCONCAT
         end else if (ram_write_enable) begin
             logic [calc::num_row_column_pixel_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL)-1:0] addr;
             addr = {row, column, pixel};
