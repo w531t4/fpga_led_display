@@ -19,7 +19,7 @@ module tb_matrix_scan #(
     localparam real ADJUSTED_CLOCK = SIM_HALF_PERIOD_NS * DIVIDE_CLK_BY_X_FOR_MATRIX;
     logic clk;
     logic reset;
-    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;
+    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
     wire clk_pixel_load;

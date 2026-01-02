@@ -25,7 +25,7 @@ module tb_control_cmd_readrow #(
         commands_pkg::opcode_t
     );  // row selector + data payload
 
-    localparam int unsigned STREAM_BYTECOUNT = calc_pkg::num_bytes_to_contain(STREAM_BITCOUNT);
+    localparam int unsigned STREAM_BYTECOUNT = calc::num_bytes_to_contain(STREAM_BITCOUNT);
     localparam int unsigned STREAM_TIMEOUT_CYCLES = STREAM_BYTECOUNT * (CLK_DIV_VALUE * 4);
 
     // verilog_format: off
@@ -42,9 +42,9 @@ module tb_control_cmd_readrow #(
     wire                                                             cmd_readrow_as;
     wire                                                             cmd_readrow_done;
     wire  [                                                     7:0] cmd_readrow_do;
-    wire  [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
-    wire  [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readrow_col_addr;
-    wire  [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
+    wire  [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
+    wire  [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readrow_col_addr;
+    wire  [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
     logic                                                            junk1;
     logic [                                                     7:0] expected_bytes         [STREAM_BYTECOUNT];
     int                                                              enable_count;
@@ -134,7 +134,7 @@ module tb_control_cmd_readrow #(
 
     // === Scoreboard / monitor ===
     // Task helpers to keep the scoreboard readable.
-    task automatic expect_row_capture(input logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] sel_bits);
+    task automatic expect_row_capture(input logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] sel_bits);
         assert (cmd_readrow_row_addr == sel_bits)
         else $fatal(1, "Row latch mismatch: expected %0d, got %0d", sel_bits, cmd_readrow_row_addr);
         assert (cmd_readrow_we == 1'b0 && cmd_readrow_do == 8'b0)
@@ -146,9 +146,9 @@ module tb_control_cmd_readrow #(
         else $fatal(1, "ram_write_enable deasserted during data transfer at byte %0d", byte_idx);
         assert (cmd_readrow_do == data_byte)
         else $fatal(1, "Data mismatch at byte %0d: expected 0x%0h got 0x%0h", byte_idx, data_byte, cmd_readrow_do);
-        assert (cmd_readrow_col_addr == (calc_pkg::num_column_address_bits(PIXEL_WIDTH))'(exp_col))
+        assert (cmd_readrow_col_addr == (calc::num_column_address_bits(PIXEL_WIDTH))'(exp_col))
         else $fatal(1, "Column mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_col, cmd_readrow_col_addr);
-        assert (cmd_readrow_pixel_addr == (calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(exp_pix))
+        assert (cmd_readrow_pixel_addr == (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(exp_pix))
         else $fatal(1, "Pixel mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_pix, cmd_readrow_pixel_addr);
         assert (cmd_readrow_as != prev_ram_as)
         else $fatal(1, "ram_access_start failed to toggle at byte %0d", byte_idx);
@@ -176,7 +176,7 @@ module tb_control_cmd_readrow #(
             // Check the effects of the previous enable pulse (sampled one cycle ago).
             if (last_enable_pulse) begin
                 if (last_enable_idx == 0) begin
-                    expect_row_capture(last_enable_byte[calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0]);
+                    expect_row_capture(last_enable_byte[calc::num_row_address_bits(PIXEL_HEIGHT)-1:0]);
                 end else begin
                     int exp_col;
                     int exp_pix;
@@ -220,13 +220,13 @@ module tb_control_cmd_readrow #(
 
             if (cmd_readrow_done) begin
                 done_count <= done_count + 1;
-                assert (next_data_count == calc_pkg::num_bytes_to_contain($bits(cmd_readrow_local.data)))
+                assert (next_data_count == calc::num_bytes_to_contain($bits(cmd_readrow_local.data)))
                 else
                     $fatal(
                         1,
                         "Done asserted after %0d data bytes, expected %0d",
                         next_data_count,
-                        calc_pkg::num_bytes_to_contain(
+                        calc::num_bytes_to_contain(
                             $bits(cmd_readrow_local.data)
                         )
                     );

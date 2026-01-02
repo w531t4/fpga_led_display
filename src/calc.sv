@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
-package calc_pkg;
+package calc;
     function automatic int unsigned num_subpanels(input int unsigned pixel_height, input int unsigned pixel_halfheight);
         num_subpanels = pixel_height / pixel_halfheight;
     endfunction

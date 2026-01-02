@@ -92,22 +92,22 @@ module main #(
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out_frame1;
     //  [11:0]
-    wire [calc_pkg::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_a_address;
+    wire [calc::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
-    wire [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out;
-    wire [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame1;
+    wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out;
+    wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame1;
 `ifdef DOUBLE_BUFFER
     wire frame_select;
     wire [7:0] ram_a_data_out_frame2;
-    wire [calc_pkg::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame2;
+    wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame2;
 `endif
     //  [10:0]
-    wire [calc_pkg::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_b_address;
+    wire [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_b_address;
     wire ram_b_clk_enable;
 
-    wire [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_top;
-    wire [calc_pkg::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_bottom;
+    wire [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_top;
+    wire [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_bottom;
     wire ctrl_busy;
     wire ctrl_ready_for_data;
 
@@ -123,7 +123,7 @@ module main #(
     wire [3:0] cmd_line_state2;
     wire ram_access_start;
     wire ram_access_start_latch;
-    wire [calc_pkg::num_address_a_bits(
+    wire [calc::num_address_a_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] cmd_line_addr2;
     wire [7:0] num_commands_processed;
@@ -140,7 +140,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 `endif
 
     // [5:0]
-    wire [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;
+    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column_address;
     wire [3:0] row_address;
     wire [3:0] row_address_active;
     wire [BRIGHTNESS_LEVELS-1:0] brightness_mask;

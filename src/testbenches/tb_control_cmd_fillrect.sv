@@ -14,7 +14,7 @@ module tb_control_cmd_fillrect;
     localparam int unsigned PIXEL_HALFHEIGHT = PIXEL_HEIGHT;
     localparam int unsigned PIXEL_WIDTH = 4;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
-    localparam int MEM_NUM_BYTES = (1 << calc_pkg::num_address_a_bits(
+    localparam int MEM_NUM_BYTES = (1 << calc::num_address_a_bits(
         PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     ));
     localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR = 16'hBEEF;
@@ -29,9 +29,9 @@ module tb_control_cmd_fillrect;
     logic                                                            reset;
     logic                                                            enable;
     logic [                                                     7:0] data_in;
-    wire  [        calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
-    wire  [      calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
-    wire  [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
+    wire  [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row;
+    wire  [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column;
+    wire  [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel;
     wire                                                             ram_write_enable;
     wire                                                             ram_access_start;
     wire                                                             done;
@@ -108,7 +108,7 @@ module tb_control_cmd_fillrect;
             writes_seen <= 0;
             mem <= {MEM_NUM_BYTES{1'b1}};
         end else if (ram_write_enable) begin
-            logic [calc_pkg::num_row_column_pixel_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL)-1:0] addr;
+            logic [calc::num_row_column_pixel_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL)-1:0] addr;
             int byte_sel;
             logic [7:0] expected_byte;
             addr = {row, column, pixel};

@@ -23,44 +23,44 @@ typedef struct packed {
 
 localparam color_t __COLOR_T_ZERO = '0;
 typedef union packed {
-    logic [calc_pkg::num_bytes_to_contain($bits(__COLOR_T_ZERO))*8-1:0]    raw;
-    logic [calc_pkg::num_bytes_to_contain($bits(__COLOR_T_ZERO))-1:0][7:0] bytes;
+    logic [calc::num_bytes_to_contain($bits(__COLOR_T_ZERO))*8-1:0]    raw;
+    logic [calc::num_bytes_to_contain($bits(__COLOR_T_ZERO))-1:0][7:0] bytes;
     color_t                                                                color;
 } color_field_t;
 // ==== /COLOR ====
 
 // ==== ROW ADDRESS ====
-typedef logic [calc_pkg::num_row_address_bits(PIXEL_HEIGHT)-1:0] row_addr_t;
+typedef logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row_addr_t;
 localparam row_addr_t __ROW_ADDR_T_ZERO = '0;
 typedef struct packed {
-    logic [calc_pkg::num_padding_bits_needed_to_reach_byte_boundry($bits(__ROW_ADDR_T_ZERO))-1:0] pad;
+    logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(__ROW_ADDR_T_ZERO))-1:0] pad;
     row_addr_t                                                                                    address;
 } row_addr_view_t;
 
 typedef union packed {
-    logic [calc_pkg::num_bytes_to_contain($bits(__ROW_ADDR_T_ZERO))*8-1:0]    raw;
-    logic [calc_pkg::num_bytes_to_contain($bits(__ROW_ADDR_T_ZERO))-1:0][7:0] bytes;
+    logic [calc::num_bytes_to_contain($bits(__ROW_ADDR_T_ZERO))*8-1:0]    raw;
+    logic [calc::num_bytes_to_contain($bits(__ROW_ADDR_T_ZERO))-1:0][7:0] bytes;
     row_addr_view_t                                                           addr;
 } row_field_t;
 // ==== /ROW ADDRESS ====
 
 // ==== COLUMN ADDRESS ====
-typedef logic [calc_pkg::num_column_address_bits(PIXEL_WIDTH)-1:0] col_addr_t;
+typedef logic [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] col_addr_t;
 localparam col_addr_t __COL_ADDR_T_ZERO = '0;
 typedef struct packed {
-    logic [calc_pkg::num_padding_bits_needed_to_reach_byte_boundry($bits(__COL_ADDR_T_ZERO))-1:0] pad;  // unused MSBs
+    logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(__COL_ADDR_T_ZERO))-1:0] pad;  // unused MSBs
     col_addr_t address;  // LSBs
 } col_addr_view_t;
 
 typedef union packed {
-    logic [calc_pkg::num_bytes_to_contain($bits(__COL_ADDR_T_ZERO))*8-1:0]    raw;
-    logic [calc_pkg::num_bytes_to_contain($bits(__COL_ADDR_T_ZERO))-1:0][7:0] bytes;  // bytes[0] = LSB
+    logic [calc::num_bytes_to_contain($bits(__COL_ADDR_T_ZERO))*8-1:0]    raw;
+    logic [calc::num_bytes_to_contain($bits(__COL_ADDR_T_ZERO))-1:0][7:0] bytes;  // bytes[0] = LSB
     col_addr_view_t                                                           addr;
 } col_field_t;
 // ==== /COLUMN ADDRESS ====
 
 // ==== PIXEL ADDRESS ====
-typedef logic [calc_pkg::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel_addr_t;
+typedef logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel_addr_t;
 // ==== /PIXEL ADDRESS ====
 
 // ==== FRAMEBUFFER ADDRESS ====
@@ -101,7 +101,7 @@ typedef logic [params::WATCHDOG_SIGNATURE_BITS-1:0] watchdog_pattern_t;
 localparam watchdog_pattern_t __WATCHDOG_DATA_T_ZERO = '0;
 typedef union packed {
     logic [$bits(__WATCHDOG_DATA_T_ZERO)-1:0]                                      raw;
-    logic [calc_pkg::num_bytes_to_contain($bits(__WATCHDOG_DATA_T_ZERO))-1:0][7:0] bytes;
+    logic [calc::num_bytes_to_contain($bits(__WATCHDOG_DATA_T_ZERO))-1:0][7:0] bytes;
     watchdog_pattern_t                                                             data;
 } watchdog_field_t;
 // ==== /WATCHDOG ====
