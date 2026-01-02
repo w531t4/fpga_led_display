@@ -20,7 +20,7 @@ module control_module #(
     input cmd::indata8_t data_rx,
     input data_ready_n,
     output logic [2:0] rgb_enable,
-    output logic [BRIGHTNESS_LEVELS-1:0] brightness_enable,
+    output types::brightness_level_t brightness_enable,
     output logic [calc::num_data_a_bits()-1:0] ram_data_out,
     output logic [calc::num_address_a_bits(
 PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
@@ -62,7 +62,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     } ctrl_fsm_t;
     cmd::indata8_t data_rx_latch;
     logic ready_for_data_logic;
-    logic [BRIGHTNESS_LEVELS-1:0] brightness_temp;
+    types::brightness_level_t brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
     ctrl_fsm_t cmd_line_state;
@@ -80,7 +80,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         // NOTE: uart/alphabet.uart is BIG ENDIAN.
     logic state_done;
     logic brightness_change_enable;
-    logic [BRIGHTNESS_LEVELS-1:0] brightness_data_out;
+    types::brightness_level_t brightness_data_out;
 
 `ifdef DEBUGGER
     assign cmd_line_state2 = cmd_line_state;
@@ -168,9 +168,8 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     );
 
     wire cmd_readbrightness_done, cmd_readbrightness_be;
-    wire [BRIGHTNESS_LEVELS-1:0] cmd_readbrightness_do;
+    wire types::brightness_level_t cmd_readbrightness_do;
     control_cmd_readbrightness #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) cmd_readbrightness (
         .reset(reset),
@@ -329,7 +328,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         ram_access_start = 1'b0;
         state_done = 1'b0;
         brightness_change_enable = 1'b0;
-        brightness_data_out = {BRIGHTNESS_LEVELS{1'b0}};
+        brightness_data_out = 'b0;
         ready_for_data_logic = 1'b1;
         case (cmd_line_state)
             STATE_CMD_READBRIGHTNESS: begin
@@ -415,8 +414,8 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
             frame_select <= 1'b0;
             frame_select_temp <= 1'b0;
 `endif
-            brightness_enable <= {BRIGHTNESS_LEVELS{1'b1}};
-            brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
+            brightness_enable <= '1;  // all 1's
+            brightness_temp <= '1;  // all 1's;
 
             cmd_line_state <= STATE_IDLE;
 `ifdef DEBUGGER
@@ -465,6 +464,8 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
                         rgb_enable[2]  <= 1'b0;
                         cmd_line_state <= STATE_IDLE;
                     end
+                    // TODO: Change this. If the scale is (off/dark) 0 -> 9 (on/bright), then BRIGHTNESS_ONE (alone) should be relatively dim.
+                    //       However, this reads to me (as-is) that BRIGHTNESS_ONE will toggle the heights-weight bit
                     cmd::BRIGHTNESS_ONE: begin
                         brightness_temp[BRIGHTNESS_LEVELS-1] <= ~brightness_enable[BRIGHTNESS_LEVELS-1];
                         cmd_line_state <= STATE_IDLE;
@@ -500,11 +501,11 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
                     end
 `endif
                     cmd::BRIGHTNESS_ZERO: begin
-                        brightness_temp <= {BRIGHTNESS_LEVELS{1'b0}};
+                        brightness_temp <= 'b0;
                         cmd_line_state  <= STATE_IDLE;
                     end
                     cmd::BRIGHTNESS_NINE: begin
-                        brightness_temp <= {BRIGHTNESS_LEVELS{1'b1}};
+                        brightness_temp <= '1;  // all 1's
                         cmd_line_state  <= STATE_IDLE;
                     end
                     cmd::READBRIGHTNESS: cmd_line_state <= STATE_CMD_READBRIGHTNESS;

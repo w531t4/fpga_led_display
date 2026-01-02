@@ -10,7 +10,7 @@ module brightness_timeout #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input wire [BRIGHTNESS_LEVELS-1:0] brightness_mask_active,
+    input types::brightness_level_t brightness_mask_active,
     input wire clk_in,
     input wire reset,
     input wire row_latch,

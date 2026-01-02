@@ -18,7 +18,7 @@ module tb_brightness_timeout #(
     logic row_latch;
     wire output_enable;
     wire exceeded_overlap_time;
-    logic [BRIGHTNESS_LEVELS-1:0] brightness_mask_active;
+    types::brightness_level_t brightness_mask_active;
     brightness_timeout #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT),
