@@ -37,7 +37,7 @@ module tb_control_cmd_readrow #(
     wire                                                             cmd_readrow_done;
     wire  [                                                     7:0] cmd_readrow_do;
     wire  [        calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] cmd_readrow_row_addr;
-    wire  [      calc::num_column_address_bits(PIXEL_WIDTH)-1:0] cmd_readrow_col_addr;
+    wire types::col_addr_t                                           cmd_readrow_col_addr;
     wire  [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] cmd_readrow_pixel_addr;
     logic                                                            junk1;
     logic [                                                     7:0] expected_bytes         [STREAM_BYTECOUNT];
@@ -140,7 +140,7 @@ module tb_control_cmd_readrow #(
         else $fatal(1, "ram_write_enable deasserted during data transfer at byte %0d", byte_idx);
         assert (cmd_readrow_do == data_byte)
         else $fatal(1, "Data mismatch at byte %0d: expected 0x%0h got 0x%0h", byte_idx, data_byte, cmd_readrow_do);
-        assert (cmd_readrow_col_addr == (calc::num_column_address_bits(PIXEL_WIDTH))'(exp_col))
+        assert (cmd_readrow_col_addr == types::col_addr_t'(exp_col))
         else $fatal(1, "Column mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_col, cmd_readrow_col_addr);
         assert (cmd_readrow_pixel_addr == (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(exp_pix))
         else $fatal(1, "Pixel mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_pix, cmd_readrow_pixel_addr);

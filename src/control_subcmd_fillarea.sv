@@ -4,7 +4,6 @@
 module control_subcmd_fillarea #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -14,14 +13,14 @@ module control_subcmd_fillarea #(
     input enable,
     input clk,
     input ack,
-    input [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] x1,
+    input types::col_addr_t x1,
     input [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y1,
-    input [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] width,
+    input types::col_addr_t width,
     input [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] height,
     input [(BYTES_PER_PIXEL*8)-1:0] color,  // must be byte aligned
 
     output logic [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] row,
-    output logic [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] column,
+    output types::col_addr_t column,
     output logic [calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL)-1:0] pixel,
     output logic [7:0] data_out,
     output logic ram_write_enable,
@@ -38,8 +37,8 @@ module control_subcmd_fillarea #(
             |    -------.
             |           ^(x1+width, y1+height)
     */
-    wire [calc::num_column_address_bits(PIXEL_WIDTH)-1:0] x2;
-    wire [  calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y2;
+    wire types::col_addr_t x2;
+    wire [calc::num_row_address_bits(PIXEL_HEIGHT)-1:0] y2;
 
     assign x2 = x1 + width;
     assign y2 = y1 + height;
@@ -57,7 +56,7 @@ module control_subcmd_fillarea #(
             ram_access_start <= 1'b0;
             state <= STATE_ROW_PRIMEMEMWRITE;
             row <= {calc::num_row_address_bits(PIXEL_HEIGHT) {1'b0}};
-            column <= {calc::num_column_address_bits(PIXEL_WIDTH) {1'b0}};
+            column <= 'b0;
             pixel <= {calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL) {1'b0}};
             done <= 1'b0;
         end else begin
@@ -67,11 +66,7 @@ module control_subcmd_fillarea #(
 
                         state <= STATE_ROW_MEMWRITE;
                         row <= (calc::num_row_address_bits(PIXEL_HEIGHT))'(y2 - 1);
-                        column[calc::num_column_address_bits(
-                            PIXEL_WIDTH
-                        )-1:0] <= (calc::num_column_address_bits(
-                            PIXEL_WIDTH
-                        ))'(x2 - 1);
+                        column <= x2 - 1;
                         pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
@@ -86,11 +81,7 @@ module control_subcmd_fillarea #(
                             if (pixel == 'd0) begin
                                 pixel <= (calc::num_pixelcolorselect_bits(BYTES_PER_PIXEL))'(BYTES_PER_PIXEL - 1);
                                 if (column == x1) begin
-                                    column[calc::num_column_address_bits(
-                                        PIXEL_WIDTH
-                                    )-1:0] <= (calc::num_column_address_bits(
-                                        PIXEL_WIDTH
-                                    ))'(x2 - 1);
+                                    column <= x2 - 1;
                                     row <= row - 'd1;
                                 end else begin
                                     column <= column - 'd1;
