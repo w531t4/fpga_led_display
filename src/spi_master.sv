@@ -76,6 +76,7 @@ module spi_master #(
 
     //FSM i/o
     always @(start or cur or nbit or cdiv or rreg) begin
+        // verilator lint_off BLKSEQ
         nxt   = cur;
         clr   = 0;
         shift = 0;  //ss=0;
@@ -111,6 +112,7 @@ module spi_master #(
             end
             default: nxt = finish;
         endcase
+        // verilator lint_on BLKSEQ
     end  //always
 
     //state transistion
