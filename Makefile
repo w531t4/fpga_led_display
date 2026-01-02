@@ -56,7 +56,7 @@ VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
 VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP
+VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing
 # Verilator needs full-paths otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
