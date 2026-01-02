@@ -96,6 +96,15 @@ typedef union packed {
 } row_data_field_t;
 // ==== /ROW ====
 
+// ==== WATCHDOG ====
+typedef logic [params_pkg::WATCHDOG_SIGNATURE_BITS-1:0] watchdog_pattern_t;
+localparam watchdog_pattern_t __WATCHDOG_DATA_T_ZERO = '0;
+typedef union packed {
+    logic [$bits(__WATCHDOG_DATA_T_ZERO)-1:0]                                      raw;
+    logic [calc_pkg::num_bytes_to_contain($bits(__WATCHDOG_DATA_T_ZERO))-1:0][7:0] bytes;
+    watchdog_pattern_t                                                             data;
+} watchdog_field_t;
+// ==== /WATCHDOG ====
 
 //
 // COMMANDS
@@ -134,6 +143,14 @@ typedef struct packed {
     row_field_t                y1;
     row_data_field_t           data;
 } readrow_cmd_t;
+
+typedef struct packed {
+    commands_pkg::cmd_opcode_t opcode;
+    watchdog_field_t           data;
+} watchdog_cmd_t;
+
+// TODO: change opcode only commands to something like opcode_cmd_t
+typedef struct packed {commands_pkg::cmd_opcode_t opcode;} brightness3_cmd_t;
 
 /*
 

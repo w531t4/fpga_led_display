@@ -24,7 +24,7 @@
     `endif
 `endif
 // Add tests for pixel set command
-localparam logic [(8*1)-1:0] myled_row_brightness_1 = 'h33; // "3"
+localparam brightness3_cmd_t myled_row_brightness_1 = brightness3_cmd_t'({commands_pkg::BRIGHTNESS_THREE});
 
 localparam readbrightness_cmd_t myled_row_brightness_2 =
     readbrightness_cmd_t'({commands_pkg::READBRIGHTNESS, brightness_level_view_t'('h23)}); // "T" + \x23
@@ -34,7 +34,7 @@ localparam readbrightness_cmd_t myled_row_brightness_3 =
 localparam blankpanel_cmd_t myled_row_blankpanel = blankpanel_cmd_t'({commands_pkg::BLANKPANEL});
 
 `ifdef USE_WATCHDOG
-    localparam logic [(8*(8+1))-1:0] myled_row_watchdog = 'h57_de_ad_be_ef_fe_eb_da_ed; // "W" + "DEADBEEFFEEBDAED"
+    localparam watchdog_cmd_t myled_row_watchdog = watchdog_cmd_t'({commands_pkg::WATCHDOG, watchdog_pattern_t'(params_pkg::WATCHDOG_SIGNATURE_PATTERN)}); // "W" + "DEADBEEFFEEBDAED"
 `endif
 `ifdef RGB24
     `ifdef W128
