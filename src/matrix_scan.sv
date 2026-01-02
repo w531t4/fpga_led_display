@@ -39,7 +39,8 @@ PIXEL_WIDTH
 );
 
 
-    logic [1:0] state;
+    typedef logic [1:0] scan_state_t;
+    scan_state_t state;
     wire clk_state;
     wire state_advance;
 
