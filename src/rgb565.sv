@@ -26,13 +26,15 @@ module rgb565 #(
     wire [6:0] k = {1'b0, brightness} + 7'd1;
     wire k_zero = (brightness == 6'd0);
 
-    wire [10:0] r_prod = red_selected * k;
-    wire [11:0] g_prod = green_selected * k;
-    wire [10:0] b_prod = blue_selected * k;
+    // Rounded multiply (force full product width for read_slang)
+    wire [7:0] k_u = {1'b0, k};
+    wire [11:0] r_prod = red_selected * k_u;
+    wire [12:0] g_prod = green_selected * k_u;
+    wire [11:0] b_prod = blue_selected * k_u;
 
-    wire [4:0] r5_scaled = k_zero ? 5'd0 : 5'((r_prod + 11'd32) >> 6);
-    wire [5:0] g6_scaled = k_zero ? 6'd0 : 6'((g_prod + 12'd32) >> 6);
-    wire [4:0] b5_scaled = k_zero ? 5'd0 : 5'((b_prod + 11'd32) >> 6);
+    wire [4:0] r5_scaled = k_zero ? 5'd0 : 5'((r_prod + 12'd32) >> 6);
+    wire [5:0] g6_scaled = k_zero ? 6'd0 : 6'((g_prod + 13'd32) >> 6);
+    wire [4:0] b5_scaled = k_zero ? 5'd0 : 5'((b_prod + 12'd32) >> 6);
 
 `ifdef GAMMA
     gamma_correct #(
