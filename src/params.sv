@@ -40,14 +40,22 @@ package params;
     // reset control logic if watchdog isn't satisfied within x seconds
     // verilator lint_off UNUSEDPARAM
     parameter real WATCHDOG_CONTROL_FREQ_GOAL = 0.1;  // 10 seconds
+`ifdef WATCHDOG_CONTROL_TICKS
+    parameter int unsigned WATCHDOG_CONTROL_TICKS = `WATCHDOG_CONTROL_TICKS;
+`else
     parameter int unsigned WATCHDOG_CONTROL_TICKS = $rtoi(ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0);
+`endif
     parameter int unsigned WATCHDOG_SIGNATURE_BITS = 64;
     parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED;
     // verilator lint_on UNUSEDPARAM
 
     // SIM
     // verilator lint_off UNUSEDPARAM
+`ifdef SIM_HALF_PERIOD_NS
+    parameter real SIM_HALF_PERIOD_NS = `SIM_HALF_PERIOD_NS;
+`else
     parameter real SIM_HALF_PERIOD_NS = ((1.0 / ROOT_CLOCK) * 1000000000) / 2.0;
+`endif
     // verilator lint_on UNUSEDPARAM
 
     // SIM !SPI
@@ -57,23 +65,51 @@ package params;
     // verilator lint_on UNUSEDPARAM
 
 `ifdef RGB24
-    parameter int unsigned BYTES_PER_PIXEL = 3;
-    parameter int unsigned BRIGHTNESS_LEVELS = 8;
+    parameter int unsigned _BYTES_PER_PIXEL = 3;
+    parameter int unsigned _BRIGHTNESS_LEVELS = 8;
+`else  //  RGB16
+    parameter int unsigned _BYTES_PER_PIXEL = 2;
+    parameter int unsigned _BRIGHTNESS_LEVELS = 6;
+`endif  //  RGB24
+
+`ifdef BYTES_PER_PIXEL
+    parameter int unsigned BYTES_PER_PIXEL = `BYTES_PER_PIXEL;
 `else
-    parameter int unsigned BYTES_PER_PIXEL = 2;
-    parameter int unsigned BRIGHTNESS_LEVELS = 6;
+    parameter int unsigned BYTES_PER_PIXEL = _BYTES_PER_PIXEL;
 `endif
+
+`ifdef BRIGHTNESS_LEVELS
+    parameter int unsigned BRIGHTNESS_LEVELS = `BRIGHTNESS_LEVELS;
+`else
+    parameter int unsigned BRIGHTNESS_LEVELS = _BRIGHTNESS_LEVELS;
+`endif
+
 `ifdef W128
 `ifdef SIM
-    parameter int unsigned PIXEL_WIDTH = 64 * 6;
+    parameter int unsigned _PIXEL_WIDTH = 64 * 6;
+`else  // SIM
+    parameter int unsigned _PIXEL_WIDTH = 64 * 12;
+`endif  // SIM
+`else  // W128
+    parameter int unsigned _PIXEL_WIDTH = 64;
+`endif  // W128
+`ifdef PIXEL_WIDTH
+    parameter int unsigned PIXEL_WIDTH = `PIXEL_WIDTH;
 `else
-    parameter int unsigned PIXEL_WIDTH = 64 * 12;
+    parameter int unsigned PIXEL_WIDTH = _PIXEL_WIDTH;
 `endif
+
+`ifdef PIXEL_HEIGHT
+    parameter int unsigned PIXEL_HEIGHT = `PIXEL_HEIGHT;
 `else
-    parameter int unsigned PIXEL_WIDTH = 64;
-`endif
     parameter int unsigned PIXEL_HEIGHT = 32;
+`endif
+
+`ifdef PIXEL_HALFHEIGHT
+    parameter int unsigned PIXEL_HALFHEIGHT = `PIXEL_HALFHEIGHT;
+`else
     parameter int unsigned PIXEL_HALFHEIGHT = 16;
+`endif
 
     parameter integer BRIGHTNESS_BASE_TIMEOUT = 10;
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = 'd67;
