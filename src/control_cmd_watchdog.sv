@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_watchdog #(
-    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
-    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
-    parameter int unsigned WATCHDOG_CONTROL_TICKS = params_pkg::WATCHDOG_CONTROL_TICKS,
+    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params::WATCHDOG_SIGNATURE_BITS,
+    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
+    parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

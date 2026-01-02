@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_module #(
-    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
-    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
-    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params_pkg::WATCHDOG_SIGNATURE_BITS,
-    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params_pkg::WATCHDOG_SIGNATURE_PATTERN,
-    parameter int unsigned WATCHDOG_CONTROL_TICKS = params_pkg::WATCHDOG_CONTROL_TICKS,
+    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
+    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
+    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params::WATCHDOG_SIGNATURE_BITS,
+    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
+    parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

@@ -5,13 +5,13 @@
 `default_nettype none
 // verilog_format: on
 module tb_matrix_scan #(
-    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
-    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
-    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
-    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX,
-    parameter integer BRIGHTNESS_BASE_TIMEOUT = params_pkg::BRIGHTNESS_BASE_TIMEOUT,
-    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params_pkg::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
+    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
+    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
+    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
+    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
+    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

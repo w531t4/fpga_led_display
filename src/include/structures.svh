@@ -97,7 +97,7 @@ typedef union packed {
 // ==== /ROW ====
 
 // ==== WATCHDOG ====
-typedef logic [params_pkg::WATCHDOG_SIGNATURE_BITS-1:0] watchdog_pattern_t;
+typedef logic [params::WATCHDOG_SIGNATURE_BITS-1:0] watchdog_pattern_t;
 localparam watchdog_pattern_t __WATCHDOG_DATA_T_ZERO = '0;
 typedef union packed {
     logic [$bits(__WATCHDOG_DATA_T_ZERO)-1:0]                                      raw;

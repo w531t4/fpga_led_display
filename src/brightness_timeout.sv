@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module brightness_timeout #(
-    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
-    parameter integer BRIGHTNESS_BASE_TIMEOUT = params_pkg::BRIGHTNESS_BASE_TIMEOUT,
-    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params_pkg::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
+    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
+    parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
+    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

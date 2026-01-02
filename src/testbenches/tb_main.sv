@@ -6,19 +6,19 @@
 // verilog_format: on
 `include "tb_helper.svh"
 module tb_main #(
-    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
-    parameter integer unsigned BRIGHTNESS_LEVELS = params_pkg::BRIGHTNESS_LEVELS,
-    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params_pkg::DIVIDE_CLK_BY_X_FOR_MATRIX,
-    parameter integer unsigned PLL_SPEED = params_pkg::PLL_SPEED,
-    parameter integer unsigned ROOT_CLOCK = params_pkg::ROOT_CLOCK,
-    parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params_pkg::CTRLR_CLK_TICKS_PER_BIT,
-    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params_pkg::DEBUG_MSGS_PER_SEC_TICKS,
-    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params_pkg::DEBUG_MSGS_PER_SEC_TICKS_SIM,
-    parameter integer unsigned DEBUG_TX_UART_TICKS_PER_BIT = params_pkg::DEBUG_TX_UART_TICKS_PER_BIT,
-    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
+    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
+    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
+    parameter integer unsigned PLL_SPEED = params::PLL_SPEED,
+    parameter integer unsigned ROOT_CLOCK = params::ROOT_CLOCK,
+    parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
+    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
+    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params::DEBUG_MSGS_PER_SEC_TICKS_SIM,
+    parameter integer unsigned DEBUG_TX_UART_TICKS_PER_BIT = params::DEBUG_TX_UART_TICKS_PER_BIT,
+    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

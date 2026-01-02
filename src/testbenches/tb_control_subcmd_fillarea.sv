@@ -9,10 +9,10 @@
 // verifies every valid byte is written exactly once with the expected color,
 // rows advance in order, done/ack handoff completes, and the FSM returns idle.
 module tb_control_subcmd_fillarea #(
-    parameter integer unsigned BYTES_PER_PIXEL = params_pkg::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params_pkg::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params_pkg::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params_pkg::PIXEL_HALFHEIGHT,
+    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
+    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
+    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
+    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM

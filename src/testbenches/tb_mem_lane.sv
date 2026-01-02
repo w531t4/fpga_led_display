@@ -14,7 +14,7 @@
 module tb_mem_lane #(
     parameter integer ADDR_BITS = 4,
     parameter integer DW = 8,
-    parameter real SIM_HALF_PERIOD_NS = params_pkg::SIM_HALF_PERIOD_NS,
+    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
