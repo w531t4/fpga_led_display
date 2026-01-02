@@ -109,7 +109,7 @@ localparam fillrect_cmd_t cmd_fillrect = fillrect_cmd_t'({
 localparam fillpanel_cmd_t cmd_fillpanel = fillpanel_cmd_t'({commands_pkg::FILLPANEL, color_t'('h3142)});
 `endif  // RGB24
 
-`define MYLED_ROW_FIELDS \
+`define CMD_SERIES_FIELDS \
     cmd_blankpanel, \
 `ifdef USE_WATCHDOG \
     cmd_watchdog, \
@@ -122,4 +122,4 @@ localparam fillpanel_cmd_t cmd_fillpanel = fillpanel_cmd_t'({commands_pkg::FILLP
     cmd_brightness_2, \
     cmd_brightness_3, \
     cmd_readrow
-localparam logic [$bits({`MYLED_ROW_FIELDS})-1:0] cmd_series = {`MYLED_ROW_FIELDS};
+localparam logic [$bits({`CMD_SERIES_FIELDS})-1:0] cmd_series = {`CMD_SERIES_FIELDS};
