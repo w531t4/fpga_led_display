@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module brightness_timeout #(
-    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -51,6 +50,6 @@ module brightness_timeout #(
         .running(output_enable)
     );
 
-    assign exceeded_overlap_time = (BRIGHTNESS_STATE_TIMEOUT_OVERLAP < brightness_counter);
+    assign exceeded_overlap_time = (params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP < brightness_counter);
 
 endmodule
