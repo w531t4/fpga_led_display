@@ -8,7 +8,6 @@
 module tb_main #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned ROOT_CLOCK = params::ROOT_CLOCK,
-    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -59,7 +58,6 @@ module tb_main #(
 
     main #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
-        .DEBUG_MSGS_PER_SEC_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
         ._UNUSED('d0)
     ) tbi_main (
         .gp11     (clk_pixel),
