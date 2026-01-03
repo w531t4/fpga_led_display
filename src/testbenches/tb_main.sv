@@ -7,7 +7,6 @@
 `include "tb_helper.svh"
 module tb_main #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
-    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
     parameter integer unsigned ROOT_CLOCK = params::ROOT_CLOCK,
     parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
@@ -62,7 +61,6 @@ module tb_main #(
 
     main #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
-        .DIVIDE_CLK_BY_X_FOR_MATRIX(DIVIDE_CLK_BY_X_FOR_MATRIX),
         .CTRLR_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
         .DEBUG_MSGS_PER_SEC_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
         ._UNUSED('d0)

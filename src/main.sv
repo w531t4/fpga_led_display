@@ -4,7 +4,6 @@
 `default_nettype none
 module main #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
-    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
@@ -245,7 +244,7 @@ module main #(
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
-        .CLK_DIV_COUNT(DIVIDE_CLK_BY_X_FOR_MATRIX)
+        .CLK_DIV_COUNT(params::DIVIDE_CLK_BY_X_FOR_MATRIX)
     ) clkdiv_baudrate (
         .reset  (global_reset_sync),
         .clk_in (clk_root),
