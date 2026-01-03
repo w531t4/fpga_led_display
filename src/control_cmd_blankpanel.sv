@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_blankpanel #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
@@ -73,7 +72,6 @@ module control_cmd_blankpanel #(
     end
 
     control_subcmd_fillarea #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset || local_reset),

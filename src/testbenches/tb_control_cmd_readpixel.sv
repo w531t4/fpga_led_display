@@ -67,7 +67,6 @@ module tb_control_cmd_readpixel #(
     );
 
     control_cmd_readpixel #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) cmd_readpixel (
         .reset(reset),
