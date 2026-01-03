@@ -105,7 +105,7 @@ module tb_control_cmd_fillrect;
             mem <= {MEM_NUM_BYTES{1'b1}};
             // verilator lint_on WIDTHCONCAT
         end else if (ram_write_enable) begin
-            logic [calc::num_row_column_pixel_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL)-1:0] addr;
+            types::fb_addr_t addr;
             int byte_sel;
             logic [7:0] expected_byte;
             addr = {row, column, pixel};
