@@ -19,7 +19,6 @@ module brightness_timeout #(
 );
 
     wire types::brightness_timeout_t brightness_timeout;  /* used to time the output enable period */
-    typedef logic [$clog2(BRIGHTNESS_LEVELS)-1:0] brightness_index_t;
     typedef logic [$clog2(BRIGHTNESS_LEVELS + 1)-1:0] brightness_count_t;
     wire brightness_count_t active_bits = $countones(brightness_mask_active);
     wire one_hot = (active_bits == 1);
@@ -27,11 +26,11 @@ module brightness_timeout #(
 
     // Priority encoder
     integer i;
-    brightness_index_t bit_index;
+    types::brightness_index_t bit_index;
     always_comb begin
         bit_index = 0;
         for (i = BRIGHTNESS_LEVELS - 1; i >= 0; i = i - 1) begin
-            if (brightness_mask_active[i]) bit_index = brightness_index_t'(i);
+            if (brightness_mask_active[i]) bit_index = types::brightness_index_t'(i);
         end
     end
 
