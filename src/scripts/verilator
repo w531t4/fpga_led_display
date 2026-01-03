@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 # SPDX-License-Identifier: MIT
-"""Verilator wrapper for VS Code linting and per-file argument scoping.
-
-Drops extra -f argfiles when VS Code appends a target file and injects optional
-<file>.args overrides without parsing -f argfiles.
-"""
 import os
 import sys
 from pathlib import Path
-from typing import List
 
 
 def find_verilator() -> str:
-    """Return the verilator executable path (env override or repo default)."""
     override = os.environ.get("VERILATOR_BIN")
     if override:
         return override
@@ -25,79 +18,15 @@ def find_verilator() -> str:
 
 
 def main() -> None:
-    """Prepare arguments for Verilator and exec the real binary."""
     verilator = find_verilator()
     if len(sys.argv) < 2:
         os.execvp(verilator, [])
     args = sys.argv[1:]
-    target = None
-    if args:
-        candidate = Path(args[-1])
-        if is_source_path(candidate):
-            target = candidate
-            args = args[:-1]
-    if target:
-        args = drop_argfiles_after_first(args)
-        target_args = target.with_suffix(".args")
-        if target_args.is_file():
-            insert_argfile_after_first(args, target_args)
-        target_resolved = target.resolve()
-        for arg in args:
-            if arg.startswith("-"):
-                continue
-            if is_source_path(Path(arg)) and Path(arg).resolve() == target_resolved:
-                break
-        else:
-            args.append(str(target))
-    os.execvp(verilator, [verilator] + args)
-
-
-SOURCE_SUFFIXES = {".sv", ".v", ".svh", ".vh"}
-
-
-def argfile_spans(args: List[str]) -> List[tuple[int, int]]:
-    """Collect -f argument spans as (start, end) indices."""
-    refs: List[tuple[int, int]] = []
-    i = 0
-    while i < len(args):
-        arg = args[i]
-        if arg == "-f" and i + 1 < len(args):
-            refs.append((i, i + 2))
-            i += 2
-            continue
-        if arg.startswith("-f") and len(arg) > 2:
-            path = arg[2:]
-            if path.startswith("="):
-                path = path[1:]
-            if path:
-                refs.append((i, i + 1))
-            i += 1
-            continue
-        i += 1
-    return refs
-
-
-def drop_argfiles_after_first(args: List[str]) -> List[str]:
-    """Drop -f arguments after the first to avoid linting all sources."""
-    refs = argfile_spans(args)
-    if len(refs) < 2:
-        return args
-    skip = set()
-    for start, end in refs[1:]:
-        skip.update(range(start, end))
-    return [arg for idx, arg in enumerate(args) if idx not in skip]
-
-
-def insert_argfile_after_first(args: List[str], path: Path) -> None:
-    """Insert -f <path> after the first argfile, or append if none."""
-    refs = argfile_spans(args)
-    insert_at = refs[0][1] if refs else len(args)
-    args[insert_at:insert_at] = ["-f", str(path)]
-
-
-def is_source_path(path: Path) -> bool:
-    """Return True for existing source files with known suffixes."""
-    return path.is_file() and path.suffix in SOURCE_SUFFIXES
+    # last = args[-1]
+    # dedup = [arg for arg in args[:-1] if arg != last]
+    # dedup.append(last)
+    # print(f"{verilator}, {[verilator] + args[:-1]}")
+    os.execvp(verilator, [verilator] + args[:-1])
 
 
 if __name__ == "__main__":
