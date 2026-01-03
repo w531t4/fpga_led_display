@@ -5,12 +5,11 @@
 `default_nettype none
 // verilog_format: on
 module tb_matrix_scan #(
-    parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam real ADJUSTED_CLOCK = params::SIM_HALF_PERIOD_NS * DIVIDE_CLK_BY_X_FOR_MATRIX;
+    localparam real ADJUSTED_CLOCK = params::SIM_HALF_PERIOD_NS * params::DIVIDE_CLK_BY_X_FOR_MATRIX;
     logic clk;
     logic reset;
     wire types::col_addr_t column_address;
