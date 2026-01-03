@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 # SPDX-License-Identifier: MIT
 """ Parse linting output from verilator, and emit any items failing to match a denylist filter"""
-import os
 import sys
 from typing import List, NamedTuple
 from pathlib import Path
@@ -32,11 +31,7 @@ def parse_lint_title(line: str) -> LintTitle:
     try:
         # selects Warning-UNUSEDSIGNAL
         atype_param = line[1:].split(": ")[0]
-        if "-" in atype_param:
-            atype, param = atype_param.split("-", 1)
-        else:
-            atype = atype_param
-            param = ""
+        atype, param = atype_param.split("-")
 
         # selects src/main.v:147:16
         file_row_col = line[1:].split(": ")[1]
@@ -52,23 +47,6 @@ def parse_lint_title(line: str) -> LintTitle:
                      row=int(row),
                      col=int(col),
                      )
-
-def normalize_path(path_text: str) -> str:
-    """Return an absolute path string for comparisons."""
-    return str(Path(path_text).resolve())
-
-def get_allowed_files() -> List[str]:
-    """Return normalized allowlist from LINT_ONLY_FILE (pathsep-separated)."""
-    raw = os.environ.get("LINT_ONLY_FILE", "")
-    if not raw:
-        return []
-    return [normalize_path(item) for item in raw.split(os.pathsep) if item]
-
-def is_allowed_file(file_path: str, allowed_files: List[str]) -> bool:
-    """Return True if allowlist is empty or the file is in it."""
-    if not allowed_files:
-        return True
-    return normalize_path(file_path) in allowed_files
 
 def is_suppressed(line_from_file: str, filter_files: List[str]) -> bool:
     """determine if suppression should occur (based on components from the header line)"""
@@ -90,7 +68,6 @@ def print_summary(summary: List[LintTitle]) -> None:
 def main() -> None:
     """ main """
     files_to_filter = get_filter_items(Path(".verilator_lint"))
-    allowed_files = get_allowed_files()
     has_started = False
     in_grouping = False
     suppress_current_group = False
@@ -124,10 +101,7 @@ def main() -> None:
             #     suppress_current_group = False
             in_grouping = True
             title_obj = parse_lint_title(line)
-            suppress_current_group = (
-                title_obj.file in files_to_filter
-                or not is_allowed_file(title_obj.file, allowed_files)
-            )
+            suppress_current_group = title_obj.file in files_to_filter
             if not suppress_current_group:
                 grouping_text.append(line)
                 issue_summary.append(title_obj)

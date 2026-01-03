@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: MIT
 """Verilator wrapper for VS Code linting and per-file argument scoping.
 
-Injects optional <file>.args overrides when VS Code appends a target file.
+Drops extra -f argfiles when VS Code appends a target file and injects optional
+<file>.args overrides without parsing -f argfiles.
 """
 import os
-import shlex
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 
 def find_verilator() -> str:
@@ -37,13 +37,17 @@ def main() -> None:
             target = candidate
             args = args[:-1]
     if target:
+        args = drop_argfiles_after_first(args)
         target_args = target.with_suffix(".args")
         if target_args.is_file():
-            insert_argfile_before_first(args, target_args)
+            insert_argfile_after_first(args, target_args)
         target_resolved = target.resolve()
-        if not is_listed_in_args(target_resolved, args) and not is_listed_in_argfiles(
-            target_resolved, args
-        ):
+        for arg in args:
+            if arg.startswith("-"):
+                continue
+            if is_source_path(Path(arg)) and Path(arg).resolve() == target_resolved:
+                break
+        else:
             args.append(str(target))
     os.execvp(verilator, [verilator] + args)
 
@@ -73,72 +77,22 @@ def argfile_spans(args: List[str]) -> List[tuple[int, int]]:
     return refs
 
 
-def insert_argfile_before_first(args: List[str], path: Path) -> None:
-    """Insert -f <path> before the first argfile, or append if none."""
+def drop_argfiles_after_first(args: List[str]) -> List[str]:
+    """Drop -f arguments after the first to avoid linting all sources."""
     refs = argfile_spans(args)
-    insert_at = refs[0][0] if refs else len(args)
+    if len(refs) < 2:
+        return args
+    skip = set()
+    for start, end in refs[1:]:
+        skip.update(range(start, end))
+    return [arg for idx, arg in enumerate(args) if idx not in skip]
+
+
+def insert_argfile_after_first(args: List[str], path: Path) -> None:
+    """Insert -f <path> after the first argfile, or append if none."""
+    refs = argfile_spans(args)
+    insert_at = refs[0][1] if refs else len(args)
     args[insert_at:insert_at] = ["-f", str(path)]
-
-
-def is_listed_in_args(target_resolved: Path, args: List[str]) -> bool:
-    """Return True if target is already in the explicit arg list."""
-    for arg in args:
-        if arg.startswith("-"):
-            continue
-        if is_source_path(Path(arg)) and Path(arg).resolve() == target_resolved:
-            return True
-    return False
-
-
-def argfile_paths(args: List[str]) -> List[Path]:
-    """Return a list of -f argfile paths."""
-    paths: List[Path] = []
-    i = 0
-    while i < len(args):
-        arg = args[i]
-        if arg == "-f" and i + 1 < len(args):
-            paths.append(Path(args[i + 1]).resolve())
-            i += 2
-            continue
-        if arg.startswith("-f") and len(arg) > 2:
-            path = arg[2:]
-            if path.startswith("="):
-                path = path[1:]
-            if path:
-                paths.append(Path(path).resolve())
-            i += 1
-            continue
-        i += 1
-    return paths
-
-
-def resolve_argfile_token(token: str, argfile: Path) -> Optional[Path]:
-    """Return a resolved path for a token in an argfile, if it exists."""
-    candidate = Path(token)
-    if candidate.is_file():
-        return candidate.resolve()
-    rel_candidate = (argfile.parent / token)
-    if rel_candidate.is_file():
-        return rel_candidate.resolve()
-    return None
-
-
-def is_listed_in_argfiles(target_resolved: Path, args: List[str]) -> bool:
-    """Return True if target is already listed in any -f argfile."""
-    for argfile in argfile_paths(args):
-        if not argfile.is_file():
-            continue
-        try:
-            tokens = shlex.split(argfile.read_text())
-        except OSError:
-            continue
-        for token in tokens:
-            if token.startswith("-"):
-                continue
-            token_path = resolve_argfile_token(token, argfile)
-            if token_path and token_path == target_resolved:
-                return True
-    return False
 
 
 def is_source_path(path: Path) -> bool:
