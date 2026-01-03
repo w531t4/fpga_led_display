@@ -31,6 +31,15 @@ package types;
         logic [calc::num_bytes_to_contain($bits(color_t))-1:0][7:0] bytes;
         color_t                                                     color;
     } color_field_t;
+
+    typedef struct packed {
+`ifdef RGB24
+        // verilog_format: off
+        logic [calc::num_pixeldata_bits(params::BYTES_PER_PIXEL)-$bits(color_field_t)-1:0] pad;  // 4th byte slot for RGB24
+        // verilog_format: on
+`endif
+        color_field_t field;
+    } color_field_subpanel_t;
     // ==== /COLOR ====
 
     // ==== SUBPANEL ====

@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module pixel_split #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input [calc::num_pixeldata_bits(BYTES_PER_PIXEL)-1:0] pixel_data,
+    input types::color_field_subpanel_t pixel_data,
     input types::brightness_level_t brightness_mask,
     input types::brightness_level_t brightness_enable,
     input [2:0] rgb_enable,
