@@ -33,6 +33,10 @@ package types;
     } color_field_t;
     // ==== /COLOR ====
 
+    // ==== SUBPANEL ====
+    typedef logic [calc::num_subpanelselect_bits(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT)-1:0] subpanel_addr_t;
+    // ==== /SUBPANEL ====
+
     // ==== ROW SUBPANEL ADDRESS ====
     typedef logic [calc::num_row_address_bits(params::PIXEL_HALFHEIGHT)-1:0] row_subpanel_addr_t;
     typedef struct packed {
