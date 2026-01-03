@@ -17,14 +17,13 @@ module brightness_timeout #(
     output wire output_enable,
     output wire exceeded_overlap_time
 );
-    localparam int unsigned TIMEOUT_WIDTH_BITS = $clog2(BRIGHTNESS_BASE_TIMEOUT) + BRIGHTNESS_LEVELS;
-    typedef logic [TIMEOUT_WIDTH_BITS-1:0] brightness_timeout_t;
-    wire brightness_timeout_t brightness_timeout;  /* used to time the output enable period */
+
+    wire types::brightness_timeout_t brightness_timeout;  /* used to time the output enable period */
     typedef logic [$clog2(BRIGHTNESS_LEVELS)-1:0] brightness_index_t;
     typedef logic [$clog2(BRIGHTNESS_LEVELS + 1)-1:0] brightness_count_t;
     wire brightness_count_t active_bits = $countones(brightness_mask_active);
     wire one_hot = (active_bits == 1);
-    wire brightness_timeout_t brightness_counter;
+    wire types::brightness_timeout_t brightness_counter;
 
     // Priority encoder
     integer i;
@@ -36,9 +35,9 @@ module brightness_timeout #(
         end
     end
 
-    wire brightness_timeout_t shifted = brightness_timeout_t'(BRIGHTNESS_BASE_TIMEOUT << bit_index);
+    wire types::brightness_timeout_t shifted = types::brightness_timeout_t'(BRIGHTNESS_BASE_TIMEOUT << bit_index);
 
-    assign brightness_timeout = one_hot ? shifted : brightness_timeout_t'(1);
+    assign brightness_timeout = one_hot ? shifted : types::brightness_timeout_t'(1);
 
     /* produces the variable-width output enable signal
        this signal is controlled by the rolling brightness_mask_active signal (brightness_mask has advanced already)
@@ -46,7 +45,7 @@ module brightness_timeout #(
     /* this shoud never be < 1us though, apparently TODO: need to prove*/
 
     timeout #(
-        .COUNTER_WIDTH(TIMEOUT_WIDTH_BITS)
+        .COUNTER_WIDTH($bits(types::brightness_timeout_t))
     ) timeout_output_enable (
         .reset  (reset),
         .clk_in (clk_in),
