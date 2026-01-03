@@ -41,9 +41,7 @@ module tb_control_cmd_fillrect;
     int                                          writes_seen;
 
     // === DUT wiring ===
-    control_cmd_fillrect #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL)
-    ) dut (
+    control_cmd_fillrect #() dut (
         .reset(reset),
         .data_in(data_in),
         .enable(enable),

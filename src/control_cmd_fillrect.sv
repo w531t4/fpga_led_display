@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_fillrect #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -68,7 +67,7 @@ module control_cmd_fillrect #(
             state <= STATE_X1_CAPTURE;
             done_inside <= 1'b0;
             ready_for_data <= 1'b1;
-            capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
+            capturebytes_remaining <= types::color_index_t'(params::BYTES_PER_PIXEL - 1);
             selected_color <= 'b0;
             x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
             width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
@@ -140,7 +139,7 @@ module control_cmd_fillrect #(
                     state <= STATE_X1_CAPTURE;
                     x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                     width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
-                    capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
+                    capturebytes_remaining <= types::color_index_t'(params::BYTES_PER_PIXEL - 1);
                     selected_color <= 'b0;
                     x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
                     width <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
@@ -153,7 +152,6 @@ module control_cmd_fillrect #(
     end
 
     control_subcmd_fillarea #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset || local_reset),

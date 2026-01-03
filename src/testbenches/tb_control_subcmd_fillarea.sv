@@ -48,7 +48,6 @@ module tb_control_subcmd_fillarea #(
 
     // === DUT wiring ===
     control_subcmd_fillarea #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset),

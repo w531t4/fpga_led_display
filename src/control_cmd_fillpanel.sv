@@ -102,7 +102,6 @@ module control_cmd_fillpanel #(
     end
 
     control_subcmd_fillarea #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset || local_reset),
