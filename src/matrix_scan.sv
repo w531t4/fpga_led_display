@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module matrix_scan #(
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -55,7 +54,7 @@ module matrix_scan #(
     assign clk_pixel = clk_in && clk_pixel_en;
     // TODO: This is missing the -1... it's a bit larger.. and apparently needed by timeout_clk_pixel_load_en (below)
     //       Device is functional without it, but worth clarifying exactly what the need is
-    wire [calc::num_column_address_bits(PIXEL_WIDTH):0] pixel_load_en_counter_output;
+    wire [calc::num_column_address_bits(params::PIXEL_WIDTH):0] pixel_load_en_counter_output;
     assign row_latch = row_latch_state == 2'b10;
 
     assign clk_state = state == 2'b10;
@@ -76,7 +75,7 @@ module matrix_scan #(
         .clk_in (clk_in),
         .start  (clk_state),
         // 7'd64
-        .value  (($bits(types::col_addr_t) + 1)'(PIXEL_WIDTH)),
+        .value  (($bits(types::col_addr_t) + 1)'(params::PIXEL_WIDTH)),
         .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
     );
@@ -86,13 +85,13 @@ module matrix_scan #(
        advances out-of-phase with the pixel clock */
     timeout #(
         // 6
-        .COUNTER_WIDTH($clog2(PIXEL_WIDTH - 1))
+        .COUNTER_WIDTH($clog2(params::PIXEL_WIDTH - 1))
     ) timeout_column_address (
         .reset  (reset),
         .clk_in (clk_in),
         .start  (clk_state),
         // 6'd63
-        .value  (($clog2(PIXEL_WIDTH - 1))'(PIXEL_WIDTH - 1)),
+        .value  (($clog2(params::PIXEL_WIDTH - 1))'(params::PIXEL_WIDTH - 1)),
         .counter(column_address),
         .running(unused_timer_runpin)
     );
