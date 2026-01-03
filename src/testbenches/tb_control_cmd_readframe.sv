@@ -34,7 +34,8 @@ module tb_control_cmd_readframe;
     // === DUT wiring ===
     control_cmd_readframe #(
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH (PIXEL_WIDTH)
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        ._UNUSED('d0)
     ) dut (
         .reset(reset),
         .data_in(data_in),
