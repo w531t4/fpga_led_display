@@ -6,7 +6,6 @@
 // verilog_format: on
 module tb_matrix_scan #(
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
     parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
@@ -30,7 +29,6 @@ module tb_matrix_scan #(
 
     matrix_scan #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT),
         .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
         ._UNUSED('d0)
