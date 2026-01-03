@@ -47,7 +47,7 @@ module control_cmd_fillrect #(
     types::row_addr_t height;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
-    logic [(BYTES_PER_PIXEL*8)-1:0] selected_color;
+    types::color_t selected_color;
     types::color_index_t capturebytes_remaining;
 
 
@@ -69,7 +69,7 @@ module control_cmd_fillrect #(
             done_inside <= 1'b0;
             ready_for_data <= 1'b1;
             capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
-            selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
+            selected_color <= 'b0;
             x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
             width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
             x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
@@ -141,7 +141,7 @@ module control_cmd_fillrect #(
                     x1_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                     width_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
                     capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
-                    selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
+                    selected_color <= 'b0;
                     x1 <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
                     width <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
                     y1 <= 'b0;
