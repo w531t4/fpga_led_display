@@ -23,15 +23,14 @@ module control_cmd_watchdog #(
     } ctrl_fsm_t;
     ctrl_fsm_t state;
     types::watchdog_pattern_t cache;
-    typedef logic [$clog2(WATCHDOG_CONTROL_TICKS)-1:0] watchdog_tick_index_t;
-    watchdog_tick_index_t watchdog_counter;
+    types::watchdog_tick_index_t watchdog_counter;
     typedef logic [$clog2(params::WATCHDOG_SIGBYTES)-1:0] watchdog_sigbyte_index_t;
     watchdog_sigbyte_index_t sig_byte_counter;
 
     always @(posedge clk) begin
         if (reset) begin
             cache <= 'b0;
-            watchdog_counter <= watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
+            watchdog_counter <= types::watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
             sig_byte_counter <= watchdog_sigbyte_index_t'(params::WATCHDOG_SIGBYTES);
             state <= STATE_SIG_CAPTURE;
             done <= 1'b0;
@@ -44,7 +43,7 @@ module control_cmd_watchdog #(
                         // Update memory
                         cache <= (cache << 8) + types::watchdog_pattern_t'(data_in);
                         if (((cache << 8) + types::watchdog_pattern_t'(data_in)) == WATCHDOG_SIGNATURE_PATTERN) begin
-                            watchdog_counter <= watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
+                            watchdog_counter <= types::watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
                         end else begin
                             watchdog_counter <= watchdog_counter - 'd1;
                         end

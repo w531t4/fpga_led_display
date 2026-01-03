@@ -170,6 +170,7 @@ package types;
         logic [calc::num_bytes_to_contain($bits(watchdog_pattern_t))-1:0][7:0] bytes;
         watchdog_pattern_t                                                     data;
     } watchdog_field_t;
+    typedef logic [$clog2(params::WATCHDOG_CONTROL_TICKS)-1:0] watchdog_tick_index_t;
     // ==== /WATCHDOG ====
 
     // ==== STRUCTURE ====
