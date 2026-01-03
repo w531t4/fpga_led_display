@@ -25,13 +25,14 @@ module control_cmd_watchdog #(
     } ctrl_fsm_t;
     ctrl_fsm_t state;
     logic [WATCHDOG_SIGNATURE_BITS-1:0] cache;
-    logic [$clog2(WATCHDOG_CONTROL_TICKS)-1:0] watchdog_counter;
+    typedef logic [$clog2(WATCHDOG_CONTROL_TICKS)-1:0] watchdog_tick_index_t;
+    watchdog_tick_index_t watchdog_counter;
     logic [$clog2(WATCHDOG_SIGBYTES)-1:0] sig_byte_counter;
 
     always @(posedge clk) begin
         if (reset) begin
             cache <= {WATCHDOG_SIGNATURE_BITS{1'b0}};
-            watchdog_counter <= ($clog2(WATCHDOG_CONTROL_TICKS))'(WATCHDOG_CONTROL_TICKS);
+            watchdog_counter <= watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
             sig_byte_counter <= ($clog2(WATCHDOG_SIGBYTES))'(WATCHDOG_SIGBYTES);
             state <= STATE_SIG_CAPTURE;
             done <= 1'b0;
@@ -44,7 +45,7 @@ module control_cmd_watchdog #(
                         // Update memory
                         cache <= (cache << 8) + (WATCHDOG_SIGNATURE_BITS)'(data_in);
                         if (((cache << 8) + (WATCHDOG_SIGNATURE_BITS)'(data_in)) == WATCHDOG_SIGNATURE_PATTERN) begin
-                            watchdog_counter <= ($clog2(WATCHDOG_CONTROL_TICKS))'(WATCHDOG_CONTROL_TICKS);
+                            watchdog_counter <= watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
                         end else begin
                             watchdog_counter <= watchdog_counter - 'd1;
                         end
