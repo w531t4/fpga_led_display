@@ -19,7 +19,7 @@ module framebuffer_fetch #(
     // [5:0] 64 width
     input types::col_addr_t column_address,
     // [3:0] 16 height (top/bottom half)
-    input [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,
+    input types::row_subpanel_addr_t row_address,
 
     input pixel_load_start,
 
@@ -48,9 +48,7 @@ module framebuffer_fetch #(
     // [10:0]
     assign ram_address = {
         //    half_address,
-        row_address[$clog2(
-            PIXEL_HALFHEIGHT
-        )-1:0],
+        row_address,
         // log2(128)==7-1=6
         column_address
     };
