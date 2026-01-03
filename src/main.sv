@@ -106,8 +106,8 @@ module main #(
     wire [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_b_address;
     wire ram_b_clk_enable;
 
-    wire [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_top;
-    wire [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_bottom;
+    wire [calc::num_bits_per_subpanel(BYTES_PER_PIXEL)-1:0] pixeldata_top;
+    wire [calc::num_bits_per_subpanel(BYTES_PER_PIXEL)-1:0] pixeldata_bottom;
     wire ctrl_busy;
     wire ctrl_ready_for_data;
 
