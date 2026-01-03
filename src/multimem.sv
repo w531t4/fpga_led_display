@@ -66,8 +66,8 @@ PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] lane_idx_from_addr = {
                 AddressA[calc::num_address_a_bits(
                     PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-                )-1-:calc::num_subpanelselect_bits(
-                    PIXEL_HEIGHT, PIXEL_HALFHEIGHT
+                )-1-:$bits(
+                    types::subpanel_addr_t
                 )],
                 types::pixel_addr_t'(AddressA)
             };
@@ -83,8 +83,8 @@ PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
                 we_lane_q <= we_lane_c;
                 addra_q <= AddressA[(calc::num_address_a_bits(
                     PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-                )-calc::num_subpanelselect_bits(
-                    PIXEL_HEIGHT, PIXEL_HALFHEIGHT
+                )-$bits(
+                    types::subpanel_addr_t
                 ))-1-:calc::num_address_b_bits(
                     PIXEL_WIDTH, PIXEL_HALFHEIGHT
                 )];
