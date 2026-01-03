@@ -20,7 +20,7 @@ module control_module #(
     input data_ready_n,
     output logic [2:0] rgb_enable,
     output types::brightness_level_t brightness_enable,
-    output logic [calc::num_data_a_bits()-1:0] ram_data_out,
+    output types::mem_write_data_t ram_data_out,
     output types::mem_write_addr_t ram_address,
     output logic ram_write_enable,
     output busy,

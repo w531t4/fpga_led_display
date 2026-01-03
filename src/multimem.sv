@@ -16,7 +16,7 @@ module multimem #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input wire [calc::num_data_a_bits()-1:0] DataInA,
+    input wire types::mem_write_data_t DataInA,
     input wire [15:0] DataInB,
     // 12 bits [11:0]      -5-                   -log( (64*2),2)=7-
     // input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] AddressA,
@@ -31,7 +31,7 @@ module multimem #(
     input wire WrB,
     input wire ResetA,
     input wire ResetB,
-    output wire [calc::num_data_a_bits()-1:0] QA,
+    output wire types::mem_write_data_t QA,
     output wire types::mem_read_data_t QB
 );
     // consider
@@ -53,7 +53,7 @@ module multimem #(
     localparam integer unsigned LANES = (1 << calc::num_structure_bits(
         PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     ));
-    wire [LANES*calc::num_data_a_bits()-1:0] qb_lanes_w;
+    wire [LANES*$bits(types::mem_write_data_t)-1:0] qb_lanes_w;
 
     genvar i;
     generate
@@ -71,7 +71,7 @@ PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
             (* keep = "true" *) reg we_lane_q;
             // TODO - is it necessary to use a reg for types::mem_read_addr_t here
             (* keep = "true" *) types::mem_read_addr_t addra_q;
-            (* keep = "true" *) reg [calc::num_data_a_bits()-1:0] dia_q;
+            (* keep = "true" *) types::mem_write_data_t dia_q;
 
             always @(posedge ClockA) begin
                 we_lane_q <= we_lane_c;
@@ -87,7 +87,7 @@ PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 
             mem_lane #(
                 .ADDR_BITS($bits(types::mem_read_addr_t)),
-                .DW(calc::num_data_a_bits())
+                .DW($bits(types::mem_write_data_t))
             ) u_lane (
                 .clka (ClockA),
                 .ena  (1'b1),
@@ -99,7 +99,11 @@ PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
                 .enb  (ClockEnB),
                 .rstb (ResetA || ResetB),
                 .addrb(AddressB),
-                .dob  (qb_lanes_w[i*calc::num_data_a_bits()+:calc::num_data_a_bits()])
+                // .dob: selects the i‑th lane’s byte out of the packed qb_lanes_w bus.
+                //        [base +: width] is an indexed part‑select, so this means:
+                //       - base = i * $bits(types::mem_write_data_t)
+                //       - width = $bits(types::mem_write_data_t) (8)
+                .dob  (qb_lanes_w[i*$bits(types::mem_write_data_t)+:$bits(types::mem_write_data_t)])
             );
         end
     endgenerate
