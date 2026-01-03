@@ -7,7 +7,6 @@
 `include "tb_helper.svh"
 
 module tb_control_cmd_readframe;
-    localparam real SIM_HALF_PERIOD_NS = 1.0;
     localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
@@ -127,7 +126,7 @@ module tb_control_cmd_readframe;
 
     // === Clock generation ===
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 
     // verilog_format: off

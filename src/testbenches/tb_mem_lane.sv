@@ -14,15 +14,14 @@
 module tb_mem_lane #(
     parameter integer ADDR_BITS = 4,
     parameter integer DW = 8,
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
     localparam int DEPTH = (1 << ADDR_BITS);
     localparam int READ_LATENCY = 2;
-    localparam real SIM_HALF_PERIOD_A_NS = SIM_HALF_PERIOD_NS;
-    localparam real SIM_HALF_PERIOD_B_NS = SIM_HALF_PERIOD_NS + 1.0;
+    localparam real SIM_HALF_PERIOD_A_NS = params::SIM_HALF_PERIOD_NS;
+    localparam real SIM_HALF_PERIOD_B_NS = params::SIM_HALF_PERIOD_NS + 1.0;
     localparam logic [ADDR_BITS-1:0] ADDR_MIN = '0;
     localparam logic [ADDR_BITS-1:0] ADDR_MAX = ADDR_BITS'(DEPTH - 1);
     localparam logic [DW-1:0] DATA_MIN = {DW{1'b0}};

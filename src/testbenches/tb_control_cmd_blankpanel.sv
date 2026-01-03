@@ -9,7 +9,6 @@
 // Ensures blankpanel drives a full-frame clear: every address written once with zero data,
 // done pulses, and the FSM returns idle.
 module tb_control_cmd_blankpanel;
-    localparam real SIM_HALF_PERIOD_NS = 1.0;
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
     localparam int TOTAL_WRITES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
 
@@ -96,7 +95,7 @@ module tb_control_cmd_blankpanel;
 
     // === Clock generation ===
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 
     // verilog_format: off

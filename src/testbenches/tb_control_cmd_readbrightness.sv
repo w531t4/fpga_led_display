@@ -9,8 +9,6 @@
 // Simple handshake test: captures brightness byte, asserts brightness_change_en/done,
 // then returns outputs to idle.
 module tb_control_cmd_readbrightness;
-    localparam real SIM_HALF_PERIOD_NS = 1.0;
-
     // === Testbench scaffolding ===
     logic                                clk;
     logic                                reset;
@@ -49,7 +47,7 @@ module tb_control_cmd_readbrightness;
         @(negedge reset);
         enable = 1'b1;  // keep high through the next rising edge
         @(posedge clk);  // DUT latches on this edge
-        #(SIM_HALF_PERIOD_NS);  // sample mid-cycle after NBA updates
+        #(params::SIM_HALF_PERIOD_NS);  // sample mid-cycle after NBA updates
         assert (done == 1'b1)
         else $fatal(1, "done not asserted");
         assert (brightness_change_en == 1'b1)
@@ -58,7 +56,7 @@ module tb_control_cmd_readbrightness;
         else $fatal(1, "Unexpected data_out: %0b", data_out);
         enable = 1'b0;
         @(posedge clk);  // clear handshake on next edge
-        #(SIM_HALF_PERIOD_NS);
+        #(params::SIM_HALF_PERIOD_NS);
         assert (done == 1'b0 && brightness_change_en == 1'b0 && data_out == 0)
         else $fatal(1, "Outputs not cleared after done");
         repeat (3) @(posedge clk);
@@ -69,7 +67,7 @@ module tb_control_cmd_readbrightness;
     always @(posedge clk) begin
         if (!reset && enable) begin
             // Allow NBA updates from the DUT before checking the handshake.
-            #(SIM_HALF_PERIOD_NS);
+            #(params::SIM_HALF_PERIOD_NS);
             assert (done == 1'b1)
             else $fatal(1, "done not asserted on enable");
             assert (brightness_change_en == 1'b1)
@@ -81,6 +79,6 @@ module tb_control_cmd_readbrightness;
 
     // === Clock generation ===
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 endmodule
