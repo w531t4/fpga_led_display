@@ -5,7 +5,6 @@
 module main #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     // verilator lint_off UNUSEDPARAM
-    parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_on UNUSEDPARAM
@@ -319,7 +318,7 @@ module main #(
     uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .TICKS_PER_BIT(params::CTRLR_CLK_TICKS_PER_BIT)
     ) mycontrol_rxuart (
         .reset(global_reset),
         .i_clk(clk_root),
