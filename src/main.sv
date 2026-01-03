@@ -12,7 +12,6 @@ module main #(
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
     parameter integer unsigned DEBUG_TX_UART_TICKS_PER_BIT = params::DEBUG_TX_UART_TICKS_PER_BIT,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
-    parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_on UNUSEDPARAM
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -258,7 +257,6 @@ module main #(
 
     matrix_scan #(
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
         ._UNUSED('d0)
     ) matscan1 (
         .reset(global_reset_sync),
