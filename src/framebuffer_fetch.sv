@@ -32,8 +32,8 @@ module framebuffer_fetch #(
     output [3:0] pixel_load_counter2,
 `endif
     // [15:0]
-    output logic [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_top,
-    output logic [calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] pixeldata_bottom
+    output logic [calc::num_bits_per_subpanel(BYTES_PER_PIXEL)-1:0] pixeldata_top,
+    output logic [calc::num_bits_per_subpanel(BYTES_PER_PIXEL)-1:0] pixeldata_bottom
 
 );
     wire ram_clk_enable_real;
@@ -70,8 +70,8 @@ module framebuffer_fetch #(
 
     always @(posedge clk_in) begin
         if (reset) begin
-            pixeldata_top <= {calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT) {1'b0}};
-            pixeldata_bottom <= {calc::num_bits_per_subpanel(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT) {1'b0}};
+            pixeldata_top <= {calc::num_bits_per_subpanel(BYTES_PER_PIXEL) {1'b0}};
+            pixeldata_bottom <= {calc::num_bits_per_subpanel(BYTES_PER_PIXEL) {1'b0}};
         end else begin
             if (pixel_load_counter == 'd2) begin
                 {pixeldata_bottom, pixeldata_top} <= ram_data_in;
