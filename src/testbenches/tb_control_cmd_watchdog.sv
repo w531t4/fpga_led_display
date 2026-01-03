@@ -13,7 +13,6 @@ module tb_control_cmd_watchdog #(
     parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
     // TODO: switch WATCHDOG_CONTROL_TICKS to params::WATCHDOG_CONTROL_TICKS,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = 16 * 12,
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -124,7 +123,7 @@ module tb_control_cmd_watchdog #(
 
     // === Clock generation ===
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
         divider = !clk ? divider + 'd1 : divider;
         slowclk = (divider == 'd0);
     end

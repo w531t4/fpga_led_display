@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_control_module #(
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params::DEBUG_MSGS_PER_SEC_TICKS_SIM,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
@@ -214,7 +213,7 @@ module tb_control_module #(
     end
 `endif
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     // verilog_format: off
     wire _unused_ok = &{1'b0,

@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_multimem #(
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -166,8 +165,8 @@ module tb_multimem #(
     end
 
     always begin
-        #(SIM_HALF_PERIOD_NS) clk_a <= ~clk_a;
-        #(SIM_HALF_PERIOD_NS) clk_b <= ~clk_b;
+        #(params::SIM_HALF_PERIOD_NS) clk_a <= ~clk_a;
+        #(params::SIM_HALF_PERIOD_NS) clk_b <= ~clk_b;
     end
     // verilog_format: off
     wire _unused_ok = &{1'b0,

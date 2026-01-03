@@ -7,7 +7,6 @@
 `include "tb_helper.svh"
 
 module tb_control_cmd_readrow #(
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -231,7 +230,7 @@ module tb_control_cmd_readrow #(
 
     // === Clock generation ===
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     // verilog_format: off
     wire _unused_ok = &{1'b0,

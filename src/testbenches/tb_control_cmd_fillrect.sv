@@ -9,7 +9,6 @@
 // Verifies fillrect captures x/y/width/height + color, writes only inside the rectangle,
 // and issues each address once before returning to idle.
 module tb_control_cmd_fillrect;
-    localparam real SIM_HALF_PERIOD_NS = 1.0;
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
     localparam types::color_t COLOR = 16'hBEEF;
     localparam int RECT_X1 = 1;
@@ -125,7 +124,7 @@ module tb_control_cmd_fillrect;
 
     // === Clock generation ===
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
 
     // verilog_format: off

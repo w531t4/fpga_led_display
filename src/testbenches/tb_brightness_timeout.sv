@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_brightness_timeout #(
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
@@ -59,7 +58,7 @@ module tb_brightness_timeout #(
         $finish;
     end
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     // verilog_format: off
     wire _unused_ok = &{1'b0,
