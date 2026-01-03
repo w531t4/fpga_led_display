@@ -4,9 +4,6 @@
 `default_nettype none
 module main #(
     // verilator lint_off UNUSEDPARAM
-    parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
-    // verilator lint_on UNUSEDPARAM
-    // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
@@ -339,7 +336,7 @@ module main #(
 
     /* the control module */
     control_module #(
-        .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
+        .WATCHDOG_CONTROL_TICKS(params::WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
     ) ctrl (
         .reset(global_reset),
