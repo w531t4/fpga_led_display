@@ -35,7 +35,7 @@ module control_cmd_fillpanel #(
     ctrl_fsm_t state;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
-    logic [(BYTES_PER_PIXEL*8)-1:0] selected_color;
+    types::color_t selected_color;
     types::color_index_t capturebytes_remaining;
 
     logic done_inside, done_level;
@@ -56,7 +56,7 @@ module control_cmd_fillpanel #(
             done_inside <= 1'b0;
             capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
             ready_for_data <= 1'b1;
-            selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
+            selected_color <= 'b0;
             local_reset <= 1'b0;
         end else begin
             case (state)
@@ -94,7 +94,7 @@ module control_cmd_fillpanel #(
                     ready_for_data <= 1'b1;
                     state <= STATE_COLOR_CAPTURE;
                     capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
-                    selected_color <= {(BYTES_PER_PIXEL * 8) {1'b0}};
+                    selected_color <= 'b0;
                 end
                 default state <= state;
             endcase

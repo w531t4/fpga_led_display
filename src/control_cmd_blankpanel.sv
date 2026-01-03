@@ -84,7 +84,7 @@ module control_cmd_blankpanel #(
         .y1(0),
         .width(types::col_addr_t'(PIXEL_WIDTH)),
         .height(types::row_addr_t'(PIXEL_HEIGHT)),
-        .color({(BYTES_PER_PIXEL * 8) {1'b0}}),
+        .color('b0),
         .row(row),
         .column(column),
         .pixel(pixel),

@@ -25,8 +25,8 @@ module tb_control_subcmd_fillarea #(
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL) + 2;
-    localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR_ZERO = {(BYTES_PER_PIXEL * 8) {1'b0}};
-    localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR_ALT = {BYTES_PER_PIXEL{8'hA5}};
+    localparam types::color_t COLOR_ZERO = 'b0;
+    localparam types::color_t COLOR_ALT = {BYTES_PER_PIXEL{8'hA5}};
 
     // === Testbench scaffolding ===
     logic clk;
@@ -44,7 +44,7 @@ module tb_control_subcmd_fillarea #(
     int remaining_valid_bytes;
     wire [OUT_BITWIDTH-1:0] data_out;
     logic reset;
-    logic [(BYTES_PER_PIXEL*8)-1:0] color_in;
+    types::color_t color_in;
 
     // === DUT wiring ===
     control_subcmd_fillarea #(
@@ -122,7 +122,7 @@ module tb_control_subcmd_fillarea #(
 
     // === Stimulus ===
     // Drive a full-frame fill with the provided color and assert correctness/timing.
-    task automatic run_fill(input logic [(BYTES_PER_PIXEL*8)-1:0] color_bytes);
+    task automatic run_fill(input types::color_t color_bytes);
         // Reset DUT and scoreboard state for each fill.
         done = 0;
         reset = 1;
