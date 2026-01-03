@@ -95,12 +95,12 @@ module main #(
     wire types::mem_write_addr_t ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
-    wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out;
-    wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame1;
+    wire types::mem_read_data_t ram_b_data_out;
+    wire types::mem_read_data_t ram_b_data_out_frame1;
 `ifdef DOUBLE_BUFFER
     wire frame_select;
     wire [7:0] ram_a_data_out_frame2;
-    wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame2;
+    wire types::mem_read_data_t ram_b_data_out_frame2;
 `endif
     //  [10:0]
     wire types::mem_read_addr_t ram_b_address;
@@ -296,9 +296,6 @@ module main #(
     /* the fetch controller */
 
     framebuffer_fetch #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb_f (
         .reset (global_reset_sync),

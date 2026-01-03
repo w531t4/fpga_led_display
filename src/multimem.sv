@@ -32,7 +32,7 @@ module multimem #(
     input wire ResetA,
     input wire ResetB,
     output wire [calc::num_data_a_bits()-1:0] QA,
-    output wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] QB
+    output wire types::mem_read_data_t QB
 );
     // consider
     // 8 bits addr a, 2 bits colorselect, 2 bits display
