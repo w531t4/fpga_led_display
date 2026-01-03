@@ -11,7 +11,6 @@
 module multimem #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -23,7 +22,7 @@ module multimem #(
     // input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] AddressA,
     input wire types::mem_write_addr_t AddressA,
     // 11 bits [10:0] (-2, because this is 16bit, not 8bit), -3 because we're not pulling half panels anymore
-    input wire [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] AddressB,
+    input wire types::mem_read_addr_t AddressB,
     input wire ClockA,
     input wire ClockB,
     input wire ClockEnA,
@@ -70,7 +69,8 @@ PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
                 PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
             )-1:0]);
             (* keep = "true" *) reg we_lane_q;
-            (* keep = "true" *) reg [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] addra_q;
+            // TODO - is it necessary to use a reg for types::mem_read_addr_t here
+            (* keep = "true" *) types::mem_read_addr_t addra_q;
             (* keep = "true" *) reg [calc::num_data_a_bits()-1:0] dia_q;
 
             always @(posedge ClockA) begin
@@ -79,14 +79,14 @@ PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
                     types::mem_write_addr_t
                 )-$bits(
                     types::subpanel_addr_t
-                ))-1-:calc::num_address_b_bits(
-                    PIXEL_WIDTH, PIXEL_HALFHEIGHT
+                ))-1-:$bits(
+                    types::mem_read_addr_t
                 )];
                 dia_q <= DataInA;
             end
 
             mem_lane #(
-                .ADDR_BITS(calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)),
+                .ADDR_BITS($bits(types::mem_read_addr_t)),
                 .DW(calc::num_data_a_bits())
             ) u_lane (
                 .clka (ClockA),
