@@ -17,7 +17,7 @@ module tb_control_cmd_fillrect;
     localparam int MEM_NUM_BYTES = (1 << calc::num_address_a_bits(
         PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     ));
-    localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR = 16'hBEEF;
+    localparam types::color_t COLOR = 16'hBEEF;
     localparam int RECT_X1 = 1;
     localparam int RECT_Y1 = 1;
     localparam int RECT_W = 2;
