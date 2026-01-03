@@ -6,7 +6,6 @@
 // verilog_format: on
 `include "tb_helper.svh"
 module tb_main #(
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -56,7 +55,6 @@ module tb_main #(
     wire [13:0] _unused_output;
 
     main #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         ._UNUSED('d0)
     ) tbi_main (
         .gp11     (clk_pixel),

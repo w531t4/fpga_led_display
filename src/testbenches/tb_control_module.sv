@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_control_module #(
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -128,7 +127,6 @@ module tb_control_module #(
     );
     wire [2:0] _unused_ok_main;
     control_module #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
     ) control_module_instance (
