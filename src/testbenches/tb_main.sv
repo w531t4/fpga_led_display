@@ -7,7 +7,6 @@
 `include "tb_helper.svh"
 module tb_main #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
-    parameter integer unsigned ROOT_CLOCK = params::ROOT_CLOCK,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -33,13 +32,13 @@ module tb_main #(
     logic reset;
     `include "row4.svh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
-    localparam integer TB_MAIN_WAIT_CYCLES = ROOT_CLOCK * TB_MAIN_WAIT_SECS;
+    localparam integer TB_MAIN_WAIT_CYCLES = params::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
     localparam int CMD_LINE_STATE_SEQ_LEN = 18;
     localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
     localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
-        ? ((64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
-        : (64'd1 * ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
+        ? ((64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
+        : (64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
     logic cmd_line_state_seq_done;
 
     wire  rxdata;
