@@ -7,10 +7,9 @@ Drops extra -f argfiles when VS Code appends a target file and injects optional
 <file>.args overrides without parsing -f argfiles.
 """
 import os
-import shlex
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 
 def find_verilator() -> str:
@@ -43,9 +42,12 @@ def main() -> None:
         if target_args.is_file():
             insert_argfile_after_first(args, target_args)
         target_resolved = target.resolve()
-        if not is_listed_in_args(target_resolved, args) and not is_listed_in_argfile(
-            target_resolved, args
-        ):
+        for arg in args:
+            if arg.startswith("-"):
+                continue
+            if is_source_path(Path(arg)) and Path(arg).resolve() == target_resolved:
+                break
+        else:
             args.append(str(target))
     os.execvp(verilator, [verilator] + args)
 
@@ -91,62 +93,6 @@ def insert_argfile_after_first(args: List[str], path: Path) -> None:
     refs = argfile_spans(args)
     insert_at = refs[0][1] if refs else len(args)
     args[insert_at:insert_at] = ["-f", str(path)]
-
-
-def is_listed_in_args(target_resolved: Path, args: List[str]) -> bool:
-    """Return True if target is already in the explicit arg list."""
-    for arg in args:
-        if arg.startswith("-"):
-            continue
-        if is_source_path(Path(arg)) and Path(arg).resolve() == target_resolved:
-            return True
-    return False
-
-
-def first_argfile(args: List[str]) -> Optional[Path]:
-    """Return the first -f argfile path (if any)."""
-    i = 0
-    while i < len(args):
-        arg = args[i]
-        if arg == "-f" and i + 1 < len(args):
-            return Path(args[i + 1])
-        if arg.startswith("-f") and len(arg) > 2:
-            path = arg[2:]
-            if path.startswith("="):
-                path = path[1:]
-            if path:
-                return Path(path)
-        i += 1
-    return None
-
-
-def resolve_argfile_token(token: str, argfile: Path) -> Optional[Path]:
-    """Return a resolved path for a token in an argfile, if it exists."""
-    candidate = Path(token)
-    if candidate.is_file():
-        return candidate.resolve()
-    rel_candidate = (argfile.parent / token)
-    if rel_candidate.is_file():
-        return rel_candidate.resolve()
-    return None
-
-
-def is_listed_in_argfile(target_resolved: Path, args: List[str]) -> bool:
-    """Return True if the first -f argfile already includes target."""
-    argfile = first_argfile(args)
-    if not argfile or not argfile.is_file():
-        return False
-    try:
-        tokens = shlex.split(argfile.read_text())
-    except OSError:
-        return False
-    for token in tokens:
-        if token.startswith("-"):
-            continue
-        token_path = resolve_argfile_token(token, argfile)
-        if token_path and token_path == target_resolved:
-            return True
-    return False
 
 
 def is_source_path(path: Path) -> bool:
