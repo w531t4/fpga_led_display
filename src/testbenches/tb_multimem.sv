@@ -18,12 +18,11 @@ module tb_multimem #(
     localparam int ADDR_B_BITS = calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT);
     localparam int DATA_A_BITS = calc::num_data_a_bits();
     localparam int DATA_B_BITS = calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
-    localparam int SUBPANEL_BITS = calc::num_subpanelselect_bits(PIXEL_HEIGHT, PIXEL_HALFHEIGHT);
     localparam int STRUCTURE_BITS = calc::num_structure_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int LANES = (1 << STRUCTURE_BITS);
     localparam int DEPTH_B = (1 << ADDR_B_BITS);
-    localparam logic [SUBPANEL_BITS-1:0] SUBPANEL0 = {SUBPANEL_BITS{1'b0}};
-    localparam logic [SUBPANEL_BITS-1:0] SUBPANEL1 = {{(SUBPANEL_BITS - 1) {1'b0}}, 1'b1};
+    localparam types::subpanel_addr_t SUBPANEL0 = 'b0;
+    localparam types::subpanel_addr_t SUBPANEL1 = types::subpanel_addr_t'(1);
     localparam types::pixel_addr_t PIXSEL0 = 'b0;
     localparam types::pixel_addr_t PIXSEL1 = types::pixel_addr_t'(1);
     localparam logic [ADDR_B_BITS-1:0] ADDR_B_MAX = {ADDR_B_BITS{1'b1}};
@@ -67,13 +66,13 @@ module tb_multimem #(
         .QB(ram_b_data_out)
     );
 
-    function automatic logic [ADDR_A_BITS-1:0] pack_addr_a(input logic [SUBPANEL_BITS-1:0] subpanel,
+    function automatic logic [ADDR_A_BITS-1:0] pack_addr_a(input types::subpanel_addr_t subpanel,
                                                            input logic [ADDR_B_BITS-1:0] addr_b,
                                                            input types::pixel_addr_t pixel_sel);
         pack_addr_a = {subpanel, addr_b, pixel_sel};
     endfunction
 
-    function automatic logic [STRUCTURE_BITS-1:0] lane_index(input logic [SUBPANEL_BITS-1:0] subpanel,
+    function automatic logic [STRUCTURE_BITS-1:0] lane_index(input types::subpanel_addr_t subpanel,
                                                              input types::pixel_addr_t pixel_sel);
         lane_index = {subpanel, pixel_sel};
     endfunction
@@ -87,7 +86,7 @@ module tb_multimem #(
         build_expected = expected;
     endfunction
 
-    task automatic write_lane(input logic [SUBPANEL_BITS-1:0] subpanel, input types::pixel_addr_t pixel_sel,
+    task automatic write_lane(input types::subpanel_addr_t subpanel, input types::pixel_addr_t pixel_sel,
                               input logic [ADDR_B_BITS-1:0] addr_b, input logic [DATA_A_BITS-1:0] data);
         logic [STRUCTURE_BITS-1:0] lane_idx;
         logic [ADDR_A_BITS-1:0] addr_a;
