@@ -54,7 +54,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
 
     localparam integer unsigned LANES = (1 << calc::num_structure_bits(
-        PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+        PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     ));
     wire [LANES*calc::num_data_a_bits()-1:0] qb_lanes_w;
 
@@ -62,7 +62,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     generate
         for (i = 0; i < LANES; i = i + 1) begin : g_lane
             wire [calc::num_structure_bits(
-PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] lane_idx_from_addr = {
                 AddressA[calc::num_address_a_bits(
                     PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
@@ -73,7 +73,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
             };
 
             wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[calc::num_structure_bits(
-                PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+                PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
             )-1:0]);
             (* keep = "true" *) reg we_lane_q;
             (* keep = "true" *) reg [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] addra_q;
