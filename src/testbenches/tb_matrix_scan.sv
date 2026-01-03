@@ -6,7 +6,6 @@
 // verilog_format: on
 module tb_matrix_scan #(
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
     parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
@@ -14,7 +13,7 @@ module tb_matrix_scan #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam real ADJUSTED_CLOCK = SIM_HALF_PERIOD_NS * DIVIDE_CLK_BY_X_FOR_MATRIX;
+    localparam real ADJUSTED_CLOCK = params::SIM_HALF_PERIOD_NS * DIVIDE_CLK_BY_X_FOR_MATRIX;
     logic clk;
     logic reset;
     wire types::col_addr_t column_address;

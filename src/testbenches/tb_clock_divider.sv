@@ -6,7 +6,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_clock_divider #(
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -37,7 +36,7 @@ module tb_clock_divider #(
     initial #10000 $finish;
 
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     always begin
         #400 reset <= !reset;

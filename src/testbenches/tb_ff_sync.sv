@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_ff_sync #(
-    parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -39,25 +38,25 @@ module tb_ff_sync #(
     initial #3 reset = !reset;
 
     initial begin
-        #(SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
-        #(SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
-        #(SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
-        #(SIM_HALF_PERIOD_NS) signal = ~signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
-        #(SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = ~signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
+        #(params::SIM_HALF_PERIOD_NS) signal = signal;
         #10 $finish;
     end
 
     always begin
-        #(SIM_HALF_PERIOD_NS) clk <= !clk;
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
     // verilog_format: off
     wire _unused_ok = &{1'b0,
