@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module brightness_timeout #(
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
@@ -28,7 +27,7 @@ module brightness_timeout #(
     types::brightness_index_t bit_index;
     always_comb begin
         bit_index = 0;
-        for (i = BRIGHTNESS_LEVELS - 1; i >= 0; i = i - 1) begin
+        for (i = $bits(types::brightness_level_t) - 1; i >= 0; i = i - 1) begin
             if (brightness_mask_active[i]) bit_index = types::brightness_index_t'(i);
         end
     end
