@@ -48,6 +48,7 @@ IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-re
 # -y/-Y let iverilog resolve module files under src/, enabling dependency discovery.
 VVP_BIN:=$(TOOLPATH)/vvp
 VVP_FLAGS:=-n -N
+VVP_POST_FLAGS:=-fst
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 PKG_SOURCES := $(SRC_DIR)/params.sv $(SRC_DIR)/calc.sv $(SRC_DIR)/cmd.sv $(SRC_DIR)/types.sv
@@ -67,7 +68,7 @@ INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh
 GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
 GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
 VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
-VCDOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vcd)))
+FSTOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.fst)))
 SIM_JOBS ?= $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 ifneq ($(filter --jobserver%,$(MAKEFLAGS)),)
 SIM_MAKEFLAGS :=
@@ -84,14 +85,14 @@ ifneq ($(findstring -DUSE_WATCHDOG,$(BUILD_FLAGS)), -DUSE_WATCHDOG)
 VSOURCES := $(filter-out $(SRC_DIR)/control_cmd_watchdog.sv, $(VSOURCES))
 TBSRCS := $(filter-out $(TB_DIR)/tb_control_cmd_watchdog.sv, $(TBSRCS))
 VVPOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.vvp, $(VVPOBJS))
-VCDOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.vcd, $(VCDOBJS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.fst, $(FSTOBJS))
 endif
 
 ifneq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
 VSOURCES := $(filter-out $(SRC_DIR)/fm6126init.sv, $(VSOURCES))
 TBSRCS := $(filter-out $(TB_DIR)/tb_fm6126init.sv, $(TBSRCS))
 VVPOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vvp, $(VVPOBJS))
-VCDOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vcd, $(VCDOBJS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.fst, $(FSTOBJS))
 endif
 
 # Include per-testbench deps so only affected TBs rebuild on source changes.
@@ -118,8 +119,8 @@ endif
 all: $(ARTIFACT_DIR)/verilator_args simulation lint
 #$(warning In a command script $(VVPOBJS))
 
-$(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
-	@set -o pipefail; stdbuf -oL -eL $(VVP_BIN) $(VVP_FLAGS) $< 2>&1 | sed -u 's/^/[$*] /'
+$(SIMULATION_DIR)/%.fst: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
+	@set -o pipefail; stdbuf -oL -eL $(VVP_BIN) $(VVP_FLAGS) $< $(VVP_POST_FLAGS) 2>&1 | sed -u 's/^/[$*] /'
 
 $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION_DIR) $(DEPDIR)
 #	$(info In a command script)
@@ -129,7 +130,7 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION
 	if [ -f $$tb_args_file ]; then \
 		tb_args="$$(tr '\n' ' ' < $$tb_args_file)"; \
 	fi; \
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) $$tb_args -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.vcd"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $(PKG_SOURCES) $<
+	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) $$tb_args -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.fst"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $(PKG_SOURCES) $<
 	@printf '%s: ' '$(SIMULATION_DIR)/$*.vvp' > $(DEPDIR)/$*.d
 	@tr '\n' ' ' < $(DEPDIR)/$*.deps >> $(DEPDIR)/$*.d
 	@if [ -f $$tb_args_file ]; then \
@@ -288,7 +289,7 @@ memprog: $(ARTIFACT_DIR)/ulx3s.bit
 	$(TOOLPATH)/fujprog $<
 
 simulation:
-	@$(MAKE) --no-print-directory $(SIM_MAKEFLAGS) $(VCDOBJS)
+	@$(MAKE) --no-print-directory $(SIM_MAKEFLAGS) $(FSTOBJS)
 
 DIAGRAM_TARGETS:=$(ARTIFACT_DIR)/netlist.svg
 ifeq ($(YOSYS_INCLUDE_EXTRA),true)
