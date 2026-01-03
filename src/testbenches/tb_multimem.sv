@@ -5,16 +5,12 @@
 `default_nettype none
 // verilog_format: on
 module tb_multimem #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam int STRUCTURE_BITS = calc::num_structure_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
-    localparam int LANES = (1 << STRUCTURE_BITS);
+    localparam int LANES = (1 << $bits(types::mem_structure_t));
     localparam int DEPTH_B = (1 << $bits(types::mem_read_addr_t));
     localparam types::subpanel_addr_t SUBPANEL0 = 'b0;
     localparam types::subpanel_addr_t SUBPANEL1 = types::subpanel_addr_t'(1);
@@ -39,9 +35,6 @@ module tb_multimem #(
     types::mem_write_data_t model_mem[LANES][DEPTH_B];
 
     multimem #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) A (
         .DataInA(ram_a_data_in),
@@ -66,8 +59,8 @@ module tb_multimem #(
         pack_addr_a = {subpanel, addr_b, pixel_sel};
     endfunction
 
-    function automatic logic [STRUCTURE_BITS-1:0] lane_index(input types::subpanel_addr_t subpanel,
-                                                             input types::pixel_addr_t pixel_sel);
+    function automatic types::mem_structure_t lane_index(input types::subpanel_addr_t subpanel,
+                                                         input types::pixel_addr_t pixel_sel);
         lane_index = {subpanel, pixel_sel};
     endfunction
 
@@ -82,7 +75,7 @@ module tb_multimem #(
 
     task automatic write_lane(input types::subpanel_addr_t subpanel, input types::pixel_addr_t pixel_sel,
                               input types::mem_read_addr_t addr_b, input types::mem_write_data_t data);
-        logic [STRUCTURE_BITS-1:0] lane_idx;
+        types::mem_structure_t  lane_idx;
         types::mem_write_addr_t addr_a;
         lane_idx = lane_index(subpanel, pixel_sel);
         addr_a   = pack_addr_a(subpanel, addr_b, pixel_sel);
