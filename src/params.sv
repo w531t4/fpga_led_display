@@ -41,8 +41,7 @@ package params;
 `else
     parameter int unsigned WATCHDOG_CONTROL_TICKS = $rtoi(ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0);
 `endif
-    parameter int unsigned WATCHDOG_SIGNATURE_BITS = 64;
-    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED;
+    parameter logic [63:0] WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED;
 
     // SIM
 `ifdef SIM_HALF_PERIOD_NS
