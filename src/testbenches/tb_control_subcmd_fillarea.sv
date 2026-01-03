@@ -18,7 +18,6 @@ module tb_control_subcmd_fillarea #(
 );
     // Local parameters grouped for easy reference
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
-    localparam integer unsigned OUT_BITWIDTH = calc::num_data_a_bits();
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
     localparam int MEM_CLEAR_MAX_CYCLES = (PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL) + 2;
@@ -39,7 +38,7 @@ module tb_control_subcmd_fillarea #(
     logic [MEM_NUM_BYTES-1:0] mem;
     logic [MEM_NUM_BYTES-1:0] valid_mask;
     int remaining_valid_bytes;
-    wire [OUT_BITWIDTH-1:0] data_out;
+    wire types::mem_write_data_t data_out;
     logic reset;
     types::color_t color_in;
 

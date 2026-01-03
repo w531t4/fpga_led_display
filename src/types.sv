@@ -116,6 +116,9 @@ package types;
         pixel_addr_t pixel;
     } mem_write_addr_t;
 
+    // aka: data A
+    typedef logic [calc::num_data_a_bits()-1:0] mem_write_data_t;
+
     // aka: address B
     typedef struct packed {
         row_subpanel_addr_t row;
