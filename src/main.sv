@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module main #(
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     // verilator lint_off UNUSEDPARAM
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_on UNUSEDPARAM
@@ -340,7 +339,6 @@ module main #(
 
     /* the control module */
     control_module #(
-        .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
     ) ctrl (
