@@ -3,7 +3,6 @@
 `default_nettype none
 module control_cmd_fillpanel #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -110,7 +109,7 @@ module control_cmd_fillpanel #(
         .x1(0),
         .y1(0),
         .width(types::col_addr_t'(params::PIXEL_WIDTH)),
-        .height(types::row_addr_t'(PIXEL_HEIGHT)),
+        .height(types::row_addr_t'(params::PIXEL_HEIGHT)),
         .color(selected_color),
         .row(row),
         .column(column),
