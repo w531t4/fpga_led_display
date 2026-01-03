@@ -151,6 +151,7 @@ package types;
 
     typedef logic [$clog2(params::BRIGHTNESS_BASE_TIMEOUT) + params::BRIGHTNESS_LEVELS-1:0] brightness_timeout_t;
     typedef logic [$clog2(params::BRIGHTNESS_LEVELS)-1:0] brightness_index_t;
+    typedef logic [$clog2(params::BRIGHTNESS_LEVELS + 1)-1:0] brightness_count_t;
     // ==== /BRIGHTNESS ====
 
     // ==== ROW ====
