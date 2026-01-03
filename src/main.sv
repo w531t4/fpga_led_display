@@ -103,7 +103,7 @@ module main #(
     wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out_frame2;
 `endif
     //  [10:0]
-    wire [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_b_address;
+    wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
 
     wire [calc::num_pixeldata_bits(BYTES_PER_PIXEL)-1:0] pixeldata_top;
@@ -298,7 +298,6 @@ module main #(
     framebuffer_fetch #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb_f (
@@ -405,7 +404,6 @@ module main #(
     multimem #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb (
@@ -432,7 +430,6 @@ module main #(
     multimem #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb2 (

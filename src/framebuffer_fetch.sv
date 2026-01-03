@@ -5,7 +5,6 @@
 module framebuffer_fetch #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -26,7 +25,7 @@ module framebuffer_fetch #(
     // [15:0] each fetch is one pixel worth of data -- no longer true
     input [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_data_in,
     // [10:0]
-    output [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] ram_address,
+    output types::mem_read_addr_t ram_address,
     output ram_clk_enable,
 `ifdef DEBUGGER
     output [3:0] pixel_load_counter2,
