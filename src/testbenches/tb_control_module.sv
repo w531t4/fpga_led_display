@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_control_module #(
-    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params::DEBUG_MSGS_PER_SEC_TICKS_SIM,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
@@ -80,7 +79,6 @@ module tb_control_module #(
     );
     // verilog_format: off
     wire _unused_ok_ifdef_spi = &{1'b0,
-                                  1'(DEBUG_MSGS_PER_SEC_TICKS_SIM),
                                   unused_rdata,
                                   unused_sdout,
                                   1'b0};
@@ -103,7 +101,7 @@ module tb_control_module #(
         .DATA_WIDTH(1072),
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+        .DIVIDER_TICKS(params::DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to

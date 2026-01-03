@@ -9,7 +9,6 @@ module tb_main #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned ROOT_CLOCK = params::ROOT_CLOCK,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
-    parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params::DEBUG_MSGS_PER_SEC_TICKS_SIM,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -130,7 +129,6 @@ module tb_main #(
     );
     // verilog_format: off
     wire _unused_ok_ifdef_spi = &{1'b0,
-                                  1'(DEBUG_MSGS_PER_SEC_TICKS_SIM),
                                   1'b0};
     // verilog_format: on
 `else
@@ -138,7 +136,7 @@ module tb_main #(
         .DATA_WIDTH($bits(cmd_series)),
         // use smaller than normal so it doesn't require us to simulate to
         // infinity to see results
-        .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS_SIM),
+        .DIVIDER_TICKS(params::DEBUG_MSGS_PER_SEC_TICKS_SIM),
 
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
