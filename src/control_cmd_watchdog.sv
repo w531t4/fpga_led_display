@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_watchdog #(
-    parameter types::watchdog_pattern_t WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -41,7 +40,7 @@ module control_cmd_watchdog #(
                     if (enable) begin
                         // Update memory
                         cache <= (cache << 8) + types::watchdog_pattern_t'(data_in);
-                        if (((cache << 8) + types::watchdog_pattern_t'(data_in)) == WATCHDOG_SIGNATURE_PATTERN) begin
+                        if (((cache << 8) + types::watchdog_pattern_t'(data_in)) == params::WATCHDOG_SIGNATURE_PATTERN) begin
                             watchdog_counter <= types::watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
                         end else begin
                             watchdog_counter <= watchdog_counter - 'd1;

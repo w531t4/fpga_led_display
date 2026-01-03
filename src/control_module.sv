@@ -4,7 +4,6 @@
 `default_nettype none
 module control_module #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
-    parameter types::watchdog_pattern_t WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -273,7 +272,6 @@ module control_module #(
     wire cmd_watchdog_sysreset;
 
     control_cmd_watchdog #(
-        .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),
         .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
     ) cmd_watchdog (

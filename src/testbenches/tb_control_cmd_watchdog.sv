@@ -9,7 +9,6 @@
 
 // Validates watchdog signature capture, done pulse timing, and deferred sys_reset assertion.
 module tb_control_cmd_watchdog #(
-    parameter types::watchdog_pattern_t WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
     // TODO: switch WATCHDOG_CONTROL_TICKS to params::WATCHDOG_CONTROL_TICKS,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = 16 * 12,
     // verilator lint_off UNUSEDPARAM
@@ -33,7 +32,6 @@ module tb_control_cmd_watchdog #(
 
     // === DUT wiring ===
     control_cmd_watchdog #(
-        .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),
         .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
     ) cmd_watchdog (
@@ -68,7 +66,7 @@ module tb_control_cmd_watchdog #(
         @(negedge reset);
         for (int i = 0; i < params::WATCHDOG_SIGBYTES; i++) begin
             @(posedge slowclk) begin
-                data_in = WATCHDOG_SIGNATURE_PATTERN[($bits(types::watchdog_pattern_t)-1)-(i*8)-:8];
+                data_in = params::WATCHDOG_SIGNATURE_PATTERN[($bits(types::watchdog_pattern_t)-1)-(i*8)-:8];
             end
         end
         @(posedge slowclk);
