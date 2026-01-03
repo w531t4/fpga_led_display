@@ -168,6 +168,18 @@ package types;
     } watchdog_field_t;
     // ==== /WATCHDOG ====
 
+    // ==== STRUCTURE ====
+    typedef struct packed {
+        subpanel_addr_t subpanel;
+        pixel_addr_t    pixel;
+    } mem_structure_t;
+
+    function automatic mem_structure_t mem_structure(mem_write_addr_t a);
+        // written with row/col below (of which are then truncated) to avoid linting issues
+        mem_structure = mem_structure_t'({a.row, a.col, a.subpanel, a.pixel});
+    endfunction
+    // ==== /STRUCTURE ====
+
     //
     // COMMANDS
     //

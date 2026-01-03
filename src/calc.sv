@@ -34,12 +34,6 @@ package calc;
         num_address_b_bits = $clog2(pixel_halfheight) + num_column_address_bits(pixel_width);
     endfunction
 
-    function automatic int unsigned num_structure_bits(
-        input int unsigned pixel_height, input int unsigned bytes_per_pixel, input int unsigned pixel_halfheight);
-        num_structure_bits = num_subpanelselect_bits(pixel_height, pixel_halfheight) +
-            num_pixelcolorselect_bits(bytes_per_pixel);
-    endfunction
-
     //Data A: 8‑bit
     //  - one byte of a pixel written into the selected lane (QA is tied off)
     function automatic int unsigned num_data_a_bits();

@@ -9,9 +9,6 @@
 
 `default_nettype none
 module multimem #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -50,24 +47,15 @@ module multimem #(
     //      0 pixelcolorselect = 0
     //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
 
-    localparam integer unsigned LANES = (1 << calc::num_structure_bits(
-        PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-    ));
+    localparam integer unsigned LANES = (1 << $bits(types::mem_structure_t));
     wire [LANES*$bits(types::mem_write_data_t)-1:0] qb_lanes_w;
 
     genvar i;
     generate
         for (i = 0; i < LANES; i = i + 1) begin : g_lane
-            wire [calc::num_structure_bits(
-PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-)-1:0] lane_idx_from_addr = {
-                AddressA[$bits(types::mem_write_addr_t)-1-:$bits(types::subpanel_addr_t)],
-                types::pixel_addr_t'(AddressA)
-            };
+            wire types::mem_structure_t lane_idx_from_addr = types::mem_structure(AddressA);
 
-            wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[calc::num_structure_bits(
-                PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-            )-1:0]);
+            wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[$bits(types::mem_structure_t)-1:0]);
             (* keep = "true" *) reg we_lane_q;
             // TODO - is it necessary to use a reg for types::mem_read_addr_t here
             (* keep = "true" *) types::mem_read_addr_t addra_q;
