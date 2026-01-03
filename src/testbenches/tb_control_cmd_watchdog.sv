@@ -16,7 +16,7 @@ module tb_control_cmd_watchdog #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam int unsigned WATCHDOG_SIGBYTES = $bits(types::watchdog_pattern_t) / 8;
+    localparam int unsigned WATCHDOG_SIGBYTES = calc::num_bytes_to_contain($bits(types::watchdog_pattern_t));
 
     // === Testbench scaffolding ===
     logic [3:0] divider;
