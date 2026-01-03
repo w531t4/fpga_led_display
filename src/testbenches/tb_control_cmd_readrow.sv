@@ -8,7 +8,6 @@
 
 module tb_control_cmd_readrow #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -68,7 +67,6 @@ module tb_control_cmd_readrow #(
     );
 
     control_cmd_readrow #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) dut (
         .reset(reset),
@@ -171,7 +169,7 @@ module tb_control_cmd_readrow #(
                 end else begin
                     int exp_col;
                     int exp_pix;
-                    exp_col = PIXEL_WIDTH - 1 - (last_data_idx / BYTES_PER_PIXEL);
+                    exp_col = params::PIXEL_WIDTH - 1 - (last_data_idx / BYTES_PER_PIXEL);
                     exp_pix = BYTES_PER_PIXEL - 1 - (last_data_idx % BYTES_PER_PIXEL);
                     expect_data_payload(last_data_idx, last_enable_byte, exp_col, exp_pix);
                 end

@@ -11,10 +11,9 @@
 module tb_control_cmd_fillpanel;
     localparam int unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL;
     localparam int unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT;
-    localparam int unsigned PIXEL_WIDTH = params::PIXEL_WIDTH;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
-    localparam int TOTAL_WRITES = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
+    localparam int TOTAL_WRITES = params::PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
     localparam types::color_t COLOR = 16'hCAFE;
 
     // === Testbench scaffolding ===
@@ -37,7 +36,6 @@ module tb_control_cmd_fillpanel;
     control_cmd_fillpanel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) dut (
         .reset(reset),
