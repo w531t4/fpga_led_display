@@ -65,12 +65,6 @@ package calc;
         num_pixeldata_bits = (1 << num_pixelcolorselect_bits(bytes_per_pixel)) << 3;
     endfunction
 
-    function automatic int unsigned num_row_column_pixel_bits(
-        input int unsigned pixel_height, input int unsigned pixel_width, input int unsigned bytes_per_pixel);
-        num_row_column_pixel_bits = num_row_address_bits(pixel_height) + num_column_address_bits(pixel_width) +
-            num_pixelcolorselect_bits(bytes_per_pixel);
-    endfunction
-
     function automatic int unsigned num_bytes_to_contain(input int unsigned num_bits);
         // return the number of bytes needed to hold a n-bit number
         // 128 - 7 bit (0-127), 1 byte

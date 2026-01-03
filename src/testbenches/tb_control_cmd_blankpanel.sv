@@ -86,7 +86,7 @@ module tb_control_cmd_blankpanel;
             mem <= {MEM_NUM_BYTES{1'b1}};
             // verilator lint_on WIDTHCONCAT
         end else if (ram_write_enable) begin
-            logic [calc::num_row_column_pixel_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL)-1:0] addr;
+            types::fb_addr_t addr;
             addr = {row, column, pixel};
             assert (int'(addr) < MEM_NUM_BYTES)
             else $fatal(1, "Address out of range: %0d", addr);
