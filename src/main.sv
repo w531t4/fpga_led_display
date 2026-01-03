@@ -92,7 +92,7 @@ module main #(
     wire [7:0] ram_a_data_in;
     wire [7:0] ram_a_data_out_frame1;
     //  [11:0]
-    wire [calc::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_a_address;
+    wire types::mem_write_addr_t ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
     wire [calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_b_data_out;
@@ -123,9 +123,7 @@ module main #(
     wire [3:0] cmd_line_state2;
     wire ram_access_start;
     wire ram_access_start_latch;
-    wire [calc::num_address_a_bits(
-PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-)-1:0] cmd_line_addr2;
+    wire types::mem_write_addr_t cmd_line_addr2;
     wire [7:0] num_commands_processed;
     // end controller
     // from framebuffer_fetch
@@ -366,7 +364,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
         .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),

@@ -21,9 +21,7 @@ module multimem #(
     input wire [15:0] DataInB,
     // 12 bits [11:0]      -5-                   -log( (64*2),2)=7-
     // input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] AddressA,
-    input wire [calc::num_address_a_bits(
-PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-)-1:0] AddressA,
+    input wire types::mem_write_addr_t AddressA,
     // 11 bits [10:0] (-2, because this is 16bit, not 8bit), -3 because we're not pulling half panels anymore
     input wire [calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT)-1:0] AddressB,
     input wire ClockA,
@@ -64,11 +62,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
             wire [calc::num_structure_bits(
 PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 )-1:0] lane_idx_from_addr = {
-                AddressA[calc::num_address_a_bits(
-                    PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-                )-1-:$bits(
-                    types::subpanel_addr_t
-                )],
+                AddressA[$bits(types::mem_write_addr_t)-1-:$bits(types::subpanel_addr_t)],
                 types::pixel_addr_t'(AddressA)
             };
 
@@ -81,8 +75,8 @@ PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
 
             always @(posedge ClockA) begin
                 we_lane_q <= we_lane_c;
-                addra_q <= AddressA[(calc::num_address_a_bits(
-                    PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
+                addra_q <= AddressA[($bits(
+                    types::mem_write_addr_t
                 )-$bits(
                     types::subpanel_addr_t
                 ))-1-:calc::num_address_b_bits(
