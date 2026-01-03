@@ -24,6 +24,11 @@ package calc;
 
     // Address B (port B read address):
     //  - composed as (row within subpanel + column)
+    //  - rrrrcccc (where)
+    //          YYYY = num_subpanelselect_bits(PIXEL_HEIGHT, PIXEL_HALFHEIGHT)
+    //          rrrr = log2(PIXEL_HALFHEIGHT)
+    //          cccc = log2(PIXEL_WIDTH)
+    //          XXXX = num_pixelcolorselect_bits(BYTES_PER_PIXEL)
     function automatic int unsigned num_address_b_bits(input int unsigned pixel_width,
                                                        input int unsigned pixel_halfheight);
         num_address_b_bits = $clog2(pixel_halfheight) + num_column_address_bits(pixel_width);
@@ -32,6 +37,11 @@ package calc;
     // Address A (port A write address):
     //  -  upper bits select the “lane” (subpanel select + pixel‑byte select)
     //  -  lower bits are the same row+column “body” address used by port B
+    //  -  YYYYrrrrccccXXXX (where)
+    //          YYYY = num_subpanelselect_bits(PIXEL_HEIGHT, PIXEL_HALFHEIGHT)
+    //          rrrr = log2(PIXEL_HALFHEIGHT)
+    //          cccc = log2(PIXEL_WIDTH)
+    //          XXXX = num_pixelcolorselect_bits(BYTES_PER_PIXEL)
     function automatic int unsigned num_address_a_bits(input int unsigned pixel_width, input int unsigned pixel_height,
                                                        input int unsigned bytes_per_pixel,
                                                        input int unsigned pixel_halfheight);
@@ -54,6 +64,12 @@ package calc;
     // Data B (QB):
     //  - concatenation of all lane bytes for that AddressB (all subpanels × pixel‑byte selects)
     //  - split as {pixeldata_bottom, pixeldata_top}
+    //  - Viz (lanes concatenated by lane index {Y,X}):
+    //     AAAAAAAABBBBBBBBCCCCCCCCDDDDDDDDEEEEEEEEFFFFFFFFGGGGGGGGHHHHHHHH
+    //     |=======pixeldata_bottom=======||=========pixeldata_top========|
+    //     BBBBBBBBGGGGGGGGRRRRRRRRxxxxxxxxBBBBBBBBGGGGGGGGRRRRRRRRxxxxxxxx < rgb24
+    //     For current config (2 subpanels, 4 byte slots):
+    //     A=Y0X0, B=Y0X1, C=Y0X2, D=Y0X3, E=Y1X0, F=Y1X1, G=Y1X2, H=Y1X3.
     function automatic int unsigned num_data_b_bits(input int unsigned pixel_height, input int unsigned bytes_per_pixel,
                                                     input int unsigned pixel_halfheight);
         num_data_b_bits = ((1 << num_pixelcolorselect_bits(bytes_per_pixel)) <<
