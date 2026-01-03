@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_readpixel #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -66,7 +65,7 @@ module control_cmd_readpixel #(
                             ram_write_enable <= 1'b1;
                             ram_access_start <= !ram_access_start;
                             data_out <= data_in;
-                            pixel <= types::color_index_t'(BYTES_PER_PIXEL - 1);
+                            pixel <= types::color_index_t'(params::BYTES_PER_PIXEL - 1);
                         end else column_byte_counter <= column_byte_counter - 1;
                     end
                 end

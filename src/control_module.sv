@@ -115,7 +115,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire types::pixel_addr_t cmd_readrow_pixel_addr;
 
     control_cmd_readrow #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) cmd_readrow (
@@ -143,7 +142,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire types::pixel_addr_t cmd_readpixel_pixel_addr;
 
     control_cmd_readpixel #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) cmd_readpixel (
         // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
@@ -184,7 +182,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire types::pixel_addr_t cmd_blankpanel_pixel_addr;
 
     control_cmd_blankpanel #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
@@ -245,7 +242,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire                           cmd_fillrect_rfd;
 
     control_cmd_fillrect #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) cmd_fillrect (
         .reset           (reset),
@@ -273,7 +269,6 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     wire types::pixel_addr_t       cmd_readframe_pixel_addr;
 
     control_cmd_readframe #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)

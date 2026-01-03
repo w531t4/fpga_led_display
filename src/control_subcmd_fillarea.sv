@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_subcmd_fillarea #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -66,7 +65,7 @@ module control_subcmd_fillarea #(
                         state <= STATE_ROW_MEMWRITE;
                         row <= y2 - 1;
                         column <= x2 - 1;
-                        pixel <= types::pixel_addr_t'(BYTES_PER_PIXEL - 1);
+                        pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
                         data_out <= color[(((32)'(pixel)+1)*8)-1-:8];
@@ -78,7 +77,7 @@ module control_subcmd_fillarea #(
                         ram_access_start <= !ram_access_start;
                         if (row > y1 || column > x1 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel <= types::pixel_addr_t'(BYTES_PER_PIXEL - 1);
+                                pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                                 if (column == x1) begin
                                     column <= x2 - 1;
                                     row <= row - 'd1;

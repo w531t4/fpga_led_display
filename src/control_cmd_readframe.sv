@@ -3,7 +3,6 @@
 `default_nettype none
 module control_cmd_readframe #(
     // Unproven yet
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     // verilator lint_off UNUSEDPARAM
@@ -48,7 +47,7 @@ module control_cmd_readframe #(
                         state <= STATE_READ_FRAMECONTENT;
                         row <= types::row_addr_t'(PIXEL_HEIGHT - 1);
                         column <= types::col_addr_t'(PIXEL_WIDTH - 1);
-                        pixel <= types::pixel_addr_t'(BYTES_PER_PIXEL - 1);
+                        pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         data_out <= data_in;
                         ram_write_enable <= 1'b1;
@@ -61,7 +60,7 @@ module control_cmd_readframe #(
                         data_out <= data_in;
                         if (row > 'd0 || column > 'd0 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
-                                pixel <= types::pixel_addr_t'(BYTES_PER_PIXEL - 1);
+                                pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                                 if (column == 'd0) begin
                                     column <= types::col_addr_t'(PIXEL_WIDTH - 1);
                                     row <= row - 'd1;

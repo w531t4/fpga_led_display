@@ -7,7 +7,7 @@
 `include "tb_helper.svh"
 
 module tb_control_cmd_readframe;
-    localparam int unsigned BYTES_PER_PIXEL = 2;
+    localparam int unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL;
     localparam int unsigned PIXEL_HEIGHT = 2;
     localparam int unsigned PIXEL_WIDTH = params::PIXEL_WIDTH;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
@@ -33,9 +33,8 @@ module tb_control_cmd_readframe;
 
     // === DUT wiring ===
     control_cmd_readframe #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH)
+        .PIXEL_WIDTH (PIXEL_WIDTH)
     ) dut (
         .reset(reset),
         .data_in(data_in),
