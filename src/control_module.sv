@@ -4,7 +4,6 @@
 `default_nettype none
 module control_module #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params::WATCHDOG_SIGNATURE_BITS,
     parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
@@ -173,7 +172,6 @@ module control_module #(
     wire types::pixel_addr_t cmd_blankpanel_pixel_addr;
 
     control_cmd_blankpanel #(
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
         ._UNUSED('d0)
     ) cmd_blankpanel (
         .reset(reset),
@@ -202,7 +200,6 @@ module control_module #(
 
     control_cmd_fillpanel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
         ._UNUSED('d0)
     ) cmd_fillpanel (
         .reset           (reset),
@@ -258,7 +255,6 @@ module control_module #(
     wire types::pixel_addr_t       cmd_readframe_pixel_addr;
 
     control_cmd_readframe #(
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
         ._UNUSED('d0)
     ) cmd_readframe (
         .reset           (reset),

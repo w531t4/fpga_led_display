@@ -10,7 +10,6 @@
 // and issues each address once before returning to idle.
 module tb_control_cmd_fillrect;
     localparam int unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL;
-    localparam int unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
     localparam types::color_t COLOR = 16'hBEEF;

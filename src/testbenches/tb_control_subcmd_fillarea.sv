@@ -10,7 +10,6 @@
 // rows advance in order, done/ack handoff completes, and the FSM returns idle.
 module tb_control_subcmd_fillarea #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -19,7 +18,7 @@ module tb_control_subcmd_fillarea #(
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
     localparam int ROW_ADVANCE_MAX_CYCLES = params::PIXEL_WIDTH * BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (params::PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
-    localparam int MEM_CLEAR_MAX_CYCLES = (params::PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL) + 2;
+    localparam int MEM_CLEAR_MAX_CYCLES = (params::PIXEL_WIDTH * params::PIXEL_HEIGHT * BYTES_PER_PIXEL) + 2;
     localparam types::color_t COLOR_ZERO = 'b0;
     localparam types::color_t COLOR_ALT = {BYTES_PER_PIXEL{8'hA5}};
 
@@ -52,7 +51,7 @@ module tb_control_subcmd_fillarea #(
         .x1(types::col_addr_t'(0)),
         .y1(types::row_addr_t'(0)),
         .width(types::col_addr_t'(params::PIXEL_WIDTH)),
-        .height(types::row_addr_t'(PIXEL_HEIGHT)),
+        .height(types::row_addr_t'(params::PIXEL_HEIGHT)),
         .color(color_in),
         .row(row),
         .column(column),
@@ -101,7 +100,7 @@ module tb_control_subcmd_fillarea #(
             mask_col   = mask_col_idx(mask_idx);
             mask_row   = mask_row_idx(mask_idx);
             // Only mark real columns/rows; extra codes are padding.
-            if (mask_pixel < BYTES_PER_PIXEL && mask_col < params::PIXEL_WIDTH && mask_row < PIXEL_HEIGHT) begin
+            if (mask_pixel < BYTES_PER_PIXEL && mask_col < params::PIXEL_WIDTH && mask_row < params::PIXEL_HEIGHT) begin
                 valid_mask[mask_idx] = 1'b1;
             end
         end
@@ -125,7 +124,7 @@ module tb_control_subcmd_fillarea #(
         // verilator lint_off WIDTHCONCAT
         mem = {MEM_NUM_BYTES{1'b1}};
         // verilator lint_on WIDTHCONCAT
-        remaining_valid_bytes = params::PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
+        remaining_valid_bytes = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * BYTES_PER_PIXEL;
         subcmd_enable = 0;
         @(posedge clk);
         @(posedge clk) reset = 0;
@@ -136,7 +135,7 @@ module tb_control_subcmd_fillarea #(
         @(posedge clk);
 
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
-        for (int r = PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
+        for (int r = params::PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
             `WAIT_ASSERT(clk, (row == types::row_addr_t'(r)), ROW_ADVANCE_MAX_CYCLES)
         end
         // Done should assert once the final byte of the final pixel is written.
@@ -173,7 +172,7 @@ module tb_control_subcmd_fillarea #(
         addr <= {row, column, pixel};
         if (ram_write_enable && subcmd_enable) begin
             // Each write must be in-range, unique, and match the requested color byte for that pixel lane.
-            if (types::uint_t'(row) >= PIXEL_HEIGHT || types::uint_t'(column) >= params::PIXEL_WIDTH || types::uint_t'(pixel) >= BYTES_PER_PIXEL) begin
+            if (types::uint_t'(row) >= params::PIXEL_HEIGHT || types::uint_t'(column) >= params::PIXEL_WIDTH || types::uint_t'(pixel) >= BYTES_PER_PIXEL) begin
                 $display("out-of-range write: row=%0d col=%0d pixel=%0d", row, column, pixel);
                 $stop;
             end else begin

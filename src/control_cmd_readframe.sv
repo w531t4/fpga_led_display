@@ -3,7 +3,6 @@
 `default_nettype none
 module control_cmd_readframe #(
     // Unproven yet
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -44,7 +43,7 @@ module control_cmd_readframe #(
                     if (enable) begin
                         /* first, get the row to write to */
                         state <= STATE_READ_FRAMECONTENT;
-                        row <= types::row_addr_t'(PIXEL_HEIGHT - 1);
+                        row <= types::row_addr_t'(params::PIXEL_HEIGHT - 1);
                         column <= types::col_addr_t'(params::PIXEL_WIDTH - 1);
                         pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
