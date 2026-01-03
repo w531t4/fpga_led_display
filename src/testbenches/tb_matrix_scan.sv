@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_matrix_scan #(
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -25,7 +24,6 @@ module tb_matrix_scan #(
 
 
     matrix_scan #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) matrix_scan_instance (
         .clk_in(clk),
