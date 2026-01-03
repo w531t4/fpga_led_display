@@ -3,6 +3,7 @@
 
 PROJ:=this
 SHELL:=/bin/bash
+MAKEFLAGS += --no-print-directory
 
 ARTIFACT_DIR:=build
 SIMULATION_DIR:=$(ARTIFACT_DIR)/simulation
@@ -56,12 +57,12 @@ VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
 VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing
+VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing --quiet-stats
 # Verilator needs full-paths otherwise vscode assumes they are in /src
 VERILATOR_ARGS_COMMON = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 	-I$(abspath $(VINCLUDE_DIR)) -I$(abspath $(SRC_DIR)) \
 	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS)
-VERILATOR_ARGS_SOURCES = $(abspath $(VSOURCES_WITHOUT_PKGS)) $(abspath $(TBSRCS))
+VERILATOR_ARGS_SOURCES = $(abspath $(VSOURCES_WITHOUT_PKGS))
 VERILATOR_FLAGS:=-sv --lint-only -f build/verilator_args_common -f build/verilator_args_sources
 
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
@@ -95,6 +96,10 @@ VVPOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vvp, $(VVPOBJS))
 VCDOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vcd, $(VCDOBJS))
 endif
 
+TB_BASES := $(notdir $(TBSRCS:.sv=))
+TB_NAMES := $(patsubst tb_%,%,$(TB_BASES))
+LINT_TB_TARGETS := $(addprefix lint_tb_,$(TB_NAMES))
+
 # Include per-testbench deps so only affected TBs rebuild on source changes.
 # Skip dep includes for clean to avoid forcing dep generation.
 ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
@@ -114,7 +119,7 @@ endif
 
 
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build gamma_lut
+.PHONY: all diagram simulation clean compile loopviz route lint lint_project lint_tbs loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build gamma_lut
 .DELETE_ON_ERROR:
 all: $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources simulation lint
 #$(warning In a command script $(VVPOBJS))
@@ -143,12 +148,28 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv $$(wildcard $(TB_DIR)/t
 $(ARTIFACT_DIR)/verilator_args_common: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s' '$(VERILATOR_ARGS_COMMON)' > $@
 
-$(ARTIFACT_DIR)/verilator_args_sources: $(ARTIFACT_DIR) $(VSOURCES_WITHOUT_PKGS) $(TBSRCS) Makefile
+$(ARTIFACT_DIR)/verilator_args_sources: $(ARTIFACT_DIR) $(VSOURCES_WITHOUT_PKGS) Makefile
 	@printf '%s' '$(VERILATOR_ARGS_SOURCES)' > $@
 
-lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources
+lint: lint_project lint_tbs
+
+lint_project: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources
 	cat $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources; printf "\n";
-	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator_project.lint
+
+lint_tbs: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources
+	@$(MAKE) $(SIM_MAKEFLAGS) $(LINT_TB_TARGETS)
+
+lint_tb_%: $(TB_DIR)/tb_%.sv $(ARTIFACT_DIR)/verilator_args_common $(ARTIFACT_DIR)/verilator_args_sources
+	@set -o pipefail; \
+	tb=$<; \
+	tb_name=$$(basename $$tb .sv); \
+	lint_out=$(ARTIFACT_DIR)/verilator_$${tb_name}.lint; \
+	$(SRC_DIR)/scripts/verilator $(VERILATOR_FLAGS) $$tb |& \
+		LINT_ONLY_FILE=$(abspath $<) python3 $(SRC_DIR)/scripts/parse_lint.py | tee $$lint_out | \
+		sed -u "s/^/[$$tb_name] /"; \
+	lint_status=$${PIPESTATUS[1]}; \
+	exit $$lint_status
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
