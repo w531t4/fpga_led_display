@@ -16,7 +16,7 @@ module control_subcmd_fillarea #(
     input types::row_addr_t y1,
     input types::col_addr_t width,
     input types::row_addr_t height,
-    input [(BYTES_PER_PIXEL*8)-1:0] color,  // must be byte aligned
+    input types::color_t color,  // must be byte aligned
 
     output types::row_addr_t row,
     output types::col_addr_t column,

@@ -18,7 +18,7 @@ module tb_control_cmd_fillpanel;
         PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     ));
     localparam int TOTAL_WRITES = PIXEL_WIDTH * PIXEL_HEIGHT * BYTES_PER_PIXEL;
-    localparam logic [(BYTES_PER_PIXEL*8)-1:0] COLOR = 16'hCAFE;
+    localparam types::color_t COLOR = 16'hCAFE;
 
     // === Testbench scaffolding ===
     logic                                        clk;
