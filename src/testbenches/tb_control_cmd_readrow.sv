@@ -32,9 +32,7 @@ module tb_control_cmd_readrow #(
     wire                                                             cmd_readrow_as;
     wire                                                             cmd_readrow_done;
     wire  [                                                     7:0] cmd_readrow_do;
-    wire types::row_addr_t                                           cmd_readrow_row_addr;
-    wire types::col_addr_t                                           cmd_readrow_col_addr;
-    wire types::pixel_addr_t                                         cmd_readrow_pixel_addr;
+    wire types::fb_addr_t                                            cmd_readrow_addr;
     logic                                                            junk1;
     logic [                                                     7:0] expected_bytes         [STREAM_BYTECOUNT];
     int                                                              enable_count;
@@ -71,9 +69,7 @@ module tb_control_cmd_readrow #(
         .data_in(data_in),
         .clk(clk),
         .enable(subcmd_enable & finished),
-        .row(cmd_readrow_row_addr),
-        .column(cmd_readrow_col_addr),
-        .pixel(cmd_readrow_pixel_addr),
+        .addr(cmd_readrow_addr),
         .data_out(cmd_readrow_do),
         .ram_write_enable(cmd_readrow_we),
         .ram_access_start(cmd_readrow_as),
@@ -103,7 +99,7 @@ module tb_control_cmd_readrow #(
     initial begin
         @(negedge reset);
         `WAIT_ASSERT(clk,
-                     (cmd_readrow_row_addr == '0 && cmd_readrow_col_addr == '0 && cmd_readrow_pixel_addr == '0
+                     (cmd_readrow_addr.row == '0 && cmd_readrow_addr.col == '0 && cmd_readrow_addr.pixel == '0
                          && cmd_readrow_do == '0 && cmd_readrow_we == 1'b0 && cmd_readrow_done == 1'b0),
                      1);
 
@@ -122,8 +118,8 @@ module tb_control_cmd_readrow #(
     // === Scoreboard / monitor ===
     // Task helpers to keep the scoreboard readable.
     task automatic expect_row_capture(input types::row_addr_t sel_bits);
-        assert (cmd_readrow_row_addr == sel_bits)
-        else $fatal(1, "Row latch mismatch: expected %0d, got %0d", sel_bits, cmd_readrow_row_addr);
+        assert (cmd_readrow_addr.row == sel_bits)
+        else $fatal(1, "Row latch mismatch: expected %0d, got %0d", sel_bits, cmd_readrow_addr.row);
         assert (cmd_readrow_we == 1'b0 && cmd_readrow_do == 8'b0)
         else $fatal(1, "Unexpected write/data during row capture");
     endtask
@@ -133,10 +129,10 @@ module tb_control_cmd_readrow #(
         else $fatal(1, "ram_write_enable deasserted during data transfer at byte %0d", byte_idx);
         assert (cmd_readrow_do == data_byte)
         else $fatal(1, "Data mismatch at byte %0d: expected 0x%0h got 0x%0h", byte_idx, data_byte, cmd_readrow_do);
-        assert (cmd_readrow_col_addr == types::col_addr_t'(exp_col))
-        else $fatal(1, "Column mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_col, cmd_readrow_col_addr);
-        assert (cmd_readrow_pixel_addr == types::pixel_addr_t'(exp_pix))
-        else $fatal(1, "Pixel mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_pix, cmd_readrow_pixel_addr);
+        assert (cmd_readrow_addr.col == types::col_addr_t'(exp_col))
+        else $fatal(1, "Column mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_col, cmd_readrow_addr.col);
+        assert (cmd_readrow_addr.pixel == types::pixel_addr_t'(exp_pix))
+        else $fatal(1, "Pixel mismatch at byte %0d: expected %0d got %0d", byte_idx, exp_pix, cmd_readrow_addr.pixel);
         assert (cmd_readrow_as != prev_ram_as)
         else $fatal(1, "ram_access_start failed to toggle at byte %0d", byte_idx);
     endtask
@@ -238,9 +234,7 @@ module tb_control_cmd_readrow #(
                         cmd_readrow_as,
                         cmd_readrow_done,
                         cmd_readrow_do,
-                        cmd_readrow_row_addr,
-                        cmd_readrow_col_addr,
-                        cmd_readrow_pixel_addr,
+                        cmd_readrow_addr,
                         cmd_series,
                         junk1,
                         1'b0};

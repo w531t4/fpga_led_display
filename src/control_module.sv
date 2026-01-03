@@ -95,9 +95,7 @@ module control_module #(
 
     wire cmd_readrow_we, cmd_readrow_as, cmd_readrow_done;
     wire [7:0] cmd_readrow_do;
-    wire types::row_addr_t cmd_readrow_row_addr;
-    wire types::col_addr_t cmd_readrow_col_addr;
-    wire types::pixel_addr_t cmd_readrow_pixel_addr;
+    wire types::fb_addr_t cmd_readrow_addr;
 
     control_cmd_readrow #(
         ._UNUSED('d0)
@@ -108,10 +106,7 @@ module control_module #(
         // .enable(cmd_line_state == STATE_CMD_READROW),
         .enable((cmd_line_state == STATE_CMD_READROW) && ~data_ready_n),
         .clk(clk_in),
-
-        .row(cmd_readrow_row_addr),
-        .column(cmd_readrow_col_addr),
-        .pixel(cmd_readrow_pixel_addr),
+        .addr(cmd_readrow_addr),
         .data_out(cmd_readrow_do),
         .ram_write_enable(cmd_readrow_we),
         .ram_access_start(cmd_readrow_as),
@@ -307,9 +302,7 @@ module control_module #(
                 state_done       = cmd_readframe_done;
             end
             STATE_CMD_READROW: begin
-                cmd_addr.row     = cmd_readrow_row_addr;
-                cmd_addr.col     = cmd_readrow_col_addr;
-                cmd_addr.pixel   = cmd_readrow_pixel_addr;
+                cmd_addr         = cmd_readrow_addr;
                 ram_data_out     = cmd_readrow_do;
                 ram_write_enable = cmd_readrow_we;
                 ram_access_start = cmd_readrow_as;
