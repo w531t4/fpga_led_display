@@ -61,10 +61,14 @@ package calc;
                            num_subpanelselect_bits(pixel_height, pixel_halfheight)) << $clog2(8);
     endfunction
 
-    function automatic int unsigned num_bits_per_subpanel(
-        input int unsigned pixel_height, input int unsigned bytes_per_pixel, input int unsigned pixel_halfheight);
-        num_bits_per_subpanel = num_data_b_bits(pixel_height, bytes_per_pixel, pixel_halfheight) >>
-            num_subpanelselect_bits(pixel_height, pixel_halfheight);
+    function automatic int unsigned num_bits_per_subpanel(input int unsigned bytes_per_pixel);
+        // num_pixelcolorselect_bits(bytes_per_pixel)
+        //      - bits needed to select the byte index within a pixel (rounded up to power of two)
+        // 1 << num_pixelcolorselect_bits(...)
+        //      - number of byte slots (padded to power of two)
+        // * 8
+        //      - We must allocate 8-bits for each byte slot
+        num_bits_per_subpanel = (1 << num_pixelcolorselect_bits(bytes_per_pixel)) << 3;
     endfunction
 
     function automatic int unsigned num_row_column_pixel_bits(
