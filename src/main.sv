@@ -8,7 +8,6 @@ module main #(
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
-    parameter integer unsigned DEBUG_TX_UART_TICKS_PER_BIT = params::DEBUG_TX_UART_TICKS_PER_BIT,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_on UNUSEDPARAM
     // verilator lint_off UNUSEDPARAM
@@ -459,7 +458,7 @@ module main #(
         .DIVIDER_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
         .DATA_WIDTH(debug_data_width),
         // Describes the baudrate for sending messages to debugger client
-        .UART_TICKS_PER_BIT(DEBUG_TX_UART_TICKS_PER_BIT)
+        .UART_TICKS_PER_BIT(params::DEBUG_TX_UART_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk_root),
         .reset(global_reset),
