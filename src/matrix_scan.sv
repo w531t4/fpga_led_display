@@ -35,6 +35,9 @@ module matrix_scan #(
     output types::brightness_level_t brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
 );
 
+    function automatic types::brightness_level_t reset_brightness();
+        reset_brightness = 1 << ($bits(types::brightness_level_t) - 1);
+    endfunction
 
     typedef logic [1:0] scan_state_t;
     scan_state_t state;
@@ -103,7 +106,7 @@ module matrix_scan #(
         if (reset) begin
             clk_pixel_en <= 1'b1;
             row_latch_state <= 2'b01;
-            brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
+            brightness_mask <= reset_brightness();
             brightness_mask_active <= 'b0;
             // 4'd0
             row_address <= 'b0;
@@ -118,7 +121,7 @@ module matrix_scan #(
 
                 if ((brightness_mask == 'd0) || (brightness_mask == 'd1)) begin
                     // catch the initial value / oopsy //
-                    brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
+                    brightness_mask <= reset_brightness();
                     // 4'd1
                     row_address <= row_address + 1;
                 end else begin
