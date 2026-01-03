@@ -66,6 +66,13 @@ To restore, run `make restore`.
 - When clk_root is set to 100mhz, the design can sustain 64x32 x12 refresh rate using rgb24 at 188hz
 - When clk_root is set to 110mhz (and using 12 64x32 panels, it's clear that we start to see timing issues at the rear-end of the chain)
 
+# Requirements/Constraints
+- PIXEL_HEIGHT must be less than 256 pixels
+- PIXEL_WIDTH, PIXEL_HEIGHT, and PIXEL_HALFHEIGHT must be powers of 2
+- PIXEL_HALFHEIGHT must be congruent to PIXEL_HEIGHT
+- PIXEL_HALFHEIGHT must be half of PIXEL_HEIGHT
+- WATCHDOG_SIGNATURE_PATTERN must be byte-aligned
+
 # Acknowledgements
 
 This project is based on and incorporates code from:
