@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_blankpanel #(
-    parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -80,7 +79,7 @@ module control_cmd_blankpanel #(
         .x1(0),
         .y1(0),
         .width(types::col_addr_t'(params::PIXEL_WIDTH)),
-        .height(types::row_addr_t'(PIXEL_HEIGHT)),
+        .height(types::row_addr_t'(params::PIXEL_HEIGHT)),
         .color('b0),
         .row(row),
         .column(column),
