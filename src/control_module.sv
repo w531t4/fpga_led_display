@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_module #(
-    parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -36,6 +35,7 @@ module control_module #(
     output logic ram_clk_enable
 
 );
+    localparam integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS;
     // for now, if adding new states, ensure cmd_line_state2 is updated.
     typedef enum logic [3:0] {
         STATE_IDLE,                // 0
