@@ -19,8 +19,7 @@ module brightness_timeout #(
 );
 
     wire types::brightness_timeout_t brightness_timeout;  /* used to time the output enable period */
-    typedef logic [$clog2(BRIGHTNESS_LEVELS + 1)-1:0] brightness_count_t;
-    wire brightness_count_t active_bits = $countones(brightness_mask_active);
+    wire types::brightness_count_t active_bits = $countones(brightness_mask_active);
     wire one_hot = (active_bits == 1);
     wire types::brightness_timeout_t brightness_counter;
 
