@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_watchdog #(
-    parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params::WATCHDOG_SIGNATURE_BITS,
-    parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
+    parameter types::watchdog_pattern_t WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -18,13 +17,13 @@ module control_cmd_watchdog #(
     output logic sys_reset,
     output logic done
 );
-    localparam integer unsigned WATCHDOG_SIGBYTES = $rtoi(WATCHDOG_SIGNATURE_BITS / 8);
+    localparam integer unsigned WATCHDOG_SIGBYTES = $rtoi($bits(types::watchdog_pattern_t) / 8);
     typedef enum {
         STATE_SIG_CAPTURE,
         STATE_DONE
     } ctrl_fsm_t;
     ctrl_fsm_t state;
-    logic [WATCHDOG_SIGNATURE_BITS-1:0] cache;
+    types::watchdog_pattern_t cache;
     typedef logic [$clog2(WATCHDOG_CONTROL_TICKS)-1:0] watchdog_tick_index_t;
     watchdog_tick_index_t watchdog_counter;
     typedef logic [$clog2(WATCHDOG_SIGBYTES)-1:0] watchdog_sigbyte_index_t;
@@ -32,7 +31,7 @@ module control_cmd_watchdog #(
 
     always @(posedge clk) begin
         if (reset) begin
-            cache <= {WATCHDOG_SIGNATURE_BITS{1'b0}};
+            cache <= 'b0;
             watchdog_counter <= watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
             sig_byte_counter <= watchdog_sigbyte_index_t'(WATCHDOG_SIGBYTES);
             state <= STATE_SIG_CAPTURE;
@@ -44,8 +43,8 @@ module control_cmd_watchdog #(
                 STATE_SIG_CAPTURE: begin
                     if (enable) begin
                         // Update memory
-                        cache <= (cache << 8) + (WATCHDOG_SIGNATURE_BITS)'(data_in);
-                        if (((cache << 8) + (WATCHDOG_SIGNATURE_BITS)'(data_in)) == WATCHDOG_SIGNATURE_PATTERN) begin
+                        cache <= (cache << 8) + types::watchdog_pattern_t'(data_in);
+                        if (((cache << 8) + types::watchdog_pattern_t'(data_in)) == WATCHDOG_SIGNATURE_PATTERN) begin
                             watchdog_counter <= watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
                         end else begin
                             watchdog_counter <= watchdog_counter - 'd1;
@@ -64,7 +63,7 @@ module control_cmd_watchdog #(
                 STATE_DONE: begin
                     state <= STATE_SIG_CAPTURE;
                     done <= 1'b0;
-                    cache <= {WATCHDOG_SIGNATURE_BITS{1'b0}};
+                    cache <= 'b0;
                     sig_byte_counter <= watchdog_sigbyte_index_t'(WATCHDOG_SIGBYTES);
                     watchdog_counter <= watchdog_counter - 'd1;
                 end
