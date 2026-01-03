@@ -6,7 +6,6 @@ module main #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
     parameter integer unsigned PLL_SPEED = params::PLL_SPEED,
@@ -399,9 +398,6 @@ module main #(
     );
 
     multimem #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb (
         .ClockA(clk_root),
@@ -425,9 +421,6 @@ module main #(
     );
 `ifdef DOUBLE_BUFFER
     multimem #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
-        .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) fb2 (
         .ClockA(clk_root),
