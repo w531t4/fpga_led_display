@@ -6,7 +6,6 @@
 // verilog_format: on
 `include "tb_helper.svh"
 module tb_main #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
@@ -66,7 +65,6 @@ module tb_main #(
     wire [13:0] _unused_output;
 
     main #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_WIDTH(PIXEL_WIDTH),
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .DIVIDE_CLK_BY_X_FOR_MATRIX(DIVIDE_CLK_BY_X_FOR_MATRIX),

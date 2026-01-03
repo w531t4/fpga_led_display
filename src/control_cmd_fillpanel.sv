@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module control_cmd_fillpanel #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -52,7 +51,7 @@ module control_cmd_fillpanel #(
             subcmd_enable <= 1'b0;
             state <= STATE_COLOR_CAPTURE;
             done_inside <= 1'b0;
-            capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
+            capturebytes_remaining <= types::color_index_t'(params::BYTES_PER_PIXEL - 1);
             ready_for_data <= 1'b1;
             selected_color <= 'b0;
             local_reset <= 1'b0;
@@ -91,7 +90,7 @@ module control_cmd_fillpanel #(
                     local_reset <= 1'b0;
                     ready_for_data <= 1'b1;
                     state <= STATE_COLOR_CAPTURE;
-                    capturebytes_remaining <= types::color_index_t'(BYTES_PER_PIXEL - 1);
+                    capturebytes_remaining <= types::color_index_t'(params::BYTES_PER_PIXEL - 1);
                     selected_color <= 'b0;
                 end
                 default state <= state;

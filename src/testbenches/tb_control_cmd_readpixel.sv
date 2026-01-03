@@ -7,7 +7,6 @@
 `include "tb_helper.svh"
 
 module tb_control_cmd_readpixel #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -165,7 +164,7 @@ module tb_control_cmd_readpixel #(
                 end else begin
                     // Payload byte
                     int exp_pix;
-                    exp_pix = BYTES_PER_PIXEL - 1 - (last_data_idx % BYTES_PER_PIXEL);
+                    exp_pix = params::BYTES_PER_PIXEL - 1 - (last_data_idx % params::BYTES_PER_PIXEL);
                     assert (cmd_readpixel_we == 1'b1)
                     else $fatal(1, "ram_write_enable deasserted during data transfer at byte %0d", last_data_idx);
                     // Payload values can vary with test vector; just ensure we store what we sampled.
@@ -194,8 +193,11 @@ module tb_control_cmd_readpixel #(
 
             if (cmd_readpixel_done) begin
                 done_count <= done_count + 1;
-                assert (next_data_count == BYTES_PER_PIXEL)
-                else $fatal(1, "Done asserted after %0d data bytes, expected %0d", next_data_count, BYTES_PER_PIXEL);
+                assert (next_data_count == params::BYTES_PER_PIXEL)
+                else
+                    $fatal(
+                        1, "Done asserted after %0d data bytes, expected %0d", next_data_count, params::BYTES_PER_PIXEL
+                    );
                 next_enable_count = 0;
                 next_data_count   = 0;
             end

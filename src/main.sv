@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module main #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
@@ -355,7 +354,6 @@ module main #(
 
     /* the control module */
     control_module #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
         .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),

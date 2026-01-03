@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_control_module #(
-    parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params::DEBUG_MSGS_PER_SEC_TICKS_SIM,
@@ -136,7 +135,6 @@ module tb_control_module #(
     );
     wire [2:0] _unused_ok_main;
     control_module #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
         .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),
