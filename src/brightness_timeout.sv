@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module brightness_timeout #(
-    parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -32,7 +31,7 @@ module brightness_timeout #(
         end
     end
 
-    wire types::brightness_timeout_t shifted = types::brightness_timeout_t'(BRIGHTNESS_BASE_TIMEOUT << bit_index);
+    wire types::brightness_timeout_t shifted = types::brightness_timeout_t'(params::BRIGHTNESS_BASE_TIMEOUT << bit_index);
 
     assign brightness_timeout = one_hot ? shifted : types::brightness_timeout_t'(1);
 
