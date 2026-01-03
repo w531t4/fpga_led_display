@@ -91,6 +91,23 @@ package types;
     } fb_addr_t;
     // ==== /FRAMEBUFFER ADDRESS ====
 
+    // ==== MEM READ/WRITE ====
+    // Address A (port A write address):
+    //  -  upper bits select the “lane” (subpanel select + pixel‑byte select)
+    //  -  lower bits are the same row+column “body” address used by port B
+    //  -  YYYYrrrrccccXXXX (where)
+    //          YYYY = num_subpanelselect_bits(PIXEL_HEIGHT, PIXEL_HALFHEIGHT)
+    //          rrrr = log2(PIXEL_HALFHEIGHT)
+    //          cccc = log2(PIXEL_WIDTH)
+    //          XXXX = num_pixelcolorselect_bits(BYTES_PER_PIXEL)
+    typedef struct packed {
+        subpanel_addr_t subpanel;
+        row_subpanel_addr_t row;
+        col_addr_t col;
+        pixel_addr_t pixel;
+    } mem_write_addr_t;
+    // ==== /MEM READ/WRITE ====
+
     // ==== BRIGHTNESS ====
     typedef logic [params::BRIGHTNESS_LEVELS-1:0] brightness_level_t;
 
