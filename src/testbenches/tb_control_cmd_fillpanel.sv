@@ -9,10 +9,9 @@
 // Verifies fillpanel captures color bytes, fills the entire frame, writes each address once,
 // and returns to idle after done.
 module tb_control_cmd_fillpanel;
-    localparam int unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
-    localparam int TOTAL_WRITES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * BYTES_PER_PIXEL;
+    localparam int TOTAL_WRITES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
     localparam types::color_t COLOR = 16'hCAFE;
 
     // === Testbench scaffolding ===
@@ -33,7 +32,6 @@ module tb_control_cmd_fillpanel;
 
     // === DUT wiring ===
     control_cmd_fillpanel #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) dut (
         .reset(reset),
@@ -74,7 +72,7 @@ module tb_control_cmd_fillpanel;
 
         // Stream color bytes little-endian when requested.
         wait (ready_for_data);
-        for (int i = BYTES_PER_PIXEL - 1; i >= 0; i--) begin
+        for (int i = params::BYTES_PER_PIXEL - 1; i >= 0; i--) begin
             @(posedge clk);
             enable  = 1;
             data_in = COLOR[(i*8)+:8];
@@ -100,7 +98,7 @@ module tb_control_cmd_fillpanel;
             int byte_sel;
             logic [7:0] expected_byte;
             addr = {row, column, pixel};
-            byte_sel = (BYTES_PER_PIXEL - 1) - int'(pixel);
+            byte_sel = (params::BYTES_PER_PIXEL - 1) - int'(pixel);
             expected_byte = COLOR[(byte_sel*8)+:8];
             assert (int'(addr) < MEM_NUM_BYTES)
             else $fatal(1, "Address out of range: %0d", addr);

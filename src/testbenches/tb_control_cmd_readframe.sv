@@ -7,9 +7,8 @@
 `include "tb_helper.svh"
 
 module tb_control_cmd_readframe;
-    localparam int unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
-    localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * BYTES_PER_PIXEL;
+    localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
     logic                          clk;
@@ -87,7 +86,7 @@ module tb_control_cmd_readframe;
     task automatic expect_payload(input int idx, input byte b);
         assert (ram_write_enable == 1'b1)
         else $fatal(1, "WE low at idx %0d", idx);
-        assert (int'(row) < params::PIXEL_HEIGHT && int'(column) < params::PIXEL_WIDTH && int'(pixel) < BYTES_PER_PIXEL)
+        assert (int'(row) < params::PIXEL_HEIGHT && int'(column) < params::PIXEL_WIDTH && int'(pixel) < params::BYTES_PER_PIXEL)
         else $fatal(1, "Address out of range at idx %0d row=%0d col=%0d pix=%0d", idx, row, column, pixel);
         assert (ram_access_start != prev_as)
         else $fatal(1, "ram_access_start not toggling at idx %0d", idx);
