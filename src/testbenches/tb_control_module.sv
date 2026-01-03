@@ -8,7 +8,6 @@ module tb_control_module #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params::DEBUG_MSGS_PER_SEC_TICKS_SIM,
@@ -30,7 +29,7 @@ module tb_control_module #(
     wire [2:0] rgb_enable;
     wire types::brightness_level_t brightness_enable;
     wire [calc::num_data_a_bits()-1:0] ram_data_out;
-    wire [calc::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT)-1:0] ram_address;
+    wire types::mem_write_addr_t ram_address;
     wire ram_write_enable;
     wire ctrl_busy;
     wire ram_clk_enable;
@@ -142,7 +141,6 @@ module tb_control_module #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
         .PIXEL_WIDTH(PIXEL_WIDTH),
-        .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
         .WATCHDOG_SIGNATURE_BITS(WATCHDOG_SIGNATURE_BITS),
         .WATCHDOG_SIGNATURE_PATTERN(WATCHDOG_SIGNATURE_PATTERN),

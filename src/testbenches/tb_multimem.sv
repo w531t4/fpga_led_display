@@ -14,7 +14,6 @@ module tb_multimem #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam int ADDR_A_BITS = calc::num_address_a_bits(PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int ADDR_B_BITS = calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT);
     localparam int DATA_A_BITS = calc::num_data_a_bits();
     localparam int DATA_B_BITS = calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
@@ -30,7 +29,7 @@ module tb_multimem #(
 
     logic clk_a;
     logic clk_b;
-    logic [ADDR_A_BITS-1:0] ram_a_address;
+    types::mem_write_addr_t ram_a_address;
     logic [ADDR_B_BITS-1:0] ram_b_address;
     logic [DATA_A_BITS-1:0] ram_a_data_in;
     logic ram_a_clk_enable;
@@ -66,7 +65,7 @@ module tb_multimem #(
         .QB(ram_b_data_out)
     );
 
-    function automatic logic [ADDR_A_BITS-1:0] pack_addr_a(input types::subpanel_addr_t subpanel,
+    function automatic types::mem_write_addr_t pack_addr_a(input types::subpanel_addr_t subpanel,
                                                            input logic [ADDR_B_BITS-1:0] addr_b,
                                                            input types::pixel_addr_t pixel_sel);
         pack_addr_a = {subpanel, addr_b, pixel_sel};
@@ -89,7 +88,7 @@ module tb_multimem #(
     task automatic write_lane(input types::subpanel_addr_t subpanel, input types::pixel_addr_t pixel_sel,
                               input logic [ADDR_B_BITS-1:0] addr_b, input logic [DATA_A_BITS-1:0] data);
         logic [STRUCTURE_BITS-1:0] lane_idx;
-        logic [ADDR_A_BITS-1:0] addr_a;
+        types::mem_write_addr_t addr_a;
         lane_idx = lane_index(subpanel, pixel_sel);
         addr_a   = pack_addr_a(subpanel, addr_b, pixel_sel);
         @(negedge clk_a);

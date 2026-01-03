@@ -34,21 +34,6 @@ package calc;
         num_address_b_bits = $clog2(pixel_halfheight) + num_column_address_bits(pixel_width);
     endfunction
 
-    // Address A (port A write address):
-    //  -  upper bits select the “lane” (subpanel select + pixel‑byte select)
-    //  -  lower bits are the same row+column “body” address used by port B
-    //  -  YYYYrrrrccccXXXX (where)
-    //          YYYY = num_subpanelselect_bits(PIXEL_HEIGHT, PIXEL_HALFHEIGHT)
-    //          rrrr = log2(PIXEL_HALFHEIGHT)
-    //          cccc = log2(PIXEL_WIDTH)
-    //          XXXX = num_pixelcolorselect_bits(BYTES_PER_PIXEL)
-    function automatic int unsigned num_address_a_bits(input int unsigned pixel_width, input int unsigned pixel_height,
-                                                       input int unsigned bytes_per_pixel,
-                                                       input int unsigned pixel_halfheight);
-        num_address_a_bits = num_subpanelselect_bits(pixel_height, pixel_halfheight) +
-            num_pixelcolorselect_bits(bytes_per_pixel) + num_address_b_bits(pixel_width, pixel_halfheight);
-    endfunction
-
     function automatic int unsigned num_structure_bits(
         input int unsigned pixel_height, input int unsigned bytes_per_pixel, input int unsigned pixel_halfheight);
         num_structure_bits = num_subpanelselect_bits(pixel_height, pixel_halfheight) +

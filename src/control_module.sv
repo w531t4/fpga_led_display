@@ -6,7 +6,6 @@ module control_module #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned WATCHDOG_SIGNATURE_BITS = params::WATCHDOG_SIGNATURE_BITS,
     parameter logic [WATCHDOG_SIGNATURE_BITS-1:0] WATCHDOG_SIGNATURE_PATTERN = params::WATCHDOG_SIGNATURE_PATTERN,
@@ -22,9 +21,7 @@ module control_module #(
     output logic [2:0] rgb_enable,
     output types::brightness_level_t brightness_enable,
     output logic [calc::num_data_a_bits()-1:0] ram_data_out,
-    output logic [calc::num_address_a_bits(
-PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-)-1:0] ram_address,  // with 64x32 matrix at 2bytes per pixel, this is 12 bits [11:0]
+    output types::mem_write_addr_t ram_address,
     output logic ram_write_enable,
     output busy,
     output ready_for_data,
@@ -38,9 +35,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     output [3:0] cmd_line_state2,
     output ram_access_start2,
     output ram_access_start_latch2,
-    output [calc::num_address_a_bits(
-PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-)-1:0] cmd_line_addr2,
+    output types::mem_write_addr_t cmd_line_addr2,
     output logic [7:0] num_commands_processed,
 `endif
     output logic ram_clk_enable
@@ -69,9 +64,7 @@ PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
     types::row_addr_t cmd_line_addr_row;  // For 32 bit high displays, [4:0]
     types::col_addr_t cmd_line_addr_col;  // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
     types::pixel_addr_t cmd_line_pixelselect_num;
-    wire [calc::num_address_a_bits(
-PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-)-1:0] cmd_line_addr = {
+    wire types::mem_write_addr_t cmd_line_addr = {
         cmd_line_addr_row, cmd_line_addr_col, ~cmd_line_pixelselect_num
     };  // <-- use this to toggle endainness. ~ == little endain
         //                                      == bit endian
