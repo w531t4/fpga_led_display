@@ -34,7 +34,7 @@ module tb_control_subcmd_fillarea #(
     wire ram_access_start;
     logic done;
     wire pre_done;
-    logic [calc::num_row_column_pixel_bits(PIXEL_HEIGHT, PIXEL_WIDTH, BYTES_PER_PIXEL)-1:0] addr;
+    types::fb_addr_t addr;
     logic [MEM_NUM_BYTES-1:0] mem;
     logic [MEM_NUM_BYTES-1:0] valid_mask;
     int remaining_valid_bytes;
