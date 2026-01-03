@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_control_module #(
-    parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params::DEBUG_MSGS_PER_SEC_TICKS_SIM,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
@@ -81,7 +80,6 @@ module tb_control_module #(
     );
     // verilog_format: off
     wire _unused_ok_ifdef_spi = &{1'b0,
-                                  1'(CTRLR_CLK_TICKS_PER_BIT),
                                   1'(DEBUG_MSGS_PER_SEC_TICKS_SIM),
                                   unused_rdata,
                                   unused_sdout,
@@ -91,7 +89,7 @@ module tb_control_module #(
     uart_rx #(
         // we want 22MHz / 2,430,000 = 9.0534
         // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .TICKS_PER_BIT(params::CTRLR_CLK_TICKS_PER_BIT)
     ) mycontrol_rxuart (
         .reset(reset),
         .i_clk(clk),
@@ -110,7 +108,7 @@ module tb_control_module #(
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
         // receive at
-        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .UART_TICKS_PER_BIT(params::CTRLR_CLK_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk),
         .reset(local_reset),

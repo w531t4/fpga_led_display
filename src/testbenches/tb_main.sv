@@ -8,7 +8,6 @@
 module tb_main #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned ROOT_CLOCK = params::ROOT_CLOCK,
-    parameter integer unsigned CTRLR_CLK_TICKS_PER_BIT = params::CTRLR_CLK_TICKS_PER_BIT,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS = params::DEBUG_MSGS_PER_SEC_TICKS,
     parameter integer unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = params::DEBUG_MSGS_PER_SEC_TICKS_SIM,
     // verilator lint_off UNUSEDPARAM
@@ -61,7 +60,6 @@ module tb_main #(
 
     main #(
         .BRIGHTNESS_LEVELS(BRIGHTNESS_LEVELS),
-        .CTRLR_CLK_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT),
         .DEBUG_MSGS_PER_SEC_TICKS(DEBUG_MSGS_PER_SEC_TICKS),
         ._UNUSED('d0)
     ) tbi_main (
@@ -145,7 +143,7 @@ module tb_main #(
         // We're using the debugger here as a data transmitter only. Need
         // to transmit at the same speed as the controller is expecting to
         // receive at
-        .UART_TICKS_PER_BIT(CTRLR_CLK_TICKS_PER_BIT)
+        .UART_TICKS_PER_BIT(params::CTRLR_CLK_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk),
         .reset(reset),
