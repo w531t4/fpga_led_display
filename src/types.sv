@@ -164,7 +164,7 @@ package types;
     // ==== /ROW ====
 
     // ==== WATCHDOG ====
-    typedef logic [$bits(params::WATCHDOG_SIGNATURE_PATTERN)-1:0] watchdog_pattern_t;
+    typedef logic [params::WATCHDOG_SIGBYTES*8-1:0] watchdog_pattern_t;
     typedef union packed {
         logic [$bits(watchdog_pattern_t)-1:0]                                  raw;
         logic [calc::num_bytes_to_contain($bits(watchdog_pattern_t))-1:0][7:0] bytes;
