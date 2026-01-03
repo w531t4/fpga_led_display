@@ -37,7 +37,8 @@ module tb_control_cmd_fillpanel;
     control_cmd_fillpanel #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH)
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        ._UNUSED('d0)
     ) dut (
         .reset(reset),
         .data_in(data_in),
