@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 module main #(
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = params::DIVIDE_CLK_BY_X_FOR_MATRIX,
     parameter integer unsigned PLL_SPEED = params::PLL_SPEED,
@@ -256,7 +255,6 @@ module main #(
     );
 
     matrix_scan #(
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         ._UNUSED('d0)
     ) matscan1 (
         .reset(global_reset_sync),
