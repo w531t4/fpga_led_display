@@ -106,8 +106,8 @@ module main #(
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
 
-    wire [calc::num_pixeldata_bits(BYTES_PER_PIXEL)-1:0] pixeldata_top;
-    wire [calc::num_pixeldata_bits(BYTES_PER_PIXEL)-1:0] pixeldata_bottom;
+    wire types::color_field_subpanel_t pixeldata_top;
+    wire types::color_field_subpanel_t pixeldata_bottom;
     wire ctrl_busy;
     wire ctrl_ready_for_data;
 
@@ -454,7 +454,6 @@ module main #(
 `endif
     /* split the pixels and get the current brightness' bit */
     pixel_split #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) px_top (
         .pixel_data(pixeldata_top),
@@ -468,7 +467,6 @@ module main #(
 `endif
     );
     pixel_split #(
-        .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         ._UNUSED('d0)
     ) px_bottom (
         .pixel_data(pixeldata_bottom),
