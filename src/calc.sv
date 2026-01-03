@@ -22,11 +22,16 @@ package calc;
         num_row_address_bits = $clog2(pixel_height);
     endfunction
 
+    // Address B (port B read address):
+    //  - composed as (row within subpanel + column)
     function automatic int unsigned num_address_b_bits(input int unsigned pixel_width,
                                                        input int unsigned pixel_halfheight);
         num_address_b_bits = $clog2(pixel_halfheight) + num_column_address_bits(pixel_width);
     endfunction
 
+    // Address A (port A write address):
+    //  -  upper bits select the “lane” (subpanel select + pixel‑byte select)
+    //  -  lower bits are the same row+column “body” address used by port B
     function automatic int unsigned num_address_a_bits(input int unsigned pixel_width, input int unsigned pixel_height,
                                                        input int unsigned bytes_per_pixel,
                                                        input int unsigned pixel_halfheight);
@@ -41,10 +46,15 @@ package calc;
             num_address_b_bits(pixel_width, pixel_halfheight);
     endfunction
 
+    //Data A: 8‑bit
+    //  - one byte of a pixel written into the selected lane (QA is tied off)
     function automatic int unsigned num_data_a_bits();
         num_data_a_bits = 8;
     endfunction
 
+    // Data B (QB):
+    //  - concatenation of all lane bytes for that AddressB (all subpanels × pixel‑byte selects)
+    //  - split as {pixeldata_bottom, pixeldata_top}
     function automatic int unsigned num_data_b_bits(input int unsigned pixel_height, input int unsigned bytes_per_pixel,
                                                     input int unsigned pixel_halfheight);
         num_data_b_bits = ((1 << num_pixelcolorselect_bits(bytes_per_pixel)) <<
