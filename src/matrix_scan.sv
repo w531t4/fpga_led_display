@@ -5,7 +5,6 @@
 module matrix_scan #(
     parameter integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
@@ -18,9 +17,9 @@ module matrix_scan #(
     // [5:0]  64 width
     output types::col_addr_t column_address,  /* the current column (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address,  /* the current row (clocking out now) */
+    output types::row_subpanel_addr_t row_address,  /* the current row (clocking out now) */
     // [3:0] 16 height rows (two of them)
-    output logic [$clog2(PIXEL_HALFHEIGHT)-1:0] row_address_active,  /* the active row (LEDs enabled) */
+    output types::row_subpanel_addr_t row_address_active,  /* the active row (LEDs enabled) */
 
     output clk_pixel_load,
     output clk_pixel,
@@ -107,8 +106,8 @@ module matrix_scan #(
             brightness_mask <= 1 << (BRIGHTNESS_LEVELS - 1);
             brightness_mask_active <= 'b0;
             // 4'd0
-            row_address <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
-            row_address_active <= {$clog2(PIXEL_HALFHEIGHT) {1'b0}};
+            row_address <= 'b0;
+            row_address_active <= 'b0;
         end else begin
             clk_pixel_en <= clk_pixel_load_en;
             row_latch_state <= {row_latch_state[0], clk_pixel_load_en};
