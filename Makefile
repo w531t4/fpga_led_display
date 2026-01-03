@@ -121,7 +121,7 @@ all: $(ARTIFACT_DIR)/verilator_args simulation lint
 $(SIMULATION_DIR)/%.vcd: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
 	@set -o pipefail; stdbuf -oL -eL $(VVP_BIN) $(VVP_FLAGS) $< 2>&1 | sed -u 's/^/[$*] /'
 
-$(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv $(TB_DIR)/tb_%.args Makefile | $(SIMULATION_DIR) $(DEPDIR)
+$(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION_DIR) $(DEPDIR)
 #	$(info In a command script)
 # Generate dep list from iverilog and translate it into a Makefile .d file.
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
@@ -132,6 +132,9 @@ $(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv $(TB_DIR)/tb_%.args Mak
 	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) $$tb_args -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.vcd"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $(PKG_SOURCES) $<
 	@printf '%s: ' '$(SIMULATION_DIR)/$*.vvp' > $(DEPDIR)/$*.d
 	@tr '\n' ' ' < $(DEPDIR)/$*.deps >> $(DEPDIR)/$*.d
+	@if [ -f $$tb_args_file ]; then \
+		printf ' %s' "$$tb_args_file" >> $(DEPDIR)/$*.d; \
+	fi
 	@printf '\n' >> $(DEPDIR)/$*.d
 	@# Append dummy targets for each dependency so removed files don't break make.
 	@for dep in $$(sed 's/^[^:]*: *//' $(DEPDIR)/$*.d); do \
