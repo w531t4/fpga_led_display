@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 module tb_brightness_timeout #(
-    parameter integer BRIGHTNESS_BASE_TIMEOUT = params::BRIGHTNESS_BASE_TIMEOUT,
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = params::BRIGHTNESS_STATE_TIMEOUT_OVERLAP,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -18,7 +17,6 @@ module tb_brightness_timeout #(
     wire exceeded_overlap_time;
     types::brightness_level_t brightness_mask_active;
     brightness_timeout #(
-        .BRIGHTNESS_BASE_TIMEOUT(BRIGHTNESS_BASE_TIMEOUT),
         .BRIGHTNESS_STATE_TIMEOUT_OVERLAP(BRIGHTNESS_STATE_TIMEOUT_OVERLAP),
         ._UNUSED('d0)
     ) btd (
