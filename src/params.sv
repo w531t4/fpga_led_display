@@ -4,12 +4,15 @@ package params;
     // verilator lint_off UNUSEDPARAM
 `ifdef CLK_110
     parameter int unsigned ROOT_CLOCK = 110_000_000;
-    parameter int unsigned PLL_SPEED = 4;
+    parameter int unsigned PLL_SPEED = 5;
 `elsif CLK_100
     parameter int unsigned ROOT_CLOCK = 100_000_000;
-    parameter int unsigned PLL_SPEED = 3;
+    parameter int unsigned PLL_SPEED = 4;
 `elsif CLK_90
     parameter int unsigned ROOT_CLOCK = 90_000_000;
+    parameter int unsigned PLL_SPEED = 3;
+`elsif CLK_80
+    parameter int unsigned ROOT_CLOCK = 80_000_000;
     parameter int unsigned PLL_SPEED = 2;
 `elsif CLK_50
     parameter int unsigned ROOT_CLOCK = 50_000_000;

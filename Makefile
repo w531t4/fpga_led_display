@@ -27,6 +27,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # CLK_110 - Use 110Mhz clock for clk_root
 # CLK_100 - Use 100MHz clock for clk_root
 # CLK_90 - Use 90MHz clock for clk_root
+# CLK_80 - Use 90MHz clock for clk_root
 # CLK_50 - Use 50MHz clock for clk_root
 # RGB24 - Use RGB24 instead of RGB565
 # GAMMA - Enable Gamma Correction
@@ -36,7 +37,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # USE_WATCHDOG - Requires recurring command sequence to be present, otherwise board resets
 # USE SLANG - use yosys read_slang engine instead of read_verilog
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DUSE_SLANG
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_80 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DUSE_SLANG
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
