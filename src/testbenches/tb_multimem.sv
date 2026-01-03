@@ -13,7 +13,6 @@ module tb_multimem #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam int DATA_A_BITS = calc::num_data_a_bits();
     localparam int STRUCTURE_BITS = calc::num_structure_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int LANES = (1 << STRUCTURE_BITS);
     localparam int DEPTH_B = (1 << $bits(types::mem_read_addr_t));
@@ -28,7 +27,7 @@ module tb_multimem #(
     logic clk_b;
     types::mem_write_addr_t ram_a_address;
     types::mem_read_addr_t ram_b_address;
-    logic [DATA_A_BITS-1:0] ram_a_data_in;
+    types::mem_write_data_t ram_a_data_in;
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
     logic ram_a_wr;
@@ -36,8 +35,8 @@ module tb_multimem #(
     logic ram_a_reset;
     logic ram_b_reset;
 
-    wire [DATA_A_BITS-1:0] _unused_ok_QA;
-    logic [DATA_A_BITS-1:0] model_mem[LANES][DEPTH_B];
+    wire types::mem_write_data_t _unused_ok_QA;
+    types::mem_write_data_t model_mem[LANES][DEPTH_B];
 
     multimem #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
@@ -76,13 +75,13 @@ module tb_multimem #(
         types::mem_read_data_t expected;
         expected = '0;
         for (int lane = 0; lane < LANES; lane = lane + 1) begin
-            expected[lane*DATA_A_BITS+:DATA_A_BITS] = model_mem[lane][addr_b];
+            expected[lane*$bits(types::mem_write_data_t)+:$bits(types::mem_write_data_t)] = model_mem[lane][addr_b];
         end
         build_expected = expected;
     endfunction
 
     task automatic write_lane(input types::subpanel_addr_t subpanel, input types::pixel_addr_t pixel_sel,
-                              input types::mem_read_addr_t addr_b, input logic [DATA_A_BITS-1:0] data);
+                              input types::mem_read_addr_t addr_b, input types::mem_write_data_t data);
         logic [STRUCTURE_BITS-1:0] lane_idx;
         types::mem_write_addr_t addr_a;
         lane_idx = lane_index(subpanel, pixel_sel);
