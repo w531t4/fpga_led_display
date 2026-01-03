@@ -7,30 +7,28 @@
 module tb_multimem #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
-    parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
     parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     parameter real SIM_HALF_PERIOD_NS = params::SIM_HALF_PERIOD_NS,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam int ADDR_B_BITS = calc::num_address_b_bits(PIXEL_WIDTH, PIXEL_HALFHEIGHT);
     localparam int DATA_A_BITS = calc::num_data_a_bits();
     localparam int DATA_B_BITS = calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int STRUCTURE_BITS = calc::num_structure_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int LANES = (1 << STRUCTURE_BITS);
-    localparam int DEPTH_B = (1 << ADDR_B_BITS);
+    localparam int DEPTH_B = (1 << $bits(types::mem_read_addr_t));
     localparam types::subpanel_addr_t SUBPANEL0 = 'b0;
     localparam types::subpanel_addr_t SUBPANEL1 = types::subpanel_addr_t'(1);
     localparam types::pixel_addr_t PIXSEL0 = 'b0;
     localparam types::pixel_addr_t PIXSEL1 = types::pixel_addr_t'(1);
-    localparam logic [ADDR_B_BITS-1:0] ADDR_B_MAX = {ADDR_B_BITS{1'b1}};
-    localparam logic [ADDR_B_BITS-1:0] ADDR_B_TOP0_MAX = {1'b0, {ADDR_B_BITS - 1{1'b1}}};
+    localparam types::mem_read_addr_t ADDR_B_MAX = '1;  // all 1's
+    localparam types::mem_read_addr_t ADDR_B_TOP0_MAX = {1'b0, {$bits(types::mem_read_addr_t) - 1{1'b1}}};
 
     logic clk_a;
     logic clk_b;
     types::mem_write_addr_t ram_a_address;
-    logic [ADDR_B_BITS-1:0] ram_b_address;
+    types::mem_read_addr_t ram_b_address;
     logic [DATA_A_BITS-1:0] ram_a_data_in;
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
@@ -45,7 +43,6 @@ module tb_multimem #(
     multimem #(
         .BYTES_PER_PIXEL(BYTES_PER_PIXEL),
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH(PIXEL_WIDTH),
         .PIXEL_HALFHEIGHT(PIXEL_HALFHEIGHT),
         ._UNUSED('d0)
     ) A (
@@ -66,7 +63,7 @@ module tb_multimem #(
     );
 
     function automatic types::mem_write_addr_t pack_addr_a(input types::subpanel_addr_t subpanel,
-                                                           input logic [ADDR_B_BITS-1:0] addr_b,
+                                                           input types::mem_read_addr_t addr_b,
                                                            input types::pixel_addr_t pixel_sel);
         pack_addr_a = {subpanel, addr_b, pixel_sel};
     endfunction
@@ -76,7 +73,7 @@ module tb_multimem #(
         lane_index = {subpanel, pixel_sel};
     endfunction
 
-    function automatic logic [DATA_B_BITS-1:0] build_expected(input logic [ADDR_B_BITS-1:0] addr_b);
+    function automatic logic [DATA_B_BITS-1:0] build_expected(input types::mem_read_addr_t addr_b);
         logic [DATA_B_BITS-1:0] expected;
         expected = '0;
         for (int lane = 0; lane < LANES; lane = lane + 1) begin
@@ -86,7 +83,7 @@ module tb_multimem #(
     endfunction
 
     task automatic write_lane(input types::subpanel_addr_t subpanel, input types::pixel_addr_t pixel_sel,
-                              input logic [ADDR_B_BITS-1:0] addr_b, input logic [DATA_A_BITS-1:0] data);
+                              input types::mem_read_addr_t addr_b, input logic [DATA_A_BITS-1:0] data);
         logic [STRUCTURE_BITS-1:0] lane_idx;
         types::mem_write_addr_t addr_a;
         lane_idx = lane_index(subpanel, pixel_sel);
@@ -104,7 +101,7 @@ module tb_multimem #(
         ram_a_wr = 1'b0;
     endtask
 
-    task automatic read_check(input logic [ADDR_B_BITS-1:0] addr_b);
+    task automatic read_check(input types::mem_read_addr_t addr_b);
         logic [DATA_B_BITS-1:0] expected;
         @(negedge clk_b);
         ram_b_clk_enable = 1'b1;

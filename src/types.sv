@@ -106,6 +106,12 @@ package types;
         col_addr_t col;
         pixel_addr_t pixel;
     } mem_write_addr_t;
+
+    // aka: address B
+    typedef struct packed {
+        row_subpanel_addr_t row;
+        col_addr_t col;
+    } mem_read_addr_t;
     // ==== /MEM READ/WRITE ====
 
     // ==== BRIGHTNESS ====
