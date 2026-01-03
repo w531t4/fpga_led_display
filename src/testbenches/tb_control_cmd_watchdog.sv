@@ -16,7 +16,6 @@ module tb_control_cmd_watchdog #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
-    localparam int unsigned WATCHDOG_SIGBYTES = calc::num_bytes_to_contain($bits(types::watchdog_pattern_t));
 
     // === Testbench scaffolding ===
     logic [3:0] divider;
@@ -67,7 +66,7 @@ module tb_control_cmd_watchdog #(
     // === Stimulus ===
     initial begin
         @(negedge reset);
-        for (int i = 0; i < WATCHDOG_SIGBYTES; i++) begin
+        for (int i = 0; i < params::WATCHDOG_SIGBYTES; i++) begin
             @(posedge slowclk) begin
                 data_in = WATCHDOG_SIGNATURE_PATTERN[($bits(types::watchdog_pattern_t)-1)-(i*8)-:8];
             end
@@ -89,9 +88,9 @@ module tb_control_cmd_watchdog #(
             pending_done <= 1'b0;
             sysreset_seen <= 1'b0;
         end else begin
-            if (slowclk && (signature_bytes_seen < WATCHDOG_SIGBYTES)) begin
+            if (slowclk && (signature_bytes_seen < params::WATCHDOG_SIGBYTES)) begin
                 signature_bytes_seen <= signature_bytes_seen + 1;
-                if (signature_bytes_seen == WATCHDOG_SIGBYTES - 1) begin
+                if (signature_bytes_seen == params::WATCHDOG_SIGBYTES - 1) begin
                     pending_done <= 1'b1;
                 end else begin
                     assert (!done)

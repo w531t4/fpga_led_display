@@ -42,6 +42,7 @@ package params;
     parameter int unsigned WATCHDOG_CONTROL_TICKS = $rtoi(ROOT_CLOCK / WATCHDOG_CONTROL_FREQ_GOAL * 1.0);
 `endif
     parameter logic [63:0] WATCHDOG_SIGNATURE_PATTERN = 64'hDEADBEEFFEEBDAED;
+    parameter int unsigned WATCHDOG_SIGBYTES = ($bits(WATCHDOG_SIGNATURE_PATTERN) + 7) / 8;
 
     // SIM
 `ifdef SIM_HALF_PERIOD_NS
