@@ -17,7 +17,6 @@ module control_cmd_watchdog #(
     output logic sys_reset,
     output logic done
 );
-    localparam integer unsigned WATCHDOG_SIGBYTES = calc::num_bytes_to_contain($bits(types::watchdog_pattern_t));
     typedef enum {
         STATE_SIG_CAPTURE,
         STATE_DONE
@@ -26,14 +25,14 @@ module control_cmd_watchdog #(
     types::watchdog_pattern_t cache;
     typedef logic [$clog2(WATCHDOG_CONTROL_TICKS)-1:0] watchdog_tick_index_t;
     watchdog_tick_index_t watchdog_counter;
-    typedef logic [$clog2(WATCHDOG_SIGBYTES)-1:0] watchdog_sigbyte_index_t;
+    typedef logic [$clog2(params::WATCHDOG_SIGBYTES)-1:0] watchdog_sigbyte_index_t;
     watchdog_sigbyte_index_t sig_byte_counter;
 
     always @(posedge clk) begin
         if (reset) begin
             cache <= 'b0;
             watchdog_counter <= watchdog_tick_index_t'(WATCHDOG_CONTROL_TICKS);
-            sig_byte_counter <= watchdog_sigbyte_index_t'(WATCHDOG_SIGBYTES);
+            sig_byte_counter <= watchdog_sigbyte_index_t'(params::WATCHDOG_SIGBYTES);
             state <= STATE_SIG_CAPTURE;
             done <= 1'b0;
             sys_reset <= 1'b0;
@@ -64,7 +63,7 @@ module control_cmd_watchdog #(
                     state <= STATE_SIG_CAPTURE;
                     done <= 1'b0;
                     cache <= 'b0;
-                    sig_byte_counter <= watchdog_sigbyte_index_t'(WATCHDOG_SIGBYTES);
+                    sig_byte_counter <= watchdog_sigbyte_index_t'(params::WATCHDOG_SIGBYTES);
                     watchdog_counter <= watchdog_counter - 'd1;
                 end
                 default: state <= state;
