@@ -9,7 +9,6 @@
 // Verifies fillrect captures x/y/width/height + color, writes only inside the rectangle,
 // and issues each address once before returning to idle.
 module tb_control_cmd_fillrect;
-    localparam int unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL;
     localparam real SIM_HALF_PERIOD_NS = 1.0;
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
     localparam types::color_t COLOR = 16'hBEEF;
@@ -17,7 +16,7 @@ module tb_control_cmd_fillrect;
     localparam int RECT_Y1 = 1;
     localparam int RECT_W = 2;
     localparam int RECT_H = 2;
-    localparam int TOTAL_WRITES = RECT_W * RECT_H * BYTES_PER_PIXEL;
+    localparam int TOTAL_WRITES = RECT_W * RECT_H * params::BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
     logic                                        clk;
@@ -83,7 +82,7 @@ module tb_control_cmd_fillrect;
         stream_byte(8'(RECT_Y1));
         stream_byte(8'(RECT_W));
         stream_byte(8'(RECT_H));
-        for (int i = BYTES_PER_PIXEL - 1; i >= 0; i--) begin
+        for (int i = params::BYTES_PER_PIXEL - 1; i >= 0; i--) begin
             stream_byte(COLOR[(i*8)+:8]);
         end
         enable = 1;
@@ -107,7 +106,7 @@ module tb_control_cmd_fillrect;
             int byte_sel;
             logic [7:0] expected_byte;
             addr = {row, column, pixel};
-            byte_sel = (BYTES_PER_PIXEL - 1) - int'(pixel);
+            byte_sel = (params::BYTES_PER_PIXEL - 1) - int'(pixel);
             expected_byte = COLOR[(byte_sel*8)+:8];
             assert (int'(row) >= RECT_Y1 && int'(row) < RECT_Y1 + RECT_H
                 && int'(column) >= RECT_X1 && int'(column) < RECT_X1 + RECT_W)
