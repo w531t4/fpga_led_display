@@ -121,6 +121,14 @@ package types;
         row_subpanel_addr_t row;
         col_addr_t col;
     } mem_read_addr_t;
+
+    typedef union packed {
+        logic [calc::num_data_b_bits(params::PIXEL_HEIGHT,
+                                     params::BYTES_PER_PIXEL,
+                                     params::PIXEL_HALFHEIGHT)-1:0] raw;
+        color_field_subpanel_t [calc::num_subpanels(params::PIXEL_HEIGHT,
+                                                    params::PIXEL_HALFHEIGHT)-1:0] subpanel;
+    } mem_read_data_t;
     // ==== /MEM READ/WRITE ====
 
     // ==== BRIGHTNESS ====

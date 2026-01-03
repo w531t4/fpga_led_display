@@ -14,7 +14,6 @@ module tb_multimem #(
     // verilator lint_on UNUSEDPARAM
 );
     localparam int DATA_A_BITS = calc::num_data_a_bits();
-    localparam int DATA_B_BITS = calc::num_data_b_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int STRUCTURE_BITS = calc::num_structure_bits(PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT);
     localparam int LANES = (1 << STRUCTURE_BITS);
     localparam int DEPTH_B = (1 << $bits(types::mem_read_addr_t));
@@ -33,7 +32,7 @@ module tb_multimem #(
     logic ram_a_clk_enable;
     logic ram_b_clk_enable;
     logic ram_a_wr;
-    wire [DATA_B_BITS-1:0] ram_b_data_out;
+    wire types::mem_read_data_t ram_b_data_out;
     logic ram_a_reset;
     logic ram_b_reset;
 
@@ -73,8 +72,8 @@ module tb_multimem #(
         lane_index = {subpanel, pixel_sel};
     endfunction
 
-    function automatic logic [DATA_B_BITS-1:0] build_expected(input types::mem_read_addr_t addr_b);
-        logic [DATA_B_BITS-1:0] expected;
+    function automatic types::mem_read_data_t build_expected(input types::mem_read_addr_t addr_b);
+        types::mem_read_data_t expected;
         expected = '0;
         for (int lane = 0; lane < LANES; lane = lane + 1) begin
             expected[lane*DATA_A_BITS+:DATA_A_BITS] = model_mem[lane][addr_b];
@@ -102,7 +101,7 @@ module tb_multimem #(
     endtask
 
     task automatic read_check(input types::mem_read_addr_t addr_b);
-        logic [DATA_B_BITS-1:0] expected;
+        types::mem_read_data_t expected;
         @(negedge clk_b);
         ram_b_clk_enable = 1'b1;
         ram_b_address = addr_b;
