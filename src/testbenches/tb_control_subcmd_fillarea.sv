@@ -12,15 +12,12 @@ module tb_control_subcmd_fillarea #(
     parameter integer unsigned BYTES_PER_PIXEL = params::BYTES_PER_PIXEL,
     parameter integer unsigned PIXEL_HEIGHT = params::PIXEL_HEIGHT,
     parameter integer unsigned PIXEL_WIDTH = params::PIXEL_WIDTH,
-    parameter integer unsigned PIXEL_HALFHEIGHT = params::PIXEL_HALFHEIGHT,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
     // Local parameters grouped for easy reference
-    localparam int MEM_NUM_BYTES = (1 << calc::num_address_a_bits(
-        PIXEL_WIDTH, PIXEL_HEIGHT, BYTES_PER_PIXEL, PIXEL_HALFHEIGHT
-    ));
+    localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
     localparam integer unsigned OUT_BITWIDTH = calc::num_data_a_bits();
     localparam int ROW_ADVANCE_MAX_CYCLES = PIXEL_WIDTH * BYTES_PER_PIXEL;
     localparam int DONE_MAX_CYCLES = (PIXEL_WIDTH * BYTES_PER_PIXEL) - 1;
