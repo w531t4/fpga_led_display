@@ -33,7 +33,8 @@ module tb_control_cmd_blankpanel;
     // === DUT wiring ===
     control_cmd_blankpanel #(
         .PIXEL_HEIGHT(PIXEL_HEIGHT),
-        .PIXEL_WIDTH (PIXEL_WIDTH)
+        .PIXEL_WIDTH(PIXEL_WIDTH),
+        ._UNUSED('d0)
     ) dut (
         .reset(reset),
         .enable(enable),
