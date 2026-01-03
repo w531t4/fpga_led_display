@@ -33,20 +33,6 @@ package types;
     } color_field_t;
     // ==== /COLOR ====
 
-    // ==== ROW ADDRESS ====
-    typedef logic [calc::num_row_address_bits(params::PIXEL_HEIGHT)-1:0] row_addr_t;
-    typedef struct packed {
-        logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(row_addr_t))-1:0] pad;
-        row_addr_t                                                                         address;
-    } row_addr_view_t;
-
-    typedef union packed {
-        logic [calc::num_bytes_to_contain($bits(row_addr_t))*8-1:0]    raw;
-        logic [calc::num_bytes_to_contain($bits(row_addr_t))-1:0][7:0] bytes;
-        row_addr_view_t                                                addr;
-    } row_field_t;
-    // ==== /ROW ADDRESS ====
-
     // ==== ROW SUBPANEL ADDRESS ====
     typedef logic [calc::num_row_address_bits(params::PIXEL_HALFHEIGHT)-1:0] row_subpanel_addr_t;
     typedef struct packed {
@@ -60,6 +46,20 @@ package types;
         row_subpanel_addr_view_t                                                addr;
     } row_subpanel_field_t;
     // ==== /ROW SUBPANEL ADDRESS ====
+
+    // ==== ROW ADDRESS ====
+    typedef logic [calc::num_row_address_bits(params::PIXEL_HEIGHT)-1:0] row_addr_t;
+    typedef struct packed {
+        logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(row_addr_t))-1:0] pad;
+        row_addr_t                                                                         address;
+    } row_addr_view_t;
+
+    typedef union packed {
+        logic [calc::num_bytes_to_contain($bits(row_addr_t))*8-1:0]    raw;
+        logic [calc::num_bytes_to_contain($bits(row_addr_t))-1:0][7:0] bytes;
+        row_addr_view_t                                                addr;
+    } row_field_t;
+    // ==== /ROW ADDRESS ====
 
     // ==== COLUMN ADDRESS ====
     typedef logic [calc::num_column_address_bits(params::PIXEL_WIDTH)-1:0] col_addr_t;
