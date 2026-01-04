@@ -25,6 +25,8 @@ RUN \
         curl \
         ca-certificates \
         # verible deps end
+        # add ccache for verilator
+        ccache \
     && apt-get clean \
     # verible start
     && echo "TARGETARCH=${TARGETARCH}" \
