@@ -12,7 +12,7 @@ module control_module #(
     input clk_in,
     input cmd::indata8_t data_rx,
     input data_ready_n,
-    output logic [2:0] rgb_enable,
+    output types::rgb_signals_t rgb_enable,
     output types::brightness_level_t brightness_enable,
     output types::mem_write_data_t ram_data_out,
     output types::mem_write_addr_t ram_address,
@@ -332,7 +332,7 @@ module control_module #(
 `endif
     always @(posedge clk_in) begin
         if (reset) begin
-            rgb_enable <= 3'b111;
+            rgb_enable <= '1;  // all 1's
 `ifdef DOUBLE_BUFFER
             frame_select <= 1'b0;
             frame_select_temp <= 1'b0;
@@ -364,28 +364,28 @@ module control_module #(
             if ((cmd_line_state == STATE_IDLE || state_done) && ~data_ready_n) begin
                 case (data_rx_latch.opcode)
                     cmd::RED_ENABLE: begin
-                        rgb_enable[0]  <= 1'b1;
+                        rgb_enable.red <= 1'b1;
                         cmd_line_state <= STATE_IDLE;
                     end
                     cmd::RED_DISABLE: begin
-                        rgb_enable[0]  <= 1'b0;
+                        rgb_enable.red <= 1'b0;
                         cmd_line_state <= STATE_IDLE;
                     end
                     cmd::GREEN_ENABLE: begin
-                        rgb_enable[1]  <= 1'b1;
-                        cmd_line_state <= STATE_IDLE;
+                        rgb_enable.green <= 1'b1;
+                        cmd_line_state   <= STATE_IDLE;
                     end
                     cmd::GREEN_DISABLE: begin
-                        rgb_enable[1]  <= 1'b0;
-                        cmd_line_state <= STATE_IDLE;
+                        rgb_enable.green <= 1'b0;
+                        cmd_line_state   <= STATE_IDLE;
                     end
                     cmd::BLUE_ENABLE: begin
-                        rgb_enable[2]  <= 1'b1;
-                        cmd_line_state <= STATE_IDLE;
+                        rgb_enable.blue <= 1'b1;
+                        cmd_line_state  <= STATE_IDLE;
                     end
                     cmd::BLUE_DISABLE: begin
-                        rgb_enable[2]  <= 1'b0;
-                        cmd_line_state <= STATE_IDLE;
+                        rgb_enable.blue <= 1'b0;
+                        cmd_line_state  <= STATE_IDLE;
                     end
                     // TODO: Change this. If the scale is (off/dark) 0 -> 9 (on/bright), then BRIGHTNESS_ONE (alone) should be relatively dim.
                     //       However, this reads to me (as-is) that BRIGHTNESS_ONE will toggle the heights-weight bit

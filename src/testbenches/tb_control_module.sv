@@ -17,7 +17,7 @@ module tb_control_module #(
 
     //20220106
     //logic [7:0] ram_data_in = 8'b01100101;
-    wire [2:0] rgb_enable;
+    wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
     wire types::mem_write_data_t ram_data_out;
     wire types::mem_write_addr_t ram_address;
