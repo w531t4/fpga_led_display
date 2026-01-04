@@ -133,7 +133,7 @@ module main #(
 `endif
     wire types::rgb_signals_t rgb1;  /* the current RGB value for the top-half of the display */
 
-    wire [2:0] rgb2;  /* the current RGB value for the bottom-half of the display */
+    wire types::rgb_signals_t rgb2;  /* the current RGB value for the bottom-half of the display */
 
 
     wire output_enable;
@@ -168,11 +168,11 @@ module main #(
 
 `ifdef USE_FM6126A
     wire types::rgb_signals_t rgb1_fm6126init;
-    wire [2:0] rgb2_fm6126init;
+    wire types::rgb_signals_t rgb2_fm6126init;
     wire row_latch_fm6126init;
     wire pixclock_fm6126init;
     wire output_enable_intermediary;
-    wire [2:0] rgb2_intermediary;
+    wire types::rgb_signals_t rgb2_intermediary;
     wire clk_pixel_intermediary;
     wire types::rgb_signals_t rgb1_intermediary;
     wire row_latch_intermediary;
@@ -190,9 +190,7 @@ module main #(
     );
     assign output_enable = output_enable_intermediary & fm6126mask_en;
     assign rgb1 = (rgb1_intermediary & {3{fm6126mask_en}}) | (rgb1_fm6126init & {3{~fm6126mask_en}});
-    assign rgb2[0] = (rgb2_intermediary[0] & fm6126mask_en) | (rgb2_fm6126init[0] & ~fm6126mask_en);
-    assign rgb2[1] = (rgb2_intermediary[1] & fm6126mask_en) | (rgb2_fm6126init[1] & ~fm6126mask_en);
-    assign rgb2[2] = (rgb2_intermediary[2] & fm6126mask_en) | (rgb2_fm6126init[2] & ~fm6126mask_en);
+    assign rgb2 = (rgb2_intermediary & {3{fm6126mask_en}}) | (rgb2_fm6126init & {3{~fm6126mask_en}});
     assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
     assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
 `endif
@@ -471,12 +469,13 @@ module main #(
 `endif
     // TODO: Why are blue/green swapped here?
     assign {gp0, gp1, gp2} = {rgb1.red, rgb1.blue, rgb1.green};
+    assign {gp3, gp4, gp5} = {rgb2.red, rgb2.blue, rgb2.green};
     assign gp11 = clk_pixel;  // Pixel Clk
     assign gp12 = row_latch;  // Row Latch
     assign gp13 = ~output_enable;  // #OE
-    assign gp7  = row_address_active[0];  // A / Row[0]
-    assign gp8  = row_address_active[1];  // B / Row[1]
-    assign gp9  = row_address_active[2];  // C / Row[2]
+    assign gp7 = row_address_active[0];  // A / Row[0]
+    assign gp8 = row_address_active[1];  // B / Row[1]
+    assign gp9 = row_address_active[2];  // C / Row[2]
     assign gp10 = row_address_active[3];  // D / Row[3]
 `ifdef SPI
 `ifdef SPI_ESP32
@@ -495,12 +494,13 @@ module main #(
     assign gn11 = clk_pixel;  // Pixel Clk
     assign gn12 = row_latch;  // Row Latch
     assign gn13 = ~output_enable;  // #OE
-    assign gn7  = row_address_active[0];  // A / Row[0]
-    assign gn8  = row_address_active[1];  // B / Row[1]
-    assign gn9  = row_address_active[2];  // C / Row[2]
+    assign gn7 = row_address_active[0];  // A / Row[0]
+    assign gn8 = row_address_active[1];  // B / Row[1]
+    assign gn9 = row_address_active[2];  // C / Row[2]
     assign gn10 = row_address_active[3];  // D / Row[3]
     // TODO: Why are blue/green swapped here?
     assign {gn0, gn1, gn2} = {rgb1.red, rgb1.blue, rgb1.green};
+    assign {gn3, gn4, gn5} = {rgb2.red, rgb2.blue, rgb2.green};
     assign gn14 = gp14;  // ctrl serial port RX
 
     // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
