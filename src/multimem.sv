@@ -48,14 +48,14 @@ module multimem #(
     //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
 
     localparam integer unsigned LANES = (1 << $bits(types::mem_structure_t));
-    wire [LANES*$bits(types::mem_write_data_t)-1:0] qb_lanes_w;
+    wire types::mem_read_data_t qb_lanes_w;
 
     genvar i;
     generate
         for (i = 0; i < LANES; i = i + 1) begin : g_lane
             wire types::mem_structure_t lane_idx_from_addr = types::mem_structure(AddressA);
 
-            wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == i[$bits(types::mem_structure_t)-1:0]);
+            wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == types::mem_structure_t'(i));
             (* keep = "true" *) reg we_lane_q;
             // TODO - is it necessary to use a reg for types::mem_read_addr_t here
             (* keep = "true" *) types::mem_read_addr_t addra_q;
@@ -81,11 +81,7 @@ module multimem #(
                 .enb  (ClockEnB),
                 .rstb (ResetA || ResetB),
                 .addrb(AddressB),
-                // .dob: selects the i‑th lane’s byte out of the packed qb_lanes_w bus.
-                //        [base +: width] is an indexed part‑select, so this means:
-                //       - base = i * $bits(types::mem_write_data_t)
-                //       - width = $bits(types::mem_write_data_t) (8)
-                .dob  (qb_lanes_w[i*$bits(types::mem_write_data_t)+:$bits(types::mem_write_data_t)])
+                .dob  (qb_lanes_w.lane[i])
             );
         end
     endgenerate
