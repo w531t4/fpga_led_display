@@ -126,6 +126,16 @@ package types;
         col_addr_t col;
     } mem_read_addr_t;
 
+    typedef struct packed {
+        subpanel_addr_t subpanel;
+        pixel_addr_t    pixel;
+    } mem_structure_t;
+
+    function automatic mem_structure_t mem_structure(mem_write_addr_t a);
+        // written with row/col below (of which are then truncated) to avoid linting issues
+        mem_structure = mem_structure_t'({a.row, a.col, a.subpanel, a.pixel});
+    endfunction
+
     typedef union packed {
         logic [calc::num_data_b_bits(params::PIXEL_HEIGHT,
                                      params::BYTES_PER_PIXEL,
@@ -133,6 +143,7 @@ package types;
         color_field_subpanel_t [calc::num_subpanels(params::PIXEL_HEIGHT,
                                                     params::PIXEL_HALFHEIGHT)-1:0] subpanel;
     } mem_read_data_t;
+
     // ==== /MEM READ/WRITE ====
 
     // ==== BRIGHTNESS ====
@@ -174,18 +185,6 @@ package types;
     typedef logic [$clog2(params::WATCHDOG_CONTROL_TICKS)-1:0] watchdog_tick_index_t;
     typedef logic [$clog2(params::WATCHDOG_SIGBYTES)-1:0] watchdog_sigbyte_index_t;
     // ==== /WATCHDOG ====
-
-    // ==== STRUCTURE ====
-    typedef struct packed {
-        subpanel_addr_t subpanel;
-        pixel_addr_t    pixel;
-    } mem_structure_t;
-
-    function automatic mem_structure_t mem_structure(mem_write_addr_t a);
-        // written with row/col below (of which are then truncated) to avoid linting issues
-        mem_structure = mem_structure_t'({a.row, a.col, a.subpanel, a.pixel});
-    endfunction
-    // ==== /STRUCTURE ====
 
     //
     // COMMANDS
