@@ -12,20 +12,18 @@ module tb_main #(
 );
 
     logic clk;
-    wire  clk_pixel;
-    wire  row_latch;
-    wire  OE;
-    wire  ROA0;
-    wire  ROA1;
-    wire  ROA2;
-    wire  ROA3;
-    wire  rgb2_0;
-    wire  rgb2_1;
-    wire  rgb2_2;
-    wire  rgb1_0;
-    wire  rgb1_1;
-    wire  rgb1_2;
-    wire  debugger_txout;
+    wire clk_pixel;
+    wire row_latch;
+    wire OE;
+    wire ROA0;
+    wire ROA1;
+    wire ROA2;
+    wire ROA3;
+    wire rgb2_0;
+    wire rgb2_1;
+    wire rgb2_2;
+    wire types::rgb_signals_t rgb1;
+    wire debugger_txout;
     logic debugger_rxin;
 
     logic reset;
@@ -65,9 +63,10 @@ module tb_main #(
         .gp8      (ROA1),
         .gp9      (ROA2),
         .gp10     (ROA3),
-        .gp0      (rgb1_0),
-        .gp1      (rgb1_1),
-        .gp2      (rgb1_2),
+        // TODO: rgb1 appears to be out-of-sync with main.sv
+        .gp0      (rgb1.red),
+        .gp1      (rgb1.green),
+        .gp2      (rgb1.blue),
         .gp3      (rgb2_2),
         .gp4      (rgb2_0),
         .gp5      (rgb2_1),
@@ -273,9 +272,7 @@ module tb_main #(
                         ROA1,
                         ROA2,
                         ROA3,
-                        rgb1_0,
-                        rgb1_1,
-                        rgb1_2,
+                        rgb1,
                         rgb2_0,
                         rgb2_1,
                         rgb2_2,
