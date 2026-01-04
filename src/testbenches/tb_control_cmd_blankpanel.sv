@@ -13,18 +13,16 @@ module tb_control_cmd_blankpanel;
     localparam int TOTAL_WRITES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
-    logic                                        clk;
-    logic                                        reset;
-    logic                                        enable;
-    wire types::row_addr_t                       row;
-    wire types::col_addr_t                       column;
-    wire types::pixel_addr_t                     pixel;
-    wire                                         ram_write_enable;
-    wire                                         ram_access_start;
-    wire                                         done;
-    wire                     [              7:0] data_out;
-    logic                    [MEM_NUM_BYTES-1:0] mem;
-    int                                          writes_seen;
+    logic                                     clk;
+    logic                                     reset;
+    logic                                     enable;
+    wire types::fb_addr_t                     addr;
+    wire                                      ram_write_enable;
+    wire                                      ram_access_start;
+    wire                                      done;
+    wire                  [              7:0] data_out;
+    logic                 [MEM_NUM_BYTES-1:0] mem;
+    int                                       writes_seen;
 
     // === DUT wiring ===
     control_cmd_blankpanel #(
@@ -34,9 +32,7 @@ module tb_control_cmd_blankpanel;
         .enable(enable),
         .clk(clk),
         .mem_clk(clk),
-        .row(row),
-        .column(column),
-        .pixel(pixel),
+        .addr(addr),
         .data_out(data_out),
         .ram_write_enable(ram_write_enable),
         .ram_access_start(ram_access_start),
@@ -80,8 +76,6 @@ module tb_control_cmd_blankpanel;
             mem <= {MEM_NUM_BYTES{1'b1}};
             // verilator lint_on WIDTHCONCAT
         end else if (ram_write_enable) begin
-            types::fb_addr_t addr;
-            addr = {row, column, pixel};
             assert (int'(addr) < MEM_NUM_BYTES)
             else $fatal(1, "Address out of range: %0d", addr);
             assert (mem[addr] == 1'b1)
