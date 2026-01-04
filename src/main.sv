@@ -72,7 +72,7 @@ module main #(
     wire clk_pixel_load;
     wire clk_pixel;
     wire row_latch;
-    wire [7:0] ram_a_data_in;
+    wire types::mem_write_data_t ram_a_data_in;
     wire [7:0] ram_a_data_out_frame1;
     //  [11:0]
     wire types::mem_write_addr_t ram_a_address;
