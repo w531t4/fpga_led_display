@@ -56,14 +56,11 @@ module control_module #(
     logic ram_access_start;
     logic ram_access_start_latch;
     ctrl_fsm_t cmd_line_state;
-    types::row_addr_t cmd_line_addr_row;  // For 32 bit high displays, [4:0]
-    types::col_addr_t cmd_line_addr_col;  // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
-    types::pixel_addr_t cmd_line_pixelselect_num;
-    wire types::mem_write_addr_t cmd_line_addr = {
-        cmd_line_addr_row, cmd_line_addr_col, cmd_line_pixelselect_num
-    };  // <-- use this to toggle endainness. ~ == little endain
-        //                                      == bit endian
-        // NOTE: uart/alphabet.uart is BIG ENDIAN.
+    types::fb_addr_t cmd_addr;
+
+    wire types::mem_write_addr_t cmd_line_addr;
+    assign cmd_line_addr = cmd_addr;
+
     logic state_done;
     logic brightness_change_enable;
     types::brightness_level_t brightness_data_out;
@@ -286,9 +283,7 @@ module control_module #(
 `endif
 
     always_comb begin
-        cmd_line_addr_row = 'b0;
-        cmd_line_addr_col = 'b0;
-        cmd_line_pixelselect_num = 'b0;
+        cmd_addr = 'b0;
         ram_data_out = 8'b0;
         ram_write_enable = 1'b0;
         ram_access_start = 1'b0;
@@ -303,61 +298,61 @@ module control_module #(
                 state_done = cmd_readbrightness_done;
             end
             STATE_CMD_READFRAME: begin
-                cmd_line_addr_row        = cmd_readframe_row_addr;
-                cmd_line_addr_col        = cmd_readframe_col_addr;
-                cmd_line_pixelselect_num = cmd_readframe_pixel_addr;
-                ram_data_out             = cmd_readframe_do;
-                ram_write_enable         = cmd_readframe_we;
-                ram_access_start         = cmd_readframe_as;
-                state_done               = cmd_readframe_done;
+                cmd_addr.row     = cmd_readframe_row_addr;
+                cmd_addr.col     = cmd_readframe_col_addr;
+                cmd_addr.pixel   = cmd_readframe_pixel_addr;
+                ram_data_out     = cmd_readframe_do;
+                ram_write_enable = cmd_readframe_we;
+                ram_access_start = cmd_readframe_as;
+                state_done       = cmd_readframe_done;
             end
             STATE_CMD_READROW: begin
-                cmd_line_addr_row = cmd_readrow_row_addr;
-                cmd_line_addr_col = cmd_readrow_col_addr;
-                cmd_line_pixelselect_num = cmd_readrow_pixel_addr;
-                ram_data_out = cmd_readrow_do;
+                cmd_addr.row     = cmd_readrow_row_addr;
+                cmd_addr.col     = cmd_readrow_col_addr;
+                cmd_addr.pixel   = cmd_readrow_pixel_addr;
+                ram_data_out     = cmd_readrow_do;
                 ram_write_enable = cmd_readrow_we;
                 ram_access_start = cmd_readrow_as;
-                state_done = cmd_readrow_done;
+                state_done       = cmd_readrow_done;
             end
             STATE_CMD_BLANKPANEL: begin
-                cmd_line_addr_row = cmd_blankpanel_row_addr;
-                cmd_line_addr_col = cmd_blankpanel_col_addr;
-                cmd_line_pixelselect_num = cmd_blankpanel_pixel_addr;
-                ram_data_out = cmd_blankpanel_do;
-                ram_write_enable = cmd_blankpanel_we;
-                ram_access_start = cmd_blankpanel_as;
-                state_done = cmd_blankpanel_done;
+                cmd_addr.row         = cmd_blankpanel_row_addr;
+                cmd_addr.col         = cmd_blankpanel_col_addr;
+                cmd_addr.pixel       = cmd_blankpanel_pixel_addr;
+                ram_data_out         = cmd_blankpanel_do;
+                ram_write_enable     = cmd_blankpanel_we;
+                ram_access_start     = cmd_blankpanel_as;
+                state_done           = cmd_blankpanel_done;
                 ready_for_data_logic = 1'b0;
             end
             STATE_CMD_FILLPANEL: begin
-                cmd_line_addr_row        = cmd_fillpanel_row_addr;
-                cmd_line_addr_col        = cmd_fillpanel_col_addr;
-                cmd_line_pixelselect_num = cmd_fillpanel_pixel_addr;
-                ram_data_out             = cmd_fillpanel_do;
-                ram_write_enable         = cmd_fillpanel_we;
-                ram_access_start         = cmd_fillpanel_as;
-                state_done               = cmd_fillpanel_done;
-                ready_for_data_logic     = cmd_fillpanel_rfd;
+                cmd_addr.row         = cmd_fillpanel_row_addr;
+                cmd_addr.col         = cmd_fillpanel_col_addr;
+                cmd_addr.pixel       = cmd_fillpanel_pixel_addr;
+                ram_data_out         = cmd_fillpanel_do;
+                ram_write_enable     = cmd_fillpanel_we;
+                ram_access_start     = cmd_fillpanel_as;
+                state_done           = cmd_fillpanel_done;
+                ready_for_data_logic = cmd_fillpanel_rfd;
             end
             STATE_CMD_FILLRECT: begin
-                cmd_line_addr_row        = cmd_fillrect_row_addr;
-                cmd_line_addr_col        = cmd_fillrect_col_addr;
-                cmd_line_pixelselect_num = cmd_fillrect_pixel_addr;
-                ram_data_out             = cmd_fillrect_do;
-                ram_write_enable         = cmd_fillrect_we;
-                ram_access_start         = cmd_fillrect_as;
-                state_done               = cmd_fillrect_done;
-                ready_for_data_logic     = cmd_fillrect_rfd;
+                cmd_addr.row         = cmd_fillrect_row_addr;
+                cmd_addr.col         = cmd_fillrect_col_addr;
+                cmd_addr.pixel       = cmd_fillrect_pixel_addr;
+                ram_data_out         = cmd_fillrect_do;
+                ram_write_enable     = cmd_fillrect_we;
+                ram_access_start     = cmd_fillrect_as;
+                state_done           = cmd_fillrect_done;
+                ready_for_data_logic = cmd_fillrect_rfd;
             end
             STATE_CMD_READPIXEL: begin
-                cmd_line_addr_row = cmd_readpixel_row_addr;
-                cmd_line_addr_col = cmd_readpixel_col_addr;
-                cmd_line_pixelselect_num = cmd_readpixel_pixel_addr;
-                ram_data_out = cmd_readpixel_do;
+                cmd_addr.row     = cmd_readpixel_row_addr;
+                cmd_addr.col     = cmd_readpixel_col_addr;
+                cmd_addr.pixel   = cmd_readpixel_pixel_addr;
+                ram_data_out     = cmd_readpixel_do;
                 ram_write_enable = cmd_readpixel_we;
                 ram_access_start = cmd_readpixel_as;
-                state_done = cmd_readpixel_done;
+                state_done       = cmd_readpixel_done;
             end
 `ifdef USE_WATCHDOG
             STATE_CMD_WATCHDOG: begin
