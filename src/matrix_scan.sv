@@ -40,10 +40,15 @@ module matrix_scan #(
         types::row_subpanel_addr_t row_address;
         types::col_addr_t          column_address;
     } state_t;
+
+    state_t active;  /* the active X (What is shown on the LED's) -- from before the state advance */
     state_t current;  /* the current X (clocking out now) */
+
     assign column_address = current.column_address;
     assign row_address = current.row_address;
     assign brightness_mask = current.brightness_mask;
+    assign row_address_active = active.row_address;
+    assign active.column_address = '0;  // unused
 
     typedef logic [1:0] scan_state_t;
     scan_state_t state;
@@ -58,7 +63,6 @@ module matrix_scan #(
     //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
 
     wire brightness_exceeded_overlap_time;
-    types::brightness_level_t brightness_mask_active; /* the active mask value (LEDs enabled)... from before the state advanced */
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
@@ -112,17 +116,17 @@ module matrix_scan #(
             clk_pixel_en <= 1'b1;
             row_latch_state <= 2'b01;
             current.brightness_mask <= reset_brightness();
-            brightness_mask_active <= 'b0;
+            active.brightness_mask <= 'b0;
             // 4'd0
             current.row_address <= 'b0;
-            row_address_active <= 'b0;
+            active.row_address <= 'b0;
         end else begin
             clk_pixel_en <= clk_pixel_load_en;
             row_latch_state <= {row_latch_state[0], clk_pixel_load_en};
             /* on completion of the row_latch, we advanced the brightness mask to generate the next row of pixels */
             if (row_latch) begin
-                brightness_mask_active <= current.brightness_mask;
-                row_address_active <= current.row_address;
+                active.brightness_mask <= current.brightness_mask;
+                active.row_address <= current.row_address;
 
                 if ((current.brightness_mask == 'd0) || (current.brightness_mask == 'd1)) begin
                     // catch the initial value / oopsy //
@@ -144,7 +148,7 @@ module matrix_scan #(
         .clk_in(clk_in),
         .reset(reset),
         .row_latch(row_latch),
-        .brightness_mask_active(brightness_mask_active),
+        .brightness_mask_active(active.brightness_mask),
         .output_enable(output_enable),
         .exceeded_overlap_time(brightness_exceeded_overlap_time)
     );
@@ -161,5 +165,5 @@ module matrix_scan #(
         end
     end
 
-    wire _unused_ok = &{1'b0, pixel_load_en_counter_output, unused_timer_runpin, 1'b0};
+    wire _unused_ok = &{1'b0, pixel_load_en_counter_output, unused_timer_runpin, active.column_address, 1'b0};
 endmodule
