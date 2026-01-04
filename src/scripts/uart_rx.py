@@ -222,117 +222,119 @@ def main(stdscr,
         expected_bytes = expected_bitsize/8
     else:
         expected_bytes = (expected_bitsize/8) + 1
-    while True:
-        COLUMN_SIZE = 0
-        data = read_debug_data(expected_bytes=expected_bytes,
-                               ser=ser,
-                               enable_debug=enable_debug,
-                               fw=fw,
-                               )
-        _, binstring, hexstring = data.bytestring, data.binstring, data.hexstring
-        bytestring_total = len(data.bytestring)
+    try:
+        while True:
+            COLUMN_SIZE = 0
+            data = read_debug_data(expected_bytes=expected_bytes,
+                                ser=ser,
+                                enable_debug=enable_debug,
+                                fw=fw,
+                                )
+            _, binstring, hexstring = data.bytestring, data.binstring, data.hexstring
+            bytestring_total = len(data.bytestring)
 
-        if enable_debug and ((expected_bitsize % 8) != 0):
-            fw.write(f"(expected_bitsize % 8) != 0 :: expected_bitsize={expected_bitsize}\n")
-        # trim any extra bits from bitstring, since we likely have padding on the end
-        if ((expected_bitsize % 8) != 0):
-            if enable_debug:
-                fw.write(f"old_hexstring={hexstring}\n")
-            offset = 8 - (expected_bitsize % 8)
-            binstring = binstring[offset:]
-            if enable_debug:
-                fw.write(f"new_hexstring={8 - (expected_bitsize % 8)} offset={hexstring}\n")
-        if enable_debug and (len(binstring) != expected_bitsize):
-            fw.write(f"len(binstring) != expected_bitsize :: len(binstring)={len(binstring)} expected_bitsize={expected_bitsize}\n")
-        #REVISIT THIS AARON
-        # if the string is not the right size, skip it
-        if (len(binstring) != expected_bitsize):
-            if enable_debug:
-                fw.write(f"len(binstring)={len(binstring)} != expected_bitsize={expected_bitsize} hexstring={hexstring}\n")
-            stdscr.addstr(1,80, f"len(binstring)={str(len(binstring))}!= {str(expected_bitsize)}")
-            continue
-        else:
-            stdscr.addstr(1,80, " " * 69)
-            stdscr.addstr(1,0, f"{hexstring} len(c)={str(len(binstring))}bits")
-
-
-        if (bytestring_total > expected_bytes):
-
-            stdscr.addstr(0,0, f"{hexstring} ERROR: received ({str(bytestring_total)}) more than{str(expected_bytes)} bytes")
-        else:
-            stdscr.addstr(0,0, " " * 112)
-
-
-        #reverse binstring so we can access it sanely using python list constructs
-        binstring = binstring[::-1]
-        stdscr.addstr(2,0, f"chars read:{str(bytestring_total)} bits:{str(len(binstring))}")
-        position = 0
-        error_offset = 3
-        for i, variable in enumerate(structure):
-            if i < max_lines:
-                y_pos = i + error_offset
-                x_pos = 0
-            else:
-                y_pos = i + error_offset - max_lines + 1
-                x_pos = COLUMN_SIZE + 3
-            if variable['name'] == 'newline':
-                position += 8
-            else:
-                bits_used = int(variable['size'])
-                vname = str(variable['name'])
-                subsegment = binstring[position:position+bits_used]
-                subsegment = subsegment[::-1]
-                subsegment_bytestring = ""
-                if (len(subsegment) % 8) != 0:
-                    gap = 8 - len(subsegment) % 8
-                    subsegment = ("0" * gap) + subsegment
-                temp_array = list()
-                for start_pos in range(0, len(subsegment), 8):
-                    val = subsegment[start_pos:start_pos+8]
-                    modval = str(chr(int(val,2)))
-                    temp_array.append(modval)
-                subsegment_bytestring = "".join(temp_array)
-                if vname == "uart_rx_data":
-                    uart_rx_data = get_safe_string(subsegment_bytestring)
-                output_string  = do_debug(subsegment_bytestring, title=vname)
+            if enable_debug and ((expected_bitsize % 8) != 0):
+                fw.write(f"(expected_bitsize % 8) != 0 :: expected_bitsize={expected_bitsize}\n")
+            # trim any extra bits from bitstring, since we likely have padding on the end
+            if ((expected_bitsize % 8) != 0):
                 if enable_debug:
-                    fw.write(f"bits_used:{str(bits_used)} "
-                             f"position:{str(position):<3} "
-                             f"subsegment: {subsegment} "
-                             f"len(subsegment)={str(len(subsegment))} "
-                             f"subsegment_bytestring:{subsegment_bytestring} "
-                             f"length={str(len(subsegment_bytestring))} "
-                             f"title={vname} "
-                             f"output_string:{output_string} "
-                             f"x_pos={str(x_pos)} "
-                             f"y_pos={str(y_pos)}\n")
-                if ((i < max_lines) and (len(output_string) > COLUMN_SIZE)):
-                    COLUMN_SIZE = len(output_string)
-                stdscr.addstr(y_pos, x_pos, output_string)
-
-                position += bits_used
-            stdscr.refresh()
-        k = stdscr.getch()
-        literals = ['R', 'r', 'G', 'g', 'B', 'b', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'L']
-        if BAUDSET_DATA_STATE != -1 and BAUDSET_DATA_STATE != 3:
-            stdscr.addstr(max_lines+3,0, f"uart_rx_data:{uart_rx_data}")
-            current_context = BaudContext(state=BAUDSET_DATA_STATE, rate=BAUDSET_DATA)
-            context = findbaud(stdscr, uart_rx_data, cur_context=current_context, max_lines=max_lines, max_baudrate=tx_baudrate_max, baudrate_increment=tx_baudrate_search_increment)
-            BAUDSET_DATA_STATE, BAUDSET_DATA = context.state, context.rate
-            testval(tx_dev, BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE], spi=use_spi)
-        if (k != -1):
-            if (chr(k) == 'H'):
-                for _ in range(0, 16):
-                    writeser(ser, 'H', spi=use_spi)
-            elif (chr(k) == 'P'):
-                BAUDSET_DATA = tx_baudrate_start
-                BAUDSET_DATA_STATE = 1
-            elif (chr(k) in literals):
-                testval(tx_dev, BAUDSET_DATA, chr(k), spi=use_spi)
-                writeser(ser, chr(k), spi=use_spi)
+                    fw.write(f"old_hexstring={hexstring}\n")
+                offset = 8 - (expected_bitsize % 8)
+                binstring = binstring[offset:]
+                if enable_debug:
+                    fw.write(f"new_hexstring={8 - (expected_bitsize % 8)} offset={hexstring}\n")
+            if enable_debug and (len(binstring) != expected_bitsize):
+                fw.write(f"len(binstring) != expected_bitsize :: len(binstring)={len(binstring)} expected_bitsize={expected_bitsize}\n")
+            #REVISIT THIS AARON
+            # if the string is not the right size, skip it
+            if (len(binstring) != expected_bitsize):
+                if enable_debug:
+                    fw.write(f"len(binstring)={len(binstring)} != expected_bitsize={expected_bitsize} hexstring={hexstring}\n")
+                stdscr.addstr(1,80, f"len(binstring)={str(len(binstring))}!= {str(expected_bitsize)}")
+                continue
             else:
-                writeser(ser, chr(k), spi=use_spi)
-    # TODO: fix this
+                stdscr.addstr(1,80, " " * 69)
+                stdscr.addstr(1,0, f"{hexstring} len(c)={str(len(binstring))}bits")
+
+
+            if (bytestring_total > expected_bytes):
+
+                stdscr.addstr(0,0, f"{hexstring} ERROR: received ({str(bytestring_total)}) more than{str(expected_bytes)} bytes")
+            else:
+                stdscr.addstr(0,0, " " * 112)
+
+
+            #reverse binstring so we can access it sanely using python list constructs
+            binstring = binstring[::-1]
+            stdscr.addstr(2,0, f"chars read:{str(bytestring_total)} bits:{str(len(binstring))}")
+            position = 0
+            error_offset = 3
+            for i, variable in enumerate(structure):
+                if i < max_lines:
+                    y_pos = i + error_offset
+                    x_pos = 0
+                else:
+                    y_pos = i + error_offset - max_lines + 1
+                    x_pos = COLUMN_SIZE + 3
+                if variable['name'] == 'newline':
+                    position += 8
+                else:
+                    bits_used = int(variable['size'])
+                    vname = str(variable['name'])
+                    subsegment = binstring[position:position+bits_used]
+                    subsegment = subsegment[::-1]
+                    subsegment_bytestring = ""
+                    if (len(subsegment) % 8) != 0:
+                        gap = 8 - len(subsegment) % 8
+                        subsegment = ("0" * gap) + subsegment
+                    temp_array = list()
+                    for start_pos in range(0, len(subsegment), 8):
+                        val = subsegment[start_pos:start_pos+8]
+                        modval = str(chr(int(val,2)))
+                        temp_array.append(modval)
+                    subsegment_bytestring = "".join(temp_array)
+                    if vname == "uart_rx_data":
+                        uart_rx_data = get_safe_string(subsegment_bytestring)
+                    output_string  = do_debug(subsegment_bytestring, title=vname)
+                    if enable_debug:
+                        fw.write(f"bits_used:{str(bits_used)} "
+                                f"position:{str(position):<3} "
+                                f"subsegment: {subsegment} "
+                                f"len(subsegment)={str(len(subsegment))} "
+                                f"subsegment_bytestring:{subsegment_bytestring} "
+                                f"length={str(len(subsegment_bytestring))} "
+                                f"title={vname} "
+                                f"output_string:{output_string} "
+                                f"x_pos={str(x_pos)} "
+                                f"y_pos={str(y_pos)}\n")
+                    if ((i < max_lines) and (len(output_string) > COLUMN_SIZE)):
+                        COLUMN_SIZE = len(output_string)
+                    stdscr.addstr(y_pos, x_pos, output_string)
+
+                    position += bits_used
+                stdscr.refresh()
+            k = stdscr.getch()
+            literals = ['R', 'r', 'G', 'g', 'B', 'b', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'L']
+            if BAUDSET_DATA_STATE != -1 and BAUDSET_DATA_STATE != 3:
+                stdscr.addstr(max_lines+3,0, f"uart_rx_data:{uart_rx_data}")
+                current_context = BaudContext(state=BAUDSET_DATA_STATE, rate=BAUDSET_DATA)
+                context = findbaud(stdscr, uart_rx_data, cur_context=current_context, max_lines=max_lines, max_baudrate=tx_baudrate_max, baudrate_increment=tx_baudrate_search_increment)
+                BAUDSET_DATA_STATE, BAUDSET_DATA = context.state, context.rate
+                testval(tx_dev, BAUDSET_DATA, BAUDSET_TESTVALS[BAUDSET_DATA_STATE], spi=use_spi)
+            if (k != -1):
+                if (chr(k) == 'H'):
+                    for _ in range(0, 16):
+                        writeser(ser, 'H', spi=use_spi)
+                elif (chr(k) == 'P'):
+                    BAUDSET_DATA = tx_baudrate_start
+                    BAUDSET_DATA_STATE = 1
+                elif (chr(k) in literals):
+                    testval(tx_dev, BAUDSET_DATA, chr(k), spi=use_spi)
+                    writeser(ser, chr(k), spi=use_spi)
+                else:
+                    writeser(ser, chr(k), spi=use_spi)
+    except (SystemExit, KeyboardInterrupt):
+        pass
     stdscr.refresh()
     stdscr.getkey()
     ser.close()
