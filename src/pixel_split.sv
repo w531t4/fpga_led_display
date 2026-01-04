@@ -7,7 +7,7 @@ module pixel_split #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input types::color_field_subpanel_t pixel_data,
+    input types::color_field_t pixel_data,
     input types::brightness_level_t brightness_mask,
     input types::brightness_level_t brightness_enable,
     input [2:0] rgb_enable,
@@ -32,7 +32,7 @@ module pixel_split #(
         //              ({pixel_data[15:8], pixel_data[23:16], pixel_data[31:24]}) shows just red
         //              pixel_data.field.color produces correct colors
         //            - pixel_data[23:0] are populated
-        .data_in(pixel_data.field.color),
+        .data_in(pixel_data.color),
         .brightness(brightness_enable),
         .red(red_gamma),
         .green(green_gamma),
@@ -42,7 +42,7 @@ module pixel_split #(
     /* split the RGB565 pixel into components */
     rgb565 rgb_565 (
         //              [rrrrrbbb bbbggggg]
-        .data_in(pixel_data.field.color),
+        .data_in(pixel_data.color),
         .brightness(brightness_enable),
         .red(red_gamma),
         .green(green_gamma),
