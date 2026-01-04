@@ -116,9 +116,7 @@ module control_module #(
 
     wire cmd_readpixel_we, cmd_readpixel_as, cmd_readpixel_done;
     wire [7:0] cmd_readpixel_do;
-    wire types::row_addr_t cmd_readpixel_row_addr;
-    wire types::col_addr_t cmd_readpixel_col_addr;
-    wire types::pixel_addr_t cmd_readpixel_pixel_addr;
+    wire types::fb_addr_t cmd_readpixel_addr;
 
     control_cmd_readpixel #(
         ._UNUSED('d0)
@@ -129,9 +127,7 @@ module control_module #(
         .clk(clk_in),
         // .enable(cmd_line_state == STATE_CMD_READPIXEL),
         .enable((cmd_line_state == STATE_CMD_READPIXEL) && ~data_ready_n),
-        .row(cmd_readpixel_row_addr),
-        .column(cmd_readpixel_col_addr),
-        .pixel(cmd_readpixel_pixel_addr),
+        .addr(cmd_readpixel_addr),
         .data_out(cmd_readpixel_do),
         .ram_write_enable(cmd_readpixel_we),
         .ram_access_start(cmd_readpixel_as),
@@ -339,9 +335,7 @@ module control_module #(
                 ready_for_data_logic = cmd_fillrect_rfd;
             end
             STATE_CMD_READPIXEL: begin
-                cmd_addr.row     = cmd_readpixel_row_addr;
-                cmd_addr.col     = cmd_readpixel_col_addr;
-                cmd_addr.pixel   = cmd_readpixel_pixel_addr;
+                cmd_addr         = cmd_readpixel_addr;
                 ram_data_out     = cmd_readpixel_do;
                 ram_write_enable = cmd_readpixel_we;
                 ram_access_start = cmd_readpixel_as;
