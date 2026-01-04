@@ -10,9 +10,9 @@ module pixel_split #(
     input types::color_field_t pixel_data,
     input types::brightness_level_t brightness_mask,
     input types::brightness_level_t brightness_enable,
-    input [2:0] rgb_enable,
+    input types::rgb_signals_t rgb_enable,
 
-    output [2:0] rgb_output
+    output types::rgb_signals_t rgb_output
 );
     wire types::brightness_level_t red_gamma;
     wire types::brightness_level_t green_gamma;
@@ -56,23 +56,23 @@ module pixel_split #(
     ) b_red (
         .value(red_gamma),
         .mask(brightness_mask),
-        .enable(rgb_enable[0]),
-        .out(rgb_output[0])
+        .enable(rgb_enable.red),
+        .out(rgb_output.red)
     );
     brightness #(
         ._UNUSED('d0)
     ) b_green (
         .value(green_gamma),
         .mask(brightness_mask),
-        .enable(rgb_enable[1]),
-        .out(rgb_output[1])
+        .enable(rgb_enable.green),
+        .out(rgb_output.green)
     );
     brightness #(
         ._UNUSED('d0)
     ) b_blue (
         .value(blue_gamma),
         .mask(brightness_mask),
-        .enable(rgb_enable[2]),
-        .out(rgb_output[2])
+        .enable(rgb_enable.blue),
+        .out(rgb_output.blue)
     );
 endmodule

@@ -20,6 +20,12 @@ package types;
 `endif
 
     typedef struct packed {
+        logic red;
+        logic green;
+        logic blue;
+    } rgb_signals_t;
+
+    typedef struct packed {
         red_t   red;
         green_t green;
         blue_t  blue;

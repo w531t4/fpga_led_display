@@ -126,7 +126,7 @@ module main #(
     wire types::row_subpanel_addr_t row_address_active;
     wire types::brightness_level_t brightness_mask;
 
-    wire [2:0] rgb_enable;
+    wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
@@ -208,7 +208,7 @@ module main #(
     wire [debug_data_width-1:0] ddata = {
         rxdata_to_controller[7:0],
         num_commands_processed[7:0],
-        rgb_enable[2:0],
+        rgb_enable,
         cmd_line_state2[3:0],
         brightness_enable[7:0],
         2'b0
