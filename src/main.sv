@@ -477,9 +477,9 @@ module main #(
     assign gp11 = clk_pixel;  // Pixel Clk
     assign gp12 = row_latch;  // Row Latch
     assign gp13 = ~output_enable;  // #OE
-    assign gp7 = row_address_active[0];  // A / Row[0]
-    assign gp8 = row_address_active[1];  // B / Row[1]
-    assign gp9 = row_address_active[2];  // C / Row[2]
+    assign gp7  = row_address_active[0];  // A / Row[0]
+    assign gp8  = row_address_active[1];  // B / Row[1]
+    assign gp9  = row_address_active[2];  // C / Row[2]
     assign gp10 = row_address_active[3];  // D / Row[3]
 `ifdef SPI
 `ifdef SPI_ESP32
@@ -498,9 +498,9 @@ module main #(
     assign gn11 = clk_pixel;  // Pixel Clk
     assign gn12 = row_latch;  // Row Latch
     assign gn13 = ~output_enable;  // #OE
-    assign gn7 = row_address_active[0];  // A / Row[0]
-    assign gn8 = row_address_active[1];  // B / Row[1]
-    assign gn9 = row_address_active[2];  // C / Row[2]
+    assign gn7  = row_address_active[0];  // A / Row[0]
+    assign gn8  = row_address_active[1];  // B / Row[1]
+    assign gn9  = row_address_active[2];  // C / Row[2]
     assign gn10 = row_address_active[3];  // D / Row[3]
 `ifdef SWAP_BLUE_GREEN_CHAN
     assign {gn0, gn1, gn2} = {rgb1.red, rgb1.blue, rgb1.green};
