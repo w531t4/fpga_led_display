@@ -98,7 +98,7 @@ all: $(ARTIFACT_DIR)/verilator_args simulation lint
 #$(warning In a command script $(SIMBINS))
 
 $(SIMULATION_DIR)/%.fst: $(SIM_BIN_DIR)/% Makefile | $(SIMULATION_DIR)
-	@set -o pipefail; stdbuf -oL -eL $< 2>&1 | sed -u 's/^/[$*] /'
+	@set -o pipefail; stdbuf -oL -eL $< +verilator+quiet 2>&1 | sed -u 's/^/[$*] /'
 
 $(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(INCLUDESRCS) Makefile | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
