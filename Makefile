@@ -31,6 +31,7 @@ VINCLUDE_DIR:=$(SRC_DIR)/include
 # CLK_110 - Use 110Mhz clock for clk_root
 # CLK_100 - Use 100MHz clock for clk_root
 # CLK_90 - Use 90MHz clock for clk_root
+# CLK_80 - Use 90MHz clock for clk_root
 # CLK_50 - Use 50MHz clock for clk_root
 # RGB24 - Use RGB24 instead of RGB565
 # GAMMA - Enable Gamma Correction
