@@ -45,6 +45,7 @@ module tb_control_cmd_readbrightness;
     // === Stimulus ===
     initial begin
         @(negedge reset);
+        #(params::SIM_HALF_PERIOD_NS);  // avoid posedge race on enable
         enable = 1'b1;  // keep high through the next rising edge
         @(posedge clk);  // DUT latches on this edge
         #(params::SIM_HALF_PERIOD_NS);  // sample mid-cycle after NBA updates
