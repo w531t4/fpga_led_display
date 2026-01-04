@@ -230,13 +230,11 @@ module control_module #(
         .done            (cmd_fillrect_done)
     );
 
-    wire                           cmd_readframe_we;
-    wire                           cmd_readframe_as;
-    wire                           cmd_readframe_done;
-    wire                     [7:0] cmd_readframe_do;
-    wire types::row_addr_t         cmd_readframe_row_addr;
-    wire types::col_addr_t         cmd_readframe_col_addr;
-    wire types::pixel_addr_t       cmd_readframe_pixel_addr;
+    wire                        cmd_readframe_we;
+    wire                        cmd_readframe_as;
+    wire                        cmd_readframe_done;
+    wire                  [7:0] cmd_readframe_do;
+    wire types::fb_addr_t       cmd_readframe_addr;
 
     control_cmd_readframe #(
         ._UNUSED('d0)
@@ -246,9 +244,7 @@ module control_module #(
         .enable          ((cmd_line_state == STATE_CMD_READFRAME) && ~data_ready_n),
         .clk             (clk_in),
         .data_in         (data_rx_latch),
-        .row             (cmd_readframe_row_addr),
-        .column          (cmd_readframe_col_addr),
-        .pixel           (cmd_readframe_pixel_addr),
+        .addr            (cmd_readframe_addr),
         .data_out        (cmd_readframe_do),
         .ram_write_enable(cmd_readframe_we),
         .ram_access_start(cmd_readframe_as),
@@ -289,9 +285,7 @@ module control_module #(
                 state_done = cmd_readbrightness_done;
             end
             STATE_CMD_READFRAME: begin
-                cmd_addr.row     = cmd_readframe_row_addr;
-                cmd_addr.col     = cmd_readframe_col_addr;
-                cmd_addr.pixel   = cmd_readframe_pixel_addr;
+                cmd_addr         = cmd_readframe_addr;
                 ram_data_out     = cmd_readframe_do;
                 ram_write_enable = cmd_readframe_we;
                 ram_access_start = cmd_readframe_as;

@@ -10,22 +10,20 @@ module tb_control_cmd_readframe;
     localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
-    logic                          clk;
-    logic                          reset;
-    logic                          enable;
-    logic                    [7:0] data_in;
-    wire types::row_addr_t         row;
-    wire types::col_addr_t         column;
-    wire types::pixel_addr_t       pixel;
-    wire                     [7:0] data_out;
-    wire                           ram_write_enable;
-    wire                           ram_access_start;
-    wire                           done;
-    byte                           expected_bytes   [TOTAL_BYTES];
-    byte                           data_in_q;
-    int                            payload_idx;
-    int                            done_count;
-    logic                          prev_as;
+    logic                       clk;
+    logic                       reset;
+    logic                       enable;
+    logic                 [7:0] data_in;
+    wire types::fb_addr_t       addr;
+    wire                  [7:0] data_out;
+    wire                        ram_write_enable;
+    wire                        ram_access_start;
+    wire                        done;
+    byte                        expected_bytes   [TOTAL_BYTES];
+    byte                        data_in_q;
+    int                         payload_idx;
+    int                         done_count;
+    logic                       prev_as;
 
     // === DUT wiring ===
     control_cmd_readframe #(
@@ -35,9 +33,7 @@ module tb_control_cmd_readframe;
         .data_in(data_in),
         .enable(enable),
         .clk(clk),
-        .row(row),
-        .column(column),
-        .pixel(pixel),
+        .addr(addr),
         .data_out(data_out),
         .ram_write_enable(ram_write_enable),
         .ram_access_start(ram_access_start),
@@ -85,8 +81,8 @@ module tb_control_cmd_readframe;
     task automatic expect_payload(input int idx, input byte b);
         assert (ram_write_enable == 1'b1)
         else $fatal(1, "WE low at idx %0d", idx);
-        assert (int'(row) < params::PIXEL_HEIGHT && int'(column) < params::PIXEL_WIDTH && int'(pixel) < params::BYTES_PER_PIXEL)
-        else $fatal(1, "Address out of range at idx %0d row=%0d col=%0d pix=%0d", idx, row, column, pixel);
+        assert (int'(addr.row) < params::PIXEL_HEIGHT && int'(addr.col) < params::PIXEL_WIDTH && int'(addr.pixel) < params::BYTES_PER_PIXEL)
+        else $fatal(1, "Address out of range at idx %0d row=%0d col=%0d pix=%0d", idx, addr.row, addr.col, addr.pixel);
         assert (ram_access_start != prev_as)
         else $fatal(1, "ram_access_start not toggling at idx %0d", idx);
         assert (data_out == b)
