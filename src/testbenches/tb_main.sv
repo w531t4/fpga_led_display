@@ -61,14 +61,21 @@ module tb_main #(
         .gp8      (ROA1),
         .gp9      (ROA2),
         .gp10     (ROA3),
-        // TODO: rgb1 appears to be out-of-sync with main.sv
+`ifdef SWAP_BLUE_GREEN_CHAN
+        .gp0      (rgb1.red),
+        .gp1      (rgb1.blue),
+        .gp2      (rgb1.green),
+        .gp3      (rgb2.red),
+        .gp4      (rgb2.blue),
+        .gp5      (rgb2.green),
+`else
         .gp0      (rgb1.red),
         .gp1      (rgb1.green),
         .gp2      (rgb1.blue),
-        // TODO: rgb2 appears to be out-of-sync with main.sv
-        .gp3      (rgb2.blue),
-        .gp4      (rgb2.red),
-        .gp5      (rgb2.green),
+        .gp3      (rgb2.red),
+        .gp4      (rgb2.green),
+        .gp5      (rgb2.blue),
+`endif
         .gp14     (rxdata),
         .gp16     (debugger_txout),
         .gp15     (debugger_rxin),
