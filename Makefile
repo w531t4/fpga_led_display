@@ -114,7 +114,7 @@ endif
 
 
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build gamma_lut
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
 .DELETE_ON_ERROR:
 all: $(ARTIFACT_DIR)/verilator_args simulation lint
 #$(warning In a command script $(VVPOBJS))
@@ -244,7 +244,7 @@ ifeq ($(YOSYS_DEBUG), true)
 endif
 
 compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(YOSYS_TARGETS): gamma_lut ${VSOURCES} $(INCLUDESRCS) Makefile  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)
+$(YOSYS_TARGETS): $(GAMMA_INCLUDES) ${VSOURCES} $(INCLUDESRCS) Makefile  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)
 	echo "$(YOSYS_SCRIPT)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_CMD_ARGS)
 
