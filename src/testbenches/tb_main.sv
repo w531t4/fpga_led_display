@@ -79,6 +79,18 @@ module tb_main #(
         .gp14     (rxdata),
         .gp16     (debugger_txout),
         .gp15     (debugger_rxin),
+`ifdef SPI
+`ifdef SPI_ESP32
+        .sd_d     ({3'b0, rxdata}),      // sd_d[0]=mosi
+        .sd_clk   (spi_clk),             // clk
+        .sd_cmd   (spi_cs),              // ce
+`else
+        .gp17     (rxdata),              // spi miso
+        //.gp18()       // spi_mosi
+        .gp19     (spi_clk),             // spi_clk
+        .gp20     (spi_cs),              // spi_cs
+`endif
+`endif
         .gn11     (_unused_output[0]),
         .gn12     (_unused_output[1]),
         .gn13     (_unused_output[2]),
@@ -93,18 +105,6 @@ module tb_main #(
         .gn4      (_unused_output[11]),
         .gn5      (_unused_output[12]),
         .gn14     (_unused_output[13])
-`ifdef SPI,
-`ifdef SPI_ESP32
-        .sd_d     ({3'b0, rxdata}),      // sd_d[0]=mosi
-        .sd_clk   (spi_clk),             // clk
-        .sd_cmd   (spi_cs)               // ce
-`else
-        .gp17     (rxdata),              // spi miso
-        //.gp18()       // spi_mosi
-        .gp19     (spi_clk),             // spi_clk
-        .gp20     (spi_cs)               // spi_cs
-`endif
-`endif
     );
     // verilog_format: off
     wire _unused_ok_main = &{1'b0,
