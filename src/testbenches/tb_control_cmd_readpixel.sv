@@ -29,11 +29,7 @@ module tb_control_cmd_readpixel #(
     wire cmd_readpixel_as;
     wire cmd_readpixel_done;
     wire [7:0] cmd_readpixel_do;
-    wire types::row_addr_t cmd_readpixel_row_addr;
-
-    wire types::col_addr_t cmd_readpixel_col_addr;
-
-    wire types::pixel_addr_t cmd_readpixel_pixel_addr;
+    wire types::fb_addr_t addr;
     wire junk1;
     // verilator lint_off UNUSEDSIGNAL
     logic [7:0] expected_bytes[STREAM_BYTES];
@@ -71,9 +67,7 @@ module tb_control_cmd_readpixel #(
         .data_in(data_in),
         .clk(clk),
         .enable(subcmd_enable),
-        .row(cmd_readpixel_row_addr),
-        .column(cmd_readpixel_col_addr),
-        .pixel(cmd_readpixel_pixel_addr),
+        .addr(addr),
         .data_out(cmd_readpixel_do),
         .ram_write_enable(cmd_readpixel_we),
         .ram_access_start(cmd_readpixel_as),
@@ -146,13 +140,13 @@ module tb_control_cmd_readpixel #(
             if (last_enable_pulse) begin
                 if (last_enable_idx == 0) begin
                     // Row capture byte
-                    assert (cmd_readpixel_row_addr == types::row_addr_t'(last_enable_byte))
+                    assert (addr.row == types::row_addr_t'(last_enable_byte))
                     else
                         $fatal(
                             1,
                             "Row latch mismatch: expected %0d, got %0d",
                             types::row_addr_t'(last_enable_byte),
-                            cmd_readpixel_row_addr
+                            addr.row
                         );
                     assert (cmd_readpixel_we == 1'b0 && cmd_readpixel_do == 8'b0)
                     else $fatal(1, "Unexpected write/data during row capture");
@@ -176,14 +170,10 @@ module tb_control_cmd_readpixel #(
                             last_enable_byte,
                             cmd_readpixel_do
                         );
-                    assert (cmd_readpixel_pixel_addr == types::pixel_addr_t'(exp_pix))
+                    assert (addr.pixel == types::pixel_addr_t'(exp_pix))
                     else
                         $fatal(
-                            1,
-                            "Pixel mismatch at byte %0d: expected %0d got %0d",
-                            last_data_idx,
-                            exp_pix,
-                            cmd_readpixel_pixel_addr
+                            1, "Pixel mismatch at byte %0d: expected %0d got %0d", last_data_idx, exp_pix, addr.pixel
                         );
                     assert (cmd_readpixel_as != prev_ram_as)
                     else $fatal(1, "ram_access_start failed to toggle at byte %0d", last_data_idx);
@@ -231,9 +221,7 @@ module tb_control_cmd_readpixel #(
                         cmd_readpixel_as,
                         cmd_readpixel_done,
                         cmd_readpixel_do,
-                        cmd_readpixel_row_addr,
-                        cmd_readpixel_col_addr,
-                        cmd_readpixel_pixel_addr,
+                        addr,
                         cmd_series,
                         junk1,
                         1'b0};
