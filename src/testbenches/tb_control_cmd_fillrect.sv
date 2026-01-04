@@ -18,20 +18,18 @@ module tb_control_cmd_fillrect;
     localparam int TOTAL_WRITES = RECT_W * RECT_H * params::BYTES_PER_PIXEL;
 
     // === Testbench scaffolding ===
-    logic                                        clk;
-    logic                                        reset;
-    logic                                        enable;
-    logic                    [              7:0] data_in;
-    wire types::row_addr_t                       row;
-    wire types::col_addr_t                       column;
-    wire types::pixel_addr_t                     pixel;
-    wire                                         ram_write_enable;
-    wire                                         ram_access_start;
-    wire                                         done;
-    wire                                         ready_for_data;
-    wire                     [              7:0] data_out;
-    logic                    [MEM_NUM_BYTES-1:0] mem;
-    int                                          writes_seen;
+    logic                                     clk;
+    logic                                     reset;
+    logic                                     enable;
+    logic                 [              7:0] data_in;
+    wire types::fb_addr_t                     addr;
+    wire                                      ram_write_enable;
+    wire                                      ram_access_start;
+    wire                                      done;
+    wire                                      ready_for_data;
+    wire                  [              7:0] data_out;
+    logic                 [MEM_NUM_BYTES-1:0] mem;
+    int                                       writes_seen;
 
     // === DUT wiring ===
     control_cmd_fillrect #() dut (
@@ -40,9 +38,7 @@ module tb_control_cmd_fillrect;
         .enable(enable),
         .clk(clk),
         .mem_clk(clk),
-        .row(row),
-        .column(column),
-        .pixel(pixel),
+        .addr(addr),
         .data_out(data_out),
         .ram_write_enable(ram_write_enable),
         .ram_access_start(ram_access_start),
@@ -101,15 +97,13 @@ module tb_control_cmd_fillrect;
             mem <= {MEM_NUM_BYTES{1'b1}};
             // verilator lint_on WIDTHCONCAT
         end else if (ram_write_enable) begin
-            types::fb_addr_t addr;
             int byte_sel;
             logic [7:0] expected_byte;
-            addr = {row, column, pixel};
-            byte_sel = (params::BYTES_PER_PIXEL - 1) - int'(pixel);
+            byte_sel = (params::BYTES_PER_PIXEL - 1) - int'(addr.pixel);
             expected_byte = COLOR[(byte_sel*8)+:8];
-            assert (int'(row) >= RECT_Y1 && int'(row) < RECT_Y1 + RECT_H
-                && int'(column) >= RECT_X1 && int'(column) < RECT_X1 + RECT_W)
-            else $fatal(1, "Write outside rect: row=%0d col=%0d pixel=%0d", row, column, pixel);
+            assert (int'(addr.row) >= RECT_Y1 && int'(addr.row) < RECT_Y1 + RECT_H
+                && int'(addr.col) >= RECT_X1 && int'(addr.col) < RECT_X1 + RECT_W)
+            else $fatal(1, "Write outside rect: row=%0d col=%0d pixel=%0d", addr.row, addr.col, addr.pixel);
             assert (int'(addr) < MEM_NUM_BYTES)
             else $fatal(1, "Address out of range: %0d", addr);
             if (mem[addr] == 1'b1) begin
