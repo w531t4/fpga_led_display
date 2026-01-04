@@ -60,7 +60,7 @@ module control_module #(
     types::col_addr_t cmd_line_addr_col;  // For 64 bit wide displays @ 2 bytes per pixel == 128, -> 127 -> [6:0]
     types::pixel_addr_t cmd_line_pixelselect_num;
     wire types::mem_write_addr_t cmd_line_addr = {
-        cmd_line_addr_row, cmd_line_addr_col, ~cmd_line_pixelselect_num
+        cmd_line_addr_row, cmd_line_addr_col, cmd_line_pixelselect_num
     };  // <-- use this to toggle endainness. ~ == little endain
         //                                      == bit endian
         // NOTE: uart/alphabet.uart is BIG ENDIAN.

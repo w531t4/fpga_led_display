@@ -20,14 +20,19 @@ module pixel_split #(
 
 `ifdef RGB24
     rgb24 rgb_888 (
-        // bits 7:0 are empty
-
+        // W/ the use of
+        //      - _~_cmd_line_pixelselect_num (in control_module) for write addr:
+        //             ({pixel_data[15:8], pixel_data[23:16], pixel_data[31:24]}) produced correct colors.
+        //              pixel_data.field.color produced red/green colors, swapped... missing blue.
+        //            - pixel_data[31:8] are populated
         //              [bbbb,gggg,rrrr]
         //                 0    1    2   3
         //              [____,____,____,xxxx]
-        .data_in({pixel_data[15:8], pixel_data[23:16], pixel_data[31:24]}),
-        // .data_in({pixel_data[15:8], pixel_data[31:24], pixel_data[23:16]}), // things that are blue are green
-        // .data_in({pixel_data[7:0], 8'b0, 8'b0}),
+        //      - cmd_line_pixelselect_num (note absent ~):
+        //              ({pixel_data[15:8], pixel_data[23:16], pixel_data[31:24]}) shows just red
+        //              pixel_data.field.color produces correct colors
+        //            - pixel_data[23:0] are populated
+        .data_in(pixel_data.field.color),
         .brightness(brightness_enable),
         .red(red_gamma),
         .green(green_gamma),
