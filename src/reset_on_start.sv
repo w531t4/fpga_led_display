@@ -32,7 +32,7 @@ module reset_on_start #(
             count <= ~count;
         end
     end
-    // TODO: Is + 1 really neccessary here?
+
     timeout_sync #(
         .COUNTER_WIDTH($bits(counter_count_t))
     ) reset_on_start_timeout (
