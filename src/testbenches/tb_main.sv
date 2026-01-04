@@ -81,9 +81,9 @@ module tb_main #(
         .gp15     (debugger_rxin),
 `ifdef SPI
 `ifdef SPI_ESP32
-        .sd_d     ({3'b0, rxdata}),      // sd_d[0]=mosi
         .sd_clk   (spi_clk),             // clk
-        .sd_cmd   (spi_cs),              // ce
+        .sd_d     ({rxdata, 3'b0}),      // sd_d[3]=mosi
+        .wifi_gpio21(spi_cs),
 `else
         .gp17     (rxdata),              // spi miso
         //.gp18()       // spi_mosi

@@ -79,6 +79,42 @@ unassigned waveforms - pin13, pin14, pin15,
 |--------------------------------------------------------------------------------|
 ```
 
+# New SPI Wiring (HSPI)
+
+This combination of ESP32 pins are capable of transmit-only at 80mhz
+
+| signal | ULX3S net           | ESP32  |
+| ------ | ------------------- | ------ |
+| SCLK   | sd_clk              | gpio14 |
+| MOSI   | sd_d[3]/wifi_gpio13 | gpio13 |
+| CS/CE  | wifi_gpio21         | gpio21 |
+
+# Previous SPI Wiring
+
+This combination of ESP32 pins are capable of transmit-only at 80mhz
+
+| signal | ULX3S net | ESP32  | notes              |
+| ------ | --------- | ------ | ------------------ |
+| SCLK   | sd_clk    | gpio14 |                    |
+| MOSI   | sd_d[0]   | gpio2  | esp32 strap-up pin |
+| CS/CE  | sd_cmd    | gpio15 | esp32 strap-up pin |
+
+# Wiring for an alternate, low-speed SPI config
+
+| signal    | ULX3S net   | ESP32  | notes            |
+| --------- | ----------- | ------ | ---------------- |
+| SCLK      | wifi_gpio22 | gpio22 |                  |
+| MOSI      | wifi_gpio25 | gpio25 |                  |
+| CS/CE     | wifi_gpio26 | gpio26 |                  |
+| MISO      | wifi_gpio35 | gpio35 | esp32 input only |
+| MISO(alt) | wifi_gpio27 | gpio27 | esp32 bi-dir     |
+
+# Alternate ULX3s <=> ESP32 IO
+
+| ULX3S net   | ESP32  | notes        |
+| ----------- | ------ | ------------ |
+| wifi_gpio19 | gpio19 | esp32 bi-dir |
+
 # references
 - Attie has a way better diagram of HUB75 layour here https://github.com/attie/led_matrix_tinyfpga_a2/blob/master/doc/rgb_led_matrix_pinout.svg
 
