@@ -53,7 +53,8 @@ VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing
-VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst --quiet -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR)
+VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst --quiet -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR) \
+	-j $(SIM_JOBS) -MAKEFLAGS "-j $(SIM_JOBS)"
 # Verilator needs full-paths otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
@@ -266,7 +267,7 @@ memprog: $(ARTIFACT_DIR)/ulx3s.bit
 	$(TOOLPATH)/fujprog $<
 
 simulation:
-	@$(MAKE) --no-print-directory $(SIM_MAKEFLAGS) $(FSTOBJS)
+	+@$(MAKE) --no-print-directory $(SIM_MAKEFLAGS) $(FSTOBJS)
 
 DIAGRAM_TARGETS:=$(ARTIFACT_DIR)/netlist.svg
 ifeq ($(YOSYS_INCLUDE_EXTRA),true)
