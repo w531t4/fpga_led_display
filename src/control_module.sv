@@ -169,14 +169,12 @@ module control_module #(
         .done(cmd_blankpanel_done)
     );
 
-    wire                           cmd_fillpanel_we;
-    wire                           cmd_fillpanel_as;
-    wire                           cmd_fillpanel_done;
-    wire                     [7:0] cmd_fillpanel_do;
-    wire types::row_addr_t         cmd_fillpanel_row_addr;
-    wire types::col_addr_t         cmd_fillpanel_col_addr;
-    wire types::pixel_addr_t       cmd_fillpanel_pixel_addr;
-    wire                           cmd_fillpanel_rfd;
+    wire                        cmd_fillpanel_we;
+    wire                        cmd_fillpanel_as;
+    wire                        cmd_fillpanel_done;
+    wire                  [7:0] cmd_fillpanel_do;
+    wire types::fb_addr_t       cmd_fillpanel_addr;
+    wire                        cmd_fillpanel_rfd;
 
     control_cmd_fillpanel #(
         ._UNUSED('d0)
@@ -187,9 +185,7 @@ module control_module #(
         .clk             (clk_in),
         .mem_clk         (clk_in),
         .data_in         (data_rx_latch),
-        .row             (cmd_fillpanel_row_addr),
-        .column          (cmd_fillpanel_col_addr),
-        .pixel           (cmd_fillpanel_pixel_addr),
+        .addr            (cmd_fillpanel_addr),
         .data_out        (cmd_fillpanel_do),
         .ram_write_enable(cmd_fillpanel_we),
         .ram_access_start(cmd_fillpanel_as),
@@ -302,9 +298,7 @@ module control_module #(
                 ready_for_data_logic = 1'b0;
             end
             STATE_CMD_FILLPANEL: begin
-                cmd_addr.row         = cmd_fillpanel_row_addr;
-                cmd_addr.col         = cmd_fillpanel_col_addr;
-                cmd_addr.pixel       = cmd_fillpanel_pixel_addr;
+                cmd_addr             = cmd_fillpanel_addr;
                 ram_data_out         = cmd_fillpanel_do;
                 ram_write_enable     = cmd_fillpanel_we;
                 ram_access_start     = cmd_fillpanel_as;
