@@ -6,7 +6,8 @@ SHELL:=/bin/bash
 
 ARTIFACT_DIR:=build
 SIMULATION_DIR:=$(ARTIFACT_DIR)/simulation
-# Dependency files for per-testbench rebuilds (generated via iverilog -M).
+SIMULATION_DIR_ABS:=$(abspath $(SIMULATION_DIR))
+# Dependency files for per-testbench rebuilds.
 DEPDIR:=$(ARTIFACT_DIR)/deps
 SRC_DIR:=src
 TB_DIR:=$(SRC_DIR)/testbenches
@@ -40,15 +41,6 @@ BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER 
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
-IVERILOG_BIN:=$(TOOLPATH)/iverilog
-IVERILOG_FLAGS:=-g2012 -Wanachronisms -Wimplicit -Wmacro-redefinition -Wmacro-replacement \
-				-Wportbind -Wselect-range -Winfloop -Wsensitivity-entire-vector \
-				-Wsensitivity-entire-array \
-				-I$(VINCLUDE_DIR) -y $(SRC_DIR) -Y .sv -Y .v
-# -y/-Y let iverilog resolve module files under src/, enabling dependency discovery.
-VVP_BIN:=$(TOOLPATH)/vvp
-VVP_FLAGS:=-n -N
-VVP_POST_FLAGS:=-fst
 GTKWAVE_BIN:=gtkwave
 GTKWAVE_FLAGS:=
 PKG_SOURCES := $(SRC_DIR)/params.sv $(SRC_DIR)/calc.sv $(SRC_DIR)/cmd.sv $(SRC_DIR)/types.sv
@@ -58,6 +50,7 @@ VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing
+VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR)
 # Verilator needs full-paths otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
@@ -67,8 +60,8 @@ VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
 GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
 GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
-VVPOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.vvp)))
-FSTOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.fst)))
+SIMBINS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%)))
+FSTOBJS:=$(SIMBINS:%=%.fst)
 SIM_JOBS ?= $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 ifneq ($(filter --jobserver%,$(MAKEFLAGS)),)
 SIM_MAKEFLAGS :=
@@ -84,63 +77,37 @@ endif
 ifneq ($(findstring -DUSE_WATCHDOG,$(BUILD_FLAGS)), -DUSE_WATCHDOG)
 VSOURCES := $(filter-out $(SRC_DIR)/control_cmd_watchdog.sv, $(VSOURCES))
 TBSRCS := $(filter-out $(TB_DIR)/tb_control_cmd_watchdog.sv, $(TBSRCS))
-VVPOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.vvp, $(VVPOBJS))
+SIMBINS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.fst, $(FSTOBJS))
 endif
 
 ifneq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
 VSOURCES := $(filter-out $(SRC_DIR)/fm6126init.sv, $(VSOURCES))
 TBSRCS := $(filter-out $(TB_DIR)/tb_fm6126init.sv, $(TBSRCS))
-VVPOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.vvp, $(VVPOBJS))
+SIMBINS := $(filter-out $(SIMULATION_DIR)/fm6126init, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.fst, $(FSTOBJS))
 endif
-
-# Include per-testbench deps so only affected TBs rebuild on source changes.
-# Skip dep includes for clean to avoid forcing dep generation.
-ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
-DEPFILES := $(VVPOBJS:$(SIMULATION_DIR)/%.vvp=$(DEPDIR)/%.d)
-# Drop stale depfiles that reference removed sources so make can regenerate them.
-#	$$f <-- actualy bash $f
-#	the - in front of include makes the depfiles non-fatal
-$(shell \
-	for f in $(DEPFILES); do \
-		[ -f $$f ] || continue; \
-		for dep in $$(sed 's/^[^:]*: *//' $$f); do \
-			[ -e $$dep ] || { printf 'removing stale depfile: %s\n' $$f; rm -f $$f; break; }; \
-		done; \
-	done)
--include $(DEPFILES)
-endif
-
-
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
 .DELETE_ON_ERROR:
 all: $(ARTIFACT_DIR)/verilator_args simulation lint
-#$(warning In a command script $(VVPOBJS))
+#$(warning In a command script $(SIMBINS))
 
-$(SIMULATION_DIR)/%.fst: $(SIMULATION_DIR)/%.vvp Makefile | $(SIMULATION_DIR)
-	@set -o pipefail; stdbuf -oL -eL $(VVP_BIN) $(VVP_FLAGS) $< $(VVP_POST_FLAGS) 2>&1 | sed -u 's/^/[$*] /'
+$(SIMULATION_DIR)/%.fst: $(SIMULATION_DIR)/% Makefile | $(SIMULATION_DIR)
+	@set -o pipefail; stdbuf -oL -eL $< 2>&1 | sed -u 's/^/[$*] /'
 
-$(SIMULATION_DIR)/%.vvp $(DEPDIR)/%.d: $(TB_DIR)/tb_%.sv Makefile | $(SIMULATION_DIR) $(DEPDIR)
-#	$(info In a command script)
-# Generate dep list from iverilog and translate it into a Makefile .d file.
+$(SIMULATION_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(INCLUDESRCS) Makefile | $(SIMULATION_DIR)
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
 	tb_args=""; \
 	if [ -f $$tb_args_file ]; then \
 		tb_args="$$(tr '\n' ' ' < $$tb_args_file)"; \
 	fi; \
-	$(IVERILOG_BIN) $(SIM_FLAGS) $(IVERILOG_FLAGS) $$tb_args -s tb_$(*F) -D'DUMP_FILE_NAME="$(SIMULATION_DIR)/$*.fst"' -M $(DEPDIR)/$*.deps -o $(SIMULATION_DIR)/$*.vvp $(PKG_SOURCES) $<
-	@printf '%s: ' '$(SIMULATION_DIR)/$*.vvp' > $(DEPDIR)/$*.d
-	@tr '\n' ' ' < $(DEPDIR)/$*.deps >> $(DEPDIR)/$*.d
-	@if [ -f $$tb_args_file ]; then \
-		printf ' %s' "$$tb_args_file" >> $(DEPDIR)/$*.d; \
-	fi
-	@printf '\n' >> $(DEPDIR)/$*.d
-	@# Append dummy targets for each dependency so removed files don't break make.
-	@for dep in $$(sed 's/^[^:]*: *//' $(DEPDIR)/$*.d); do \
-		printf '%s:\n' $$dep >> $(DEPDIR)/$*.d; \
-	done
+	$(VERILATOR_BIN) $(VERILATOR_SIM_FLAGS) $(SIM_FLAGS) $$tb_args \
+		--top-module tb_$* \
+		-Mdir $(SIMULATION_DIR)/obj_$* \
+		-o $(SIMULATION_DIR_ABS)/$* \
+		-D'DUMP_FILE_NAME="$(SIMULATION_DIR_ABS)/$*.fst"' \
+		$(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $<
 
 $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
