@@ -131,7 +131,7 @@ module main #(
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
-    wire [2:0] rgb1;  /* the current RGB value for the top-half of the display */
+    wire types::rgb_signals_t rgb1;  /* the current RGB value for the top-half of the display */
 
     wire [2:0] rgb2;  /* the current RGB value for the bottom-half of the display */
 
@@ -167,14 +167,14 @@ module main #(
     );
 
 `ifdef USE_FM6126A
-    wire [2:0] rgb1_fm6126init;
+    wire types::rgb_signals_t rgb1_fm6126init;
     wire [2:0] rgb2_fm6126init;
     wire row_latch_fm6126init;
     wire pixclock_fm6126init;
     wire output_enable_intermediary;
     wire [2:0] rgb2_intermediary;
     wire clk_pixel_intermediary;
-    wire [2:0] rgb1_intermediary;
+    wire types::rgb_signals_t rgb1_intermediary;
     wire row_latch_intermediary;
     wire init_reset_strobe;
     wire fm6126mask_en;
@@ -189,9 +189,7 @@ module main #(
         .reset_notify(init_reset_strobe)
     );
     assign output_enable = output_enable_intermediary & fm6126mask_en;
-    assign rgb1[0] = (rgb1_intermediary[0] & fm6126mask_en) | (rgb1_fm6126init[0] & ~fm6126mask_en);
-    assign rgb1[1] = (rgb1_intermediary[1] & fm6126mask_en) | (rgb1_fm6126init[1] & ~fm6126mask_en);
-    assign rgb1[2] = (rgb1_intermediary[2] & fm6126mask_en) | (rgb1_fm6126init[2] & ~fm6126mask_en);
+    assign rgb1 = (rgb1_intermediary & {3{fm6126mask_en}}) | (rgb1_fm6126init & {3{~fm6126mask_en}});
     assign rgb2[0] = (rgb2_intermediary[0] & fm6126mask_en) | (rgb2_fm6126init[0] & ~fm6126mask_en);
     assign rgb2[1] = (rgb2_intermediary[1] & fm6126mask_en) | (rgb2_fm6126init[1] & ~fm6126mask_en);
     assign rgb2[2] = (rgb2_intermediary[2] & fm6126mask_en) | (rgb2_fm6126init[2] & ~fm6126mask_en);
@@ -471,13 +469,8 @@ module main #(
 `else
     assign gp16 = 1'b0;
 `endif
-
-    assign gp0  = rgb1[0];  // Red   1
-    assign gp1  = rgb1[2];  // Green 1 // switched with blue for my display
-    assign gp2  = rgb1[1];  // Blue  1 // switched with green for my display
-    assign gp3  = rgb2[0];  // Red   2
-    assign gp4  = rgb2[2];  // Green 2 // switched with blue for my display
-    assign gp5  = rgb2[1];  // Blue  2 // switched with green for my display
+    // TODO: Why are blue/green swapped here?
+    assign {gp0, gp1, gp2} = {rgb1.red, rgb1.blue, rgb1.green};
     assign gp11 = clk_pixel;  // Pixel Clk
     assign gp12 = row_latch;  // Row Latch
     assign gp13 = ~output_enable;  // #OE
@@ -506,12 +499,8 @@ module main #(
     assign gn8  = row_address_active[1];  // B / Row[1]
     assign gn9  = row_address_active[2];  // C / Row[2]
     assign gn10 = row_address_active[3];  // D / Row[3]
-    assign gn0  = rgb1[0];  // Red   1
-    assign gn1  = rgb1[1];  // Green 1
-    assign gn2  = rgb1[2];  // Blue  1
-    assign gn3  = rgb2[0];  // Red   2
-    assign gn4  = rgb2[1];  // Green 2
-    assign gn5  = rgb2[2];  // Blue  2
+    // TODO: Why are blue/green swapped here?
+    assign {gn0, gn1, gn2} = {rgb1.red, rgb1.blue, rgb1.green};
     assign gn14 = gp14;  // ctrl serial port RX
 
     // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
