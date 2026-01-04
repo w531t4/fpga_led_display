@@ -73,7 +73,7 @@ module main #(
     wire clk_pixel;
     wire row_latch;
     wire types::mem_write_data_t ram_a_data_in;
-    wire [7:0] ram_a_data_out_frame1;
+    wire types::mem_write_data_t _unused_ok_ram_a_data_out_frame1;
     //  [11:0]
     wire types::mem_write_addr_t ram_a_address;
     wire ram_a_write_enable;
@@ -82,7 +82,7 @@ module main #(
     wire types::mem_read_data_t ram_b_data_out_frame1;
 `ifdef DOUBLE_BUFFER
     wire frame_select;
-    wire [7:0] ram_a_data_out_frame2;
+    wire types::mem_write_data_t _unused_ok_ram_a_data_out_frame2;
     wire types::mem_read_data_t ram_b_data_out_frame2;
 `endif
     //  [10:0]
@@ -388,7 +388,7 @@ module main #(
         .AddressB(ram_b_address),
         .WrB(1'b0),
         .ResetB(global_reset_sync),
-        .QA(ram_a_data_out_frame1),
+        .QA(_unused_ok_ram_a_data_out_frame1),
         .QB(ram_b_data_out_frame1),
         .ClockEnA(ram_a_clk_enable),
         .ClockEnB(ram_b_clk_enable)
@@ -407,7 +407,7 @@ module main #(
         .AddressB(ram_b_address),
         .WrB(1'b0),
         .ResetB(global_reset_sync),
-        .QA(ram_a_data_out_frame2),
+        .QA(_unused_ok_ram_a_data_out_frame2),
         .QB(ram_b_data_out_frame2),
         .ClockEnA(ram_a_clk_enable),
         .ClockEnB(ram_b_clk_enable)
@@ -549,9 +549,6 @@ module main #(
 `else
     wire _unused_ok_debugger = &{1'b0, gp15, 1'b0};
 `endif
-`ifdef DOUBLE_BUFFER
-    wire _unused_ok_double_buffer = &{1'b0, ram_a_data_out_frame2, 1'b0};
-`endif
 
 `ifdef SPI
 `ifdef SPI_ESP32
@@ -566,11 +563,5 @@ module main #(
 `ifdef USE_FM6126A
     wire _unused_ok_fm6126a = &{1'b0, init_reset_strobe, 1'b0};
 `endif
-    wire _unused_ok = &{1'b0,
-                        pll_locked,
-                        rxdata_ready_level,
-                        ctrl_busy,
-                        ctrl_ready_for_data,
-                        ram_a_data_out_frame1,
-                        1'b0};
+    wire _unused_ok = &{1'b0, pll_locked, rxdata_ready_level, ctrl_busy, ctrl_ready_for_data, 1'b0};
 endmodule
