@@ -6,7 +6,10 @@ SHELL:=/bin/bash
 
 ARTIFACT_DIR:=build
 SIMULATION_DIR:=$(ARTIFACT_DIR)/simulation
+SIM_BIN_DIR:=$(ARTIFACT_DIR)/verilator_bin
+SIM_OBJ_DIR:=$(ARTIFACT_DIR)/verilator_obj
 SIMULATION_DIR_ABS:=$(abspath $(SIMULATION_DIR))
+SIM_BIN_DIR_ABS:=$(abspath $(SIM_BIN_DIR))
 # Dependency files for per-testbench rebuilds.
 DEPDIR:=$(ARTIFACT_DIR)/deps
 SRC_DIR:=src
@@ -50,7 +53,7 @@ VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing
-VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR)
+VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst --quiet -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR)
 # Verilator needs full-paths otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
@@ -60,8 +63,8 @@ VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
 GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
 GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
-SIMBINS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%)))
-FSTOBJS:=$(SIMBINS:%=%.fst)
+SIMBINS:=$(subst tb_,, $(subst $(TB_DIR), $(SIM_BIN_DIR), $(TBSRCS:%.sv=%)))
+FSTOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.fst)))
 SIM_JOBS ?= $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 ifneq ($(filter --jobserver%,$(MAKEFLAGS)),)
 SIM_MAKEFLAGS :=
@@ -77,26 +80,27 @@ endif
 ifneq ($(findstring -DUSE_WATCHDOG,$(BUILD_FLAGS)), -DUSE_WATCHDOG)
 VSOURCES := $(filter-out $(SRC_DIR)/control_cmd_watchdog.sv, $(VSOURCES))
 TBSRCS := $(filter-out $(TB_DIR)/tb_control_cmd_watchdog.sv, $(TBSRCS))
-SIMBINS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog, $(SIMBINS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/control_cmd_watchdog, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.fst, $(FSTOBJS))
 endif
 
 ifneq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
 VSOURCES := $(filter-out $(SRC_DIR)/fm6126init.sv, $(VSOURCES))
 TBSRCS := $(filter-out $(TB_DIR)/tb_fm6126init.sv, $(TBSRCS))
-SIMBINS := $(filter-out $(SIMULATION_DIR)/fm6126init, $(SIMBINS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/fm6126init, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.fst, $(FSTOBJS))
 endif
 
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
 .DELETE_ON_ERROR:
+.SECONDARY: $(SIMBINS)
 all: $(ARTIFACT_DIR)/verilator_args simulation lint
 #$(warning In a command script $(SIMBINS))
 
-$(SIMULATION_DIR)/%.fst: $(SIMULATION_DIR)/% Makefile | $(SIMULATION_DIR)
+$(SIMULATION_DIR)/%.fst: $(SIM_BIN_DIR)/% Makefile | $(SIMULATION_DIR)
 	@set -o pipefail; stdbuf -oL -eL $< 2>&1 | sed -u 's/^/[$*] /'
 
-$(SIMULATION_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(INCLUDESRCS) Makefile | $(SIMULATION_DIR)
+$(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(INCLUDESRCS) Makefile | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
 	tb_args=""; \
 	if [ -f $$tb_args_file ]; then \
@@ -104,8 +108,8 @@ $(SIMULATION_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $
 	fi; \
 	$(VERILATOR_BIN) $(VERILATOR_SIM_FLAGS) $(SIM_FLAGS) $$tb_args \
 		--top-module tb_$* \
-		-Mdir $(SIMULATION_DIR)/obj_$* \
-		-o $(SIMULATION_DIR_ABS)/$* \
+		-Mdir $(SIM_OBJ_DIR)/obj_$* \
+		-o $(SIM_BIN_DIR_ABS)/$* \
 		-D'DUMP_FILE_NAME="$(SIMULATION_DIR_ABS)/$*.fst"' \
 		$(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $<
 
@@ -121,6 +125,12 @@ $(ARTIFACT_DIR):
 
 $(SIMULATION_DIR):
 	mkdir -p $(SIMULATION_DIR)
+
+$(SIM_BIN_DIR):
+	mkdir -p $(SIM_BIN_DIR)
+
+$(SIM_OBJ_DIR):
+	mkdir -p $(SIM_OBJ_DIR)
 
 $(DEPDIR):
 	mkdir -p $(DEPDIR)
