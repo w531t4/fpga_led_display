@@ -35,6 +35,16 @@ module matrix_scan #(
         reset_brightness = 1 << ($bits(types::brightness_level_t) - 1);
     endfunction
 
+    typedef struct packed {
+        types::brightness_level_t  brightness_mask;
+        types::row_subpanel_addr_t row_address;
+        types::col_addr_t          column_address;
+    } state_t;
+    state_t current;  /* the current X (clocking out now) */
+    assign column_address = current.column_address;
+    assign row_address = current.row_address;
+    assign brightness_mask = current.brightness_mask;
+
     typedef logic [1:0] scan_state_t;
     scan_state_t state;
     wire clk_state;
@@ -91,7 +101,7 @@ module matrix_scan #(
         .start  (clk_state),
         // 6'd63
         .value  (types::col_addr_t'(params::PIXEL_WIDTH - 1)),
-        .counter(column_address),
+        .counter(current.column_address),
         .running(unused_timer_runpin)
     );
 
@@ -101,26 +111,26 @@ module matrix_scan #(
         if (reset) begin
             clk_pixel_en <= 1'b1;
             row_latch_state <= 2'b01;
-            brightness_mask <= reset_brightness();
+            current.brightness_mask <= reset_brightness();
             brightness_mask_active <= 'b0;
             // 4'd0
-            row_address <= 'b0;
+            current.row_address <= 'b0;
             row_address_active <= 'b0;
         end else begin
             clk_pixel_en <= clk_pixel_load_en;
             row_latch_state <= {row_latch_state[0], clk_pixel_load_en};
             /* on completion of the row_latch, we advanced the brightness mask to generate the next row of pixels */
             if (row_latch) begin
-                brightness_mask_active <= brightness_mask;
-                row_address_active <= row_address;
+                brightness_mask_active <= current.brightness_mask;
+                row_address_active <= current.row_address;
 
-                if ((brightness_mask == 'd0) || (brightness_mask == 'd1)) begin
+                if ((current.brightness_mask == 'd0) || (current.brightness_mask == 'd1)) begin
                     // catch the initial value / oopsy //
-                    brightness_mask <= reset_brightness();
+                    current.brightness_mask <= reset_brightness();
                     // 4'd1
-                    row_address <= row_address + 1;
+                    current.row_address <= current.row_address + 1;
                 end else begin
-                    brightness_mask <= brightness_mask >> 1;
+                    current.brightness_mask <= current.brightness_mask >> 1;
                 end
             end else begin
             end
