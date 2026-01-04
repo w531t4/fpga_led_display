@@ -193,14 +193,12 @@ module control_module #(
         .done            (cmd_fillpanel_done)
     );
 
-    wire                           cmd_fillrect_we;
-    wire                           cmd_fillrect_as;
-    wire                           cmd_fillrect_done;
-    wire                     [7:0] cmd_fillrect_do;
-    wire types::row_addr_t         cmd_fillrect_row_addr;
-    wire types::col_addr_t         cmd_fillrect_col_addr;
-    wire types::pixel_addr_t       cmd_fillrect_pixel_addr;
-    wire                           cmd_fillrect_rfd;
+    wire                        cmd_fillrect_we;
+    wire                        cmd_fillrect_as;
+    wire                        cmd_fillrect_done;
+    wire                  [7:0] cmd_fillrect_do;
+    wire types::fb_addr_t       cmd_fillrect_addr;
+    wire                        cmd_fillrect_rfd;
 
     control_cmd_fillrect #(
         ._UNUSED('d0)
@@ -211,9 +209,7 @@ module control_module #(
         .clk             (clk_in),
         .mem_clk         (clk_in),
         .data_in         (data_rx),
-        .row             (cmd_fillrect_row_addr),
-        .column          (cmd_fillrect_col_addr),
-        .pixel           (cmd_fillrect_pixel_addr),
+        .addr            (cmd_fillrect_addr),
         .data_out        (cmd_fillrect_do),
         .ram_write_enable(cmd_fillrect_we),
         .ram_access_start(cmd_fillrect_as),
@@ -306,9 +302,7 @@ module control_module #(
                 ready_for_data_logic = cmd_fillpanel_rfd;
             end
             STATE_CMD_FILLRECT: begin
-                cmd_addr.row         = cmd_fillrect_row_addr;
-                cmd_addr.col         = cmd_fillrect_col_addr;
-                cmd_addr.pixel       = cmd_fillrect_pixel_addr;
+                cmd_addr             = cmd_fillrect_addr;
                 ram_data_out         = cmd_fillrect_do;
                 ram_write_enable     = cmd_fillrect_we;
                 ram_access_start     = cmd_fillrect_as;
