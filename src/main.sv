@@ -467,9 +467,13 @@ module main #(
 `else
     assign gp16 = 1'b0;
 `endif
-    // TODO: Why are blue/green swapped here?
+`ifdef SWAP_BLUE_GREEN_CHAN
     assign {gp0, gp1, gp2} = {rgb1.red, rgb1.blue, rgb1.green};
     assign {gp3, gp4, gp5} = {rgb2.red, rgb2.blue, rgb2.green};
+`else
+    assign {gp0, gp1, gp2} = rgb1;
+    assign {gp3, gp4, gp5} = rgb2;
+`endif
     assign gp11 = clk_pixel;  // Pixel Clk
     assign gp12 = row_latch;  // Row Latch
     assign gp13 = ~output_enable;  // #OE
@@ -498,9 +502,13 @@ module main #(
     assign gn8 = row_address_active[1];  // B / Row[1]
     assign gn9 = row_address_active[2];  // C / Row[2]
     assign gn10 = row_address_active[3];  // D / Row[3]
-    // TODO: Why are blue/green swapped here?
+`ifdef SWAP_BLUE_GREEN_CHAN
     assign {gn0, gn1, gn2} = {rgb1.red, rgb1.blue, rgb1.green};
     assign {gn3, gn4, gn5} = {rgb2.red, rgb2.blue, rgb2.green};
+`else
+    assign {gn0, gn1, gn2} = rgb1;
+    assign {gn3, gn4, gn5} = rgb2;
+`endif
     assign gn14 = gp14;  // ctrl serial port RX
 
     // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
