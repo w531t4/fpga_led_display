@@ -82,6 +82,10 @@ package types;
 
     // ==== COLUMN ADDRESS ====
     typedef logic [calc::num_column_address_bits(params::PIXEL_WIDTH)-1:0] col_addr_t;
+
+    // handle values from [0, PIXEL_WIDTH]
+    typedef logic [calc::num_column_address_bits(params::PIXEL_WIDTH+1)-1:0] col_addr_count_t;
+
     typedef struct packed {
         logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(col_addr_t))-1:0] pad;  // unused MSBs
         col_addr_t address;  // LSBs
