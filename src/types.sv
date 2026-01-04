@@ -142,6 +142,7 @@ package types;
                                      params::PIXEL_HALFHEIGHT)-1:0] raw;
         color_field_subpanel_t [calc::num_subpanels(params::PIXEL_HEIGHT,
                                                     params::PIXEL_HALFHEIGHT)-1:0] subpanel;
+        mem_write_data_t [(1 << $bits(mem_structure_t))-1:0] lane;
     } mem_read_data_t;
 
     // ==== /MEM READ/WRITE ====

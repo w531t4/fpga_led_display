@@ -67,7 +67,7 @@ module tb_multimem #(
         types::mem_read_data_t expected;
         expected = '0;
         for (int lane = 0; lane < LANES; lane = lane + 1) begin
-            expected[lane*$bits(types::mem_write_data_t)+:$bits(types::mem_write_data_t)] = model_mem[lane][addr_b];
+            expected.lane[lane] = model_mem[lane][addr_b];
         end
         build_expected = expected;
     endfunction
