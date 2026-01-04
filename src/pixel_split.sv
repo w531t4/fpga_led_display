@@ -42,7 +42,7 @@ module pixel_split #(
     /* split the RGB565 pixel into components */
     rgb565 rgb_565 (
         //              [rrrrrbbb bbbggggg]
-        .data_in(pixel_data),
+        .data_in(pixel_data.field.color),
         .brightness(brightness_enable),
         .red(red_gamma),
         .green(green_gamma),
@@ -75,8 +75,4 @@ module pixel_split #(
         .enable(rgb_enable[2]),
         .out(rgb_output[2])
     );
-
-`ifdef RGB24
-    wire _unused_ok = &{1'b0, pixel_data[7:0], 1'b0};
-`endif
 endmodule
