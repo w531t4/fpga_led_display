@@ -20,7 +20,7 @@ module main #(
 `ifdef SPI_ESP32
     input  [3:0] sd_d,       // sd_d[0]=mosi
     input        sd_clk,     // clk
-    input        sd_cmd,     // ce
+    input        wifi_gpio21,  // ce
 `else
     input        gp17,       // miso
     //   output gp18, // mosi
@@ -484,8 +484,8 @@ module main #(
 `ifdef SPI
 `ifdef SPI_ESP32
     assign spi_clk = sd_clk;
-    assign spi_cs  = sd_cmd;
-    assign rxdata  = sd_d[0];  // MOSI
+    assign spi_cs = wifi_gpio21;
+    assign rxdata = sd_d[3];  // MOSI
 `else
     assign spi_clk = gp19;
     assign spi_cs  = gp20;
@@ -549,7 +549,7 @@ module main #(
 
 `ifdef SPI
 `ifdef SPI_ESP32
-    wire _unused_ok_spi_esp32 = &{1'b0, sd_d[3:1], 1'b0};
+    wire _unused_ok_spi_esp32 = &{1'b0, sd_d[2:0], 1'b0};
 `endif
 `endif
 `ifdef SPI
