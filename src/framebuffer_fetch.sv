@@ -28,8 +28,8 @@ module framebuffer_fetch #(
     output [3:0] pixel_load_counter2,
 `endif
     // [15:0]
-    output types::color_field_subpanel_t pixeldata_top,
-    output types::color_field_subpanel_t pixeldata_bottom
+    output types::color_field_t pixeldata_top,
+    output types::color_field_t pixeldata_bottom
 
 );
     wire ram_clk_enable_real;
@@ -70,7 +70,8 @@ module framebuffer_fetch #(
             pixeldata_bottom <= 'b0;
         end else begin
             if (pixel_load_counter == 'd2) begin
-                {pixeldata_bottom, pixeldata_top} <= ram_data_in;
+                pixeldata_bottom <= ram_data_in.subpanel[1].field;
+                pixeldata_top <= ram_data_in.subpanel[0].field;
             end
         end
     end

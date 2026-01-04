@@ -89,8 +89,8 @@ module main #(
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
 
-    wire types::color_field_subpanel_t pixeldata_top;
-    wire types::color_field_subpanel_t pixeldata_bottom;
+    wire types::color_field_t pixeldata_top;
+    wire types::color_field_t pixeldata_bottom;
     wire ctrl_busy;
     wire ctrl_ready_for_data;
 
