@@ -69,8 +69,12 @@ module spi_slave #(
             rdata = 8'h00;
             done = 0;
             nb = 0;
-        end   //
-        else if (!ss) begin
+        end else if (ss) begin  // deasserted CS: drop partial byte state
+            rreg = 8'h00;
+            rdata = 8'h00;
+            done = 0;
+            nb = 0;
+        end else begin
             if (mlb == 0) begin  //LSB first, in@msb -> right shift
                 rreg = {sdin, rreg[7:1]};
             end else begin  //MSB first, in@lsb -> left shift
@@ -92,7 +96,9 @@ module spi_slave #(
         if (rstb == 0) begin
             treg = 8'hFF;
         end else begin
-            if (!ss) begin
+            if (ss) begin  // deasserted CS: reload idle pattern and bit counter via nb reset above
+                treg = 8'hFF;
+            end else begin
                 if (nb == 0) treg = tdata;
                 else begin
                     if (mlb == 0) begin  //LSB first, out=lsb -> right shift
