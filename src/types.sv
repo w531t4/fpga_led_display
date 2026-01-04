@@ -86,6 +86,7 @@ package types;
         logic [calc::num_bytes_to_contain($bits(col_addr_t))-1:0][7:0] bytes;  // bytes[0] = LSB
         col_addr_view_t                                                addr;
     } col_field_t;
+    typedef logic [calc::safe_bits(calc::num_bytes_to_contain($bits(col_addr_t)))-1:0] col_field_index_t;
     // ==== /COLUMN ADDRESS ====
 
     // ==== PIXEL ADDRESS ====

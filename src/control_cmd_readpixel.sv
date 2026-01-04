@@ -20,7 +20,6 @@ module control_cmd_readpixel #(
     output logic done
 );
     localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain($bits(types::col_addr_t));
-    localparam integer unsigned safe_bits_needed_for_column_byte_counter = calc::safe_bits(_NUM_COLUMN_BYTES_NEEDED);
     typedef enum {
         STATE_ROW_CAPTURE,
         STATE_COLUMN_CAPTURE,
@@ -28,10 +27,10 @@ module control_cmd_readpixel #(
         STATE_DONE
     } ctrl_fsm_t;
     ctrl_fsm_t state;
-    logic [(_NUM_COLUMN_BYTES_NEEDED*8)-1:0] column_bits;
-    logic [safe_bits_needed_for_column_byte_counter-1:0] column_byte_counter;
+    types::col_field_t column_bits;
+    types::col_field_index_t column_byte_counter;
 
-    assign column = column_bits[$bits(types::col_addr_t)-1:0];
+    assign column = column_bits.addr.address;
 
     always @(posedge clk) begin
         if (reset) begin
@@ -42,15 +41,15 @@ module control_cmd_readpixel #(
             row <= 'b0;
             pixel <= 'b0;
             done <= 1'b0;
-            column_byte_counter <= {safe_bits_needed_for_column_byte_counter{1'b0}};
-            column_bits <= {(_NUM_COLUMN_BYTES_NEEDED * 8) {1'b0}};
+            column_byte_counter <= 'b0;
+            column_bits <= 'b0;
         end else begin
             case (state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
                         ram_write_enable <= 1'b0;
                         done <= 1'b0;
-                        column_byte_counter <= (safe_bits_needed_for_column_byte_counter)'(_NUM_COLUMN_BYTES_NEEDED - 1);
+                        column_byte_counter <= types::col_field_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
                         state <= STATE_COLUMN_CAPTURE;
                         row <= types::row_addr_t'(data_in);
                     end
@@ -97,9 +96,4 @@ module control_cmd_readpixel #(
             endcase
         end
     end
-    wire _unused_ok = &{1'b0,
-    // TODO: This breaks if width=256
-    column_bits[(_NUM_COLUMN_BYTES_NEEDED*8)-1:$bits(
-        types::col_addr_t
-    )], 1'b0};
 endmodule
