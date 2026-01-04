@@ -85,13 +85,13 @@ module matrix_scan #(
        advances out-of-phase with the pixel clock */
     timeout #(
         // 6
-        .COUNTER_WIDTH($clog2(params::PIXEL_WIDTH - 1))
+        .COUNTER_WIDTH($clog2(params::PIXEL_WIDTH))
     ) timeout_column_address (
         .reset  (reset),
         .clk_in (clk_in),
         .start  (clk_state),
         // 6'd63
-        .value  (($clog2(params::PIXEL_WIDTH - 1))'(params::PIXEL_WIDTH - 1)),
+        .value  (($clog2(params::PIXEL_WIDTH))'(params::PIXEL_WIDTH - 1)),
         .counter(column_address),
         .running(unused_timer_runpin)
     );
