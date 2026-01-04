@@ -63,13 +63,7 @@ module multimem #(
 
             always @(posedge ClockA) begin
                 we_lane_q <= we_lane_c;
-                addra_q <= AddressA[($bits(
-                    types::mem_write_addr_t
-                )-$bits(
-                    types::subpanel_addr_t
-                ))-1-:$bits(
-                    types::mem_read_addr_t
-                )];
+                addra_q <= {AddressA.row, AddressA.col};
                 dia_q <= DataInA;
             end
 
