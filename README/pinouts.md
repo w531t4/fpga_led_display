@@ -2,7 +2,28 @@
 SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 SPDX-License-Identifier: MIT
 -->
+
+# Pinout table
+
+| description | Optional/Required | ULXS3               | RPI5                | HUB75 pin     | USB UART | notes              |
+| ----------- | ----------------- | ------------------- | ------------------- | ------------- | -------- | ------------------ |
+| gnd         | Required          |                     |                     | 16            |          |                    |
+| clk_pixel   | Required          | GP11                |                     | 13            |          |                    |
+| row latch   | Required          | GP12                |                     | 14            |          |                    |
+| ~oe         | Required          | GP13                |                     | 15            |          |                    |
+| RAA[3:0]    | Required          | GP10, GP9, GP8, GP7 |                     | 12, 11, 10, 9 |          |                    |
+| RGB1[2:0]   | Required          | GP2, GP1, GP0       |                     | 3, 2, 1       |          |                    |
+| RGB2[2:0]   | Required          | GP5, GP4, GP3       |                     | 7, 6, 5       |          |                    |
+| debug_txout |                   | GP16                | UART2 GPIO5 #29     |               | RX       | -DDEBUGGER         |
+| debug_rxin  |                   | GP15                | UART2 GPIO4 #7      |               | TX       | -DDEBUGGER         |
+| uart rx     |                   | GP14                | UART3 GPIO8 #24     |               |          | -USPI -USPI_ESP32  |
+| MISO        |                   | GN17                | SPI1 GPIO19 MISO#35 |               |          | -DSPI -UDSPI_ESP32 |
+| MOSI        |                   | GN18                | SPI1 GPIO20 MOSI#38 |               |          | -DSPI -UDSPI_ESP32 |
+| SCLK        |                   | GN19                | SPI1 GPIO21 SCLK#40 |               |          | -DSPI -UDSPI_ESP32 |
+| CS          |                   | GN20                | SPI1 GPIO18 CE0 #12 |               |          | -DSPI -UDSPI_ESP32 |
+
 # HUB75
+
 ```
    !   P   R   R    B   R   B   R
    O   X   W   W    L   D   L   D
@@ -16,48 +37,7 @@ SPDX-License-Identifier: MIT
    D   L   3   1    D   2   D   1
 ```
 
-# Pinout table
-
-|description  | ULXS3 | RPI5              |waveform2 |TinyFPGA BX|HUB75 pin|RPI PIN    |USB UART|Adafruit Hat|Icecube pin|IC PIN|Waveforms|
-|-------------|-------|-------------------|----------|-----------|---------|-----------|--------|------------|-----------|------|---------|
-|gnd          |       |                   |          |GND        |16       |6          |        |            |           |      |         |
-|clk_pixel    |GP11   |                   |11        |1          |13       |           |        |GPIO#17     |pin1       |A2    |2        |
-|row latch    |GP12   |                   |12        |2          |14       |           |        |GPIO#21     |pin2       |A1    |3        |
-|~oe          |GP13   |                   |13        |3          |15       |           |        |GPIO#04     |pin3       |B1    |1        |
-|RAA[0]       |GP7    |                   |7         |4          |9        |           |        |GPIO#22     |pin4       |C2    |4        |
-|RAA[1]       |GP8    |                   |8         |5          |10       |           |        |GPIO#26     |pin5       |C1    |5        |
-|RAA[2]       |GP9    |                   |9         |6          |11       |           |        |GPIO#27     |pin6       |D2    |6        |
-|RAA[3]       |GP10   |                   |10        |7          |12       |           |        |GPIO#20     |pin7       |D1    |7        |
-|RGB1[0]      |GP0    |                   |0         |8          |1        |           |        |GPIO#05     |pin8       |E2    |0        |
-|RGB1[1]      |GP1    |                   |1         |9          |2        |           |        |GPIO#06     |pin9       |E1    |8        |
-|RGB1[2]      |GP2    |                   |2         |10         |3        |           |        |GPIO#13     |pin10      |G2    |9        |
-|DEAD         |       |                   |          |11         | x        |           |        |            |pin11      |H1    |10       |
-|DEAD         |       |                   |          |12         |         |           |        |            |pin12      |J1    |undef    |
-|RGB2[2]      |GP3    |                   |3         |13         |7        |           |        |GPIO#16     |           |H2    |undef    |
-|             |       |                   |          |14         |         |           |        |            |           |H9    |         |
-|             |       |                   |          |15         |         |           |        |            |           |D9    |         |
-|             |       |                   |          |16         |         |           |        |            |           |D8    |         |
-|             |       |                   |          |17         |         |           |        |            |           |C9    |         |
-|undef        |       |                   |          |18         |undef    |           |        |            |pin18      |A9    |13       |
-|RGB2[0]      |GP4    |                   |4         |19         |5        |           |        |GPIO#12     |pin19      |B8    |11       |
-|RGB2[1]      |GP5    |                   |5         |20         |6        |           |        |GPIO#23     |pin20      |A8    |12       |
-|undef        |       |                   |          |21         |undef    |           |        |            |pin21      |B7    |undef    |
-|uart rx      |GP14   |UART3 GPIO8 #24    |          |22         |undef    |8 (UART TX)|        |            |pin22      |A7    |undef    |
-|debug_txout  |GP16   |UART2 GPIO5 #29    |          |23         |         |           |RX      |            |pin23      |B6    |         |
-|debug_rxin   |GP15   |UART2 GPIO4 #7     |          |24         |         |           |TX      |            |pin24      |A6    |         |
-|MISO         |GN17   |SPI1 GPIO19 MISO#35|          |           |         |           |        |            |           |      |         |
-|MOSI         |GN18   |SPI1 GPIO20 MOSI#38|          |           |         |           |        |            |           |      |         |
-|SCLK         |GN19   |SPI1 GPIO21 SCLK#40|          |           |         |           |        |            |           |      |         |
-|CS           |GN20   |SPI1 GPIO18 CE0 #12|          |           |         |           |        |            |           |      |         |
-|             |       |                   |          |3.3v       |                              |3.3v
-|             |       |                   |          |GND        |                              |GND
-|             |       |                   |          |Vin(5v)    |                              |5v
-|clk_root     |       |                   |6         |           |         |           |        |            |           |      |         |
-|             |       |                   |14        |           |         |           |        |            |           |      |         |
-|             |       |                   |15        |           |         |           |        |            |           |      |         |
-unassigned waveforms - pin13, pin14, pin15,
-- rx_data is an effort to expose what is being received at the fpga on its uart_rx pin (7)
-
+Attie has a way better diagram of HUB75 layout here https://github.com/attie/led_matrix_tinyfpga_a2/blob/master/doc/rgb_led_matrix_pinout.svg
 
 # raspberry pi
 
@@ -78,6 +58,8 @@ unassigned waveforms - pin13, pin14, pin15,
 ....                                                                             |
 |--------------------------------------------------------------------------------|
 ```
+
+https://pinout.xyz/
 
 # New SPI Wiring (HSPI)
 
@@ -116,12 +98,11 @@ This combination of ESP32 pins are capable of transmit-only at 80mhz
 | wifi_gpio19 | gpio19 | esp32 bi-dir |
 
 # references
-- Attie has a way better diagram of HUB75 layour here https://github.com/attie/led_matrix_tinyfpga_a2/blob/master/doc/rgb_led_matrix_pinout.svg
 
-- raspberry pi pinout - https://pinout.xyz/
-
+-   raspberry pi pinout -
 
 # pi5
+
 For example, UART1 can be enabled on GPIO pins 0 & 1.
 UART2 on GPIO pins 4 & 5.
 UART3 on GPIO pins 8 & 9.
