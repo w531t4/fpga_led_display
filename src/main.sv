@@ -18,14 +18,14 @@ module main #(
 `endif
 `ifdef SPI
 `ifdef SPI_ESP32
-    input  [3:0] sd_d,       // sd_d[0]=mosi
-    input        sd_clk,     // clk
+    input  [3:0] sd_d,         // sd_d[0]=mosi
+    input        sd_clk,       // clk
     input        wifi_gpio21,  // ce
 `else
-    input        gp17,       // miso
+    input        gp17,         // miso
     //   output gp18, // mosi
-    input        gp19,       // clk
-    input        gp20,       // ce
+    input        gp19,         // clk
+    input        gp20,         // ce
 `endif
 `endif
     output       gp0,
@@ -477,15 +477,12 @@ module main #(
     assign gp11 = clk_pixel;  // Pixel Clk
     assign gp12 = row_latch;  // Row Latch
     assign gp13 = ~output_enable;  // #OE
-    assign gp7  = row_address_active[0];  // A / Row[0]
-    assign gp8  = row_address_active[1];  // B / Row[1]
-    assign gp9  = row_address_active[2];  // C / Row[2]
-    assign gp10 = row_address_active[3];  // D / Row[3]
+    assign {gp10, gp9, gp8, gp7} = row_address_active;  // D, C, B, A
 `ifdef SPI
 `ifdef SPI_ESP32
     assign spi_clk = sd_clk;
-    assign spi_cs = wifi_gpio21;
-    assign rxdata = sd_d[3];  // MOSI
+    assign spi_cs  = wifi_gpio21;
+    assign rxdata  = sd_d[3];  // MOSI
 `else
     assign spi_clk = gp19;
     assign spi_cs  = gp20;
@@ -498,10 +495,7 @@ module main #(
     assign gn11 = clk_pixel;  // Pixel Clk
     assign gn12 = row_latch;  // Row Latch
     assign gn13 = ~output_enable;  // #OE
-    assign gn7  = row_address_active[0];  // A / Row[0]
-    assign gn8  = row_address_active[1];  // B / Row[1]
-    assign gn9  = row_address_active[2];  // C / Row[2]
-    assign gn10 = row_address_active[3];  // D / Row[3]
+    assign {gn10, gn9, gn8, gn7} = row_address_active;  // D, C, B, A
 `ifdef SWAP_BLUE_GREEN_CHAN
     assign {gn0, gn1, gn2} = {rgb1.red, rgb1.blue, rgb1.green};
     assign {gn3, gn4, gn5} = {rgb2.red, rgb2.blue, rgb2.green};
