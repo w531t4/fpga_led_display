@@ -36,6 +36,10 @@ package params;
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
 
+    // READY HOLDOFF
+    parameter longint unsigned READY_HOLDOFF_MSEC = 50;
+    parameter longint unsigned READY_HOLDOFF_TICKS = (longint'(ROOT_CLOCK) * READY_HOLDOFF_MSEC) / 1000;
+
     // USE_WATCHDOG
     // reset control logic if watchdog isn't satisfied within x seconds
     parameter real WATCHDOG_CONTROL_FREQ_GOAL = 0.1;  // 10 seconds

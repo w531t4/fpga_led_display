@@ -45,6 +45,9 @@ module tb_main #(
     wire spi_clk;
     wire spi_cs;
     logic spi_start;
+`ifdef SPI_ESP32
+    wire fpga_ready;
+`endif
 `else
     wire uart_rx_dataready;
 `endif
@@ -84,6 +87,7 @@ module tb_main #(
         .sd_clk   (spi_clk),             // clk
         .sd_d     ({rxdata, 3'b0}),      // sd_d[3]=mosi
         .wifi_gpio21(spi_cs),
+        .wifi_gpio27(fpga_ready),
 `else
         .gp17     (rxdata),              // spi miso
         //.gp18()       // spi_mosi
@@ -216,6 +220,25 @@ module tb_main #(
         wait (cmd_line_state_seq_done);
         $finish;
     end
+
+`ifdef SPI_ESP32
+    initial begin : assert_fpga_ready_sequence
+        `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b1, TB_MAIN_WAIT_CYCLES)
+        if (fpga_ready !== 1'b0)
+            $fatal(1, "fpga_ready should be low during global_reset");
+        `WAIT_ASSERT(tb_main.tbi_main.clk_root,
+                     tb_main.tbi_main.global_reset_sync === 1'b0,
+                     TB_MAIN_WAIT_CYCLES)
+        repeat (4) begin
+            @(posedge tb_main.tbi_main.clk_root);
+            if (fpga_ready !== 1'b0)
+                $fatal(1, "fpga_ready should remain low after reset");
+        end
+        `WAIT_ASSERT(tb_main.tbi_main.clk_root,
+                     fpga_ready === 1'b1,
+                     TB_MAIN_WAIT_CYCLES)
+    end
+`endif
 
     function automatic logic [3:0] cmd_line_state_expected(input int idx);
         case (idx)

@@ -197,6 +197,10 @@ package types;
     typedef logic [$clog2(params::WATCHDOG_SIGBYTES)-1:0] watchdog_sigbyte_index_t;
     // ==== /WATCHDOG ====
 
+    // ==== READY HOLDOFF ====
+    typedef logic [$clog2(params::READY_HOLDOFF_TICKS + 1)-1:0] ready_holdoff_count_t;
+    // ==== /READY HOLDOFF ====
+
     //
     // COMMANDS
     //
