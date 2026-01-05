@@ -82,14 +82,10 @@ module tb_control_cmd_readpixel #(
         $dumpvars(0, tb_control_cmd_readpixel);
         clk = 0;
         reset = 1;
-        // subcmd_enable = 0;
         data_in = 8'b0;
         // finish reset for tb
         @(posedge clk) @(posedge clk) reset = ~reset;
 
-        // @(posedge clk) begin
-        //     subcmd_enable = 1;
-        // end
         // Precompute expected stream for monitoring.
         expected_bytes[ROW_IDX]     = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-:8];
         expected_bytes[COL_LSB_IDX] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-8-:8];

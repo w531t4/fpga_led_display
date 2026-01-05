@@ -7,12 +7,6 @@ module main #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    // DP74HC245 710401
-    // FM TC7258E. 5B855300 2X
-    // CHIPONE ICN2028BP A06631HA
-
-    // lessons
-    // 1. Ensure that all unused IO are set to no pullup
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     output [7:0] led,
 `endif
@@ -74,7 +68,6 @@ module main #(
     wire row_latch;
     wire types::mem_write_data_t ram_a_data_in;
     wire types::mem_write_data_t _unused_ok_ram_a_data_out_frame1;
-    //  [11:0]
     wire types::mem_write_addr_t ram_a_address;
     wire ram_a_write_enable;
     wire ram_a_clk_enable;
@@ -85,7 +78,6 @@ module main #(
     wire types::mem_write_data_t _unused_ok_ram_a_data_out_frame2;
     wire types::mem_read_data_t ram_b_data_out_frame2;
 `endif
-    //  [10:0]
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
 
@@ -95,7 +87,6 @@ module main #(
     wire ctrl_ready_for_data;
 
 `ifdef DEBUGGER
-    // self
     localparam integer unsigned debug_data_width = 32;
     wire debugger_debug_start;
     wire [4:0] debugger_current_state;
@@ -132,14 +123,10 @@ module main #(
     assign led = brightness_enable;
 `endif
     wire types::rgb_signals_t rgb1;  /* the current RGB value for the top-half of the display */
-
     wire types::rgb_signals_t rgb2;  /* the current RGB value for the bottom-half of the display */
-
-
     wire output_enable;
     wire alt_reset;
     wire pll_locked;
-
     wire rxdata;
     wire rxdata_ready;
     wire rxdata_ready_level;
@@ -215,8 +202,6 @@ module main #(
         .clock_in(clk_root),
         .reset(alt_reset)
     );
-    // sd_d[1] was previously used as a way to reset the fpga, but has since been
-    // retired in favor of the watchdog.
 `ifdef USE_WATCHDOG
 `ifdef SIM
     assign global_reset = alt_reset;
@@ -307,8 +292,6 @@ module main #(
     );
 `else
     uart_rx #(
-        // we want 22MHz / 2,430,000 = 9.0534
-        // 22MHz / 9 = 2,444,444 baud 2444444
         .TICKS_PER_BIT(params::CTRLR_CLK_TICKS_PER_BIT)
     ) mycontrol_rxuart (
         .reset(global_reset),
@@ -337,7 +320,6 @@ module main #(
     ) ctrl (
         .reset(global_reset),
         .clk_in(clk_root),
-        /* clk_root =  133MHZ */
         .data_rx(rxdata_to_controller),
 `ifdef SPI
         .data_ready_n(~rxdata_ready_pulse),

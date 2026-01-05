@@ -14,9 +14,6 @@ module tb_control_module #(
     logic clk;
     logic reset;
     logic local_reset;
-
-    //20220106
-    //logic [7:0] ram_data_in = 8'b01100101;
     wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
     wire types::mem_write_data_t ram_data_out;
@@ -44,6 +41,7 @@ module tb_control_module #(
     wire uart_rx_dataready;
 `endif
     localparam integer unsigned mystring_size = 'd1072;
+    // TODO - add command into .svh
     logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
     //logic tb_clk_baudrate;
 
@@ -148,14 +146,10 @@ module tb_control_module #(
 `ifdef USE_WATCHDOG
         .watchdog_reset(_unused_ok_main[2]),
 `endif
-        //20220106
-        //.ram_data_in(ram_data_in),
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
         .ram_clk_enable(ram_clk_enable)
-        //20220106
-        //.rx_invalid(rx_invalid),
 `ifdef DEBUGGER,
         .num_commands_processed(num_commands_processed)
 `endif

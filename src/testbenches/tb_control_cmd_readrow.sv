@@ -86,7 +86,6 @@ module tb_control_cmd_readrow #(
         clk = 0;
         reset = 1;
         finished = 1;
-        // subcmd_enable = 0;
         data_in = 8'b0;
         for (int __i = 0; __i < STREAM_BYTECOUNT; __i++) begin
             expected_bytes[__i] = cmd_readrow_local[STREAM_BITCOUNT-1-(__i*8)-:8];

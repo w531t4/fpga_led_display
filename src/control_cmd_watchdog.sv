@@ -7,7 +7,6 @@ module control_cmd_watchdog #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    // input cmd_enable,
     input reset,
     input [7:0] data_in,
     input enable,

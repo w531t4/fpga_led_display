@@ -9,12 +9,8 @@ module matrix_scan #(
 ) (
     input reset,
     input clk_in,
-
-    // [5:0]  64 width
     output types::col_addr_t column_address,  /* the current column (clocking out now) */
-    // [3:0] 16 height rows (two of them)
     output types::row_subpanel_addr_t row_address,  /* the current row (clocking out now) */
-    // [3:0] 16 height rows (two of them)
     output types::row_subpanel_addr_t row_address_active,  /* the active row (LEDs enabled) */
 
     output clk_pixel_load,
@@ -59,9 +55,6 @@ module matrix_scan #(
     logic clk_pixel_en;  /* enables the pixel clock, delayed by one cycle from the load clock */
     typedef logic [1:0] row_latch_state_t;
     row_latch_state_t row_latch_state;
-
-    //wire clk_row_address; /* on the falling edge, feed the row address to the active signals */
-
     wire brightness_exceeded_overlap_time;
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
@@ -81,14 +74,12 @@ module matrix_scan #(
     /* produce 64 load clocks per line...
        external logic should present the pixel value on the rising edge */
     timeout #(
-        // 7
-        .COUNTER_WIDTH($bits(types::col_addr_count_t))
+        .COUNTER_WIDTH($bits(types::col_addr_count_t))  // 7
     ) timeout_clk_pixel_load_en (
         .reset  (reset),
         .clk_in (clk_in),
         .start  (clk_state),
-        // 7'd64
-        .value  (types::col_addr_count_t'(params::PIXEL_WIDTH)),
+        .value  (types::col_addr_count_t'(params::PIXEL_WIDTH)),  // 7'd64
         .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
     );
@@ -97,14 +88,13 @@ module matrix_scan #(
        counts from 63 -> 0 and then stops
        advances out-of-phase with the pixel clock */
     timeout #(
-        // 6
-        .COUNTER_WIDTH($bits(types::col_addr_t))
+
+        .COUNTER_WIDTH($bits(types::col_addr_t))  // 6
     ) timeout_column_address (
         .reset  (reset),
         .clk_in (clk_in),
         .start  (clk_state),
-        // 6'd63
-        .value  (types::col_addr_t'(params::PIXEL_WIDTH - 1)),
+        .value  (types::col_addr_t'(params::PIXEL_WIDTH - 1)),  // 6'd63
         .counter(current.column_address),
         .running(unused_timer_runpin)
     );
@@ -117,7 +107,6 @@ module matrix_scan #(
             row_latch_state <= 2'b01;
             current.brightness_mask <= reset_brightness();
             active.brightness_mask <= 'b0;
-            // 4'd0
             current.row_address <= 'b0;
             active.row_address <= 'b0;
         end else begin
@@ -129,9 +118,8 @@ module matrix_scan #(
                 active.row_address <= current.row_address;
 
                 if ((current.brightness_mask == 'd0) || (current.brightness_mask == 'd1)) begin
-                    // catch the initial value / oopsy //
+                    // catch the initial value / oopsy ('d0 should never happen)
                     current.brightness_mask <= reset_brightness();
-                    // 4'd1
                     current.row_address <= current.row_address + 1;
                 end else begin
                     current.brightness_mask <= current.brightness_mask >> 1;

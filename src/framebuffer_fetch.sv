@@ -9,45 +9,27 @@ module framebuffer_fetch #(
 ) (
     input reset,
     input clk_in,
-
-
-    // appears that framebuffer fetch broke things, may have an issue here 20250710
-    // [5:0] 64 width
     input types::col_addr_t column_address,
-    // [3:0] 16 height (top/bottom half)
     input types::row_subpanel_addr_t row_address,
 
     input pixel_load_start,
-
-    // [15:0] each fetch is one pixel worth of data -- no longer true
     input types::mem_read_data_t ram_data_in,
-    // [10:0]
     output types::mem_read_addr_t ram_address,
     output ram_clk_enable,
 `ifdef DEBUGGER
     output [3:0] pixel_load_counter2,
 `endif
-    // [15:0]
     output types::color_field_t pixeldata_top,
     output types::color_field_t pixeldata_bottom
 
 );
-    wire ram_clk_enable_real;
-    assign ram_clk_enable = ram_clk_enable_real;
     /* grab data on falling edge of pixel clock */
-    //wire pixel_load_running;
     wire [1:0] pixel_load_counter;
 `ifdef DEBUGGER
     assign pixel_load_counter2[3:0] = {2'b0, pixel_load_counter[1:0]};
 `endif
 
-    // [10:0]
-    assign ram_address = {
-        //    half_address,
-        row_address,
-        // log2(128)==7-1=6
-        column_address
-    };
+    assign ram_address = {row_address, column_address};
 
     timeout #(
         .COUNTER_WIDTH(2)
@@ -61,7 +43,7 @@ module framebuffer_fetch #(
         .value  (2'd3),
 `endif
         .counter(pixel_load_counter),
-        .running(ram_clk_enable_real)
+        .running(ram_clk_enable)
     );
 
     always @(posedge clk_in) begin
