@@ -16,6 +16,7 @@ module tb_debugger #(
     wire tx_out;
     logic clk_out;
     wire debug_start;
+    // TODO: move command into .svh
     logic [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
     wire tb_clk_baudrate;
     logic rx_line2;
@@ -96,9 +97,6 @@ module tb_debugger #(
     always begin
         #(params::SIM_HALF_PERIOD_NS) clk <= !clk;  // 2 of these make a period
     end
-    // always begin
-    //     #400 reset <= ! reset;
-    // end
     // verilog_format: off
     wire _unused_ok = &{1'b0,
                         tx_out,

@@ -7,6 +7,7 @@ module control_cmd_readbrightness #(
     // verilator lint_on UNUSEDPARAM
 ) (
     input reset,
+    // TODO: Why is this unused?
     // verilator lint_off UNUSEDSIGNAL
     input [7:0] data_in,
     // verilator lint_on UNUSEDSIGNAL

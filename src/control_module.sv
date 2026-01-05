@@ -100,10 +100,8 @@ module control_module #(
     control_cmd_readrow #(
         ._UNUSED('d0)
     ) cmd_readrow (
-        // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
         .reset(reset),
         .data_in(data_rx_latch),
-        // .enable(cmd_line_state == STATE_CMD_READROW),
         .enable((cmd_line_state == STATE_CMD_READROW) && ~data_ready_n),
         .clk(clk_in),
         .addr(cmd_readrow_addr),
@@ -121,17 +119,14 @@ module control_module #(
     control_cmd_readpixel #(
         ._UNUSED('d0)
     ) cmd_readpixel (
-        // .cmd_enable(cmd_line_state == STATE_CMD_READROW),
         .reset(reset),
         .data_in(data_rx_latch),
         .clk(clk_in),
-        // .enable(cmd_line_state == STATE_CMD_READPIXEL),
         .enable((cmd_line_state == STATE_CMD_READPIXEL) && ~data_ready_n),
         .addr(cmd_readpixel_addr),
         .data_out(cmd_readpixel_do),
         .ram_write_enable(cmd_readpixel_we),
         .ram_access_start(cmd_readpixel_as),
-        // .address_change_en(cmd_readpixel_ace),
         .done(cmd_readpixel_done)
     );
 
@@ -143,7 +138,6 @@ module control_module #(
         .reset(reset),
         .data_in(data_rx_latch),
         .clk(clk_in),
-        // .enable(cmd_line_state == STATE_CMD_READBRIGHTNESS),
         .enable((cmd_line_state == STATE_CMD_READBRIGHTNESS) && ~data_ready_n),
         .data_out(cmd_readbrightness_do),
         .brightness_change_en(cmd_readbrightness_be),
@@ -180,7 +174,6 @@ module control_module #(
         ._UNUSED('d0)
     ) cmd_fillpanel (
         .reset           (reset),
-        // .enable(cmd_line_state == STATE_CMD_FILLPANEL),
         .enable          ((cmd_line_state == STATE_CMD_FILLPANEL) && ~data_ready_n),
         .clk             (clk_in),
         .mem_clk         (clk_in),
@@ -204,7 +197,6 @@ module control_module #(
         ._UNUSED('d0)
     ) cmd_fillrect (
         .reset           (reset),
-        // .enable(cmd_line_state == STATE_CMD_FILLRECT),
         .enable          ((cmd_line_state == STATE_CMD_FILLRECT) && ~data_ready_n),
         .clk             (clk_in),
         .mem_clk         (clk_in),
@@ -227,7 +219,6 @@ module control_module #(
         ._UNUSED('d0)
     ) cmd_readframe (
         .reset           (reset),
-        // .enable(cmd_line_state == STATE_CMD_FILLRECT),
         .enable          ((cmd_line_state == STATE_CMD_READFRAME) && ~data_ready_n),
         .clk             (clk_in),
         .data_in         (data_rx_latch),

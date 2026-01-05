@@ -52,9 +52,6 @@ module tb_matrix_scan #(
     always begin
         #ADJUSTED_CLOCK clk <= !clk;
     end
-    // always begin
-    // #700 reset <= ! reset;
-    // end
     // verilog_format: off
     wire _unused_ok = &{1'b0,
                         column_address,

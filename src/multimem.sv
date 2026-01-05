@@ -15,10 +15,7 @@ module multimem #(
 ) (
     input wire types::mem_write_data_t DataInA,
     input wire [15:0] DataInB,
-    // 12 bits [11:0]      -5-                   -log( (64*2),2)=7-
-    // input wire [$clog2(PIXEL_HEIGHT * PIXEL_WIDTH * BYTES_PER_PIXEL)-1:0] AddressA,
     input wire types::mem_write_addr_t AddressA,
-    // 11 bits [10:0] (-2, because this is 16bit, not 8bit), -3 because we're not pulling half panels anymore
     input wire types::mem_read_addr_t AddressB,
     input wire ClockA,
     input wire ClockB,
@@ -56,6 +53,7 @@ module multimem #(
             wire types::mem_structure_t lane_idx_from_addr = types::mem_structure(AddressA);
 
             wire we_lane_c = ClockEnA & WrA & (lane_idx_from_addr == types::mem_structure_t'(i));
+            // TODO: Are these keeps still necessary?
             (* keep = "true" *) reg we_lane_q;
             // TODO - is it necessary to use a reg for types::mem_read_addr_t here
             (* keep = "true" *) types::mem_read_addr_t addra_q;
@@ -76,7 +74,6 @@ module multimem #(
                 .wea  (we_lane_q),
                 .addra(addra_q),
                 .dia  (dia_q),
-
                 .clkb (ClockB),
                 .enb  (ClockEnB),
                 .rstb (ResetA || ResetB),
