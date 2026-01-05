@@ -252,6 +252,7 @@ $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR
 		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
 		--log $(ARTIFACT_DIR)/nextpnr.log \
 		--package CABGA381 \
+		--randomize-seed \
 		--report $(ARTIFACT_DIR)/nextpnr-report.json \
 		--placer-heap-critexp 3 --placer-heap-timingweight 20 \
 		--detailed-timing-report \
