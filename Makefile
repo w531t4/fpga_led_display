@@ -305,7 +305,7 @@ $(ARTIFACT_DIR)/netlist_pre.svg: $(ARTIFACT_DIR)/mydesign_pre_vizclean.json | $(
 endif
 
 restore: restore-build
-	$(TOOLPATH)/fujprog build/passthru/ulx3s_passthru_wifi.bit
+	$(TOOLPATH)/fujprog build/passthru/ulx3s_esp32_passthru.bit
 
 restore-build:
 	$(MAKE) -f src/passthru/Makefile all
