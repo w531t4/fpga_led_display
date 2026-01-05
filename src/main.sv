@@ -15,6 +15,8 @@ module main #(
     input  [3:0] sd_d,         // sd_d[0]=mosi
     input        sd_clk,       // clk
     input        wifi_gpio21,  // ce
+    // output       wifi_gpio35,  // fpga reset notify
+    output       wifi_gpio27,  // fpga reset notify
 `else
     input        gp17,         // miso
     //   output gp18, // mosi
@@ -57,11 +59,14 @@ module main #(
     // output gn16
 );
 
-    wire clk_root;
-    wire clk_matrix;
+    wire  clk_root;
+    wire  clk_matrix;
 
-    wire global_reset;
+    wire  global_reset;
     logic global_reset_sync;
+    types::ready_holdoff_count_t _unused_ok_ready_holdoff_counter;
+    wire ready_holdoff_running;
+    logic fpga_ready;
 
     wire clk_pixel_load;
     wire clk_pixel;
@@ -215,6 +220,19 @@ module main #(
 
     always_ff @(posedge clk_root) begin
         global_reset_sync <= global_reset;
+    end
+    timeout_sync #(
+        .COUNTER_WIDTH($bits(types::ready_holdoff_count_t))
+    ) fpga_ready_holdoff (
+        .reset  (global_reset_sync | ~pll_locked),
+        .clk_in (clk_root),
+        .start  (1'b1),
+        .value  (types::ready_holdoff_count_t'(params::READY_HOLDOFF_TICKS)),
+        .counter(_unused_ok_ready_holdoff_counter),
+        .running(ready_holdoff_running)
+    );
+    always_comb begin
+        fpga_ready = pll_locked && !global_reset_sync && !ready_holdoff_running;
     end
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
@@ -463,8 +481,10 @@ module main #(
 `ifdef SPI
 `ifdef SPI_ESP32
     assign spi_clk = sd_clk;
-    assign spi_cs  = wifi_gpio21;
-    assign rxdata  = sd_d[3];  // MOSI
+    assign spi_cs = wifi_gpio21;
+    assign rxdata = sd_d[3];  // MOSI
+    assign wifi_gpio27 = fpga_ready;
+    // assign wifi_gpio35 = fpga_ready;
 `else
     assign spi_clk = gp19;
     assign spi_cs  = gp20;
