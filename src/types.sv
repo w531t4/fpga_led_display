@@ -95,7 +95,7 @@ package types;
         logic [calc::num_bytes_to_contain($bits(col_addr_t))*8-1:0]    raw;
         logic [calc::num_bytes_to_contain($bits(col_addr_t))-1:0][7:0] bytes;  // bytes[0] = LSB
         col_addr_view_t                                                addr;
-    } col_field_t;
+    } col_addr_field_t;
     typedef logic [$clog2(calc::num_bytes_to_contain($bits(col_addr_t))+1)-1:0] col_addr_field_byte_count_t;
     typedef logic [calc::safe_clog2(calc::num_bytes_to_contain($bits(col_addr_t)))-1:0] col_addr_field_byte_index_t;
     // ==== /COLUMN ADDRESS ====
@@ -209,7 +209,7 @@ package types;
         // TODO: consistent ordering of row/column across commands
         cmd::opcode_t opcode;
         row_field_t   y1;
-        col_field_t   x1;
+        col_addr_field_t   x1;
         color_field_t color;
     } readpixel_cmd_t;
 
@@ -222,9 +222,9 @@ package types;
 
     typedef struct packed {
         cmd::opcode_t opcode;
-        col_field_t   x1;
+        col_addr_field_t   x1;
         row_field_t   y1;
-        col_field_t   width;
+        col_addr_field_t   width;
         row_field_t   height;
         color_field_t color;
     } fillrect_cmd_t;

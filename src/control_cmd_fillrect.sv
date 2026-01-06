@@ -36,8 +36,8 @@ module control_cmd_fillrect #(
     ctrl_fsm_t state;
     logic local_reset;
     // verilator lint_off UNUSEDSIGNAL
-    types::col_field_t x1;
-    types::col_field_t width;
+    types::col_addr_field_t x1;
+    types::col_addr_field_t width;
     // verilator lint_on UNUSEDSIGNAL
     types::col_addr_field_byte_index_t x1_byte_counter;
     types::col_addr_field_byte_index_t width_byte_counter;

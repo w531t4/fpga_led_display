@@ -27,7 +27,7 @@ module control_cmd_readpixel #(
         STATE_DONE
     } ctrl_fsm_t;
     ctrl_fsm_t state;
-    types::col_field_t column_bits;
+    types::col_addr_field_t column_bits;
     types::col_addr_field_byte_index_t column_byte_counter;
 
     always @(posedge clk) begin
