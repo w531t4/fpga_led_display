@@ -39,8 +39,8 @@ module control_cmd_fillrect #(
     types::col_field_t x1;
     types::col_field_t width;
     // verilator lint_on UNUSEDSIGNAL
-    types::col_field_index_t x1_byte_counter;
-    types::col_field_index_t width_byte_counter;
+    types::col_addr_field_byte_index_t x1_byte_counter;
+    types::col_addr_field_byte_index_t width_byte_counter;
     types::row_addr_t y1;
     types::row_addr_t height;
     logic subcmd_enable;
@@ -62,8 +62,8 @@ module control_cmd_fillrect #(
     function automatic types::color_index_t reset_capturebytes_remaining();
         reset_capturebytes_remaining = types::color_index_t'(params::BYTES_PER_PIXEL - 1);
     endfunction
-    function automatic types::col_field_index_t reset_byte_counter();
-        reset_byte_counter = types::col_field_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
+    function automatic types::col_addr_field_byte_index_t reset_byte_counter();
+        reset_byte_counter = types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
     endfunction
     always @(posedge clk) begin
         if (reset) begin
