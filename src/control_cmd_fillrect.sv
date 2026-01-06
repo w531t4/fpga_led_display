@@ -19,7 +19,9 @@ module control_cmd_fillrect #(
     output logic ready_for_data,
     output logic done
 );
-    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain($bits(types::col_addr_t));
+    localparam types::col_addr_field_byte_count_t _NUM_COLUMN_BYTES_NEEDED = types::col_addr_field_byte_count_t'(calc::num_bytes_to_contain(
+        $bits(types::col_addr_t)
+    ));
     typedef enum {
         STATE_X1_CAPTURE,      // 0
         STATE_Y1_CAPTURE,      // 1
