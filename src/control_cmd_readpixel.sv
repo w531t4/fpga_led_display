@@ -17,9 +17,8 @@ module control_cmd_readpixel #(
     output logic ram_access_start,
     output logic done
 );
-    localparam types::col_addr_field_byte_count_t _NUM_COLUMN_BYTES_NEEDED = types::col_addr_field_byte_count_t'(calc::num_bytes_to_contain(
-        $bits(types::col_addr_t)
-    ));
+    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain($bits(types::col_addr_t));
+    localparam types::col_addr_field_byte_index_t LAST_COL_BYTE_INDEX = types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
     typedef enum {
         STATE_ROW_CAPTURE,
         STATE_COLUMN_CAPTURE,
@@ -49,8 +48,7 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         ram_write_enable <= 1'b0;
                         done <= 1'b0;
-                        column_byte_counter <= types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - types::col_addr_field_byte_count_t'(
-            1));
+                        column_byte_counter <= LAST_COL_BYTE_INDEX;
                         state <= STATE_COLUMN_CAPTURE;
                         addr.row <= types::row_addr_t'(data_in);
                     end
