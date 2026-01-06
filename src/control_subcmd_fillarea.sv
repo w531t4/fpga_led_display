@@ -14,7 +14,7 @@ module control_subcmd_fillarea #(
     input types::row_addr_t y1,
     input types::col_addr_t width,
     input types::row_addr_t height,
-    input types::color_t color,  // must be byte aligned
+    input types::color_field_t color,  // must be byte aligned
 
     output types::row_addr_t row,
     output types::col_addr_t column,
@@ -67,7 +67,7 @@ module control_subcmd_fillarea #(
                         pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
-                        data_out <= color[(((32)'(pixel)+1)*8)-1-:8];
+                        data_out <= color.bytes[params::BYTES_PER_PIXEL-1];
                         ram_access_start <= !ram_access_start;
                     end
                 end
@@ -83,11 +83,12 @@ module control_subcmd_fillarea #(
                                 end else begin
                                     column <= column - 'd1;
                                 end
+                                data_out <= color.bytes[params::BYTES_PER_PIXEL-1];
                             end else begin
                                 if (row == y1 && column == x1 && ((pixel - 'd1) == 0)) done <= 1'b1;
                                 pixel <= pixel - 'd1;
+                                data_out <= color.bytes[pixel-1];
                             end
-                            data_out <= color[(((32)'(pixel)+1)*8)-1-:8];
                         end else begin
                             state <= STATE_WAIT_FOR_RESET;
                             ram_write_enable <= 1'b0;

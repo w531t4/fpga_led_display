@@ -10,7 +10,11 @@
 // and issues each address once before returning to idle.
 module tb_control_cmd_fillrect;
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
-    localparam types::color_t COLOR = 16'hBEEF;
+`ifdef RGB24
+    localparam types::color_field_t COLOR = types::color_field_t'(24'hBEEF42);
+`else
+    localparam types::color_field_t COLOR = types::color_field_t'(16'hBEEF);
+`endif
     localparam int RECT_X1 = 1;
     localparam int RECT_Y1 = 1;
     localparam int RECT_W = 2;
@@ -78,9 +82,13 @@ module tb_control_cmd_fillrect;
         stream_byte(8'(RECT_W));
         stream_byte(8'(RECT_H));
         for (int i = params::BYTES_PER_PIXEL - 1; i >= 0; i--) begin
-            stream_byte(COLOR[(i*8)+:8]);
+            stream_byte(COLOR.bytes[i]);
         end
-        enable = 1;
+        wait (!ready_for_data);
+        @(posedge clk);
+        enable = 0;
+        if (dut.selected_color != COLOR)
+            $fatal(1, "Fillrect captured color mismatch: saw 0x%0h expected 0x%0h", dut.selected_color, COLOR);
         `WAIT_ASSERT(clk, done == 1'b1, 512)
         `WAIT_ASSERT(clk, writes_seen == TOTAL_WRITES, 10)
         @(posedge clk);
@@ -97,10 +105,8 @@ module tb_control_cmd_fillrect;
             mem <= {MEM_NUM_BYTES{1'b1}};
             // verilator lint_on WIDTHCONCAT
         end else if (ram_write_enable) begin
-            int byte_sel;
             logic [7:0] expected_byte;
-            byte_sel = (params::BYTES_PER_PIXEL - 1) - int'(addr.pixel);
-            expected_byte = COLOR[(byte_sel*8)+:8];
+            expected_byte = COLOR.bytes[addr.pixel];
             assert (int'(addr.row) >= RECT_Y1 && int'(addr.row) < RECT_Y1 + RECT_H
                 && int'(addr.col) >= RECT_X1 && int'(addr.col) < RECT_X1 + RECT_W)
             else $fatal(1, "Write outside rect: row=%0d col=%0d pixel=%0d", addr.row, addr.col, addr.pixel);
@@ -110,9 +116,18 @@ module tb_control_cmd_fillrect;
                 writes_seen <= writes_seen + 1;
                 mem[addr]   <= 1'b0;
             end
-            // Accept any byte lane of the requested color pattern.
-            assert (data_out == expected_byte || data_out == COLOR[7:0] || data_out == COLOR[15:8])
-            else $fatal(1, "Fillrect expected color byte, got 0x%0h at addr %0d", data_out, addr);
+            assert (data_out == expected_byte)
+            else
+                $fatal(
+                    1,
+                    "Fillrect expected 0x%0h got 0x%0h row=%0d col=%0d pix=%0d addr=%0d",
+                    expected_byte,
+                    data_out,
+                    addr.row,
+                    addr.col,
+                    addr.pixel,
+                    addr
+                );
         end
     end
 
