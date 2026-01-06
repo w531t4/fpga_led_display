@@ -54,6 +54,7 @@ module control_cmd_readpixel #(
                     end
                 end
                 STATE_COLUMN_CAPTURE: begin
+                    // Little Endian
                     if (enable) begin
                         // load (potentially multibyte) column number
                         //   - if multibyte, expect little endian (LSB -> MSB)
@@ -68,6 +69,7 @@ module control_cmd_readpixel #(
                     end
                 end
                 STATE_READ_PIXELBYTES: begin
+                    // Big Endian
                     if (enable) begin
                         /* decrement the column address (or finish the load) */
                         /* store this byte */
