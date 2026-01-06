@@ -96,6 +96,7 @@ package types;
         logic [calc::num_bytes_to_contain($bits(col_addr_t))-1:0][7:0] bytes;  // bytes[0] = LSB
         col_addr_view_t                                                addr;
     } col_field_t;
+    typedef logic [$clog2(calc::num_bytes_to_contain($bits(col_addr_t))+1)-1:0] col_addr_field_byte_count_t;
     typedef logic [calc::safe_clog2(calc::num_bytes_to_contain($bits(col_addr_t)))-1:0] col_field_index_t;
     // ==== /COLUMN ADDRESS ====
 
