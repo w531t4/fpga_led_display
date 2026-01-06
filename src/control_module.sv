@@ -93,9 +93,11 @@ module control_module #(
         end
     end
 
-    wire cmd_readrow_we, cmd_readrow_as, cmd_readrow_done;
-    wire [7:0] cmd_readrow_do;
-    wire types::fb_addr_t cmd_readrow_addr;
+    wire                        cmd_readrow_we;
+    wire                        cmd_readrow_as;
+    wire                        cmd_readrow_done;
+    wire                  [7:0] cmd_readrow_do;
+    wire types::fb_addr_t       cmd_readrow_addr;
 
     control_cmd_readrow #(
         ._UNUSED('d0)
@@ -112,9 +114,11 @@ module control_module #(
     );
     assign ram_address = cmd_line_addr;
 
-    wire cmd_readpixel_we, cmd_readpixel_as, cmd_readpixel_done;
-    wire [7:0] cmd_readpixel_do;
-    wire types::fb_addr_t cmd_readpixel_addr;
+    wire                        cmd_readpixel_we;
+    wire                        cmd_readpixel_as;
+    wire                        cmd_readpixel_done;
+    wire                  [7:0] cmd_readpixel_do;
+    wire types::fb_addr_t       cmd_readpixel_addr;
 
     control_cmd_readpixel #(
         ._UNUSED('d0)
@@ -130,7 +134,8 @@ module control_module #(
         .done(cmd_readpixel_done)
     );
 
-    wire cmd_readbrightness_done, cmd_readbrightness_be;
+    wire                           cmd_readbrightness_done;
+    wire                           cmd_readbrightness_be;
     wire types::brightness_level_t cmd_readbrightness_do;
     control_cmd_readbrightness #(
         ._UNUSED('d0)
@@ -144,9 +149,11 @@ module control_module #(
         .done(cmd_readbrightness_done)
     );
 
-    wire cmd_blankpanel_we, cmd_blankpanel_as, cmd_blankpanel_done;
-    wire [7:0] cmd_blankpanel_do;
-    wire types::fb_addr_t cmd_blankpanel_addr;
+    wire                        cmd_blankpanel_we;
+    wire                        cmd_blankpanel_as;
+    wire                        cmd_blankpanel_done;
+    wire                  [7:0] cmd_blankpanel_do;
+    wire types::fb_addr_t       cmd_blankpanel_addr;
 
     control_cmd_blankpanel #(
         ._UNUSED('d0)
