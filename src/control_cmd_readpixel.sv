@@ -49,7 +49,8 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         ram_write_enable <= 1'b0;
                         done <= 1'b0;
-                        column_byte_counter <= types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
+                        column_byte_counter <= types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - types::col_addr_field_byte_count_t'(
+            1));
                         state <= STATE_COLUMN_CAPTURE;
                         addr.row <= types::row_addr_t'(data_in);
                     end
@@ -58,7 +59,7 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         // load (potentially multibyte) column number
                         //   - if multibyte, expect little endian (LSB -> MSB)
-                        column_bits[((_NUM_COLUMN_BYTES_NEEDED-(32)'(column_byte_counter))*8)-1-:8] <= data_in[7:0];
+                        column_bits[(((32)'(_NUM_COLUMN_BYTES_NEEDED)-(32)'(column_byte_counter))*8)-1-:8] <= data_in[7:0];
                         if (column_byte_counter == 'b0) begin
                             state <= STATE_READ_PIXELBYTES;
                             ram_write_enable <= 1'b1;

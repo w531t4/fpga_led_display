@@ -63,7 +63,8 @@ module control_cmd_fillrect #(
         reset_capturebytes_remaining = types::color_index_t'(params::BYTES_PER_PIXEL - 1);
     endfunction
     function automatic types::col_addr_field_byte_index_t reset_byte_counter();
-        reset_byte_counter = types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
+        reset_byte_counter = types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - types::col_addr_field_byte_count_t'(
+            1));
     endfunction
     always @(posedge clk) begin
         if (reset) begin
@@ -84,7 +85,7 @@ module control_cmd_fillrect #(
             case (state)
                 STATE_X1_CAPTURE: begin
                     if (enable) begin
-                        x1[((_NUM_COLUMN_BYTES_NEEDED-(32)'(x1_byte_counter))*8)-1-:8] <= data_in[7:0];
+                        x1[(((32)'(_NUM_COLUMN_BYTES_NEEDED)-(32)'(x1_byte_counter))*8)-1-:8] <= data_in[7:0];
                         if (x1_byte_counter == 'b0) begin
                             state <= STATE_Y1_CAPTURE;
                         end else x1_byte_counter <= x1_byte_counter - 1;
@@ -98,7 +99,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_WIDTH_CAPTURE: begin
                     if (enable) begin
-                        width[((_NUM_COLUMN_BYTES_NEEDED-(32)'(width_byte_counter))*8)-1-:8] <= data_in[7:0];
+                        width[(((32)'(_NUM_COLUMN_BYTES_NEEDED)-(32)'(width_byte_counter))*8)-1-:8] <= data_in[7:0];
                         if (width_byte_counter == 'b0) begin
                             state <= STATE_HEIGHT_CAPTURE;
                         end else width_byte_counter <= width_byte_counter - 1;
