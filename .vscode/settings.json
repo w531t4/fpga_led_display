@@ -1,5 +1,6 @@
 {
     "files.exclude": {
+        ".ccache/**": true,
         "waveforms_projects": true,
         "backup*.tgz": true,
         "*.pyc": true,

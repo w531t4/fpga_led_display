@@ -30,6 +30,9 @@ fi
 
 git config blame.ignoreRevsFile .git-blame-ignore-revs
 
+echo "export CCACHE_DIR=/workspaces/fpga_led_display/.ccache" >> /home/vscode/.bashrc
+
+
 .devcontainer/bootstrap
 
 pre-commit install

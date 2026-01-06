@@ -16,6 +16,8 @@ SRC_DIR:=src
 TB_DIR:=$(SRC_DIR)/testbenches
 CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
 VINCLUDE_DIR:=$(SRC_DIR)/include
+CCACHE_DIR ?= $(abspath .ccache)
+export CCACHE_DIR
 
 # Ensure depfile includes don't override the default goal.
 .DEFAULT_GOAL := all
