@@ -19,9 +19,8 @@ module control_cmd_fillrect #(
     output logic ready_for_data,
     output logic done
 );
-    localparam types::col_addr_field_byte_count_t _NUM_COLUMN_BYTES_NEEDED = types::col_addr_field_byte_count_t'(calc::num_bytes_to_contain(
-        $bits(types::col_addr_t)
-    ));
+    localparam integer unsigned _NUM_COLUMN_BYTES_NEEDED = calc::num_bytes_to_contain($bits(types::col_addr_t));
+    localparam types::col_addr_field_byte_index_t LAST_COL_BYTE_INDEX = types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
     typedef enum {
         STATE_X1_CAPTURE,      // 0
         STATE_Y1_CAPTURE,      // 1
@@ -62,10 +61,6 @@ module control_cmd_fillrect #(
     function automatic types::color_index_t reset_capturebytes_remaining();
         reset_capturebytes_remaining = types::color_index_t'(params::BYTES_PER_PIXEL - 1);
     endfunction
-    function automatic types::col_addr_field_byte_index_t reset_byte_counter();
-        reset_byte_counter = types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - types::col_addr_field_byte_count_t'(
-            1));
-    endfunction
     always @(posedge clk) begin
         if (reset) begin
             subcmd_enable <= 1'b0;
@@ -87,7 +82,7 @@ module control_cmd_fillrect #(
                     // Little Endian
                     if (enable) begin
                         x1.bytes[x1_byte_counter] <= data_in;
-                        if (x1_byte_counter == reset_byte_counter()) begin  // FIXME: functiontitle
+                        if (x1_byte_counter == LAST_COL_BYTE_INDEX) begin
                             state <= STATE_Y1_CAPTURE;
                         end else x1_byte_counter <= x1_byte_counter + 1;
                     end
@@ -102,7 +97,7 @@ module control_cmd_fillrect #(
                     // Little Endian
                     if (enable) begin
                         width.bytes[width_byte_counter] <= data_in;
-                        if (width_byte_counter == reset_byte_counter()) begin  // FIXME: functiontitle
+                        if (width_byte_counter == LAST_COL_BYTE_INDEX) begin
                             state <= STATE_HEIGHT_CAPTURE;
                         end else width_byte_counter <= width_byte_counter + 1;
                     end
