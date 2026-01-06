@@ -56,6 +56,7 @@ module control_cmd_fillpanel #(
         end else begin
             case (state)
                 STATE_COLOR_CAPTURE: begin
+                    // Big Endian
                     if (enable) begin
                         selected_color.bytes[capturebytes_remaining] <= data_in;
                         if (capturebytes_remaining == 0) begin
