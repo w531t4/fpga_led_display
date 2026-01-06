@@ -84,6 +84,7 @@ module control_cmd_fillrect #(
         end else begin
             case (state)
                 STATE_X1_CAPTURE: begin
+                    // Little Endian
                     if (enable) begin
                         x1.bytes[x1_byte_counter] <= data_in;
                         if (x1_byte_counter == reset_byte_counter()) begin  // FIXME: functiontitle
@@ -98,6 +99,7 @@ module control_cmd_fillrect #(
                     end
                 end
                 STATE_WIDTH_CAPTURE: begin
+                    // Little Endian
                     if (enable) begin
                         width.bytes[width_byte_counter] <= data_in;
                         if (width_byte_counter == reset_byte_counter()) begin  // FIXME: functiontitle
@@ -112,6 +114,7 @@ module control_cmd_fillrect #(
                     end
                 end
                 STATE_COLOR_CAPTURE: begin
+                    // Big Endian
                     if (enable) begin
                         selected_color.bytes[capturebytes_remaining] <= data_in;
                         if (capturebytes_remaining == 0) begin
