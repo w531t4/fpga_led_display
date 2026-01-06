@@ -28,7 +28,7 @@ module control_cmd_readpixel #(
     } ctrl_fsm_t;
     ctrl_fsm_t state;
     types::col_field_t column_bits;
-    types::col_field_index_t column_byte_counter;
+    types::col_addr_field_byte_index_t column_byte_counter;
 
     always @(posedge clk) begin
         if (reset) begin
@@ -49,7 +49,7 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         ram_write_enable <= 1'b0;
                         done <= 1'b0;
-                        column_byte_counter <= types::col_field_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
+                        column_byte_counter <= types::col_addr_field_byte_index_t'(_NUM_COLUMN_BYTES_NEEDED - 1);
                         state <= STATE_COLUMN_CAPTURE;
                         addr.row <= types::row_addr_t'(data_in);
                     end
