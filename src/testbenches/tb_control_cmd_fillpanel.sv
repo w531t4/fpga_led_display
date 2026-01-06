@@ -11,7 +11,11 @@
 module tb_control_cmd_fillpanel;
     localparam int MEM_NUM_BYTES = (1 << $bits(types::mem_write_addr_t));
     localparam int TOTAL_WRITES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
-    localparam types::color_t COLOR = 16'hCAFE;
+`ifdef RGB24
+    localparam types::color_field_t COLOR = types::color_field_t'(24'h12CAFE);
+`else
+    localparam types::color_field_t COLOR = types::color_field_t'(16'hCAFE);
+`endif
 
     // === Testbench scaffolding ===
     logic                                     clk;
@@ -70,38 +74,51 @@ module tb_control_cmd_fillpanel;
         for (int i = params::BYTES_PER_PIXEL - 1; i >= 0; i--) begin
             @(posedge clk);
             enable  = 1;
-            data_in = COLOR[(i*8)+:8];
+            data_in = COLOR.bytes[i];
         end
-        enable = 1;
+        wait (!ready_for_data);
+        @(posedge clk);
+        enable = 0;
+        if (dut.selected_color != COLOR)
+            $fatal(1, "Fillpanel captured color mismatch: saw 0x%0h expected 0x%0h", dut.selected_color, COLOR);
         `WAIT_ASSERT(clk, done == 1'b1, 512)
         `WAIT_ASSERT(clk, writes_seen == TOTAL_WRITES, 10)
         @(posedge clk);
-        enable = 0;
         repeat (5) @(posedge clk);
         $finish;
     end
 
     // === Scoreboard / monitor ===
     always @(posedge clk) begin
+        #1;
         if (reset) begin
             writes_seen <= 0;
             // verilator lint_off WIDTHCONCAT
             mem <= {MEM_NUM_BYTES{1'b1}};
             // verilator lint_on WIDTHCONCAT
-        end else if (ram_write_enable) begin
-            int byte_sel;
-            logic [7:0] expected_byte;
-            byte_sel = (params::BYTES_PER_PIXEL - 1) - int'(addr.pixel);
-            expected_byte = COLOR[(byte_sel*8)+:8];
-            assert (int'(addr) < MEM_NUM_BYTES)
-            else $fatal(1, "Address out of range: %0d", addr);
-            if (mem[addr] == 1'b1) begin
-                writes_seen <= writes_seen + 1;
-                mem[addr]   <= 1'b0;
+        end else begin
+            if (ram_write_enable) begin
+                logic [7:0] expected_byte;
+                expected_byte = COLOR.bytes[addr.pixel];
+                assert (int'(addr) < MEM_NUM_BYTES)
+                else $fatal(1, "Address out of range: %0d", addr);
+                if (mem[addr] == 1'b1) begin
+                    writes_seen <= writes_seen + 1;
+                    mem[addr]   <= 1'b0;
+                end
+                assert (data_out == expected_byte)
+                else
+                    $fatal(
+                        1,
+                        "Fillpanel expected 0x%0h got 0x%0h row=%0d col=%0d pix=%0d addr=%0d",
+                        expected_byte,
+                        data_out,
+                        addr.row,
+                        addr.col,
+                        addr.pixel,
+                        addr
+                    );
             end
-            // DUT may present any byte of the selected color; accept any lane of COLOR.
-            assert (data_out == expected_byte || data_out == COLOR[7:0] || data_out == COLOR[15:8])
-            else $fatal(1, "Fillpanel expected color byte, got 0x%0h at addr %0d", data_out, addr);
         end
     end
 

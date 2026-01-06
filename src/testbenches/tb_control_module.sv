@@ -4,210 +4,125 @@
 `timescale 1ns / 1ns
 `default_nettype none
 // verilog_format: on
-module tb_control_module #(
-    parameter int unsigned WATCHDOG_CONTROL_TICKS = params::WATCHDOG_CONTROL_TICKS,
-    // verilator lint_off UNUSEDPARAM
-    parameter integer unsigned _UNUSED = 0
-    // verilator lint_on UNUSEDPARAM
-);
 
+module tb_control_module;
+    `include "row4.svh"
+    localparam integer unsigned CMD_BYTES = $bits(cmd_series) / 8;
+    localparam types::brightness_level_t EXPECTED_BRIGHTNESS =
+        cmd_brightness_3.level.brightness.level;
+
+    localparam time CLK_HALF_PERIOD = time'($rtoi(params::SIM_HALF_PERIOD_NS));
+
+    // === DUT IO ===
     logic clk;
     logic reset;
-    logic local_reset;
+    logic [7:0]                   data_rx;
+    logic                         data_ready_n;
     wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
     wire types::mem_write_data_t ram_data_out;
     wire types::mem_write_addr_t ram_address;
     wire ram_write_enable;
-    wire ctrl_busy;
+    wire                         busy;
+    wire                         ready_for_data;
     wire ram_clk_enable;
-`ifdef DEBUGGER
-    wire [7:0] num_commands_processed;
-`endif
+    wire                         watchdog_reset;
+    wire                         frame_select;
 
-    wire [7:0] rxdata_to_controller;
-    wire rxdata;
-    wire rxdata_ready;
-    wire rxdata_ready_level;
-    wire rxdata_ready_pulse;
-`ifdef SPI
-    logic [7:0] thebyte;
-    wire spi_master_txdone;
-    integer i;
-    wire spi_clk;
-    wire spi_cs;
-    logic spi_start;
-`else
-    wire uart_rx_dataready;
-`endif
-    localparam integer unsigned mystring_size = 'd1072;
-    // TODO - add command into .svh
-    logic [1071:0] mystring = "brR L-77665544332211887766554433221188776655443322118877665544332211887766554433221188776655443322118877665544332211887766554433221110";
-    //logic tb_clk_baudrate;
+    integer writes_seen;
 
-`ifdef SPI
-    wire [7:0] unused_rdata;
-    wire unused_sdout;
-    spi_master #() spimaster (
-        .rstb (~reset),
-        .clk  (clk),
-        .mlb  (1'b1),               // shift msb first
-        .start(spi_start),          // indicator to start activity
-        .tdat (thebyte),
-        .cdiv (2'b0),               // 2'b0 = divide by 4
-        .din  (1'b0),               // data from slave, disable
-        .ss   (spi_cs),             // chip select for slave
-        .sck  (spi_clk),            // clock to send to slave
-        .dout (rxdata),             // data to send to slave
-        .done (spi_master_txdone),
-        .rdata(unused_rdata)
-    );
-    spi_slave spislave (
-        .rstb (~reset),
-        .ten  (1'b0),                 // transmit enable, 0 = disabled
-        .tdata(8'b0),
-        .mlb  (1'b1),                 // shift msb first
-        .ss   (spi_cs),
-        .sck  (spi_clk),
-        .sdin (rxdata),               // data coming from master
-        .sdout(unused_sdout),
-        .done (rxdata_ready),         // data ready
-        .rdata(rxdata_to_controller)  // data
-    );
-    // verilog_format: off
-    wire _unused_ok_ifdef_spi = &{1'b0,
-                                  unused_rdata,
-                                  unused_sdout,
-                                  1'b0};
-    // verilog_format: on
-`else
-    uart_rx #(
-        // we want 22MHz / 2,430,000 = 9.0534
-        // 22MHz / 9 = 2,444,444 baud 2444444
-        .TICKS_PER_BIT(params::CTRLR_CLK_TICKS_PER_BIT)
-    ) mycontrol_rxuart (
-        .reset(reset),
-        .i_clk(clk),
-        .i_enable(1'b1),
-        .i_din_priortobuffer(rxdata),
-        .o_rxdata(rxdata_to_controller),
-        .o_recvdata(uart_rx_dataready),
-        .o_busy(rxdata_ready)
-    );
-    debugger #(
-        .DATA_WIDTH(1072),
-        // use smaller than normal so it doesn't require us to simulate to
-        // infinity to see results
-        .DIVIDER_TICKS(params::DEBUG_MSGS_PER_SEC_TICKS_SIM),
-
-        // We're using the debugger here as a data transmitter only. Need
-        // to transmit at the same speed as the controller is expecting to
-        // receive at
-        .UART_TICKS_PER_BIT(params::CTRLR_CLK_TICKS_PER_BIT)
-    ) mydebug (
-        .clk_in(clk),
-        .reset(local_reset),
-        .data_in(mystring),
-        .debug_uart_rx_in(1'b0),
-        .debug_command(debug_command),
-        .debug_command_pulse(debug_command_pulse),
-        .debug_command_busy(debug_command_busy),
-        .tx_out(rxdata)
-    );
-`endif
-    // bring uart-data into main clock domain
-    ff_sync #() uart_sync (
-        .clk(clk),
-        .signal(rxdata_ready),
-        .sync_level(rxdata_ready_level),
-        .sync_pulse(rxdata_ready_pulse),
-        .reset(reset)
-    );
-    wire [2:0] _unused_ok_main;
+    // === DUT ===
     control_module #(
-        .WATCHDOG_CONTROL_TICKS(WATCHDOG_CONTROL_TICKS),
+        .WATCHDOG_CONTROL_TICKS(params::WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
-    ) control_module_instance (
+    ) dut (
         .reset(reset),
         .clk_in(clk),
-        .busy(ctrl_busy),
-        .data_rx(rxdata_to_controller),
-`ifdef SPI
-        .data_ready_n(~rxdata_ready_pulse),
-`else
-        .data_ready_n(rxdata_ready_pulse),
-`endif
+        .data_rx(data_rx),
+        .data_ready_n(data_ready_n),
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
-        .ready_for_data(_unused_ok_main[0]),
-`ifdef DOUBLE_BUFFER
-        .frame_select(_unused_ok_main[1]),
-`endif
-`ifdef USE_WATCHDOG
-        .watchdog_reset(_unused_ok_main[2]),
-`endif
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
-        .ram_clk_enable(ram_clk_enable)
-`ifdef DEBUGGER,
-        .num_commands_processed(num_commands_processed)
-`endif
+        .busy(busy),
+        .ready_for_data(ready_for_data),
+        .ram_clk_enable(ram_clk_enable),
+        .frame_select(frame_select),
+        .watchdog_reset(watchdog_reset)
     );
 
+    // === Stimulus helpers ===
+    task automatic stream_byte(input logic [7:0] byte_value);
+        begin
+            while (!ready_for_data) @(posedge clk);
+            data_rx = byte_value;
+            data_ready_n = 1'b0;
+            @(posedge clk);
+            data_ready_n = 1'b1;
+            @(posedge clk);
+        end
+    endtask
+
+    task automatic stream_cmd_series();
+        integer idx;
+        begin
+            for (idx = 0; idx < CMD_BYTES; idx = idx + 1) begin
+                stream_byte(cmd_series[$bits(cmd_series)-1-(idx*8)-:8]);
+            end
+        end
+    endtask
+
+    // === Scoreboard ===
+    always @(posedge clk) begin
+        if (reset) begin
+            writes_seen <= 0;
+        end else if (ram_write_enable) begin
+            writes_seen <= writes_seen + 1;
+        end
+    end
+
+    // === Clocking ===
+    always begin
+        #(CLK_HALF_PERIOD) clk <= !clk;
+    end
+
+    // === Test sequence ===
     initial begin
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
 `endif
         $dumpvars(0, tb_control_module);
         clk = 0;
-        reset = 0;
-        local_reset = 0;
-`ifdef SPI
-        i = 0;
-        spi_start = 0;
-        thebyte = 8'b0;
-`endif
-
-        @(posedge clk) begin
-            local_reset = !local_reset;
-            reset = !reset;
-        end
-        @(posedge clk) begin
-            local_reset = !local_reset;
-            reset = !reset;
-        end
-`ifdef SPI
-        @(posedge clk) spi_start = 1;
-`endif
-        repeat (300) begin
-            @(posedge clk);
-        end
+        reset = 1;
+        data_rx = 8'b0;
+        data_ready_n = 1'b1;
+        writes_seen = 0;
+        @(posedge clk);
+        @(posedge clk) reset = 0;
+        @(posedge clk);
+        stream_cmd_series();
+        repeat (64) @(posedge clk);
+        repeat (1000) @(posedge clk);
+        if (!ready_for_data)
+            $fatal(1, "ready_for_data stuck low after streaming commands");
+        if (brightness_enable != EXPECTED_BRIGHTNESS)
+            $fatal(1, "brightness mismatch: saw 0x%0h expected 0x%0h",
+                   brightness_enable, EXPECTED_BRIGHTNESS);
+        if (writes_seen == 0)
+            $fatal(1, "expected at least one RAM write during command series");
         $finish;
     end
 
-`ifdef SPI
-    always begin
-        @(posedge spi_master_txdone) begin
-            if ((i < (mystring_size / 8))) begin
-                thebyte <= mystring[mystring_size-1-(i*8)-:8];
-                i <= i + 1;
-            end
-        end
-    end
-`endif
-    always begin
-        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
-    end
     // verilog_format: off
     wire _unused_ok = &{1'b0,
-                        rxdata_ready_level,
                         rgb_enable,
                         brightness_enable,
                         ram_data_out,
                         ram_address,
-                        ram_write_enable,
-                        ctrl_busy,
+                        watchdog_reset,
+                        frame_select,
+                        busy,
                         ram_clk_enable,
                         1'b0};
     // verilog_format: on

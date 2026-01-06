@@ -43,7 +43,7 @@ module control_cmd_fillrect #(
     types::row_addr_t height;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
-    types::color_t selected_color;
+    types::color_field_t selected_color;
     types::color_index_t capturebytes_remaining;
 
 
@@ -110,7 +110,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_COLOR_CAPTURE: begin
                     if (enable) begin
-                        selected_color[(((32)'(capturebytes_remaining)+1)*8)-1-:8] <= data_in;
+                        selected_color.bytes[capturebytes_remaining] <= data_in;
                         if (capturebytes_remaining == 0) begin
                             state <= STATE_START;
                             ready_for_data <= 1'b0;
