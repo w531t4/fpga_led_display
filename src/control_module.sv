@@ -200,7 +200,7 @@ module control_module #(
         .enable          ((cmd_line_state == STATE_CMD_FILLRECT) && ~data_ready_n),
         .clk             (clk_in),
         .mem_clk         (clk_in),
-        .data_in         (data_rx),
+        .data_in         (data_rx_latch),
         .addr            (cmd_fillrect_addr),
         .data_out        (cmd_fillrect_do),
         .ram_write_enable(cmd_fillrect_we),
