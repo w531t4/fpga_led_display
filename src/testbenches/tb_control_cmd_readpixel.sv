@@ -15,9 +15,10 @@ module tb_control_cmd_readpixel #(
     localparam integer unsigned command_without_opcode_bits = $bits(types::readpixel_cmd_t) - $bits(cmd::opcode_t);
     localparam logic [command_without_opcode_bits-1:0] cmd_pixel_1_local = cmd_pixel_1[command_without_opcode_bits-1:0];
     localparam int unsigned STREAM_BYTES = ($bits(cmd_pixel_1_local) / 8);
-    localparam int ROW_IDX = 0;
-    localparam int COL_LSB_IDX = 1;
-    localparam int COL_MSB_IDX = 2;
+    localparam int unsigned ROW_BYTES = calc::num_bytes_to_contain($bits(types::row_addr_t));
+    localparam int unsigned COL_BYTES = calc::num_bytes_to_contain($bits(types::col_addr_t));
+    localparam int unsigned COLOR_BYTES = params::BYTES_PER_PIXEL;
+    localparam int unsigned COLOR_START_IDX = ROW_BYTES + COL_BYTES;
 
     // === Testbench scaffolding ===
     wire slowclk;
@@ -87,18 +88,15 @@ module tb_control_cmd_readpixel #(
         @(posedge clk) @(posedge clk) reset = ~reset;
 
         // Precompute expected stream for monitoring.
-        expected_bytes[ROW_IDX]     = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-:8];
-        expected_bytes[COL_LSB_IDX] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-8-:8];
-`ifdef W128
-        expected_bytes[COL_MSB_IDX] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-16-:8];
-        for (int __i = 3; __i < STREAM_BYTES; __i++) begin
-            expected_bytes[__i] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-(__i*8)-:8];
+        for (int __i = 0; __i < ROW_BYTES; __i++) begin
+            expected_bytes[__i] = cmd_pixel_1.y1.bytes[ROW_BYTES - 1 - __i];
         end
-`else
-        for (int __i = 2; __i < STREAM_BYTES; __i++) begin
-            expected_bytes[__i] = cmd_pixel_1_local[$bits(cmd_pixel_1_local)-1-(__i*8)-:8];
+        for (int __i = 0; __i < COL_BYTES; __i++) begin
+            expected_bytes[ROW_BYTES + __i] = cmd_pixel_1.x1.bytes[COL_BYTES - 1 - __i];
         end
-`endif
+        for (int __i = 0; __i < COLOR_BYTES; __i++) begin
+            expected_bytes[COLOR_START_IDX + __i] = cmd_pixel_1.color.bytes[COLOR_BYTES - 1 - __i];
+        end
     end
 
     // === Stimulus ===
