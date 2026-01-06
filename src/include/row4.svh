@@ -52,9 +52,9 @@ localparam types::readpixel_cmd_t cmd_pixel_2 = types::readpixel_cmd_t'({
 localparam types::fillrect_cmd_t cmd_fillrect = types::fillrect_cmd_t'({
     cmd::FILLRECT,
     types::col_addr_field_t'('h0001),
-    types::row_field_t'('h0A),
+    types::row_addr_field_t'('h0A),
     types::col_addr_field_t'('h0071),
-    types::row_field_t'('h05),
+    types::row_addr_field_t'('h05),
     types::color_t'('hE0A932)
 });
 `else  // W128
@@ -67,9 +67,9 @@ localparam types::readpixel_cmd_t cmd_pixel_2 = types::readpixel_cmd_t'({
 localparam types::fillrect_cmd_t cmd_fillrect = types::fillrect_cmd_t'({
     cmd::FILLRECT,
     types::col_addr_field_t'('h05),
-    types::row_field_t'('h0A),
+    types::row_addr_field_t'('h0A),
     types::col_addr_field_t'('h10),
-    types::row_field_t'('h05),
+    types::row_addr_field_t'('h05),
     types::color_t'('hE0A932)
 });
 `endif  // W128
@@ -85,9 +85,9 @@ localparam types::readpixel_cmd_t cmd_pixel_2 = types::readpixel_cmd_t'({
 localparam types::fillrect_cmd_t cmd_fillrect = types::fillrect_cmd_t'({
     cmd::FILLRECT,
     types::col_addr_field_t'('h0001),
-    types::row_field_t'('h0A),
+    types::row_addr_field_t'('h0A),
     types::col_addr_field_t'('h0071),
-    types::row_field_t'('h05),
+    types::row_addr_field_t'('h05),
     types::color_t'('hE0A9)
 });
 `else  // W128
@@ -100,9 +100,9 @@ localparam types::readpixel_cmd_t cmd_pixel_2 = types::readpixel_cmd_t'({
 localparam types::fillrect_cmd_t cmd_fillrect = types::fillrect_cmd_t'({
     cmd::FILLRECT,
     types::col_addr_field_t'('h05),
-    types::row_field_t'('h0A),
+    types::row_addr_field_t'('h0A),
     types::col_addr_field_t'('h10),
-    types::row_field_t'('h05),
+    types::row_addr_field_t'('h05),
     types::color_t'('hE0A9)
 });
 `endif  // W128
