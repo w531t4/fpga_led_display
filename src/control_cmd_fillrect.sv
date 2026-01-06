@@ -74,7 +74,7 @@ module control_cmd_fillrect #(
             ready_for_data <= 1'b1;
             capturebytes_remaining <= reset_capturebytes_remaining();
             selected_color <= 'b0;
-            x1_byte_counter <= reset_byte_counter();
+            x1_byte_counter <= 'b0;
             width_byte_counter <= reset_byte_counter();
             x1 <= 'b0;
             width <= 'b0;
@@ -85,10 +85,10 @@ module control_cmd_fillrect #(
             case (state)
                 STATE_X1_CAPTURE: begin
                     if (enable) begin
-                        x1[(((32)'(_NUM_COLUMN_BYTES_NEEDED)-(32)'(x1_byte_counter))*8)-1-:8] <= data_in[7:0];
-                        if (x1_byte_counter == 'b0) begin
+                        x1.bytes[x1_byte_counter] <= data_in;
+                        if (x1_byte_counter == reset_byte_counter()) begin  // FIXME: functiontitle
                             state <= STATE_Y1_CAPTURE;
-                        end else x1_byte_counter <= x1_byte_counter - 1;
+                        end else x1_byte_counter <= x1_byte_counter + 1;
                     end
                 end
                 STATE_Y1_CAPTURE: begin
@@ -142,7 +142,7 @@ module control_cmd_fillrect #(
                     done_inside <= 1'b0;
                     ready_for_data <= 1'b1;
                     state <= STATE_X1_CAPTURE;
-                    x1_byte_counter <= reset_byte_counter();
+                    x1_byte_counter <= 'b0;
                     width_byte_counter <= reset_byte_counter();
                     capturebytes_remaining <= reset_capturebytes_remaining();
                     selected_color <= 'b0;
