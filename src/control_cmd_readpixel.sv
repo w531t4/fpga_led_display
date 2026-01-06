@@ -38,7 +38,7 @@ module control_cmd_readpixel #(
             addr.row <= 'b0;
             addr.pixel <= 'b0;
             done <= 1'b0;
-            column_byte_counter <= 'b0;
+            column_byte_counter <= LAST_COL_BYTE_INDEX;
             column_bits <= 'b0;
             addr.col <= 'b0;
         end else begin
@@ -48,7 +48,6 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         ram_write_enable <= 1'b0;
                         done <= 1'b0;
-                        column_byte_counter <= LAST_COL_BYTE_INDEX;
                         state <= STATE_COLUMN_CAPTURE;
                         addr.row <= types::row_addr_t'(data_in);
                     end
@@ -89,6 +88,7 @@ module control_cmd_readpixel #(
                     done <= 1'b0;
                     data_out <= 8'b0;
                     ram_write_enable <= 1'b0;
+                    column_byte_counter <= LAST_COL_BYTE_INDEX;
                     ram_access_start <= 1'b0;
                     addr.row <= 'd0;
                     column_bits <= 'd0;
