@@ -5,6 +5,9 @@
 `default_nettype none
 // verilog_format: on
 module tb_debugger #(
+    parameter integer unsigned DIVIDER_TICKS = 1023,
+    parameter integer unsigned DATA_WIDTH = 24,
+    parameter integer unsigned CLK_DIV_COUNT = 600,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
@@ -12,7 +15,7 @@ module tb_debugger #(
 
     logic clk;
     logic reset;
-    logic [23:0] data_in;
+    logic [DATA_WIDTH-1:0] data_in;
     wire tx_out;
     logic clk_out;
     wire debug_start;
@@ -24,7 +27,7 @@ module tb_debugger #(
     logic [10:0] j;
     wire [22:0] _unused_ok_main;
     clock_divider #(
-        .CLK_DIV_COUNT(600)
+        .CLK_DIV_COUNT(CLK_DIV_COUNT)
     ) clkdiv_baudrate (
         .reset  (reset),
         .clk_in (clk),
@@ -32,8 +35,8 @@ module tb_debugger #(
     );
 
     debugger #(
-        .DIVIDER_TICKS(1023),
-        .DATA_WIDTH(24)
+        .DIVIDER_TICKS(DIVIDER_TICKS),
+        .DATA_WIDTH(DATA_WIDTH)
     ) debug_instance (
         .clk_in(clk),
         .reset(reset),
@@ -61,7 +64,7 @@ module tb_debugger #(
         reset = 0;
         rx_line2 = 0;
         clk_out = 0;
-        data_in = 24'b111100001010101000001101;
+        data_in = DATA_WIDTH'('b111100001010101000001101);
 
     end
 
