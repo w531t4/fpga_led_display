@@ -37,7 +37,7 @@ module tb_control_subcmd_fillarea #(
     int remaining_valid_bytes;
     wire types::mem_write_data_t data_out;
     logic reset;
-    types::color_t color_in;
+    types::color_field_t color_in;
 
     // === DUT wiring ===
     control_subcmd_fillarea #(
@@ -175,9 +175,9 @@ module tb_control_subcmd_fillarea #(
                 $display("out-of-range write: row=%0d col=%0d pixel=%0d", row, column, pixel);
                 $stop;
             end else begin
-                if (data_out != color_in[(((32)'(pixel)+1)*8)-1-:8]) begin
-                    $display("expected data_out=0x%0h, got 0x%0h at row=%0d col=%0d pixel=%0d",
-                             color_in[(((32)'(pixel)+1)*8)-1-:8], data_out, row, column, pixel);
+                if (data_out != color_in.bytes[pixel]) begin
+                    $display("expected data_out=0x%0h, got 0x%0h at row=%0d col=%0d pixel=%0d", color_in.bytes[pixel],
+                             data_out, row, column, pixel);
                     $stop;
                 end
                 if (mem[addr] == 1'b0) begin
