@@ -38,7 +38,7 @@ module control_cmd_readpixel #(
             addr.row <= 'b0;
             addr.pixel <= 'b0;
             done <= 1'b0;
-            column_byte_counter <= LAST_COL_BYTE_INDEX;
+            column_byte_counter <= 'b0;
             column_bits <= 'b0;
             addr.col <= 'b0;
         end else begin
@@ -57,14 +57,14 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         // load (potentially multibyte) column number
                         //   - if multibyte, expect little endian (LSB -> MSB)
-                        column_bits[(((32)'(_NUM_COLUMN_BYTES_NEEDED)-(32)'(column_byte_counter))*8)-1-:8] <= data_in[7:0];
-                        if (column_byte_counter == 'b0) begin
+                        column_bits.bytes[column_byte_counter] <= data_in;
+                        if (column_byte_counter == LAST_COL_BYTE_INDEX) begin
                             state <= STATE_READ_PIXELBYTES;
                             ram_write_enable <= 1'b1;
                             ram_access_start <= !ram_access_start;
                             data_out <= data_in;
                             addr.pixel <= types::color_index_t'(params::BYTES_PER_PIXEL - 1);
-                        end else column_byte_counter <= column_byte_counter - 1;
+                        end else column_byte_counter <= column_byte_counter + 1;
                     end
                 end
                 STATE_READ_PIXELBYTES: begin
@@ -88,7 +88,7 @@ module control_cmd_readpixel #(
                     done <= 1'b0;
                     data_out <= 8'b0;
                     ram_write_enable <= 1'b0;
-                    column_byte_counter <= LAST_COL_BYTE_INDEX;
+                    column_byte_counter <= 'b0;
                     ram_access_start <= 1'b0;
                     addr.row <= 'd0;
                     column_bits <= 'd0;
