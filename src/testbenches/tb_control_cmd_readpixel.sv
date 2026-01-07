@@ -13,8 +13,8 @@ module tb_control_cmd_readpixel #(
 );
     `include "row4.svh"
     localparam integer unsigned command_without_opcode_bits = $bits(types::readpixel_cmd_t) - $bits(cmd::opcode_t);
-    localparam logic [command_without_opcode_bits-1:0] cmd_pixel_1_local = cmd_pixel_2[command_without_opcode_bits-1:0];
-    localparam int unsigned STREAM_BYTES = ($bits(cmd_pixel_1_local) / 8);
+    localparam logic [command_without_opcode_bits-1:0] cmd_pixel_local = cmd_pixel_2[command_without_opcode_bits-1:0];
+    localparam int unsigned STREAM_BYTES = ($bits(cmd_pixel_local) / 8);
     localparam int unsigned ROW_BYTES = calc::num_bytes_to_contain($bits(types::row_addr_t));
     localparam int unsigned COL_BYTES = calc::num_bytes_to_contain($bits(types::col_addr_t));
     localparam int unsigned COLOR_BYTES = params::BYTES_PER_PIXEL;
@@ -102,8 +102,8 @@ module tb_control_cmd_readpixel #(
     // === Stimulus ===
     initial begin
         @(negedge reset);
-        `STREAM_BYTES_MSB(slowclk, data_in, cmd_pixel_1_local)
-        `STREAM_BYTES_MSB(slowclk, data_in, cmd_pixel_1_local)
+        `STREAM_BYTES_MSB(slowclk, data_in, cmd_pixel_local)
+        `STREAM_BYTES_MSB(slowclk, data_in, cmd_pixel_local)
 
         @(posedge slowclk);
         // // `WAIT_ASSERT(clk, (sysreset == 1), 128*4)
