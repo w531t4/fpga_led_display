@@ -67,7 +67,7 @@ endif
 ifneq ($(strip $(VERILATOR_OBJCACHE)),)
 VERILATOR_MAKEFLAGS += OBJCACHE=$(VERILATOR_OBJCACHE)
 endif
-VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst --quiet -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR) \
+VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst --trace-structs --quiet -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR) \
 	-j $(SIM_JOBS) -MAKEFLAGS "-j $(SIM_JOBS) $(VERILATOR_MAKEFLAGS)"
 # Verilator needs full-paths otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
