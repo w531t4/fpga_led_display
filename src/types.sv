@@ -59,16 +59,16 @@ package types;
 
     // ==== ROW ADDRESS ====
     typedef logic [calc::num_row_address_bits(params::PIXEL_HEIGHT)-1:0] row_addr_t;
-    typedef struct packed {
-        logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(row_addr_t))-1:0] pad;
-        row_addr_t                                                                         address;
-    } row_addr_view_t;
+    typedef logic [calc::num_bytes_to_contain($bits(row_addr_t))*8-1:0] row_addr_view_t;
 
     typedef union packed {
         logic [calc::num_bytes_to_contain($bits(row_addr_t))*8-1:0]    raw;
         logic [calc::num_bytes_to_contain($bits(row_addr_t))-1:0][7:0] bytes;
-        row_addr_view_t                                                addr;
     } row_addr_field_t;
+
+    function automatic row_addr_t row_addr_from_field(input row_addr_field_t field);
+        row_addr_from_field = field.raw[$bits(row_addr_t)-1:0];
+    endfunction
     // ==== /ROW ADDRESS ====
 
     // ==== COLUMN ADDRESS ====
@@ -77,16 +77,16 @@ package types;
     // handle values from [0, PIXEL_WIDTH]
     typedef logic [calc::num_column_address_bits(params::PIXEL_WIDTH+1)-1:0] col_addr_count_t;
 
-    typedef struct packed {
-        logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(col_addr_t))-1:0] pad;  // unused MSBs
-        col_addr_t address;  // LSBs
-    } col_addr_view_t;
+    typedef logic [calc::num_bytes_to_contain($bits(col_addr_t))*8-1:0] col_addr_view_t;
 
     typedef union packed {
         logic [calc::num_bytes_to_contain($bits(col_addr_t))*8-1:0]    raw;
         logic [calc::num_bytes_to_contain($bits(col_addr_t))-1:0][7:0] bytes;  // bytes[0] = LSB
-        col_addr_view_t                                                addr;
     } col_addr_field_t;
+
+    function automatic col_addr_t col_addr_from_field(input col_addr_field_t field);
+        col_addr_from_field = field.raw[$bits(col_addr_t)-1:0];
+    endfunction
     typedef logic [$clog2(calc::num_bytes_to_contain($bits(col_addr_t))+1)-1:0] col_addr_field_byte_count_t;
     typedef logic [calc::safe_clog2(calc::num_bytes_to_contain($bits(col_addr_t)))-1:0] col_addr_field_byte_index_t;
     // ==== /COLUMN ADDRESS ====

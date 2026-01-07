@@ -42,7 +42,7 @@ module control_cmd_readpixel #(
             column_bits <= 'b0;
             addr.col <= 'b0;
         end else begin
-            addr.col <= column_bits.addr.address;
+            addr.col <= types::col_addr_from_field(column_bits);
             case (state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
