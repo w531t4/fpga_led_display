@@ -54,16 +54,7 @@ package types;
 
     // ==== ROW SUBPANEL ADDRESS ====
     typedef logic [calc::num_row_address_bits(params::PIXEL_HALFHEIGHT)-1:0] row_subpanel_addr_t;
-    typedef struct packed {
-        logic [calc::num_padding_bits_needed_to_reach_byte_boundry($bits(row_subpanel_addr_t))-1:0] pad;
-        row_subpanel_addr_t                                                                         address;
-    } row_subpanel_addr_view_t;
 
-    typedef union packed {
-        logic [calc::num_bytes_to_contain($bits(row_subpanel_addr_t))*8-1:0]    raw;
-        logic [calc::num_bytes_to_contain($bits(row_subpanel_addr_t))-1:0][7:0] bytes;
-        row_subpanel_addr_view_t                                                addr;
-    } row_subpanel_field_t;
     // ==== /ROW SUBPANEL ADDRESS ====
 
     // ==== ROW ADDRESS ====
