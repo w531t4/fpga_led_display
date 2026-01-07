@@ -132,7 +132,7 @@ module tb_control_cmd_readpixel #(
             next_data_count   = data_count;
 
             if (last_enable_pulse) begin
-                if (last_enable_idx == 0) begin
+                if (last_enable_idx < ROW_BYTES) begin
                     // Row capture byte
                     assert (addr.row == types::row_addr_t'(last_enable_byte))
                     else
@@ -144,7 +144,7 @@ module tb_control_cmd_readpixel #(
                         );
                     assert (cmd_readpixel_we == 1'b0 && cmd_readpixel_do == 8'b0)
                     else $fatal(1, "Unexpected write/data during row capture");
-                end else if (last_enable_idx == 1) begin
+                end else if (last_enable_idx < (ROW_BYTES + COL_BYTES)) begin
                     // Column capture LSB/MSB (little endian)
                     assert (cmd_readpixel_we == 1'b0)
                     else $fatal(1, "WE asserted during column capture");
@@ -189,12 +189,12 @@ module tb_control_cmd_readpixel #(
                 last_enable_pulse <= 1'b1;
                 last_enable_byte  <= data_in;
                 last_enable_idx   <= enable_count;
-                last_data_idx     <= (enable_count <= 1) ? -1 : data_count;
+                last_data_idx     <= (enable_count < (ROW_BYTES + COL_BYTES)) ? -1 : data_count;
                 assert (enable_count < STREAM_BYTES)
                 else $fatal(1, "Stream length exceeded: enable_count=%0d expected max %0d", enable_count, STREAM_BYTES);
                 // Ignore strict match on header bytes; only payload bytes are checked for data integrity.
                 next_enable_count = enable_count + 1;
-                if (enable_count > 1) next_data_count = data_count + 1;
+                if (enable_count >= (ROW_BYTES + COL_BYTES)) next_data_count = data_count + 1;
             end else begin
                 last_enable_pulse <= 1'b0;
             end

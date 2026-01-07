@@ -22,6 +22,7 @@ module control_cmd_readpixel #(
     typedef enum {
         STATE_ROW_CAPTURE,
         STATE_COLUMN_CAPTURE,
+        STATE_PIXEL_PRIMEMEMWRITE,
         STATE_READ_PIXELBYTES,
         STATE_DONE
     } ctrl_fsm_t;
@@ -50,35 +51,47 @@ module control_cmd_readpixel #(
                         done <= 1'b0;
                         state <= STATE_COLUMN_CAPTURE;
                         addr.row <= types::row_addr_t'(data_in);
+                        column_byte_counter <= 'b0;
+                        column_bits <= 'b0;
                     end
                 end
                 STATE_COLUMN_CAPTURE: begin
                     // Little Endian
                     if (enable) begin
+                        ram_write_enable <= 1'b0;
                         // load (potentially multibyte) column number
                         //   - if multibyte, expect little endian (LSB -> MSB)
                         column_bits.bytes[column_byte_counter] <= data_in;
                         if (column_byte_counter == LAST_COL_BYTE_INDEX) begin
-                            state <= STATE_READ_PIXELBYTES;
-                            ram_write_enable <= 1'b1;
-                            ram_access_start <= !ram_access_start;
-                            data_out <= data_in;
+                            state <= STATE_PIXEL_PRIMEMEMWRITE;
                             addr.pixel <= types::color_index_t'(params::BYTES_PER_PIXEL - 1);
                         end else column_byte_counter <= column_byte_counter + 1;
+                    end
+                end
+                STATE_PIXEL_PRIMEMEMWRITE: begin
+                    if (enable) begin
+                        ram_write_enable <= 1'b1;
+                        data_out <= data_in;
+                        ram_access_start <= !ram_access_start;
+                        if (params::BYTES_PER_PIXEL == 1) begin
+                            done  <= 1'b1;
+                            state <= STATE_DONE;
+                        end else begin
+                            state <= STATE_READ_PIXELBYTES;
+                        end
                     end
                 end
                 STATE_READ_PIXELBYTES: begin
                     // Big Endian
                     if (enable) begin
-                        /* decrement the column address (or finish the load) */
-                        /* store this byte */
+                        ram_write_enable <= 1'b1;
                         data_out <= data_in;
                         ram_access_start <= !ram_access_start;
+                        if (addr.pixel == 'd1) begin
+                            done  <= 1'b1;
+                            state <= STATE_DONE;
+                        end
                         if (addr.pixel != 'b0) begin
-                            if ((addr.pixel - 'd1) == 0) begin
-                                done  <= 1'b1;
-                                state <= STATE_DONE;
-                            end
                             addr.pixel <= addr.pixel - 1;
                         end
                     end
