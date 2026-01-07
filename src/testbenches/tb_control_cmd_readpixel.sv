@@ -13,7 +13,7 @@ module tb_control_cmd_readpixel #(
 );
     `include "row4.svh"
     localparam integer unsigned command_without_opcode_bits = $bits(types::readpixel_cmd_t) - $bits(cmd::opcode_t);
-    localparam logic [command_without_opcode_bits-1:0] cmd_pixel_1_local = cmd_pixel_1[command_without_opcode_bits-1:0];
+    localparam logic [command_without_opcode_bits-1:0] cmd_pixel_1_local = cmd_pixel_2[command_without_opcode_bits-1:0];
     localparam int unsigned STREAM_BYTES = ($bits(cmd_pixel_1_local) / 8);
     localparam int unsigned ROW_BYTES = calc::num_bytes_to_contain($bits(types::row_addr_t));
     localparam int unsigned COL_BYTES = calc::num_bytes_to_contain($bits(types::col_addr_t));
@@ -89,13 +89,13 @@ module tb_control_cmd_readpixel #(
 
         // Precompute expected stream for monitoring.
         for (int __i = 0; __i < ROW_BYTES; __i++) begin
-            expected_bytes[__i] = cmd_pixel_1.y1.bytes[ROW_BYTES - 1 - __i];
+            expected_bytes[__i] = cmd_pixel_1.y1.bytes[ROW_BYTES-1-__i];
         end
         for (int __i = 0; __i < COL_BYTES; __i++) begin
-            expected_bytes[ROW_BYTES + __i] = cmd_pixel_1.x1.bytes[COL_BYTES - 1 - __i];
+            expected_bytes[ROW_BYTES+__i] = cmd_pixel_1.x1.bytes[COL_BYTES-1-__i];
         end
         for (int __i = 0; __i < COLOR_BYTES; __i++) begin
-            expected_bytes[COLOR_START_IDX + __i] = cmd_pixel_1.color.bytes[COLOR_BYTES - 1 - __i];
+            expected_bytes[COLOR_START_IDX+__i] = cmd_pixel_1.color.bytes[COLOR_BYTES-1-__i];
         end
     end
 
