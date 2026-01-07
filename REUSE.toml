@@ -18,6 +18,13 @@ path = [
     ".verilator_lint",
     ".vscode/settings.json",
     ".devcontainer/devcontainer.json",
+    "src/testbenches/tb_control_cmd_blankpanel.args",
+    "src/testbenches/tb_control_cmd_fillpanel.args",
+    "src/testbenches/tb_control_cmd_fillrect.args",
+    "src/testbenches/tb_control_cmd_readbrightness.args",
+    "src/testbenches/tb_control_cmd_readframe.args",
+    "src/testbenches/tb_types_pad_col.args",
+    "src/testbenches/tb_types_pad_row.args",
     ".python-version"
 ]
 SPDX-FileCopyrightText = "2025 Aaron White <w531t4@gmail.com>"
