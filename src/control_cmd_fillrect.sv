@@ -36,12 +36,13 @@ module control_cmd_fillrect #(
     logic local_reset;
     // verilator lint_off UNUSEDSIGNAL
     types::col_addr_field_t x1;
+    // TODO: This probably isn't the right type
     types::col_addr_field_t width;
     // verilator lint_on UNUSEDSIGNAL
     types::col_addr_field_byte_index_t x1_byte_counter;
     types::col_addr_field_byte_index_t width_byte_counter;
     types::row_addr_t y1;
-    types::row_addr_t height;
+    types::row_addr_count_t height;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
     types::color_field_t selected_color;
@@ -104,7 +105,7 @@ module control_cmd_fillrect #(
                 end
                 STATE_HEIGHT_CAPTURE: begin
                     if (enable) begin
-                        height <= types::row_addr_t'(data_in);
+                        height <= types::row_addr_count_t'(data_in);
                         state <= STATE_COLOR_CAPTURE;
                         // The following assignment of width is done to reduce the burden on clk_root.
                         // TODO: types::col_addr_field_t' is the wrong type here - it's a _count_t that doesn't exist yet
@@ -120,6 +121,11 @@ module control_cmd_fillrect #(
                         if (capturebytes_remaining == 0) begin
                             state <= STATE_START;
                             ready_for_data <= 1'b0;
+                            // The following assignment of height is done to reduce the burden on clk_root.
+                            height <= types::row_addr_count_t'(calc::clamp_remaining_dimension(
+                                types::uint_t'(y1), types::uint_t'(height), params::PIXEL_HEIGHT
+                            ));
+
                         end else begin
                             capturebytes_remaining <= capturebytes_remaining - 'd1;
                         end
@@ -169,7 +175,7 @@ module control_cmd_fillrect #(
         .x1(types::col_addr_t'(x1)),
         .y1(y1),
         .width(types::col_addr_count_t'(width)),
-        .height(types::row_addr_t'(height)),
+        .height(types::row_addr_count_t'(height)),
         .color(selected_color),
         .row(addr.row),
         .column(addr.col),

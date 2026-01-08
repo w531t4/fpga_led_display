@@ -59,6 +59,10 @@ package types;
 
     // ==== ROW ADDRESS ====
     typedef logic [calc::num_row_address_bits(params::PIXEL_HEIGHT)-1:0] row_addr_t;
+
+    // handle values from [0, PIXEL_HEIGHT]
+    typedef logic [calc::num_row_address_bits(params::PIXEL_HEIGHT+1)-1:0] row_addr_count_t;
+
     typedef logic [calc::num_bytes_to_contain($bits(row_addr_t))*8-1:0] row_addr_view_t;
 
     typedef union packed {
