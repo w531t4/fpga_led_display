@@ -79,10 +79,24 @@ module tb_control_cmd_readframe;
     // === Scoreboard / monitor ===
     // Each payload write must be in-range and toggle ram_access_start; data ordering is driven by DUT.
     task automatic expect_payload(input int idx, input byte b);
+        int pixel_idx;
+        int exp_row;
+        int exp_col;
+        int exp_pix;
         assert (ram_write_enable == 1'b1)
         else $fatal(1, "WE low at idx %0d", idx);
         assert (int'(addr.row) < params::PIXEL_HEIGHT && int'(addr.col) < params::PIXEL_WIDTH && int'(addr.pixel) < params::BYTES_PER_PIXEL)
         else $fatal(1, "Address out of range at idx %0d row=%0d col=%0d pix=%0d", idx, addr.row, addr.col, addr.pixel);
+        pixel_idx = idx / params::BYTES_PER_PIXEL;
+        exp_row = pixel_idx / params::PIXEL_WIDTH;
+        exp_col = pixel_idx % params::PIXEL_WIDTH;
+        exp_pix = params::BYTES_PER_PIXEL - 1 - (idx % params::BYTES_PER_PIXEL);
+        assert (addr.row == types::row_addr_t'(exp_row))
+        else $fatal(1, "Row mismatch at idx %0d: expected %0d got %0d", idx, exp_row, addr.row);
+        assert (addr.col == types::col_addr_t'(exp_col))
+        else $fatal(1, "Column mismatch at idx %0d: expected %0d got %0d", idx, exp_col, addr.col);
+        assert (addr.pixel == types::pixel_addr_t'(exp_pix))
+        else $fatal(1, "Pixel mismatch at idx %0d: expected %0d got %0d", idx, exp_pix, addr.pixel);
         assert (ram_access_start != prev_as)
         else $fatal(1, "ram_access_start not toggling at idx %0d", idx);
         assert (data_out == b)
