@@ -56,59 +56,59 @@ module tb_main #(
     main #(
         ._UNUSED('d0)
     ) tbi_main (
-        .gp11     (clk_pixel),
-        .gp12     (row_latch),
-        .gp13     (OE),
-        .clk_25mhz(clk),
-        .gp7      (ROA0),
-        .gp8      (ROA1),
-        .gp9      (ROA2),
-        .gp10     (ROA3),
+        .gp11       (clk_pixel),
+        .gp12       (row_latch),
+        .gp13       (OE),
+        .clk_25mhz  (clk),
+        .gp7        (ROA0),
+        .gp8        (ROA1),
+        .gp9        (ROA2),
+        .gp10       (ROA3),
 `ifdef SWAP_BLUE_GREEN_CHAN
-        .gp0      (rgb1.red),
-        .gp1      (rgb1.blue),
-        .gp2      (rgb1.green),
-        .gp3      (rgb2.red),
-        .gp4      (rgb2.blue),
-        .gp5      (rgb2.green),
+        .gp0        (rgb1.red),
+        .gp1        (rgb1.blue),
+        .gp2        (rgb1.green),
+        .gp3        (rgb2.red),
+        .gp4        (rgb2.blue),
+        .gp5        (rgb2.green),
 `else
-        .gp0      (rgb1.red),
-        .gp1      (rgb1.green),
-        .gp2      (rgb1.blue),
-        .gp3      (rgb2.red),
-        .gp4      (rgb2.green),
-        .gp5      (rgb2.blue),
+        .gp0        (rgb1.red),
+        .gp1        (rgb1.green),
+        .gp2        (rgb1.blue),
+        .gp3        (rgb2.red),
+        .gp4        (rgb2.green),
+        .gp5        (rgb2.blue),
 `endif
-        .gp14     (rxdata),
-        .gp16     (debugger_txout),
-        .gp15     (debugger_rxin),
+        .gp14       (rxdata),
+        .gp16       (debugger_txout),
+        .gp15       (debugger_rxin),
 `ifdef SPI
 `ifdef SPI_ESP32
-        .sd_clk   (spi_clk),             // clk
-        .sd_d     ({rxdata, 3'b0}),      // sd_d[3]=mosi
+        .sd_clk     (spi_clk),             // clk
+        .sd_d       ({rxdata, 3'b0}),      // sd_d[3]=mosi
         .wifi_gpio21(spi_cs),
         .wifi_gpio27(fpga_ready),
 `else
-        .gp17     (rxdata),              // spi miso
+        .gp17       (rxdata),              // spi miso
         //.gp18()       // spi_mosi
-        .gp19     (spi_clk),             // spi_clk
-        .gp20     (spi_cs),              // spi_cs
+        .gp19       (spi_clk),             // spi_clk
+        .gp20       (spi_cs),              // spi_cs
 `endif
 `endif
-        .gn11     (_unused_output[0]),
-        .gn12     (_unused_output[1]),
-        .gn13     (_unused_output[2]),
-        .gn7      (_unused_output[3]),
-        .gn8      (_unused_output[4]),
-        .gn9      (_unused_output[5]),
-        .gn10     (_unused_output[6]),
-        .gn0      (_unused_output[7]),
-        .gn1      (_unused_output[8]),
-        .gn2      (_unused_output[9]),
-        .gn3      (_unused_output[10]),
-        .gn4      (_unused_output[11]),
-        .gn5      (_unused_output[12]),
-        .gn14     (_unused_output[13])
+        .gn11       (_unused_output[0]),
+        .gn12       (_unused_output[1]),
+        .gn13       (_unused_output[2]),
+        .gn7        (_unused_output[3]),
+        .gn8        (_unused_output[4]),
+        .gn9        (_unused_output[5]),
+        .gn10       (_unused_output[6]),
+        .gn0        (_unused_output[7]),
+        .gn1        (_unused_output[8]),
+        .gn2        (_unused_output[9]),
+        .gn3        (_unused_output[10]),
+        .gn4        (_unused_output[11]),
+        .gn5        (_unused_output[12]),
+        .gn14       (_unused_output[13])
     );
     // verilog_format: off
     wire _unused_ok_main = &{1'b0,
@@ -225,19 +225,13 @@ module tb_main #(
 `ifdef SPI_ESP32
     initial begin : assert_fpga_ready_sequence
         `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b1, TB_MAIN_WAIT_CYCLES)
-        if (fpga_ready !== 1'b0)
-            $fatal(1, "fpga_ready should be low during global_reset");
-        `WAIT_ASSERT(tb_main.tbi_main.clk_root,
-                     tb_main.tbi_main.global_reset_sync === 1'b0,
-                     TB_MAIN_WAIT_CYCLES)
+        if (fpga_ready !== 1'b0) $fatal(1, "fpga_ready should be low during global_reset");
+        `WAIT_ASSERT(tb_main.tbi_main.clk_root, tb_main.tbi_main.global_reset_sync === 1'b0, TB_MAIN_WAIT_CYCLES)
         repeat (4) begin
             @(posedge tb_main.tbi_main.clk_root);
-            if (fpga_ready !== 1'b0)
-                $fatal(1, "fpga_ready should remain low after reset");
+            if (fpga_ready !== 1'b0) $fatal(1, "fpga_ready should remain low after reset");
         end
-        `WAIT_ASSERT(tb_main.tbi_main.clk_root,
-                     fpga_ready === 1'b1,
-                     TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(tb_main.tbi_main.clk_root, fpga_ready === 1'b1, TB_MAIN_WAIT_CYCLES)
     end
 `endif
 

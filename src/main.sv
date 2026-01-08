@@ -59,10 +59,10 @@ module main #(
     // output gn16
 );
 
-    wire  clk_root;
-    wire  clk_matrix;
+    wire clk_root;
+    wire clk_matrix;
 
-    wire  global_reset;
+    wire global_reset;
     logic global_reset_sync;
     types::ready_holdoff_count_t _unused_ok_ready_holdoff_counter;
     wire ready_holdoff_running;
