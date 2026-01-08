@@ -37,7 +37,7 @@ module control_subcmd_fillarea #(
     wire types::col_addr_t x2;
     wire types::row_addr_t y2;
 
-    assign x2 = x1 + width;
+    assign x2 = x1 + width - types::col_addr_t'(1);
     assign y2 = y1 + height;
 
     typedef enum {
@@ -63,7 +63,7 @@ module control_subcmd_fillarea #(
 
                         state <= STATE_ROW_MEMWRITE;
                         row <= y2 - 1;
-                        column <= x2 - 1;
+                        column <= x1;
                         pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
@@ -74,18 +74,18 @@ module control_subcmd_fillarea #(
                 STATE_ROW_MEMWRITE: begin
                     if (enable) begin
                         ram_access_start <= !ram_access_start;
-                        if (row > y1 || column > x1 || pixel != 'd0) begin
+                        if (row > y1 || column < x2 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
                                 pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
-                                if (column == x1) begin
-                                    column <= x2 - 1;
+                                if (column == x2) begin
+                                    column <= x1;
                                     row <= row - 'd1;
                                 end else begin
-                                    column <= column - 'd1;
+                                    column <= column + 'd1;
                                 end
                                 data_out <= color.bytes[params::BYTES_PER_PIXEL-1];
                             end else begin
-                                if (row == y1 && column == x1 && ((pixel - 'd1) == 0)) done <= 1'b1;
+                                if (row == y1 && column == x2 && ((pixel - 'd1) == 0)) done <= 1'b1;
                                 pixel <= pixel - 'd1;
                                 data_out <= color.bytes[pixel-1];
                             end
