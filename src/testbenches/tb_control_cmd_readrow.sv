@@ -162,7 +162,7 @@ module tb_control_cmd_readrow #(
                 end else begin
                     int exp_col;
                     int exp_pix;
-                    exp_col = params::PIXEL_WIDTH - 1 - (last_data_idx / params::BYTES_PER_PIXEL);
+                    exp_col = last_data_idx / params::BYTES_PER_PIXEL;
                     exp_pix = params::BYTES_PER_PIXEL - 1 - (last_data_idx % params::BYTES_PER_PIXEL);
                     expect_data_payload(last_data_idx, last_enable_byte, exp_col, exp_pix);
                 end

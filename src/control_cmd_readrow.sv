@@ -50,7 +50,7 @@ module control_cmd_readrow #(
                         /* first, get the row to write to */
 
                         state <= STATE_READ_ROWCONTENT;
-                        addr.col <= types::col_addr_t'(params::PIXEL_WIDTH - 1);
+                        addr.col <= 'b0;
                         addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
 
@@ -62,12 +62,12 @@ module control_cmd_readrow #(
                 STATE_READ_ROWCONTENT: begin
                     if (enable) begin
                         ram_access_start <= !ram_access_start;
-                        if (addr.col != 'd0 || addr.pixel != 'd0) begin
+                        if (addr.col != types::col_addr_t'(params::PIXEL_WIDTH - 1) || addr.pixel != 'd0) begin
                             if (addr.pixel == 'd0) begin
                                 addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
-                                addr.col   <= addr.col - 'd1;
+                                addr.col   <= addr.col + 'd1;
                             end else begin
-                                if (addr.col == 0 && ((addr.pixel - 'd1) == 0)) begin
+                                if (addr.col == types::col_addr_t'(params::PIXEL_WIDTH - 1) && ((addr.pixel - 'd1) == 0)) begin
                                     done  <= 1'b1;
                                     state <= STATE_DONE;
                                 end
