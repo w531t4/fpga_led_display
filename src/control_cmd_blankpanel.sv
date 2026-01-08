@@ -76,7 +76,7 @@ module control_cmd_blankpanel #(
         .ack(done),
         .x1(0),
         .y1(0),
-        .width(types::col_addr_t'(params::PIXEL_WIDTH)),
+        .width(types::col_addr_count_t'(params::PIXEL_WIDTH)),
         .height(types::row_addr_t'(params::PIXEL_HEIGHT)),
         .color('b0),
         .row(addr.row),

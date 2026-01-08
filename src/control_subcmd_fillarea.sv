@@ -12,7 +12,7 @@ module control_subcmd_fillarea #(
     input ack,
     input types::col_addr_t x1,
     input types::row_addr_t y1,
-    input types::col_addr_t width,
+    input types::col_addr_count_t width,
     input types::row_addr_t height,
     input types::color_field_t color,  // must be byte aligned
 

@@ -167,7 +167,7 @@ module control_cmd_fillrect #(
         .ack(done),
         .x1(types::col_addr_t'(x1)),
         .y1(y1),
-        .width(types::col_addr_t'(width)),
+        .width(types::col_addr_count_t'(width)),
         .height(types::row_addr_t'(height)),
         .color(selected_color),
         .row(addr.row),
