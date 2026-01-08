@@ -86,4 +86,50 @@ package calc;
         // this function makes the NOK case OK [safe_bits(1)-1:0] ==> [1-1:0] ==> [0:0] OK
         safe_clog2 = number > 1 ? $clog2(number) : 1;
     endfunction
+
+    function automatic int unsigned clamp_remaining_dimension(input int unsigned start, input int unsigned span,
+                                                              input int unsigned max);
+        // TODO: use later when we move interface to provide x2
+        // if (span >= max) begin
+        //     clamp_dimension = max - 1;
+        // end else if ((start + (span - 1)) >= max) begin
+        //     clamp_dimension = max - 1;
+        // end else begin
+        //     clamp_dimension = start + span - 1;
+        // end
+
+        // PIXEL_WIDTH=8, x1 = 3, width = 4 (w) ==  width OK
+        //                  [0, 1, 2, 3, 4, 5, 6, 7]
+        //                            *<------>*
+        // PIXEL_WIDTH=8, x1 = 3, width = 6 (w) == width=4
+        //                  [0, 1, 2, 3, 4, 5, 6, 7], 8, 9
+        //                            *<--------------*
+        // PIXEL_WIDTH=8, x1 = 3, width = 8 (w) == width=4
+        //                  [0, 1, 2, 3, 4, 5, 6, 7], 8, 9, 10, 11
+        //                            *<-------------------->*
+        // PIXEL_WIDTH=8, x1 = 3, width = 9 (w) == width=4
+        //                  [0, 1, 2, 3, 4, 5, 6, 7], 8, 9, 10, 11
+        //                            *<------------------------>*
+        // span = 2, start= 5 max = 8..
+        // PIXEL_WIDTH=8, x1 = 5, width = 2 -- width = 2 ok
+        //                  [0, 1, 2, 3, 4, 5, 6, 7], 8, 9, 10, 11
+        //                                  *<--->*
+        // span = 8, start= 0 max = 8..
+        // PIXEL_WIDTH=8, x1 = 5, width = 2 -- width = 2 ok
+        //                  [0, 1, 2, 3, 4, 5, 6, 7], 8, 9, 10, 11
+        //                   *<------------------>*
+        // span = 9, start= 0 max = 8..
+        // PIXEL_WIDTH=8, x1 = 5, width = 2 -- width = 2 ok
+        //                  [0, 1, 2, 3, 4, 5, 6, 7], 8, 9, 10, 11
+        //                   *<------------------>*
+        // span = 8, start= 1 max = 8..
+        // PIXEL_WIDTH=8, x1 = 5, width = 2 -- width = 2 ok
+        //                  [0, 1, 2, 3, 4, 5, 6, 7], 8, 9, 10, 11
+        //                      *<------------------->*
+        if ((span + start - 1) >= max) begin
+            clamp_remaining_dimension = max - start + 1;
+        end else begin
+            clamp_remaining_dimension = span;
+        end
+    endfunction
 endpackage
