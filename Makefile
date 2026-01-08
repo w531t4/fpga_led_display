@@ -80,6 +80,7 @@ GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem 
 GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
 SIMBINS:=$(subst tb_,, $(subst $(TB_DIR), $(SIM_BIN_DIR), $(TBSRCS:%.sv=%)))
 FSTOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.fst)))
+TB_ARGS_FILES := $(wildcard $(TB_DIR)/tb_*.args)
 SIM_RUN_ARGS ?= +verilator+quiet
 SIM_JOBS ?= $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 ifneq ($(filter --jobserver%,$(MAKEFLAGS)),)
@@ -134,7 +135,14 @@ $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 
 lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args
 	cat $(ARTIFACT_DIR)/verilator_args; printf "\n";
-	set -o pipefail && $(VERILATOR_BIN) $(VERILATOR_FLAGS) |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
+	set -o pipefail; \
+	{ \
+		$(VERILATOR_BIN) $(VERILATOR_FLAGS); \
+		for tb_args_file in $(TB_ARGS_FILES); do \
+			tb_args="$$(tr '\n' ' ' < $$tb_args_file)"; \
+			$(VERILATOR_BIN) $(VERILATOR_FLAGS) $$tb_args; \
+		done; \
+	} |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
