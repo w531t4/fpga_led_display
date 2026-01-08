@@ -24,9 +24,6 @@ module tb_control_subcmd_fillarea #(
     // === Testbench scaffolding ===
     logic clk;
     logic subcmd_enable;
-    wire types::col_addr_t column;
-    wire types::row_addr_t row;
-    wire types::pixel_addr_t pixel;
     wire ram_write_enable;
     wire ram_access_start;
     logic done;
@@ -52,9 +49,9 @@ module tb_control_subcmd_fillarea #(
         .width(types::col_addr_t'(params::PIXEL_WIDTH)),
         .height(types::row_addr_t'(params::PIXEL_HEIGHT)),
         .color(color_in),
-        .row(row),
-        .column(column),
-        .pixel(pixel),
+        .row(addr.row),
+        .column(addr.col),
+        .pixel(addr.pixel),
         .data_out(data_out),
         .ram_write_enable(ram_write_enable),
         .ram_access_start(ram_access_start),
@@ -135,7 +132,7 @@ module tb_control_subcmd_fillarea #(
 
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
         for (int r = params::PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
-            `WAIT_ASSERT(clk, (row == types::row_addr_t'(r)), ROW_ADVANCE_MAX_CYCLES)
+            `WAIT_ASSERT(clk, (addr.row == types::row_addr_t'(r)), ROW_ADVANCE_MAX_CYCLES)
         end
         // Done should assert once the final byte of the final pixel is written.
         `WAIT_ASSERT(clk, (pre_done == 1), DONE_MAX_CYCLES)
@@ -168,20 +165,19 @@ module tb_control_subcmd_fillarea #(
 
     // === Scoreboard / monitor ===
     always @(posedge clk) begin
-        addr <= {row, column, pixel};
         if (ram_write_enable && subcmd_enable) begin
             // Each write must be in-range, unique, and match the requested color byte for that pixel lane.
-            if (types::uint_t'(row) >= params::PIXEL_HEIGHT || types::uint_t'(column) >= params::PIXEL_WIDTH || types::uint_t'(pixel) >= params::BYTES_PER_PIXEL) begin
-                $display("out-of-range write: row=%0d col=%0d pixel=%0d", row, column, pixel);
+            if (types::uint_t'(addr.row) >= params::PIXEL_HEIGHT || types::uint_t'(addr.col) >= params::PIXEL_WIDTH || types::uint_t'(addr.pixel) >= params::BYTES_PER_PIXEL) begin
+                $display("out-of-range write: row=%0d col=%0d pixel=%0d", addr.row, addr.col, addr.pixel);
                 $stop;
             end else begin
-                if (data_out != color_in.bytes[pixel]) begin
-                    $display("expected data_out=0x%0h, got 0x%0h at row=%0d col=%0d pixel=%0d", color_in.bytes[pixel],
-                             data_out, row, column, pixel);
+                if (data_out != color_in.bytes[addr.pixel]) begin
+                    $display("expected data_out=0x%0h, got 0x%0h at row=%0d col=%0d pixel=%0d",
+                             color_in.bytes[addr.pixel], data_out, addr.row, addr.col, addr.pixel);
                     $stop;
                 end
                 if (mem[addr] == 1'b0) begin
-                    $display("duplicate clear write at row=%0d col=%0d pixel=%0d", row, column, pixel);
+                    $display("duplicate clear write at row=%0d col=%0d pixel=%0d", addr.row, addr.col, addr.pixel);
                     $stop;
                 end
                 remaining_valid_bytes <= remaining_valid_bytes - 1;
