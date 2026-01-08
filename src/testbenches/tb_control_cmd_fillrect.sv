@@ -107,10 +107,12 @@ module tb_control_cmd_fillrect;
         end else if (ram_write_enable) begin
             logic [7:0] expected_byte;
             expected_byte = COLOR.bytes[addr.pixel];
-            assert (int'(addr.row) >= RECT_Y1 && int'(addr.row) < RECT_Y1 + RECT_H
-                && int'(addr.col) >= RECT_X1 && int'(addr.col) < RECT_X1 + RECT_W)
+            assert (types::uint_t'(addr.row) >= RECT_Y1
+                && types::uint_t'(addr.row) < RECT_Y1 + RECT_H
+                && types::uint_t'(addr.col) >= RECT_X1
+                && types::uint_t'(addr.col) < RECT_X1 + RECT_W)
             else $fatal(1, "Write outside rect: row=%0d col=%0d pixel=%0d", addr.row, addr.col, addr.pixel);
-            assert (int'(addr) < MEM_NUM_BYTES)
+            assert (types::uint_t'(addr) < MEM_NUM_BYTES)
             else $fatal(1, "Address out of range: %0d", addr);
             if (mem[addr] == 1'b1) begin
                 writes_seen <= writes_seen + 1;
