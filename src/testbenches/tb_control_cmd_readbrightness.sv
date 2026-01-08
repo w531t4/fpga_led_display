@@ -53,7 +53,7 @@ module tb_control_cmd_readbrightness;
         else $fatal(1, "done not asserted");
         assert (brightness_change_en == 1'b1)
         else $fatal(1, "brightness_change_en not asserted");
-        assert (data_out == data_in)
+        assert (data_out == types::brightness_level_t'(data_in))
         else $fatal(1, "Unexpected data_out: %0b", data_out);
         enable = 1'b0;
         @(posedge clk);  // clear handshake on next edge
@@ -73,7 +73,7 @@ module tb_control_cmd_readbrightness;
             else $fatal(1, "done not asserted on enable");
             assert (brightness_change_en == 1'b1)
             else $fatal(1, "brightness_change_en not asserted on enable");
-            assert (data_out == data_in)
+            assert (data_out == types::brightness_level_t'(data_in))
             else $fatal(1, "Unexpected data_out on enable: %0b", data_out);
         end
     end
