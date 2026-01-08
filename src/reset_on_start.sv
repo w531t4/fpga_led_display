@@ -33,7 +33,7 @@ module reset_on_start #(
         end
     end
 
-    timeout_sync #(
+    timeout #(
         .COUNTER_WIDTH($bits(counter_count_t))
     ) reset_on_start_timeout (
         .reset  (count),
