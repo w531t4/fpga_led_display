@@ -199,8 +199,8 @@ package types;
     typedef struct packed {
         // TODO: consistent ordering of row/column across commands
         cmd::opcode_t opcode;
-        row_addr_field_t   y1;
-        col_addr_field_t   x1;
+        row_addr_field_t y1;
+        col_addr_field_t x1;
         color_field_t color;
     } readpixel_cmd_t;
 
@@ -213,10 +213,10 @@ package types;
 
     typedef struct packed {
         cmd::opcode_t opcode;
-        col_addr_field_t   x1;
-        row_addr_field_t   y1;
-        col_addr_field_t   width;
-        row_addr_field_t   height;
+        col_addr_field_t x1;
+        row_addr_field_t y1;
+        col_addr_field_t width;
+        row_addr_field_t height;
         color_field_t color;
     } fillrect_cmd_t;
 
@@ -227,7 +227,7 @@ package types;
 
     typedef struct packed {
         cmd::opcode_t    opcode;
-        row_addr_field_t      y1;
+        row_addr_field_t y1;
         row_data_field_t data;
     } readrow_cmd_t;
 
