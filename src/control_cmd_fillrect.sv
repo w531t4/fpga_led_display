@@ -106,6 +106,7 @@ module control_cmd_fillrect #(
                     if (enable) begin
                         height <= types::row_addr_t'(data_in);
                         state <= STATE_COLOR_CAPTURE;
+                        // The following assignment of width is done to reduce the burden on clk_root.
                         // TODO: types::col_addr_field_t' is the wrong type here - it's a _count_t that doesn't exist yet
                         width <= types::col_addr_field_t'(calc::clamp_remaining_dimension(
                             types::uint_t'(x1), types::uint_t'(width), params::PIXEL_WIDTH
