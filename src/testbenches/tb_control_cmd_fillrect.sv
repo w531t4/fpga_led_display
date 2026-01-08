@@ -111,7 +111,18 @@ module tb_control_cmd_fillrect;
                 && types::uint_t'(addr.row) < RECT_Y1 + RECT_H
                 && types::uint_t'(addr.col) >= RECT_X1
                 && types::uint_t'(addr.col) < RECT_X1 + RECT_W)
-            else $fatal(1, "Write outside rect: row=%0d col=%0d pixel=%0d", addr.row, addr.col, addr.pixel);
+            else
+                $fatal(
+                    1,
+                    "Write outside rect: row=%0d col=%0d pixel=%0d RECT_X1=%0d RECT_Y1=%0d RECT_W=%0d RECT_H=%0d",
+                    addr.row,
+                    addr.col,
+                    addr.pixel,
+                    RECT_X1,
+                    RECT_Y1,
+                    RECT_W,
+                    RECT_H
+                );
             assert (types::uint_t'(addr) < MEM_NUM_BYTES)
             else $fatal(1, "Address out of range: %0d", addr);
             if (mem[addr] == 1'b1) begin
