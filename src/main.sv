@@ -221,7 +221,7 @@ module main #(
     always_ff @(posedge clk_root) begin
         global_reset_sync <= global_reset;
     end
-    timeout_sync #(
+    timeout #(
         .COUNTER_WIDTH($bits(types::ready_holdoff_count_t))
     ) fpga_ready_holdoff (
         .reset  (global_reset_sync | ~pll_locked),
