@@ -40,8 +40,8 @@ module control_cmd_readframe #(
                     if (enable) begin
                         /* first, get the row to write to */
                         state <= STATE_READ_FRAMECONTENT;
-                        addr.row <= types::row_addr_t'(params::PIXEL_HEIGHT - 1);
-                        addr.col <= types::col_addr_t'(params::PIXEL_WIDTH - 1);
+                        addr.row <= 'b0;
+                        addr.col <= 'b0;
                         addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
                         data_out <= data_in;
@@ -53,17 +53,17 @@ module control_cmd_readframe #(
                     if (enable) begin
                         ram_access_start <= !ram_access_start;
                         data_out <= data_in;
-                        if (addr.row > 'd0 || addr.col > 'd0 || addr.pixel != 'd0) begin
+                        if (addr.row < types::row_addr_t'(params::PIXEL_HEIGHT - 1) || addr.col < types::col_addr_t'(params::PIXEL_WIDTH - 1) || addr.pixel != 'd0) begin
                             if (addr.pixel == 'd0) begin
                                 addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
-                                if (addr.col == 'd0) begin
-                                    addr.col <= types::col_addr_t'(params::PIXEL_WIDTH - 1);
-                                    addr.row <= addr.row - 'd1;
+                                if (addr.col == types::col_addr_t'(params::PIXEL_WIDTH - 1)) begin
+                                    addr.col <= 'b0;
+                                    addr.row <= addr.row + 'd1;
                                 end else begin
-                                    addr.col <= addr.col - 'd1;
+                                    addr.col <= addr.col + 'd1;
                                 end
                             end else begin
-                                if (addr.row == 'd0 && addr.col == 'd0 && ((addr.pixel - 'd1) == 0)) begin
+                                if (addr.row == types::row_addr_t'(params::PIXEL_HEIGHT - 1) && addr.col == types::col_addr_t'(params::PIXEL_WIDTH - 1) && ((addr.pixel - 'd1) == 0)) begin
                                     done <= 1'b1;
                                 end
                                 addr.pixel <= addr.pixel - 'd1;
