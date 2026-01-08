@@ -47,7 +47,7 @@ module tb_control_subcmd_fillarea #(
         .x1(types::col_addr_t'(0)),
         .y1(types::row_addr_t'(0)),
         .width(types::col_addr_count_t'(params::PIXEL_WIDTH)),
-        .height(types::row_addr_t'(params::PIXEL_HEIGHT)),
+        .height(types::row_addr_count_t'(params::PIXEL_HEIGHT)),
         .color(color_in),
         .row(addr.row),
         .column(addr.col),
@@ -131,7 +131,7 @@ module tb_control_subcmd_fillarea #(
         @(posedge clk);
 
         // Walk rows from HEIGHT-1 down to 0; each row transition must happen within the expected byte-count window.
-        for (int r = params::PIXEL_HEIGHT - 1; r >= 0; r = r - 1) begin
+        for (int r = 0; r <= params::PIXEL_HEIGHT - 1; r = r + 1) begin
             `WAIT_ASSERT(clk, (addr.row == types::row_addr_t'(r)), ROW_ADVANCE_MAX_CYCLES)
         end
         // Done should assert once the final byte of the final pixel is written.

@@ -13,7 +13,7 @@ module control_subcmd_fillarea #(
     input types::col_addr_t x1,
     input types::row_addr_t y1,
     input types::col_addr_count_t width,
-    input types::row_addr_t height,
+    input types::row_addr_count_t height,
     input types::color_field_t color,  // must be byte aligned
 
     output types::row_addr_t row,
@@ -38,7 +38,7 @@ module control_subcmd_fillarea #(
     wire types::row_addr_t y2;
 
     assign x2 = x1 + width - types::col_addr_t'(1);
-    assign y2 = y1 + height;
+    assign y2 = types::row_addr_t'(y1 + height - types::row_addr_t'(1));
 
     typedef enum {
         STATE_ROW_PRIMEMEMWRITE,
@@ -62,7 +62,7 @@ module control_subcmd_fillarea #(
                     if (enable) begin
 
                         state <= STATE_ROW_MEMWRITE;
-                        row <= y2 - 1;
+                        row <= y1;
                         column <= x1;
                         pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         // Engage memory gears
@@ -74,18 +74,18 @@ module control_subcmd_fillarea #(
                 STATE_ROW_MEMWRITE: begin
                     if (enable) begin
                         ram_access_start <= !ram_access_start;
-                        if (row > y1 || column < x2 || pixel != 'd0) begin
+                        if (row < y2 || column < x2 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
                                 pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                                 if (column == x2) begin
                                     column <= x1;
-                                    row <= row - 'd1;
+                                    row <= row + 'd1;
                                 end else begin
                                     column <= column + 'd1;
                                 end
                                 data_out <= color.bytes[params::BYTES_PER_PIXEL-1];
                             end else begin
-                                if (row == y1 && column == x2 && ((pixel - 'd1) == 0)) done <= 1'b1;
+                                if (row == y2 && column == x2 && ((pixel - 'd1) == 0)) done <= 1'b1;
                                 pixel <= pixel - 'd1;
                                 data_out <= color.bytes[pixel-1];
                             end
