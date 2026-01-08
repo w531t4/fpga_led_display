@@ -35,7 +35,7 @@ module control_cmd_readbrightness #(
                     if (enable) begin
                         done <= 1'b1;
                         brightness_change_en <= 1'b1;
-                        data_out <= data_in;
+                        data_out <= types::brightness_level_t'(data_in);
                         state <= STATE_DONE;
                     end
                 end

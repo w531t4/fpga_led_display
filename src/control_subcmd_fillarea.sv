@@ -37,7 +37,7 @@ module control_subcmd_fillarea #(
     wire types::col_addr_t x2;
     wire types::row_addr_t y2;
 
-    assign x2 = x1 + width - types::col_addr_t'(1);
+    assign x2 = types::col_addr_t'(types::col_addr_count_t'(x1) + width - types::col_addr_count_t'(1));
     assign y2 = types::row_addr_t'(y1 + height - types::row_addr_t'(1));
 
     typedef enum {

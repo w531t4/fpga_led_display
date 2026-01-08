@@ -13,8 +13,8 @@ module tb_matrix_scan #(
     logic clk;
     logic reset;
     wire types::col_addr_t column_address;
-    wire [3:0] row_address;
-    wire [3:0] row_address_active;
+    wire types::row_subpanel_addr_t row_address;
+    wire types::row_subpanel_addr_t row_address_active;
     wire clk_pixel_load;
     wire clk_pixel;
     wire row_latch;
