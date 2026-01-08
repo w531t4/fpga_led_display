@@ -166,6 +166,10 @@ module tb_control_subcmd_fillarea #(
     // === Scoreboard / monitor ===
     always @(posedge clk) begin
         if (ram_write_enable && subcmd_enable) begin
+            // $display(
+            //     "@ row=%0d col=%0d pixel=%0d remaining_bytes=%0d MEM_NUM_BYTES=%0d $bits(mem_write_addr_t)=%0d valid_bytes=%0d",
+            //     addr.row, addr.col, addr.pixel, remaining_valid_bytes, MEM_NUM_BYTES, $bits(types::mem_write_addr_t),
+            //     params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL);
             // Each write must be in-range, unique, and match the requested color byte for that pixel lane.
             if (types::uint_t'(addr.row) >= params::PIXEL_HEIGHT || types::uint_t'(addr.col) >= params::PIXEL_WIDTH || types::uint_t'(addr.pixel) >= params::BYTES_PER_PIXEL) begin
                 $display("out-of-range write: row=%0d col=%0d pixel=%0d", addr.row, addr.col, addr.pixel);

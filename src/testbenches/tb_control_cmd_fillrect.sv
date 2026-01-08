@@ -106,6 +106,7 @@ module tb_control_cmd_fillrect;
             // verilator lint_on WIDTHCONCAT
         end else if (ram_write_enable) begin
             logic [7:0] expected_byte;
+            // $display("@ row=%0d col=%0d pixel=%0d", addr.row, addr.col, addr.pixel);
             expected_byte = COLOR.bytes[addr.pixel];
             assert (types::uint_t'(addr.row) >= RECT_Y1
                 && types::uint_t'(addr.row) < RECT_Y1 + RECT_H
