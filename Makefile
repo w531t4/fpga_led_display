@@ -80,6 +80,7 @@ GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem 
 GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
 SIMBINS:=$(subst tb_,, $(subst $(TB_DIR), $(SIM_BIN_DIR), $(TBSRCS:%.sv=%)))
 FSTOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.fst)))
+SIM_RUN_ARGS ?= +verilator+quiet
 SIM_JOBS ?= $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 ifneq ($(filter --jobserver%,$(MAKEFLAGS)),)
 SIM_MAKEFLAGS :=
@@ -113,7 +114,7 @@ all: $(ARTIFACT_DIR)/verilator_args simulation lint
 #$(warning In a command script $(SIMBINS))
 
 $(SIMULATION_DIR)/%.fst: $(SIM_BIN_DIR)/% Makefile | $(SIMULATION_DIR)
-	@set -o pipefail; stdbuf -oL -eL $< +verilator+quiet 2>&1 | sed -u 's/^/[$*] /'
+	@set -o pipefail; stdbuf -oL -eL $< $(SIM_RUN_ARGS) 2>&1 | sed -u 's/^/[$*] /'
 
 $(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(INCLUDESRCS) Makefile | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
