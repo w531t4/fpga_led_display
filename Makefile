@@ -57,7 +57,7 @@ VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
 VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
-VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing
+VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing --quiet-stats
 VERILATOR_OPT_SLOW ?=
 VERILATOR_OBJCACHE ?= ccache
 VERILATOR_MAKEFLAGS :=
@@ -67,7 +67,7 @@ endif
 ifneq ($(strip $(VERILATOR_OBJCACHE)),)
 VERILATOR_MAKEFLAGS += OBJCACHE=$(VERILATOR_OBJCACHE)
 endif
-VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst --trace-structs --quiet -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR) \
+VERILATOR_SIM_FLAGS:=-sv --binary --timing --trace-fst --trace-structs --quiet --quiet-stats -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP -I$(VINCLUDE_DIR) \
 	-j $(SIM_JOBS) -MAKEFLAGS "-j $(SIM_JOBS) $(VERILATOR_MAKEFLAGS)"
 # Verilator needs full-paths otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
