@@ -56,12 +56,12 @@ module control_cmd_readpixel #(
                     end
                 end
                 STATE_COLUMN_CAPTURE: begin
-                    // Little Endian
+                    // Big Endian
                     if (enable) begin
                         ram_write_enable <= 1'b0;
                         // load (potentially multibyte) column number
-                        //   - if multibyte, expect little endian (LSB -> MSB)
-                        column_bits.bytes[column_byte_counter] <= data_in;
+                        //   - if multibyte, expect big endian (MSB -> LSB)
+                        column_bits.bytes[LAST_COL_BYTE_INDEX - column_byte_counter] <= data_in;
                         if (column_byte_counter == LAST_COL_BYTE_INDEX) begin
                             state <= STATE_PIXEL_PRIMEMEMWRITE;
                             addr.pixel <= types::color_index_t'(params::BYTES_PER_PIXEL - 1);
