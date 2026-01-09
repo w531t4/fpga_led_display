@@ -42,7 +42,7 @@ package params;
 
     // USE_WATCHDOG
     // reset control logic if watchdog isn't satisfied within x seconds
-    parameter real WATCHDOG_CONTROL_FREQ_GOAL = 0.1;  // 10 seconds
+    parameter real WATCHDOG_CONTROL_FREQ_GOAL = 1;  // 1 second
 `ifdef WATCHDOG_CONTROL_TICKS
     parameter int unsigned WATCHDOG_CONTROL_TICKS = `WATCHDOG_CONTROL_TICKS;
 `else
