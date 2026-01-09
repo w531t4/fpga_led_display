@@ -17,11 +17,31 @@ def find_verilator() -> str:
     return "verilator"
 
 
+def filter_include_args(args: list[str]) -> list[str]:
+    # Drop include directives (-I...) so this wrapper can control include paths.
+    filtered: list[str] = []
+    skip_next = False
+    for arg in args:
+        # Remove a trailing path that follows a bare -I.
+        if skip_next:
+            skip_next = False
+            continue
+        # Strip both "-I" and "-I<path>" forms to avoid leaking extra includes.
+        if arg == "-I":
+            skip_next = True
+            continue
+        if arg.startswith("-I"):
+            continue
+        filtered.append(arg)
+    return filtered
+
+
 def main() -> None:
     verilator = find_verilator()
     if len(sys.argv) < 2:
         os.execvp(verilator, [])
-    args = sys.argv[1:]
+    # Filter out include args before the existing argv munging.
+    args = filter_include_args(sys.argv[1:])
     # last = args[-1]
     # dedup = [arg for arg in args[:-1] if arg != last]
     # dedup.append(last)
