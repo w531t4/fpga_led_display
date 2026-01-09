@@ -69,8 +69,8 @@ VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
 						   $(abspath $(VSOURCES_WITHOUT_PKGS)) \
 						   $(abspath $(TBSRCS))
 
-VERILATOR_SIM_SRC_FILES:=$(PKG_SOURCES) \
-						 $(VSOURCES_WITHOUT_PKGS)
+VERILATOR_SIM_SRC_FILES:=$(abspath $(PKG_SOURCES)) \
+						 $(abspath $(VSOURCES_WITHOUT_PKGS))
 
 VERILATOR_SIMONLY_FLAGS:=--binary --trace-fst --trace-structs \
 						 -j $(SIM_JOBS) \
