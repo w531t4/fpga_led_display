@@ -189,9 +189,10 @@ clean:
 ifneq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),)
 	YOSYS_PATH=$(abspath oss-cad-suite) $(MAKE) -C depends/yosys_ecp5_infer_bram_outreg clean
 endif
+
 # This plugin is necessary to infer OUTREG in blockram correctly in yosys.
 depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so:
-	(cd depends/yosys_ecp5_infer_bram_outreg/;  YOSYS_PATH=../../oss-cad-suite/ make)
+	YOSYS_PATH=$(abspath oss-cad-suite) $(MAKE) -C depends/yosys_ecp5_infer_bram_outreg
 
 YOSYS_DEBUG ?= false
 YOSYS_INCLUDE_EXTRA ?= false
