@@ -75,7 +75,7 @@
                 },
                 "json.schemas": [],
                 "prettier.tabWidth": 4,
-                "verilog.formatting.veribleVerilogFormatter.arguments": "--indentation_spaces=4 --column_limit=120",
+                "verilog.formatting.veribleVerilogFormatter.arguments": "--flagfile=.rules.verible_format",
                 "[systemverilog]": {
                     "editor.colorDecorators": false
                 }
