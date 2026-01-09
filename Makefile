@@ -67,7 +67,8 @@ VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
 						   -y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
 						   $(abspath $(VSOURCES_WITHOUT_PKGS)) \
 						   $(abspath $(TBSRCS))
-VERILATOR_SIM_FLAGS:=-sv --binary --trace-fst --trace-structs --quiet \
+VERILATOR_SIMONLY_FLAGS:=--binary --trace-fst --trace-structs
+VERILATOR_SIM_FLAGS:=-sv $(VERILATOR_SIMONLY_FLAGS) --quiet \
 					 $(VERILATOR_ADDITIONAL_ARGS) \
 					 -I$(VINCLUDE_DIR) \
 					 -j $(SIM_JOBS) \
