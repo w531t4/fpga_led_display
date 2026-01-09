@@ -4,23 +4,23 @@
 `ifdef RGB24
 `ifdef W128
 localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
-    cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'('h`W384_RGB24_ROW_HEX)
+    cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'(`W384_RGB24_ROW_HEX)
 });
 `else  // W128
 localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
-    cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'('h`W64_RGB24_ROW_HEX)
+    cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'(`W64_RGB24_ROW_HEX)
 });
 
 `endif  // W128
 `else  // RGB24
 `ifdef W128
 localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
-    cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'('h`W384_RGB565_ROW_HEX)
+    cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'(`W384_RGB565_ROW_HEX)
 });
 
 `else  // W128
 localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
-    cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'('h`W64_RGB565_ROW_HEX)
+    cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'(`W64_RGB565_ROW_HEX)
 });
 `endif  // W128
 `endif  // RGB24
