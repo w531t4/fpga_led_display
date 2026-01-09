@@ -66,8 +66,8 @@ VERILATOR_SIM_FLAGS:=-sv --binary --trace-fst --trace-structs --quiet $(VERILATO
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
 	$(abspath $(VSOURCES_WITHOUT_PKGS)) $(abspath $(TBSRCS))
-VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
-VERILATOR_LINT_CMD := $(VERILATOR_BIN) $(VERILATOR_FLAGS)
+VERILATOR_LINT_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
+VERILATOR_LINT_CMD := $(VERILATOR_BIN) $(VERILATOR_LINT_FLAGS)
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
 GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
 GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
