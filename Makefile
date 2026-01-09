@@ -105,7 +105,7 @@ SIMBINS := $(filter-out $(SIM_BIN_DIR)/fm6126init, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.fst, $(FSTOBJS))
 endif
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack esp32 esp32_build esp32_flash restore restore-build
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build
 .DELETE_ON_ERROR:
 .SECONDARY: $(SIMBINS)
 all: $(ARTIFACT_DIR)/verilator_args simulation lint
@@ -299,12 +299,6 @@ restore: restore-build
 restore-build:
 	$(MAKE) -f $(SRC_DIR)/passthru/Makefile all
 
-# esp32_build: restore
-# 	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py build
-esp32_flash: restore
-	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py flash
-
-esp32: esp32_flash memprog
 gamma_lut: $(GAMMA_INCLUDES)
 
 $(VINCLUDE_DIR)/%.svh: $(SRC_DIR)/memory/%.mem $(SRC_DIR)/scripts/gen_gamma_svh.py
