@@ -72,11 +72,12 @@ VERILATOR_SIMONLY_FLAGS:=--binary --trace-fst --trace-structs \
 					 	 -MAKEFLAGS "-j $(SIM_JOBS) $(VERILATOR_SIM_MAKEFLAGS)"
 VERILATOR_SIM_FLAGS:=-sv $(VERILATOR_SIMONLY_FLAGS) --quiet \
 					 $(VERILATOR_ADDITIONAL_ARGS) \
-					 -I$(VINCLUDE_DIR)
+					 -I$(VINCLUDE_DIR) \
+					 $(SIM_FLAGS)
 
 VERILATOR_LINT_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f $(ARTIFACT_DIR)/verilator_args
 
-VERILATOR_SIM_CMD := $(VERILATOR_BIN) $(VERILATOR_SIM_FLAGS) $(SIM_FLAGS)
+VERILATOR_SIM_CMD := $(VERILATOR_BIN) $(VERILATOR_SIM_FLAGS)
 VERILATOR_LINT_CMD := $(VERILATOR_BIN) $(VERILATOR_LINT_FLAGS)
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
 GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
