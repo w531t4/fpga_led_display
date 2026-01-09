@@ -65,9 +65,9 @@ VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --ti
 #	- Contents written to $(ARTIFACT_DIR)/verilator_args
 #	- full-paths are required by vscode. otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
+						   $(VERILATOR_ADDITIONAL_ARGS) \
 						   $(abspath $(PKG_SOURCES)) \
 						   -y $(abspath $(SRC_DIR)) \
-						   $(VERILATOR_ADDITIONAL_ARGS) \
 						   $(abspath $(VSOURCES_WITHOUT_PKGS)) \
 						   $(abspath $(TBSRCS))
 
