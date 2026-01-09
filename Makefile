@@ -75,12 +75,12 @@ VERILATOR_SIMONLY_FLAGS:=--binary --trace-fst --trace-structs \
 					 	 -MAKEFLAGS "-j $(SIM_JOBS) $(VERILATOR_SIM_MAKEFLAGS)"
 VERILATOR_LINTONLY_FLAGS:=--lint-only
 
+# -- VERILATOR_SIM_FLAGS: Note: VERILATOR_SIM_SRC_FILES is specified later in the target below. TBSRCS aren't included
+#								because the intent is to scope the lint to just that simulation.
 VERILATOR_SIM_FLAGS:= $(VERILATOR_SIMONLY_FLAGS) \
 					  -sv \
 					  --quiet \
-					  -I$(VINCLUDE_DIR) \
- 					  $(SIM_FLAGS) \
-					  $(VERILATOR_ADDITIONAL_ARGS)
+					  -f $(ARTIFACT_DIR)/verilator_args
 
 VERILATOR_LINT_FLAGS:=$(VERILATOR_LINTONLY_FLAGS) \
 					  -sv \
