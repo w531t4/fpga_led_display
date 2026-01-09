@@ -294,10 +294,10 @@ DIAGRAM_TARGETS += $(if $(filter true,$(YOSYS_INCLUDE_EXTRA)),$(ARTIFACT_DIR)/ne
 diagram: $(DIAGRAM_TARGETS)
 
 restore: restore-build
-	$(TOOLPATH)/fujprog build/passthru/ulx3s_esp32_passthru.bit
+	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/passthru/ulx3s_esp32_passthru.bit
 
 restore-build:
-	$(MAKE) -f src/passthru/Makefile all
+	$(MAKE) -f $(SRC_DIR)/passthru/Makefile all
 
 # esp32_build: restore
 # 	cd ../ESP32-FPGA-MatrixPanel; . ./setup_env.sh; idf.py build
