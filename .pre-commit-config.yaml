@@ -5,6 +5,12 @@ repos:
           - id: reuse-lint-file
     - repo: local
       hooks:
+          - id: verible-format-check
+            name: Ensure staged HDL files are verible-format-able
+            entry: src/scripts/check_verible_format_staged.py
+            language: system
+            files: \.(sv|svh|v|vh)$
+            always_run: true
           - id: inline-command
             name: Ensure testbenches build successfully
             entry: bash -c 'make simulation'
