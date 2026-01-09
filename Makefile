@@ -67,7 +67,7 @@ VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
 	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
 	$(abspath $(VSOURCES_WITHOUT_PKGS)) $(abspath $(TBSRCS))
 VERILATOR_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f build/verilator_args
-
+VERILATOR_LINT_CMD := $(VERILATOR_BIN) $(VERILATOR_FLAGS)
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
 GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
 GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
@@ -130,10 +130,10 @@ lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args
 	cat $(ARTIFACT_DIR)/verilator_args; printf "\n";
 	set -o pipefail; \
 	{ \
-		$(VERILATOR_BIN) $(VERILATOR_FLAGS); \
+		$(VERILATOR_LINT_CMD); \
 		for tb_args_file in $(TB_ARGS_FILES); do \
 			tb_args="$$(tr '\n' ' ' < $$tb_args_file)"; \
-			$(VERILATOR_BIN) $(VERILATOR_FLAGS) $$tb_args; \
+			$(VERILATOR_LINT_CMD) $$tb_args; \
 		done; \
 	} |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
