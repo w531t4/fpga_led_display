@@ -41,11 +41,10 @@ export CCACHE_DIR
 # DOUBLE_BUFFER - Allow image to be written to one buffer while displaying the other buffer at led's.
 # USE_INFER_BRAM_PLUGIN - Compile and use Yosys plugin to assist with inferring OUTREG for BRAM's
 # USE_WATCHDOG - Requires recurring command sequence to be present, otherwise board resets
-# USE SLANG - use yosys read_slang engine instead of read_verilog
 # SWAP_BLUE_GREEN_CHAN - Swaps the pins for blue/green channels (see Adafruit note about "...green and blue channels are swapped..
 #				         .with the 2.5mm pitch 64x32 display..." https://www.adafruit.com/product/5036)
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DUSE_SLANG -DSWAP_BLUE_GREEN_CHAN
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
@@ -195,20 +194,11 @@ ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt_selected.sv
 endif
 
-YOSYS_READVERILOG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) -sv ${VSOURCES}
 YOSYS_READSLANG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) ${VSOURCES}
 ifeq ($(YOSYS_DEBUG), true)
-	YOSYS_READVERILOG_ARGS:=-debug $(YOSYS_READVERILOG_ARGS)
 	YOSYS_READSLANG_ARGS:=--diag-source --diag-location --diag-include-stack $(YOSYS_READSLANG_ARGS)
 endif
-YOSYS_READVERILOG_CMD:=read_verilog $(YOSYS_READVERILOG_ARGS)
 YOSYS_READSLANG_CMD:=read_slang $(YOSYS_READSLANG_ARGS)
-
-YOSYS_READVERILOGLIB_ARGS:=-lib +/lattice/cells_bb_ecp5.v
-ifeq ($(YOSYS_DEBUG), true)
-	YOSYS_READVERILOGLIB_ARGS:=-debug $(YOSYS_READVERILOGLIB_ARGS)
-endif
-YOSYS_READVERILOGLIB_CMD:=read_verilog $(YOSYS_READVERILOGLIB_ARGS)
 
 YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top main -json $(ARTIFACT_DIR)/mydesign.json
 
@@ -216,12 +206,7 @@ YOSYS_SCRIPT:=
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_SCRIPT +=echo on;
 endif
-ifeq ($(findstring -DUSE_SLANG,$(BUILD_FLAGS)), -DUSE_SLANG)
 YOSYS_SCRIPT +=$(YOSYS_READSLANG_CMD);
-else
-YOSYS_SCRIPT +=$(YOSYS_READVERILOGLIB_CMD);
-YOSYS_SCRIPT +=$(YOSYS_READVERILOG_CMD);
-endif
 YOSYS_SCRIPT +=$(YOSYS_EXTRA);
 YOSYS_SCRIPT +=$(YOSYS_SYNTHECP5_CMD);
 ifeq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)), -DUSE_INFER_BRAM_PLUGIN)
@@ -234,9 +219,7 @@ YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il;
 YOSYS_SCRIPT +=write_verilog -selected $(ARTIFACT_DIR)/mydesign_final.sv;
 
 YOSYS_CMD_ARGS:=-L $(ARTIFACT_DIR)/yosys.log -p "$(YOSYS_SCRIPT)"
-ifeq ($(findstring -DUSE_SLANG,$(BUILD_FLAGS)), -DUSE_SLANG)
 YOSYS_CMD_ARGS += -m slang
-endif
 ifeq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)), -DUSE_INFER_BRAM_PLUGIN)
 YOSYS_CMD_ARGS += -m depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so
 endif
@@ -330,7 +313,5 @@ esp32_flash: restore
 esp32: esp32_flash memprog
 gamma_lut: $(GAMMA_INCLUDES)
 
-ifeq ($(findstring -DUSE_SLANG,$(BUILD_FLAGS)), -DUSE_SLANG)
 $(VINCLUDE_DIR)/%.svh: $(SRC_DIR)/memory/%.mem $(SRC_DIR)/scripts/gen_gamma_svh.py
 	python3 $(SRC_DIR)/scripts/gen_gamma_svh.py "$<" "$@"
-endif
