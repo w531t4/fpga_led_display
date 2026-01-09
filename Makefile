@@ -274,11 +274,6 @@ memprog: $(ARTIFACT_DIR)/ulx3s.bit
 simulation:
 	+@$(MAKE) --no-print-directory $(SIM_MAKEFLAGS) $(FSTOBJS)
 
-DIAGRAM_TARGETS:=$(ARTIFACT_DIR)/netlist.svg
-ifeq ($(YOSYS_INCLUDE_EXTRA),true)
-	DIAGRAM_TARGETS +=$(ARTIFACT_DIR)/netlist_pre.svg
-endif
-
 $(ARTIFACT_DIR)/mydesign_vizclean.json: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
 	jq 'del(.modules.BB, .modules.BBPU, .modules.BBPD, .modules.TRELLIS_IO)' $< > $@
 
@@ -293,6 +288,12 @@ endif
 ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 $(ARTIFACT_DIR)/netlist_pre.svg: $(ARTIFACT_DIR)/mydesign_pre_vizclean.json | $(ARTIFACT_DIR)
 	$(NETLISTSVG) $< -o $@
+endif
+
+DIAGRAM_TARGETS:=$(ARTIFACT_DIR)/netlist.svg
+
+ifeq ($(YOSYS_INCLUDE_EXTRA),true)
+	DIAGRAM_TARGETS +=$(ARTIFACT_DIR)/netlist_pre.svg
 endif
 
 diagram: $(DIAGRAM_TARGETS)
