@@ -125,10 +125,10 @@ SIMBINS := $(filter-out $(SIM_BIN_DIR)/fm6126init, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.fst, $(FSTOBJS))
 endif
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build verilator_argfiles
 .DELETE_ON_ERROR:
 .SECONDARY: $(SIMBINS)
-all: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src_args $(ARTIFACT_DIR)/verilator_tbsrc_args simulation lint
+all: verilator_argfiles simulation lint
 #$(warning In a command script $(SIMBINS))
 
 $(SIMULATION_DIR)/%.fst: $(SIM_BIN_DIR)/% Makefile | $(SIMULATION_DIR)
@@ -147,6 +147,8 @@ $(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(IN
 		-D'DUMP_FILE_NAME="$(SIMULATION_DIR_ABS)/$*.fst"' \
 		$(VERILATOR_SIM_SRC_FILES) $<
 
+verilator_argfiles: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src_args $(ARTIFACT_DIR)/verilator_tbsrc_args
+
 $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
 
@@ -156,7 +158,7 @@ $(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(PKG_SOURCES) $(VSOURCES_WI
 $(ARTIFACT_DIR)/verilator_tbsrc_args: $(ARTIFACT_DIR) $(TBSRCS) Makefile
 	@printf '%s' '$(abspath $(TBSRCS))' > $@
 
-lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src_args $(ARTIFACT_DIR)/verilator_tbsrc_args
+lint: $(ARTIFACT_DIR) verilator_argfiles
 	cat $(ARTIFACT_DIR)/verilator_args; printf "\n";
 	set -o pipefail; \
 	{ \
