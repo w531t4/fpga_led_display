@@ -12,7 +12,7 @@
         "**/__pycache__/**": true
     },
     "verilog.linting.linter": "verilator",
-    "verilog.linting.verilator.arguments": "-f build/verilator_args -f build/verilator_tbsrc_args",
+    "verilog.linting.verilator.arguments": "-f build/verilator_args -f build/verilator_src_args -f build/verilator_tbsrc_args",
     "verilog.languageServer.veribleVerilogLs.enabled": true,
     "verilog.formatting.verilogHDL.formatter": "verible-verilog-format",
     "verilog.languageServer.veribleVerilogLs.path": "/usr/local/bin/verible-verilog-ls",

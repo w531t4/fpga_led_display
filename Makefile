@@ -66,12 +66,9 @@ VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --ti
 #	- full-paths are required by vscode. otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = -I$(VINCLUDE_DIR) \
 						   $(SIM_FLAGS) \
-						   $(VERILATOR_ADDITIONAL_ARGS) \
-						   $(abspath $(PKG_SOURCES)) \
-						   $(abspath $(VSOURCES_WITHOUT_PKGS))
+						   $(VERILATOR_ADDITIONAL_ARGS)
 
-VERILATOR_SIM_SRC_FILES:=$(abspath $(PKG_SOURCES)) \
-						 $(abspath $(VSOURCES_WITHOUT_PKGS))
+VERILATOR_SIM_SRC_FILES:=-f $(ARTIFACT_DIR)/verilator_src_args
 
 VERILATOR_SIMONLY_FLAGS:=--binary --trace-fst --trace-structs \
 						 -j $(SIM_JOBS) \
@@ -89,6 +86,7 @@ VERILATOR_LINT_FLAGS:=$(VERILATOR_LINTONLY_FLAGS) \
 					  -sv \
 					  --quiet \
 					  -f $(ARTIFACT_DIR)/verilator_args \
+					  -f $(ARTIFACT_DIR)/verilator_src_args \
 					  -f $(ARTIFACT_DIR)/verilator_tbsrc_args
 
 
@@ -130,7 +128,7 @@ endif
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build
 .DELETE_ON_ERROR:
 .SECONDARY: $(SIMBINS)
-all: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_tbsrc_args simulation lint
+all: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src_args $(ARTIFACT_DIR)/verilator_tbsrc_args simulation lint
 #$(warning In a command script $(SIMBINS))
 
 $(SIMULATION_DIR)/%.fst: $(SIM_BIN_DIR)/% Makefile | $(SIMULATION_DIR)
@@ -152,10 +150,13 @@ $(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(IN
 $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
 
+$(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) Makefile
+	@printf '%s' '$(abspath $(PKG_SOURCES)) $(abspath $(VSOURCES_WITHOUT_PKGS))' > $@
+
 $(ARTIFACT_DIR)/verilator_tbsrc_args: $(ARTIFACT_DIR) $(TBSRCS) Makefile
 	@printf '%s' '$(abspath $(TBSRCS))' > $@
 
-lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_tbsrc_args
+lint: $(ARTIFACT_DIR) $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src_args $(ARTIFACT_DIR)/verilator_tbsrc_args
 	cat $(ARTIFACT_DIR)/verilator_args; printf "\n";
 	set -o pipefail; \
 	{ \
