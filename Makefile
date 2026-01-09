@@ -81,6 +81,7 @@ VERILATOR_SIM_FLAGS:= $(VERILATOR_SIMONLY_FLAGS) \
 					  $(SIM_FLAGS)
 VERILATOR_LINT_FLAGS:=$(VERILATOR_LINTONLY_FLAGS) \
 					  -sv \
+					  --quiet \
 					  -I$(VINCLUDE_DIR) \
 					  -f $(ARTIFACT_DIR)/verilator_args
 
