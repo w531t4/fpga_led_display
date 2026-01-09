@@ -279,8 +279,6 @@ ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 	DIAGRAM_TARGETS +=$(ARTIFACT_DIR)/netlist_pre.svg
 endif
 
-diagram: $(DIAGRAM_TARGETS)
-
 $(ARTIFACT_DIR)/mydesign_vizclean.json: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
 	jq 'del(.modules.BB, .modules.BBPU, .modules.BBPD, .modules.TRELLIS_IO)' $< > $@
 
@@ -296,6 +294,8 @@ ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 $(ARTIFACT_DIR)/netlist_pre.svg: $(ARTIFACT_DIR)/mydesign_pre_vizclean.json | $(ARTIFACT_DIR)
 	$(NETLISTSVG) $< -o $@
 endif
+
+diagram: $(DIAGRAM_TARGETS)
 
 restore: restore-build
 	$(TOOLPATH)/fujprog build/passthru/ulx3s_esp32_passthru.bit
