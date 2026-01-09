@@ -13,7 +13,7 @@
     },
     "verilog.linting.verilator.includePath": ["src/include", "src"],
     "verilog.linting.linter": "verilator",
-    "verilog.linting.verilator.arguments": "-FI oss-cad-suite/share/yosys/ecp5/cells_bb.v -f build/verilator_args",
+    "verilog.linting.verilator.arguments": "-f build/verilator_args",
     "verilog.languageServer.veribleVerilogLs.enabled": true,
     "verilog.formatting.verilogHDL.formatter": "verible-verilog-format",
     "verilog.languageServer.veribleVerilogLs.path": "/usr/local/bin/verible-verilog-ls",
