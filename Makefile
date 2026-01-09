@@ -73,6 +73,8 @@ VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
 						   $(abspath $(VSOURCES_WITHOUT_PKGS)) \
 						   $(abspath $(TBSRCS))
 VERILATOR_LINT_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f $(ARTIFACT_DIR)/verilator_args
+
+VERILATOR_SIM_CMD := $(VERILATOR_BIN) $(VERILATOR_SIM_FLAGS) $(SIM_FLAGS)
 VERILATOR_LINT_CMD := $(VERILATOR_BIN) $(VERILATOR_LINT_FLAGS)
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
 GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
@@ -122,7 +124,7 @@ $(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(IN
 	if [ -f $$tb_args_file ]; then \
 		tb_args="$$(tr '\n' ' ' < $$tb_args_file)"; \
 	fi; \
-	$(VERILATOR_BIN) $(VERILATOR_SIM_FLAGS) $(SIM_FLAGS) $$tb_args \
+	$(VERILATOR_SIM_CMD) $$tb_args \
 		--top-module tb_$* \
 		-Mdir $(SIM_OBJ_DIR)/obj_$* \
 		-o $(SIM_BIN_DIR_ABS)/$* \
