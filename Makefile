@@ -83,8 +83,9 @@ VERILATOR_SIM_FLAGS:= $(VERILATOR_SIMONLY_FLAGS) \
 					  -sv \
 					  --quiet \
 					  -I$(VINCLUDE_DIR) \
-					  $(VERILATOR_ADDITIONAL_ARGS) \
-					  $(SIM_FLAGS)
+ 					  $(SIM_FLAGS) \
+					  $(VERILATOR_ADDITIONAL_ARGS)
+
 VERILATOR_LINT_FLAGS:=$(VERILATOR_LINTONLY_FLAGS) \
 					  -sv \
 					  --quiet \
