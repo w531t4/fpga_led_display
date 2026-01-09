@@ -67,7 +67,6 @@ VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --ti
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
 						   $(VERILATOR_ADDITIONAL_ARGS) \
 						   $(abspath $(PKG_SOURCES)) \
-						   -y $(abspath $(SRC_DIR)) \
 						   $(abspath $(VSOURCES_WITHOUT_PKGS)) \
 						   $(abspath $(TBSRCS))
 
