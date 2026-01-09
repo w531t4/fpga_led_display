@@ -291,10 +291,7 @@ $(ARTIFACT_DIR)/netlist_pre.svg: $(ARTIFACT_DIR)/mydesign_pre_vizclean.json | $(
 endif
 
 DIAGRAM_TARGETS:=$(ARTIFACT_DIR)/netlist.svg
-
-ifeq ($(YOSYS_INCLUDE_EXTRA),true)
-	DIAGRAM_TARGETS +=$(ARTIFACT_DIR)/netlist_pre.svg
-endif
+DIAGRAM_TARGETS += $(if $(filter true,$(YOSYS_INCLUDE_EXTRA)),$(ARTIFACT_DIR)/netlist_pre.svg)
 
 diagram: $(DIAGRAM_TARGETS)
 
