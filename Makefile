@@ -68,6 +68,10 @@ VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
 						   $(VERILATOR_ADDITIONAL_ARGS) \
 						   $(abspath $(VSOURCES_WITHOUT_PKGS)) \
 						   $(abspath $(TBSRCS))
+
+VERILATOR_SIM_SRC_FILES:=$(PKG_SOURCES) \
+						 $(VSOURCES_WITHOUT_PKGS)
+
 VERILATOR_SIMONLY_FLAGS:=--binary --trace-fst --trace-structs \
 						 -j $(SIM_JOBS) \
 					 	 -MAKEFLAGS "-j $(SIM_JOBS) $(VERILATOR_SIM_MAKEFLAGS)"
@@ -141,7 +145,7 @@ $(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(IN
 		-Mdir $(SIM_OBJ_DIR)/obj_$* \
 		-o $(SIM_BIN_DIR_ABS)/$* \
 		-D'DUMP_FILE_NAME="$(SIMULATION_DIR_ABS)/$*.fst"' \
-		$(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $<
+		$(VERILATOR_SIM_SRC_FILES) $<
 
 $(ARTIFACT_DIR)/verilator_args: $(ARTIFACT_DIR) $(PKG_SOURCES) Makefile
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
