@@ -64,7 +64,8 @@ VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --ti
 # VERILATOR_FILEPARAM_ARGS is written to $(ARTIFACT_DIR)/verilator_args
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
 						   $(abspath $(PKG_SOURCES)) \
-						   -y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
+						   -y $(abspath $(SRC_DIR)) \
+						   $(VERILATOR_ADDITIONAL_ARGS) \
 						   $(abspath $(VSOURCES_WITHOUT_PKGS)) \
 						   $(abspath $(TBSRCS))
 VERILATOR_SIMONLY_FLAGS:=--binary --trace-fst --trace-structs \
