@@ -60,8 +60,10 @@ VERILATOR_SIM_MAKEFLAGS :=
 VERILATOR_SIM_MAKEFLAGS += $(if $(strip $(VERILATOR_SIM_OPTSLOW)),OPT_SLOW=$(VERILATOR_SIM_OPTSLOW))
 VERILATOR_SIM_MAKEFLAGS += $(if $(strip $(VERILATOR_SIM_OBJCACHE)),OBJCACHE=$(VERILATOR_SIM_OBJCACHE))
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing --quiet-stats
-# Verilator needs full-paths otherwise vscode assumes they are in /src
-# VERILATOR_FILEPARAM_ARGS is written to $(ARTIFACT_DIR)/verilator_args
+
+# VERILATOR_FILEPARAM_ARGS
+#	- Contents written to $(ARTIFACT_DIR)/verilator_args
+#	- full-paths are required by vscode. otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
 						   $(abspath $(PKG_SOURCES)) \
 						   -y $(abspath $(SRC_DIR)) \
