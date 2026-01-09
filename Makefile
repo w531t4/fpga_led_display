@@ -60,13 +60,18 @@ VERILATOR_SIM_MAKEFLAGS :=
 VERILATOR_SIM_MAKEFLAGS += $(if $(strip $(VERILATOR_SIM_OPTSLOW)),OPT_SLOW=$(VERILATOR_SIM_OPTSLOW))
 VERILATOR_SIM_MAKEFLAGS += $(if $(strip $(VERILATOR_SIM_OBJCACHE)),OBJCACHE=$(VERILATOR_SIM_OBJCACHE))
 VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --timing --quiet-stats
-VERILATOR_SIM_FLAGS:=-sv --binary --trace-fst --trace-structs --quiet $(VERILATOR_ADDITIONAL_ARGS) -I$(VINCLUDE_DIR) \
-	-j $(SIM_JOBS) -MAKEFLAGS "-j $(SIM_JOBS) $(VERILATOR_SIM_MAKEFLAGS)"
+VERILATOR_SIM_FLAGS:=-sv --binary --trace-fst --trace-structs --quiet \
+					 $(VERILATOR_ADDITIONAL_ARGS) \
+					 -I$(VINCLUDE_DIR) \
+					 -j $(SIM_JOBS) \
+					 -MAKEFLAGS "-j $(SIM_JOBS) $(VERILATOR_SIM_MAKEFLAGS)"
 # Verilator needs full-paths otherwise vscode assumes they are in /src
 # VERILATOR_FILEPARAM_ARGS is written to $(ARTIFACT_DIR)/verilator_args
-VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) $(abspath $(PKG_SOURCES)) \
-	-y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
-	$(abspath $(VSOURCES_WITHOUT_PKGS)) $(abspath $(TBSRCS))
+VERILATOR_FILEPARAM_ARGS = $(SIM_FLAGS) \
+						   $(abspath $(PKG_SOURCES)) \
+						   -y $(abspath $(SRC_DIR)) $(VERILATOR_ADDITIONAL_ARGS) \
+						   $(abspath $(VSOURCES_WITHOUT_PKGS)) \
+						   $(abspath $(TBSRCS))
 VERILATOR_LINT_FLAGS:=-sv --lint-only -I$(VINCLUDE_DIR) -f $(ARTIFACT_DIR)/verilator_args
 VERILATOR_LINT_CMD := $(VERILATOR_BIN) $(VERILATOR_LINT_FLAGS)
 INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
