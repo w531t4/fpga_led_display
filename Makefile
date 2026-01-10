@@ -13,6 +13,7 @@ SIM_BIN_DIR_ABS:=$(abspath $(SIM_BIN_DIR))
 # Dependency files for per-testbench rebuilds.
 DEPDIR:=$(ARTIFACT_DIR)/deps
 SRC_DIR:=src
+PKG_DIR:=$(SRC_DIR)/packages
 TB_DIR:=$(SRC_DIR)/testbenches
 CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
 VINCLUDE_DIR:=$(SRC_DIR)/include
@@ -48,9 +49,10 @@ BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER 
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
-PKG_SOURCES := $(SRC_DIR)/params.sv $(SRC_DIR)/calc.sv $(SRC_DIR)/cmd.sv $(SRC_DIR)/types.sv
-VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
-VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
+# PKG_SOURCES are listed manually because their compilation order matters
+PKG_SOURCES := $(PKG_DIR)/params.sv $(PKG_DIR)/calc.sv $(PKG_DIR)/cmd.sv $(PKG_DIR)/types.sv
+PROJROOT_VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
+VSOURCES := $(PKG_SOURCES) $(PROJROOT_VSOURCES)
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_SIM_OPTSLOW ?=
