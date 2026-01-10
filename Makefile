@@ -149,13 +149,13 @@ $(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(IN
 
 verilator_argfiles: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src_args $(ARTIFACT_DIR)/verilator_tbsrc_args
 
-$(ARTIFACT_DIR)/verilator_args: $(INCLUDESRCS) Makefile
+$(ARTIFACT_DIR)/verilator_args: $(INCLUDESRCS) Makefile | $(ARTIFACT_DIR)
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
 
-$(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) Makefile
+$(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) Makefile | $(ARTIFACT_DIR)
 	@printf '%s' '$(abspath $(PKG_SOURCES)) $(abspath $(VSOURCES_WITHOUT_PKGS))' > $@
 
-$(ARTIFACT_DIR)/verilator_tbsrc_args: $(ARTIFACT_DIR) $(TBSRCS) Makefile
+$(ARTIFACT_DIR)/verilator_tbsrc_args: $(ARTIFACT_DIR) $(TBSRCS) Makefile | $(ARTIFACT_DIR)
 	@printf '%s' '$(abspath $(TBSRCS))' > $@
 
 lint: $(ARTIFACT_DIR) verilator_argfiles
