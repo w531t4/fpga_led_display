@@ -51,7 +51,6 @@ NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
 PKG_SOURCES := $(SRC_DIR)/params.sv $(SRC_DIR)/calc.sv $(SRC_DIR)/cmd.sv $(SRC_DIR)/types.sv
 VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 VSOURCES := $(PKG_SOURCES) $(filter-out $(PKG_SOURCES), $(VSOURCES))
-VSOURCES_WITHOUT_PKGS := $(filter-out $(PKG_SOURCES),$(VSOURCES))
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_SIM_OPTSLOW ?=
@@ -134,7 +133,7 @@ all: verilator_argfiles simulation lint
 $(SIMULATION_DIR)/%.fst: $(SIM_BIN_DIR)/% Makefile | $(SIMULATION_DIR)
 	@set -o pipefail; stdbuf -oL -eL $< $(SIM_RUN_ARGS) 2>&1 | sed -u 's/^/[$*] /'
 
-$(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) $(INCLUDESRCS) Makefile | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
+$(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(VSOURCES) $(INCLUDESRCS) Makefile | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
 	tb_args=""; \
 	if [ -f $$tb_args_file ]; then \
@@ -152,8 +151,8 @@ verilator_argfiles: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src
 $(ARTIFACT_DIR)/verilator_args: $(INCLUDESRCS) Makefile | $(ARTIFACT_DIR)
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
 
-$(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(PKG_SOURCES) $(VSOURCES_WITHOUT_PKGS) Makefile | $(ARTIFACT_DIR)
-	@printf '%s' '$(abspath $(PKG_SOURCES)) $(abspath $(VSOURCES_WITHOUT_PKGS))' > $@
+$(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(VSOURCES) Makefile | $(ARTIFACT_DIR)
+	@printf '%s' '$(abspath $(VSOURCES))' > $@
 
 $(ARTIFACT_DIR)/verilator_tbsrc_args: $(ARTIFACT_DIR) $(TBSRCS) Makefile | $(ARTIFACT_DIR)
 	@printf '%s' '$(abspath $(TBSRCS))' > $@
