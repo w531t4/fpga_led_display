@@ -300,7 +300,7 @@ memprog: $(ARTIFACT_DIR)/ulx3s.bit
 
 	$(TOOLPATH)/fujprog $<
 
-simulation:
+simulation: $(ARTIFACT_DIR) verilator_argfiles
 	+@$(MAKE) --no-print-directory $(SIM_MAKEFLAGS) $(FSTOBJS)
 
 $(ARTIFACT_DIR)/mydesign_vizclean.json: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
