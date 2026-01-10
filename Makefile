@@ -17,6 +17,7 @@ PKG_DIR:=$(SRC_DIR)/packages
 TB_DIR:=$(SRC_DIR)/testbenches
 CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
 VINCLUDE_DIR:=$(SRC_DIR)/include
+VINCLUDE_MEM_DIR:=$(VINCLUDE_DIR)/memory
 CCACHE_DIR ?= $(abspath .ccache)
 export CCACHE_DIR
 
@@ -66,6 +67,7 @@ VERILATOR_ADDITIONAL_ARGS:=-Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-MULTITOP --ti
 #	- Contents written to $(ARTIFACT_DIR)/verilator_args
 #	- full-paths are required by vscode. otherwise vscode assumes they are in /src
 VERILATOR_FILEPARAM_ARGS = -I$(VINCLUDE_DIR) \
+						   -I$(VINCLUDE_MEM_DIR) \
 						   $(SIM_FLAGS) \
 						   $(VERILATOR_ADDITIONAL_ARGS)
 
@@ -93,9 +95,9 @@ VERILATOR_LINT_FLAGS:=$(VERILATOR_LINTONLY_FLAGS) \
 
 VERILATOR_SIM_CMD := $(VERILATOR_BIN) $(VERILATOR_SIM_FLAGS)
 VERILATOR_LINT_CMD := $(VERILATOR_BIN) $(VERILATOR_LINT_FLAGS)
-INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -name '*.vh' -or -name '*.svh'))
-GAMMA_MEMS := $(SRC_DIR)/memory/gamma_5bit.mem $(SRC_DIR)/memory/gamma_6bit.mem $(SRC_DIR)/memory/gamma_8bit.mem
-GAMMA_INCLUDES := $(patsubst $(SRC_DIR)/memory/%.mem,$(VINCLUDE_DIR)/%.svh,$(GAMMA_MEMS))
+GAMMA_MEMS := $(sort $(shell find $(VINCLUDE_MEM_DIR) -maxdepth 1 -name '*.mem'))
+GAMMA_INCLUDES := $(patsubst $(VINCLUDE_MEM_DIR)/%.mem,$(VINCLUDE_MEM_DIR)/%.svh,$(GAMMA_MEMS))
+INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -maxdepth 1 -name '*.vh' -or -name '*.svh')) $(GAMMA_INCLUDES)
 SIMBINS:=$(subst tb_,, $(subst $(TB_DIR), $(SIM_BIN_DIR), $(TBSRCS:%.sv=%)))
 FSTOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.fst)))
 TB_ARGS_FILES := $(wildcard $(TB_DIR)/tb_*.args)
@@ -222,7 +224,7 @@ ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt_selected.sv
 endif
 
-YOSYS_READSLANG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) ${VSOURCES}
+YOSYS_READSLANG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) -I$(VINCLUDE_MEM_DIR) ${VSOURCES}
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_READSLANG_ARGS:=--diag-source --diag-location --diag-include-stack $(YOSYS_READSLANG_ARGS)
 endif
@@ -255,8 +257,8 @@ ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_CMD_ARGS :=-d -v9 -g $(YOSYS_CMD_ARGS)
 endif
 
-compile: lint $(ARTIFACT_DIR)/mydesign.json
-$(YOSYS_TARGETS): $(GAMMA_INCLUDES) ${VSOURCES} $(INCLUDESRCS) Makefile  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)
+compile: lint gamma_lut $(ARTIFACT_DIR)/mydesign.json
+$(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) Makefile  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)
 	echo "$(YOSYS_SCRIPT)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_CMD_ARGS)
 
@@ -331,5 +333,5 @@ restore-build:
 
 gamma_lut: $(GAMMA_INCLUDES)
 
-$(VINCLUDE_DIR)/%.svh: $(SRC_DIR)/memory/%.mem $(SRC_DIR)/scripts/gen_gamma_svh.py
+$(VINCLUDE_DIR)/memory/%.svh: $(VINCLUDE_DIR)/memory/%.mem $(SRC_DIR)/scripts/gen_gamma_svh.py
 	python3 $(SRC_DIR)/scripts/gen_gamma_svh.py "$<" "$@"
