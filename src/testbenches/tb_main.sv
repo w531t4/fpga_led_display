@@ -239,15 +239,15 @@ module tb_main #(
         case (idx)
             0: cmd_line_state_expected = 4'd3;
             1: cmd_line_state_expected = 4'd0;
-            2: cmd_line_state_expected = 4'd8;
+            2: cmd_line_state_expected = 4'd9;
             3: cmd_line_state_expected = 4'd0;
             4: cmd_line_state_expected = 4'd4;
             5: cmd_line_state_expected = 4'd0;
             6: cmd_line_state_expected = 4'd5;
             7: cmd_line_state_expected = 4'd0;
-            8: cmd_line_state_expected = 4'd6;
+            8: cmd_line_state_expected = 4'd7;
             9: cmd_line_state_expected = 4'd0;
-            10: cmd_line_state_expected = 4'd6;
+            10: cmd_line_state_expected = 4'd7;
             11: cmd_line_state_expected = 4'd0;
             12: cmd_line_state_expected = 4'd2;
             13: cmd_line_state_expected = 4'd0;

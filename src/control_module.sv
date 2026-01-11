@@ -44,10 +44,11 @@ module control_module #(
         STATE_CMD_BLANKPANEL,      // 3
         STATE_CMD_FILLPANEL,       // 4
         STATE_CMD_FILLRECT,        // 5
-        STATE_CMD_READPIXEL,       // 6
-        STATE_CMD_READFRAME        // 7
+        STATE_CMD_READRECT,        // 6
+        STATE_CMD_READPIXEL,       // 7
+        STATE_CMD_READFRAME        // 8
 `ifdef USE_WATCHDOG,
-        STATE_CMD_WATCHDOG         // 8
+        STATE_CMD_WATCHDOG         // 9
 `endif
     } ctrl_fsm_t;
     cmd::indata8_t data_rx_latch;
@@ -216,6 +217,26 @@ module control_module #(
         .done            (cmd_fillrect_done)
     );
 
+    wire                        cmd_readrect_we;
+    wire                        cmd_readrect_as;
+    wire                        cmd_readrect_done;
+    wire                  [7:0] cmd_readrect_do;
+    wire types::fb_addr_t       cmd_readrect_addr;
+
+    control_cmd_readrect #(
+        ._UNUSED('d0)
+    ) cmd_readrect (
+        .reset           (reset),
+        .enable          ((cmd_line_state == STATE_CMD_READRECT) && ~data_ready_n),
+        .clk             (clk_in),
+        .data_in         (data_rx_latch),
+        .addr            (cmd_readrect_addr),
+        .data_out        (cmd_readrect_do),
+        .ram_write_enable(cmd_readrect_we),
+        .ram_access_start(cmd_readrect_as),
+        .done            (cmd_readrect_done)
+    );
+
     wire                        cmd_readframe_we;
     wire                        cmd_readframe_as;
     wire                        cmd_readframe_done;
@@ -306,6 +327,13 @@ module control_module #(
                 ram_access_start     = cmd_fillrect_as;
                 state_done           = cmd_fillrect_done;
                 ready_for_data_logic = cmd_fillrect_rfd;
+            end
+            STATE_CMD_READRECT: begin
+                cmd_addr         = cmd_readrect_addr;
+                ram_data_out     = cmd_readrect_do;
+                ram_write_enable = cmd_readrect_we;
+                ram_access_start = cmd_readrect_as;
+                state_done       = cmd_readrect_done;
             end
             STATE_CMD_READPIXEL: begin
                 cmd_addr         = cmd_readpixel_addr;
@@ -433,6 +461,7 @@ module control_module #(
                     cmd::BLANKPANEL: cmd_line_state <= STATE_CMD_BLANKPANEL;
                     cmd::FILLPANEL: cmd_line_state <= STATE_CMD_FILLPANEL;
                     cmd::FILLRECT: cmd_line_state <= STATE_CMD_FILLRECT;
+                    cmd::READRECT: cmd_line_state <= STATE_CMD_READRECT;
                     cmd::READFRAME: cmd_line_state <= STATE_CMD_READFRAME;
                     cmd::READROW: begin
                         cmd_line_state <= STATE_CMD_READROW;

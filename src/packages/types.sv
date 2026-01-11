@@ -225,6 +225,14 @@ package types;
     } fillrect_cmd_t;
 
     typedef struct packed {
+        cmd::opcode_t opcode;
+        col_addr_field_t x1;
+        row_addr_field_t y1;
+        col_addr_field_t width;
+        row_addr_field_t height;
+    } readrect_cmd_t;
+
+    typedef struct packed {
         cmd::opcode_t      opcode;
         brightness_field_t level;
     } readbrightness_cmd_t;

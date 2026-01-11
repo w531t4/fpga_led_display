@@ -8,6 +8,7 @@ package cmd;
         BLANKPANEL     = "Z",
         FILLPANEL      = "F",
         FILLRECT       = "f",
+        READRECT       = "X",
         READFRAME      = "Y",
         READROW        = "L",
         READPIXEL      = "P",
