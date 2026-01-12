@@ -18,8 +18,8 @@ NEXTPNR := $(OSS_CAD)/nextpnr-ecp5
 ECPPACK := $(OSS_CAD)/ecppack
 
 # Design
-TOP := ulx3s_esp32_passthru
-SRC := $(SRC_DIR)/passthru/$(TOP).sv
+TOP := ulx3s_v20_passthru_wifi_modified
+SRC := $(SRC_DIR)/passthru/$(TOP).v
 
 # Board
 DEVICE  := --85k
@@ -28,9 +28,9 @@ LPF     := $(SRC_DIR)/constraints/ulx3s_v316.lpf
 FREQ    := 25
 
 # Outputs
-JSON   := $(BUILD_DIR)/ulx3s_esp32_passthru.json
-CONFIG := $(BUILD_DIR)/ulx3s_esp32_passthru.config
-BIT    := $(BUILD_DIR)/ulx3s_esp32_passthru.bit
+JSON   := $(BUILD_DIR)/ulx3s_passthru_wifi.json
+CONFIG := $(BUILD_DIR)/ulx3s_passthru_wifi.config
+BIT    := $(BUILD_DIR)/ulx3s_passthru_wifi.bit
 
 .PHONY: all clean dirs
 
