@@ -24,6 +24,9 @@ module control_cmd_readframe #(
         STATE_DONE
     } ctrl_fsm_t;
     ctrl_fsm_t state;
+    // Cache the last valid address so we can assert done only after the final byte is accepted.
+    localparam types::row_addr_t LAST_ROW = types::row_addr_t'(params::PIXEL_HEIGHT - 1);
+    localparam types::col_addr_t LAST_COL = types::col_addr_t'(params::PIXEL_WIDTH - 1);
     always @(posedge clk) begin
         if (reset) begin
             data_out <= 8'd0;
@@ -53,25 +56,23 @@ module control_cmd_readframe #(
                     if (enable) begin
                         ram_access_start <= !ram_access_start;
                         data_out <= data_in;
-                        if (addr.row < types::row_addr_t'(params::PIXEL_HEIGHT - 1) || addr.col < types::col_addr_t'(params::PIXEL_WIDTH - 1) || addr.pixel != 'd0) begin
-                            if (addr.pixel == 'd0) begin
+                        done <= 1'b0;
+                        if (addr.pixel == 'd0) begin
                                 addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
-                                if (addr.col == types::col_addr_t'(params::PIXEL_WIDTH - 1)) begin
+                            if (addr.col == LAST_COL) begin
                                     addr.col <= 'b0;
                                     addr.row <= addr.row + 'd1;
                                 end else begin
                                     addr.col <= addr.col + 'd1;
                                 end
                             end else begin
-                                if (addr.row == types::row_addr_t'(params::PIXEL_HEIGHT - 1) && addr.col == types::col_addr_t'(params::PIXEL_WIDTH - 1) && ((addr.pixel - 'd1) == 0)) begin
+                            // Assert done on the last payload byte so we
+                            // do not consume the next opcode as frame data.
+                            if ((addr.row == LAST_ROW) && (addr.col == LAST_COL) && ((addr.pixel - 'd1) == 0)) begin
                                     done <= 1'b1;
+                                state <= STATE_DONE;
                                 end
                                 addr.pixel <= addr.pixel - 'd1;
-                            end
-                        end else begin
-                            state <= STATE_DONE;
-                            data_out <= 8'b0;
-                            done <= 1'b0;
                         end
                     end
                 end

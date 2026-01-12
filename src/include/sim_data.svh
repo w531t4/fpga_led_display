@@ -29,4 +29,11 @@
 //  - 64 pixels (1x64)
 `define W64_RGB565_ROW_HEX 'h49026b02cb0a6a02e7018701c701e801aa12d354345d5144cc1a4a02290a8b12c7016601850166016501450124012501440145014501450145014601650966016509660165014501440125012401250144010401e300040104014501c711c811a51971746c53a200c30082008200820061006200610062008200820082008300
 
+// Frame payload helpers: replicate the row sample across panel height.
+// Cast to row_data_t so the row width (including leading zeros) is preserved.
+`define W384_RGB24_FRAME_HEX  {params::PIXEL_HEIGHT{types::row_data_t'(`W384_RGB24_ROW_HEX)}}
+`define W64_RGB24_FRAME_HEX   {params::PIXEL_HEIGHT{types::row_data_t'(`W64_RGB24_ROW_HEX)}}
+`define W384_RGB565_FRAME_HEX {params::PIXEL_HEIGHT{types::row_data_t'(`W384_RGB565_ROW_HEX)}}
+`define W64_RGB565_FRAME_HEX  {params::PIXEL_HEIGHT{types::row_data_t'(`W64_RGB565_ROW_HEX)}}
+
 `endif
