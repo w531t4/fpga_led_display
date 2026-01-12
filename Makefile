@@ -326,7 +326,7 @@ DIAGRAM_TARGETS += $(if $(filter true,$(YOSYS_INCLUDE_EXTRA)),$(ARTIFACT_DIR)/ne
 diagram: $(DIAGRAM_TARGETS)
 
 restore: restore-build
-	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/passthru/ulx3s_esp32_passthru.bit
+	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/passthru/ulx3s_passthru_wifi.bit
 
 restore-build:
 	$(MAKE) -f $(SRC_DIR)/passthru/Makefile all
