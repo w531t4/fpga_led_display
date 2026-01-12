@@ -10,8 +10,11 @@ A recipe driving a chain of LED matricies with a FPGA
 NOTE: Displaying widgets on the display (as shown above) is out of scope for this project. For more information on how that's done, please see:
 - A c++ interface capable of issuing compatible commands (via SPI) to FPGA (https://github.com/w531t4/ESP32-FPGA-MatrixPanel)
 - A ESPHome module which uses the above C++ interface to allow it to write content to the display (https://github.com/w531t4/ESPHome-FPGA-MatrixPanelWrapper)
-- A manager for widgets to be displayed on the display (i'm working on releasing this code)
-
+- A manager for widgets to be displayed on the display (https://github.com/w531t4/ESPHome-display_layout)
+- A component which uses entities from HomeAssistant (twitch) app to fetch and concatenate icons of streams (https://github.com/w531t4/twitch_thumbnails)
+- A component which determines when the Twitch FireTV app is open and which streamer is being watched (https://github.com/w531t4/twitch_firetvappstate)
+- A component which connects to a twitch streamers' chat channel and pushes messages to Homeassistant (https://github.com/w531t4/twitch_fetchchat)
+- A 3d-printable frame which works with P2.5 64x32 frames (https://cad.onshape.com/documents/fe268db42207de8b8bba48cd/v/79fdd3c63702f2d41752ad0e/e/3d819830277e58b983c22de8?renderMode=0&uiState=696523ad9ad6f375ddc02bac)
 ## Features
 - Supports chained topologies - n-bit width by 8-bit height
 - RGB24/RGB565 color
