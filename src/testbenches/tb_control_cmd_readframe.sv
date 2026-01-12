@@ -23,6 +23,7 @@ module tb_control_cmd_readframe;
     byte                        data_in_q;
     int                         payload_idx;
     int                         done_count;
+    int                         done_payload_idx;
     logic                       prev_as;
 
     // === DUT wiring ===
@@ -60,6 +61,7 @@ module tb_control_cmd_readframe;
         @(posedge clk);
         payload_idx = 0;
         done_count = 0;
+        done_payload_idx = -1;
         prev_as = 0;
         enable = 1;
         // Drive bytes on negedge so data_in is stable for the next posedge capture.
@@ -72,6 +74,8 @@ module tb_control_cmd_readframe;
         enable = 0;
         repeat (5) @(posedge clk);
         `WAIT_ASSERT(clk, done_count == 1, 10)
+        assert (done_payload_idx >= TOTAL_BYTES)
+        else $fatal(1, "Done payload index %0d < expected %0d", done_payload_idx, TOTAL_BYTES);
         repeat (3) @(posedge clk);
         $finish;
     end
@@ -104,13 +108,16 @@ module tb_control_cmd_readframe;
     endtask
 
     always @(posedge clk) begin : monitor
+        int next_payload_idx;
         #0;
         if (reset) begin
             payload_idx <= 0;
             done_count <= 0;
+            done_payload_idx <= -1;
             prev_as <= 0;
             data_in_q <= 8'h00;
         end else begin
+            next_payload_idx = payload_idx;
             // Each payload write must be in-range and toggle ram_access_start; data ordering is driven by DUT.
             if (ram_write_enable && enable) begin
                 assert (payload_idx < TOTAL_BYTES)
@@ -126,11 +133,21 @@ module tb_control_cmd_readframe;
                     );
                 // data_out reflects the byte captured on the prior posedge.
                 expect_payload(payload_idx, data_in_q);
-                payload_idx <= payload_idx + 1;
+                next_payload_idx = payload_idx + 1;
             end
-            if (done) done_count <= done_count + 1;
+            if (done) begin
+                // done must only assert after the final payload byte is accepted.
+                done_count <= done_count + 1;
+                done_payload_idx <= next_payload_idx;
+                assert (next_payload_idx >= TOTAL_BYTES)
+                else
+                    $fatal(
+                        1, "Done asserted early at payload_idx=%0d (expected >= %0d)", next_payload_idx, TOTAL_BYTES
+                    );
+            end
             prev_as <= ram_access_start;
             if (enable) data_in_q <= data_in;
+            payload_idx <= next_payload_idx;
         end
     end
 

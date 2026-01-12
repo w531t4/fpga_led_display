@@ -6,10 +6,12 @@
 localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
     cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'(`W384_RGB24_ROW_HEX)
 });
+localparam types::readframe_cmd_t cmd_readframe = types::readframe_cmd_t'({cmd::READFRAME, `W384_RGB24_FRAME_HEX});
 `else  // W128
 localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
     cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'(`W64_RGB24_ROW_HEX)
 });
+localparam types::readframe_cmd_t cmd_readframe = types::readframe_cmd_t'({cmd::READFRAME, `W64_RGB24_FRAME_HEX});
 
 `endif  // W128
 `else  // RGB24
@@ -17,11 +19,13 @@ localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
 localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
     cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'(`W384_RGB565_ROW_HEX)
 });
+localparam types::readframe_cmd_t cmd_readframe = types::readframe_cmd_t'({cmd::READFRAME, `W384_RGB565_FRAME_HEX});
 
 `else  // W128
 localparam types::readrow_cmd_t cmd_readrow = types::readrow_cmd_t'({
     cmd::READROW, types::row_addr_view_t'('h04), types::row_data_t'(`W64_RGB565_ROW_HEX)
 });
+localparam types::readframe_cmd_t cmd_readframe = types::readframe_cmd_t'({cmd::READFRAME, `W64_RGB565_FRAME_HEX});
 `endif  // W128
 `endif  // RGB24
 // Add tests for pixel set command
@@ -121,5 +125,7 @@ localparam types::fillpanel_cmd_t cmd_fillpanel = types::fillpanel_cmd_t'({cmd::
     cmd_brightness_1, \
     cmd_brightness_2, \
     cmd_brightness_3, \
-    cmd_readrow
+    cmd_readrow, \
+    cmd_readframe, \
+    cmd_pixel_1
 localparam logic [$bits({`CMD_SERIES_FIELDS})-1:0] cmd_series = {`CMD_SERIES_FIELDS};

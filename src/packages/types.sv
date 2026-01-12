@@ -182,6 +182,16 @@ package types;
     } row_data_field_t;
     // ==== /ROW ====
 
+    // ==== FRAME ====
+    // Full-frame payload for readframe: row-major stream of row_data_t blocks.
+    // This typedef keeps frame sizing in one place instead of re-deriving $bits(row_data_t).
+    typedef logic [(params::PIXEL_HEIGHT*params::PIXEL_WIDTH*params::BYTES_PER_PIXEL*8)-1:0] frame_data_t;
+    typedef struct packed {
+        cmd::opcode_t opcode;
+        frame_data_t  data;
+    } readframe_cmd_t;
+    // ==== /FRAME ====
+
     // ==== WATCHDOG ====
     typedef logic [params::WATCHDOG_SIGBYTES*8-1:0] watchdog_pattern_t;
     typedef union packed {

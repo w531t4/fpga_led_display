@@ -28,12 +28,28 @@ module tb_main #(
     `include "row4.svh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = params::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
-    localparam int CMD_LINE_STATE_SEQ_LEN = 18;
+    localparam int CMD_LINE_STATE_SEQ_LEN = 19;
+    localparam logic [3:0] CMD_STATE_IDLE = 4'd0;
+    localparam logic [3:0] CMD_STATE_READFRAME = 4'd7;
+    localparam logic [3:0] CMD_STATE_READPIXEL = 4'd6;
     localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
     localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
         ? ((64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
         : (64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
+    // Readframe payload is large; compute a safe wait window for the idle transition after it.
+    localparam logic [1:0] SPI_CDIV = 2'b0;
+    localparam int unsigned SPI_CLK_DIVIDE = 4 << SPI_CDIV;  // spi_master: 00=/4, 01=/8, 10=/16, 11=/32
+    localparam int unsigned SPI_BITS_PER_BYTE = $bits(byte);
+    localparam longint unsigned SPI_BYTE_CYCLES = longint'(SPI_CLK_DIVIDE) * SPI_BITS_PER_BYTE;
+    localparam longint unsigned READFRAME_TOTAL_BYTES =
+        longint'(params::PIXEL_WIDTH) * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
+    // Add a full row of bytes as margin for SPI idle/finish overheads.
+    localparam longint unsigned READFRAME_WAIT_EXTRA_BYTES =
+        longint'(params::PIXEL_WIDTH) * params::BYTES_PER_PIXEL;
+    localparam longint unsigned READFRAME_WAIT_CYCLES =
+        CMD_LINE_STATE_STEP_CYCLES +
+        (longint'(READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
     logic cmd_line_state_seq_done;
 
     wire  rxdata;
@@ -123,7 +139,7 @@ module tb_main #(
         .mlb  (1'b1),               // shift msb first
         .start(spi_start),          // indicator to start activity
         .tdat (thebyte),
-        .cdiv (2'b0),               // 2'b0 = divide by 4
+        .cdiv (SPI_CDIV),           // 2'b0 = divide by 4
         .din  (1'b0),               // data from slave, disable
         .ss   (spi_cs),             // chip select for slave
         .sck  (spi_clk),            // clock to send to slave
@@ -255,6 +271,7 @@ module tb_main #(
             15: cmd_line_state_expected = 4'd0;
             16: cmd_line_state_expected = 4'd1;
             17: cmd_line_state_expected = 4'd0;
+            18: cmd_line_state_expected = CMD_STATE_READFRAME;
             default: cmd_line_state_expected = 4'hf;
         endcase
     endfunction
@@ -262,14 +279,34 @@ module tb_main #(
     initial begin : assert_cmd_line_state_sequence
         integer idx;
         logic [3:0] expected;
+        logic [3:0] prev_expected;
+        integer unsigned step_cycles;
         cmd_line_state_seq_done = 1'b0;
+        // Sentinel for "no previous state yet"; used to avoid readframe idle timing on first step.
+        prev_expected = 4'hf;
         for (idx = 0; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
             expected = cmd_line_state_expected(idx);
-            `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state === expected, int'(CMD_LINE_STATE_STEP_CYCLES))
+            // Allow extra time for the full readframe payload to land before expecting idle.
+            if ((expected == CMD_STATE_IDLE) && (prev_expected == CMD_STATE_READFRAME)) begin
+                step_cycles = int'(READFRAME_WAIT_CYCLES);
+            end else begin
+                step_cycles = int'(CMD_LINE_STATE_STEP_CYCLES);
+            end
+            `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state === expected, int'(step_cycles))
             $display("cmd_line_state[%0d] expected %0d observed %0d at %0t", idx, expected,
                      tb_main.tbi_main.ctrl.cmd_line_state, $time);
+            prev_expected = expected;
         end
         cmd_line_state_seq_done = 1'b1;
+    end
+
+    initial begin : assert_readframe_pipelining
+        // Verify that a readpixel command following readframe is accepted without a host-side gap.
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == CMD_STATE_READFRAME, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == CMD_STATE_READPIXEL,
+                     int'(READFRAME_WAIT_CYCLES))
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == CMD_STATE_IDLE,
+                     int'(CMD_LINE_STATE_STEP_CYCLES))
     end
 `ifdef SPI
     always begin
