@@ -58,21 +58,21 @@ module control_cmd_readframe #(
                         data_out <= data_in;
                         done <= 1'b0;
                         if (addr.pixel == 'd0) begin
-                                addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
+                            addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                             if (addr.col == LAST_COL) begin
-                                    addr.col <= 'b0;
-                                    addr.row <= addr.row + 'd1;
-                                end else begin
-                                    addr.col <= addr.col + 'd1;
-                                end
+                                addr.col <= 'b0;
+                                addr.row <= addr.row + 'd1;
                             end else begin
+                                addr.col <= addr.col + 'd1;
+                            end
+                        end else begin
                             // Assert done on the last payload byte so we
                             // do not consume the next opcode as frame data.
                             if ((addr.row == LAST_ROW) && (addr.col == LAST_COL) && ((addr.pixel - 'd1) == 0)) begin
-                                    done <= 1'b1;
+                                done  <= 1'b1;
                                 state <= STATE_DONE;
-                                end
-                                addr.pixel <= addr.pixel - 'd1;
+                            end
+                            addr.pixel <= addr.pixel - 'd1;
                         end
                     end
                 end
