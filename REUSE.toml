@@ -25,6 +25,7 @@ path = [
     "src/testbenches/tb_control_cmd_readframe.args",
     "src/testbenches/tb_types_pad_col.args",
     "src/testbenches/tb_types_pad_row.args",
+    ".github/workflows/release.yml",
     ".python-version"
 ]
 SPDX-FileCopyrightText = "2025 Aaron White <w531t4@gmail.com>"
