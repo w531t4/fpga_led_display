@@ -105,9 +105,6 @@ module main #(
     wire types::mem_write_addr_t cmd_line_addr2;
     wire [7:0] num_commands_processed;
     // end controller
-    // from framebuffer_fetch
-    wire [3:0] pixel_load_counter2;
-    // end framebuffer_fetch
     // from matrix_scan
     wire state_advance;
     wire [1:0] row_latch_state;
@@ -289,9 +286,6 @@ module main #(
 
         .pixeldata_top(pixeldata_top),
         .pixeldata_bottom(pixeldata_bottom)
-`ifdef DEBUGGER,
-        .pixel_load_counter2(pixel_load_counter2)
-`endif
     );
 
     // for controller
@@ -532,9 +526,6 @@ module main #(
     //from controller
     ram_access_start, ram_access_start_latch, cmd_line_addr2, num_commands_processed,
     //end controller
-    //from framebuffer_fetch
-    pixel_load_counter2,
-    //end framebuffer_fetch
     //from matrix_scan
     state_advance, row_latch_state, clk_pixel_load_en, matrix_row_latch2,
     // end matrix_scan
