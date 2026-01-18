@@ -41,6 +41,7 @@ package params;
 `else
     parameter int unsigned FB_FETCH_TIMEOUT_TICKS = 3;
 `endif
+    parameter int unsigned FB_FETCH_SAMPLE_TICK = FB_FETCH_TIMEOUT_TICKS - 1;
 
     // READY HOLDOFF
     parameter longint unsigned READY_HOLDOFF_MSEC = 50;

@@ -53,7 +53,7 @@ module framebuffer_fetch #(
             pixeldata_top <= 'b0;
             pixeldata_bottom <= 'b0;
         end else begin
-            if (pixel_load_counter == 'd2) begin
+            if (pixel_load_counter == types::fb_fetch_count_t'(params::FB_FETCH_SAMPLE_TICK)) begin
                 pixeldata_bottom <= ram_data_in.subpanel[1].field;
                 pixeldata_top <= ram_data_in.subpanel[0].field;
             end
