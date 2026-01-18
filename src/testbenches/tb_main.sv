@@ -59,6 +59,7 @@ module tb_main #(
     logic spi_start;
 `ifdef SPI_ESP32
     wire fpga_ready;
+    wire ctrl_busy;
 `endif
 `else
     wire uart_rx_dataready;
@@ -100,6 +101,7 @@ module tb_main #(
         .sd_d       ({rxdata, 3'b0}),      // sd_d[3]=mosi
         .wifi_gpio21(spi_cs),
         .wifi_gpio27(fpga_ready),
+        .wifi_gpio35(ctrl_busy),           // controller busy indicator
 `else
         .gp17       (rxdata),              // spi miso
         //.gp18()       // spi_mosi
@@ -126,6 +128,12 @@ module tb_main #(
     wire _unused_ok_main = &{1'b0,
                              _unused_output,
                              1'b0};
+
+`ifdef SPI_ESP32
+    wire _unused_ok_ctrlbusy = &{1'b0,
+                                 ctrl_busy,
+                                 1'b0};
+`endif
     // verilog_format: on
 `ifdef SPI
     wire [7:0] _unused_ok_rdata;

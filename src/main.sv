@@ -15,7 +15,7 @@ module main #(
     input  [3:0] sd_d,         // sd_d[0]=mosi
     input        sd_clk,       // clk
     input        wifi_gpio21,  // ce
-    // output       wifi_gpio35,  // fpga reset notify
+    output       wifi_gpio35,  // controller busy indicator (FPGA -> ESP32)
     output       wifi_gpio27,  // fpga reset notify
 `else
     input        gp17,         // miso
@@ -478,7 +478,7 @@ module main #(
     assign spi_cs = wifi_gpio21;
     assign rxdata = sd_d[3];  // MOSI
     assign wifi_gpio27 = fpga_ready;
-    // assign wifi_gpio35 = fpga_ready;
+    assign wifi_gpio35 = ctrl_busy;  // high while command executes
 `else
     assign spi_clk = gp19;
     assign spi_cs  = gp20;
