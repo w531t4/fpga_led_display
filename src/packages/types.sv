@@ -207,6 +207,10 @@ package types;
     typedef logic [$clog2(params::READY_HOLDOFF_TICKS + 1)-1:0] ready_holdoff_count_t;
     // ==== /READY HOLDOFF ====
 
+    // ==== FRAMEBUFFER FETCH ====
+    typedef logic [$clog2(params::FB_FETCH_TIMEOUT_TICKS + 1)-1:0] fb_fetch_count_t;
+    // ==== /FRAMEBUFFER FETCH ====
+
     //
     // COMMANDS
     //
