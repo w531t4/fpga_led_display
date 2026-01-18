@@ -21,7 +21,7 @@ module framebuffer_fetch #(
 
 );
     /* grab data on falling edge of pixel clock */
-    wire [1:0] pixel_load_counter;
+    wire types::fb_fetch_count_t pixel_load_counter;
 
     // When we write data... i = 0,  1,  2,      n
     //                  command{D0, D1, D2, ... Dn) ...
@@ -38,16 +38,12 @@ module framebuffer_fetch #(
     assign ram_address = {row_address, column_address_mirrored};
 
     timeout #(
-        .COUNTER_WIDTH(2)
+        .COUNTER_WIDTH($bits(types::fb_fetch_count_t))
     ) timeout_pixel_load (
         .reset  (reset),
         .clk_in (clk_in),
         .start  (pixel_load_start),
-`ifdef USE_FM6126A
-        .value  (2'd2),
-`else
-        .value  (2'd3),
-`endif
+        .value  (types::fb_fetch_count_t'(params::FB_FETCH_TIMEOUT_TICKS)),
         .counter(pixel_load_counter),
         .running(ram_clk_enable)
     );

@@ -35,6 +35,12 @@ package params;
 
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
+    // FRAMEBUFFER FETCH
+`ifdef USE_FM6126A
+    parameter int unsigned FB_FETCH_TIMEOUT_TICKS = 2;
+`else
+    parameter int unsigned FB_FETCH_TIMEOUT_TICKS = 3;
+`endif
 
     // READY HOLDOFF
     parameter longint unsigned READY_HOLDOFF_MSEC = 50;
