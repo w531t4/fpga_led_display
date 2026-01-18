@@ -16,18 +16,12 @@ module framebuffer_fetch #(
     input types::mem_read_data_t ram_data_in,
     output types::mem_read_addr_t ram_address,
     output ram_clk_enable,
-`ifdef DEBUGGER
-    output [3:0] pixel_load_counter2,
-`endif
     output types::color_field_t pixeldata_top,
     output types::color_field_t pixeldata_bottom
 
 );
     /* grab data on falling edge of pixel clock */
     wire [1:0] pixel_load_counter;
-`ifdef DEBUGGER
-    assign pixel_load_counter2[3:0] = {2'b0, pixel_load_counter[1:0]};
-`endif
 
     // When we write data... i = 0,  1,  2,      n
     //                  command{D0, D1, D2, ... Dn) ...
