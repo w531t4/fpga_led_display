@@ -182,6 +182,15 @@ package types;
     } row_data_field_t;
     // ==== /ROW ====
 
+    // ==== COLUMN ====
+    typedef logic [(params::PIXEL_HEIGHT*params::BYTES_PER_PIXEL*8)-1:0] column_data_t;
+    typedef union packed {
+        column_data_t                                                   raw;
+        logic [(params::PIXEL_HEIGHT*params::BYTES_PER_PIXEL)-1:0][7:0] bytes;
+        column_data_t                                                   data;
+    } column_data_field_t;
+    // ==== /COLUMN ====
+
     // ==== FRAME ====
     // Full-frame payload for readframe: row-major stream of row_data_t blocks.
     // This typedef keeps frame sizing in one place instead of re-deriving $bits(row_data_t).
@@ -248,6 +257,12 @@ package types;
         row_addr_field_t y1;
         row_data_field_t data;
     } readrow_cmd_t;
+
+    typedef struct packed {
+        cmd::opcode_t       opcode;
+        col_addr_field_t    x1;
+        column_data_field_t data;
+    } readcol_cmd_t;
 
     typedef struct packed {
         cmd::opcode_t    opcode;

@@ -9,6 +9,7 @@ package cmd;
         FILLPANEL      = "F",
         FILLRECT       = "f",
         READFRAME      = "Y",
+        READCOL        = "K",
         READROW        = "L",
         READPIXEL      = "P",
 `ifdef USE_WATCHDOG
