@@ -4,6 +4,7 @@ package enums;
     typedef enum {
         STATE_IDLE,
         STATE_CMD_READROW,
+        STATE_CMD_READCOL,
         STATE_CMD_READBRIGHTNESS,
         STATE_CMD_BLANKPANEL,
         STATE_CMD_FILLPANEL,

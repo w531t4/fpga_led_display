@@ -99,6 +99,26 @@ module control_module #(
         .ram_access_start(cmd_readrow_as),
         .done(cmd_readrow_done)
     );
+
+    wire                        cmd_readcol_we;
+    wire                        cmd_readcol_as;
+    wire                        cmd_readcol_done;
+    wire                  [7:0] cmd_readcol_do;
+    wire types::fb_addr_t       cmd_readcol_addr;
+
+    control_cmd_readcol #(
+        ._UNUSED('d0)
+    ) cmd_readcol (
+        .reset(reset),
+        .data_in(data_rx_latch),
+        .enable((cmd_line_state == enums::STATE_CMD_READCOL) && ~data_ready_n),
+        .clk(clk_in),
+        .addr(cmd_readcol_addr),
+        .data_out(cmd_readcol_do),
+        .ram_write_enable(cmd_readcol_we),
+        .ram_access_start(cmd_readcol_as),
+        .done(cmd_readcol_done)
+    );
     assign ram_address = cmd_line_addr;
 
     wire                        cmd_readpixel_we;
@@ -270,6 +290,13 @@ module control_module #(
                 ram_access_start = cmd_readrow_as;
                 state_done       = cmd_readrow_done;
             end
+            enums::STATE_CMD_READCOL: begin
+                cmd_addr         = cmd_readcol_addr;
+                ram_data_out     = cmd_readcol_do;
+                ram_write_enable = cmd_readcol_we;
+                ram_access_start = cmd_readcol_as;
+                state_done       = cmd_readcol_done;
+            end
             enums::STATE_CMD_BLANKPANEL: begin
                 cmd_addr             = cmd_blankpanel_addr;
                 ram_data_out         = cmd_blankpanel_do;
@@ -423,6 +450,9 @@ module control_module #(
                     cmd::READFRAME: cmd_line_state <= enums::STATE_CMD_READFRAME;
                     cmd::READROW: begin
                         cmd_line_state <= enums::STATE_CMD_READROW;
+                    end
+                    cmd::READCOL: begin
+                        cmd_line_state <= enums::STATE_CMD_READCOL;
                     end
                     cmd::READPIXEL: cmd_line_state <= enums::STATE_CMD_READPIXEL;
 `ifdef USE_WATCHDOG
