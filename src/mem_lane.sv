@@ -41,11 +41,16 @@ module mem_lane #(
         if (ena && wea) mem[addra] <= dia;
     end
 
-    // Read: 2-cycle latency (addr reg + BRAM outreg)
-    reg [ADDR_BITS-1:0] addrb_q;
-    always @(posedge clkb) addrb_q <= addrb;
+    // Read: 2-cycle latency (sync read + explicit outreg stage)
+    // Keep the output stage explicit so the ECP5 outreg plugin can pack it into DP16KD.
+    reg [DW-1:0] dob_q;
+    always @(posedge clkb) begin
+        if (rstb) dob_q <= '0;
+        else if (enb) dob_q <= mem[addrb];
+    end
+    // Let the output stage run every cycle so single-cycle enb pulses still return data.
     always @(posedge clkb) begin
         if (rstb) dob <= '0;
-        else if (enb) dob <= mem[addrb_q];
+        else dob <= dob_q;
     end
 endmodule
