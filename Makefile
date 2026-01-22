@@ -14,6 +14,7 @@ SIM_BIN_DIR_ABS:=$(abspath $(SIM_BIN_DIR))
 DEPDIR:=$(ARTIFACT_DIR)/deps
 SRC_DIR:=src
 PKG_DIR:=$(SRC_DIR)/packages
+INTERFACE_DIR:=$(SRC_DIR)/interfaces
 TB_DIR:=$(SRC_DIR)/testbenches
 CONSTRAINTS_DIR:=$(SRC_DIR)/constraints
 VINCLUDE_DIR:=$(SRC_DIR)/include
@@ -52,8 +53,9 @@ TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
 # PKG_SOURCES are listed manually because their compilation order matters
 PKG_SOURCES := $(PKG_DIR)/params.sv $(PKG_DIR)/calc.sv $(PKG_DIR)/cmd.sv $(PKG_DIR)/types.sv $(PKG_DIR)/enums.sv
+INTERFACE_SOURCES := $(sort $(shell find $(INTERFACE_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 PROJROOT_VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
-VSOURCES := $(PKG_SOURCES) $(PROJROOT_VSOURCES)
+VSOURCES := $(PKG_SOURCES) $(INTERFACE_SOURCES) $(PROJROOT_VSOURCES)
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_SIM_OPTSLOW ?=
@@ -174,6 +176,7 @@ lint: $(ARTIFACT_DIR) verilator_argfiles
 
 $(ARTIFACT_DIR):
 	mkdir -p $(ARTIFACT_DIR)
+	mkdir -p $(INTERFACE_DIR)
 
 $(SIMULATION_DIR):
 	mkdir -p $(SIMULATION_DIR)
