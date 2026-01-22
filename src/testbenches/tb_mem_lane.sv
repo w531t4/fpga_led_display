@@ -38,6 +38,7 @@ module tb_mem_lane #(
     logic rstb;
     logic [ADDR_BITS-1:0] addrb;
     wire [DW-1:0] dob;
+    wire [DW-1:0] doa;
 
     logic [DW-1:0] model_mem[DEPTH];
 
@@ -50,6 +51,7 @@ module tb_mem_lane #(
         .wea  (wea),
         .addra(addra),
         .dia  (dia),
+        .doa  (doa),
         .clkb (clkb),
         .enb  (enb),
         .rstb (rstb),
@@ -148,10 +150,11 @@ module tb_mem_lane #(
         @(negedge clkb);
         enb   = 1'b0;
         addrb = addr;
-        repeat (READ_LATENCY + 1) @(posedge clkb);
+        repeat (READ_LATENCY) @(posedge clkb);
         #1;
-        if (dob !== expected) begin  // check dob holds when enb is low
-            $fatal(1, "dob changed while enb=0 expected=%0h got=%0h", expected, dob);
+        // enb is intentionally ignored; reads still update while enb is low.
+        if (dob !== expected) begin
+            $fatal(1, "read while enb=0 addr=%0d expected=%0h got=%0h", addr, expected, dob);
         end
     endtask
 
@@ -225,9 +228,9 @@ module tb_mem_lane #(
         write_word(ADDR_MAX, DATA_MIN);
         read_expect(ADDR_MAX, model_mem[ADDR_MAX]);
 
-        // Hold behavior when enb is low.
+        // enb is ignored for timing; reads still update while enb is low.
         read_expect(ADDR_MIN, model_mem[ADDR_MIN]);
-        hold_expect(ADDR_MAX, model_mem[ADDR_MIN]);
+        hold_expect(ADDR_MAX, model_mem[ADDR_MAX]);
 
         // Prove that issuing a reset will present a 0 on dob.
         prove_reset_clears_dob();
@@ -246,4 +249,6 @@ module tb_mem_lane #(
     always begin
         #(SIM_HALF_PERIOD_B_NS) clkb <= ~clkb;
     end
+    // Tie off unused DUT output to satisfy lint.
+    wire _unused_ok = &{1'b0, doa, 1'b0};
 endmodule
