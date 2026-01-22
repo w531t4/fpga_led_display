@@ -28,7 +28,7 @@ module tb_main #(
     `include "row4.svh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = params::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
-    localparam int CMD_LINE_STATE_SEQ_LEN = 19;
+    localparam int CMD_LINE_STATE_SEQ_LEN = 20;
     localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
     localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
@@ -46,6 +46,11 @@ module tb_main #(
     localparam longint unsigned READFRAME_WAIT_CYCLES =
         CMD_LINE_STATE_STEP_CYCLES +
         (longint'(READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
+    // Readrect payload is smaller; still compute a safe wait window for pipelined follow-ups.
+    localparam longint unsigned READRECT_WAIT_EXTRA_BYTES = longint'(READRECT_W) * params::BYTES_PER_PIXEL;
+    localparam longint unsigned READRECT_WAIT_CYCLES =
+        CMD_LINE_STATE_STEP_CYCLES +
+        ((longint'(READRECT_TOTAL_BYTES) + READRECT_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
     logic cmd_line_state_seq_done;
 
     wire  rxdata;
@@ -275,7 +280,8 @@ module tb_main #(
             15: cmd_line_state_expected = enums::STATE_IDLE;
             16: cmd_line_state_expected = enums::STATE_CMD_READROW;
             17: cmd_line_state_expected = enums::STATE_IDLE;
-            18: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
+            18: cmd_line_state_expected = enums::STATE_CMD_READRECT;
+            19: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
             default: cmd_line_state_expected = enums::control_module_fsm_e'('hf);
         endcase
     endfunction
@@ -291,7 +297,10 @@ module tb_main #(
         for (idx = 0; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
             expected = cmd_line_state_expected(idx);
             // Allow extra time for the full readframe payload to land before expecting idle.
-            if ((expected == enums::STATE_IDLE) && (prev_expected == enums::STATE_CMD_READFRAME)) begin
+            if ((expected == enums::STATE_CMD_READFRAME) && (prev_expected == enums::STATE_CMD_READRECT)) begin
+                // Allow the readrect payload to drain before expecting readframe to start.
+                step_cycles = int'(READRECT_WAIT_CYCLES);
+            end else if ((expected == enums::STATE_IDLE) && (prev_expected == enums::STATE_CMD_READFRAME)) begin
                 step_cycles = int'(READFRAME_WAIT_CYCLES);
             end else begin
                 step_cycles = int'(CMD_LINE_STATE_STEP_CYCLES);
@@ -302,6 +311,13 @@ module tb_main #(
             prev_expected = expected;
         end
         cmd_line_state_seq_done = 1'b1;
+    end
+
+    initial begin : assert_readrect_pipelining
+        // Verify that a readframe command following readrect is accepted without a host-side gap.
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READRECT, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READFRAME,
+                     int'(READRECT_WAIT_CYCLES))
     end
 
     initial begin : assert_readframe_pipelining
