@@ -90,6 +90,7 @@ module main #(
     wire types::color_field_t pixeldata_bottom;
     wire ctrl_busy;
     wire ctrl_ready_for_data;
+    wire _used_ok_ram_copy_active;
 
 `ifdef DEBUGGER
     localparam integer unsigned debug_data_width = 32;
@@ -378,6 +379,7 @@ module main #(
         .AddressB(ram_b_address),
         .WrB(1'b0),
         .ResetB(global_reset_sync),
+        .CopyMode(_used_ok_ram_copy_active),
         .QA(_unused_ok_ram_a_data_out_frame1),
         .QB(ram_b_data_out_frame1),
         .ClockEnA(ram_a_clk_enable),
@@ -397,6 +399,7 @@ module main #(
         .AddressB(ram_b_address),
         .WrB(1'b0),
         .ResetB(global_reset_sync),
+        .CopyMode(_used_ok_ram_copy_active),
         .QA(_unused_ok_ram_a_data_out_frame2),
         .QB(ram_b_data_out_frame2),
         .ClockEnA(ram_a_clk_enable),
