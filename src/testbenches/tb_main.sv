@@ -45,8 +45,7 @@ module tb_main #(
     localparam longint unsigned READFRAME_TOTAL_BYTES =
         longint'(params::PIXEL_WIDTH) * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
     // Add a full row of bytes as margin for SPI idle/finish overheads.
-    localparam longint unsigned READFRAME_WAIT_EXTRA_BYTES =
-        longint'(params::PIXEL_WIDTH) * params::BYTES_PER_PIXEL;
+    localparam longint unsigned READFRAME_WAIT_EXTRA_BYTES = longint'(params::PIXEL_WIDTH) * params::BYTES_PER_PIXEL;
     localparam longint unsigned READFRAME_WAIT_CYCLES =
         CMD_LINE_STATE_STEP_CYCLES +
         (longint'(READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
