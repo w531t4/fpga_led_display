@@ -113,6 +113,29 @@ localparam types::fillrect_cmd_t cmd_fillrect = types::fillrect_cmd_t'({
 localparam types::fillpanel_cmd_t cmd_fillpanel = types::fillpanel_cmd_t'({cmd::FILLPANEL, types::color_t'('h3142)});
 `endif  // RGB24
 
+// Readrect command payload: keep a small rectangle so pipelining can be exercised
+// without making simulation excessively long.
+localparam int unsigned READRECT_X1 = 2;
+localparam int unsigned READRECT_Y1 = 1;
+localparam int unsigned READRECT_W = 3;
+localparam int unsigned READRECT_H = 2;
+localparam int unsigned READRECT_PIXEL_COUNT = READRECT_W * READRECT_H;
+localparam int unsigned READRECT_TOTAL_BYTES = READRECT_PIXEL_COUNT * params::BYTES_PER_PIXEL;
+// Use a constant byte so payload order is unambiguous across RGB modes.
+localparam logic [7:0] READRECT_PAYLOAD_BYTE = 8'hA5;
+localparam logic [(READRECT_TOTAL_BYTES*8)-1:0] cmd_readrect_payload =
+    {READRECT_TOTAL_BYTES{READRECT_PAYLOAD_BYTE}};
+// Header fields are big endian on the wire; cast into the packed field types.
+localparam types::readrect_cmd_t cmd_readrect_header = types::readrect_cmd_t'({
+    cmd::READRECT,
+    types::col_addr_field_t'(READRECT_X1),
+    types::row_addr_field_t'(READRECT_Y1),
+    types::col_addr_field_t'(READRECT_W),
+    types::row_addr_field_t'(READRECT_H)
+});
+localparam logic [$bits(cmd_readrect_header)+(READRECT_TOTAL_BYTES*8)-1:0] cmd_readrect =
+    {cmd_readrect_header, cmd_readrect_payload};
+
 `define CMD_SERIES_FIELDS \
     cmd_blankpanel, \
 `ifdef USE_WATCHDOG \
@@ -126,6 +149,7 @@ localparam types::fillpanel_cmd_t cmd_fillpanel = types::fillpanel_cmd_t'({cmd::
     cmd_brightness_2, \
     cmd_brightness_3, \
     cmd_readrow, \
+    cmd_readrect, \
     cmd_readframe, \
     cmd_pixel_1
 localparam logic [$bits({`CMD_SERIES_FIELDS})-1:0] cmd_series = {`CMD_SERIES_FIELDS};
