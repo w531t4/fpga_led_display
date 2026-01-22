@@ -99,7 +99,7 @@ module main #(
     wire debugger_tx_start;
     wire [$clog2(debug_data_width)-1:0] debugger_current_position;
     // from controller
-    wire [3:0] cmd_line_state2;
+    wire enums::control_module_fsm_e cmd_line_state2;
     wire ram_access_start;
     wire ram_access_start_latch;
     wire types::mem_write_addr_t cmd_line_addr2;
@@ -194,7 +194,7 @@ module main #(
         rxdata_to_controller[7:0],
         num_commands_processed[7:0],
         rgb_enable,
-        cmd_line_state2[3:0],
+        cmd_line_state2,
         brightness_enable[7:0],
         2'b0
     };

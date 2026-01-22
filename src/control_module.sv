@@ -26,7 +26,7 @@ module control_module #(
     output logic watchdog_reset,
 `endif
 `ifdef DEBUGGER
-    output [3:0] cmd_line_state2,
+    output enums::control_module_fsm_e cmd_line_state2,
     output ram_access_start2,
     output ram_access_start_latch2,
     output types::mem_write_addr_t cmd_line_addr2,
@@ -37,25 +37,12 @@ module control_module #(
 );
     localparam integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS;
     // for now, if adding new states, ensure cmd_line_state2 is updated.
-    typedef enum logic [3:0] {
-        STATE_IDLE,                // 0
-        STATE_CMD_READROW,         // 1
-        STATE_CMD_READBRIGHTNESS,  // 2
-        STATE_CMD_BLANKPANEL,      // 3
-        STATE_CMD_FILLPANEL,       // 4
-        STATE_CMD_FILLRECT,        // 5
-        STATE_CMD_READPIXEL,       // 6
-        STATE_CMD_READFRAME        // 7
-`ifdef USE_WATCHDOG,
-        STATE_CMD_WATCHDOG         // 8
-`endif
-    } ctrl_fsm_t;
     cmd::indata8_t data_rx_latch;
     logic ready_for_data_logic;
     types::brightness_level_t brightness_temp;
     logic ram_access_start;
     logic ram_access_start_latch;
-    ctrl_fsm_t cmd_line_state;
+    enums::control_module_fsm_e cmd_line_state;
     types::fb_addr_t cmd_addr;
 
     wire types::mem_write_addr_t cmd_line_addr;
@@ -104,7 +91,7 @@ module control_module #(
     ) cmd_readrow (
         .reset(reset),
         .data_in(data_rx_latch),
-        .enable((cmd_line_state == STATE_CMD_READROW) && ~data_ready_n),
+        .enable((cmd_line_state == enums::STATE_CMD_READROW) && ~data_ready_n),
         .clk(clk_in),
         .addr(cmd_readrow_addr),
         .data_out(cmd_readrow_do),
@@ -126,7 +113,7 @@ module control_module #(
         .reset(reset),
         .data_in(data_rx_latch),
         .clk(clk_in),
-        .enable((cmd_line_state == STATE_CMD_READPIXEL) && ~data_ready_n),
+        .enable((cmd_line_state == enums::STATE_CMD_READPIXEL) && ~data_ready_n),
         .addr(cmd_readpixel_addr),
         .data_out(cmd_readpixel_do),
         .ram_write_enable(cmd_readpixel_we),
@@ -143,7 +130,7 @@ module control_module #(
         .reset(reset),
         .data_in(data_rx_latch),
         .clk(clk_in),
-        .enable((cmd_line_state == STATE_CMD_READBRIGHTNESS) && ~data_ready_n),
+        .enable((cmd_line_state == enums::STATE_CMD_READBRIGHTNESS) && ~data_ready_n),
         .data_out(cmd_readbrightness_do),
         .brightness_change_en(cmd_readbrightness_be),
         .done(cmd_readbrightness_done)
@@ -160,7 +147,7 @@ module control_module #(
     ) cmd_blankpanel (
         .reset(reset),
         // This command requires no arguments, therefore it can operate at clock speed (no ~data_ready_n)
-        .enable(cmd_line_state == STATE_CMD_BLANKPANEL),
+        .enable(cmd_line_state == enums::STATE_CMD_BLANKPANEL),
         .clk(clk_in),
         .mem_clk(clk_in),
         .addr(cmd_blankpanel_addr),
@@ -181,7 +168,7 @@ module control_module #(
         ._UNUSED('d0)
     ) cmd_fillpanel (
         .reset           (reset),
-        .enable          ((cmd_line_state == STATE_CMD_FILLPANEL) && ~data_ready_n),
+        .enable          ((cmd_line_state == enums::STATE_CMD_FILLPANEL) && ~data_ready_n),
         .clk             (clk_in),
         .mem_clk         (clk_in),
         .data_in         (data_rx_latch),
@@ -204,7 +191,7 @@ module control_module #(
         ._UNUSED('d0)
     ) cmd_fillrect (
         .reset           (reset),
-        .enable          ((cmd_line_state == STATE_CMD_FILLRECT) && ~data_ready_n),
+        .enable          ((cmd_line_state == enums::STATE_CMD_FILLRECT) && ~data_ready_n),
         .clk             (clk_in),
         .mem_clk         (clk_in),
         .data_in         (data_rx_latch),
@@ -226,7 +213,7 @@ module control_module #(
         ._UNUSED('d0)
     ) cmd_readframe (
         .reset           (reset),
-        .enable          ((cmd_line_state == STATE_CMD_READFRAME) && ~data_ready_n),
+        .enable          ((cmd_line_state == enums::STATE_CMD_READFRAME) && ~data_ready_n),
         .clk             (clk_in),
         .data_in         (data_rx_latch),
         .addr            (cmd_readframe_addr),
@@ -245,7 +232,7 @@ module control_module #(
         ._UNUSED('d0)
     ) cmd_watchdog (
         .reset    (reset),
-        .enable   ((cmd_line_state == STATE_CMD_WATCHDOG) && ~data_ready_n),
+        .enable   ((cmd_line_state == enums::STATE_CMD_WATCHDOG) && ~data_ready_n),
         .clk      (clk_in),
         .data_in  (data_rx_latch),
         .sys_reset(cmd_watchdog_sysreset),
@@ -264,26 +251,26 @@ module control_module #(
         brightness_data_out = 'b0;
         ready_for_data_logic = 1'b1;
         case (cmd_line_state)
-            STATE_CMD_READBRIGHTNESS: begin
+            enums::STATE_CMD_READBRIGHTNESS: begin
                 brightness_change_enable = cmd_readbrightness_be;
                 brightness_data_out = cmd_readbrightness_do;
                 state_done = cmd_readbrightness_done;
             end
-            STATE_CMD_READFRAME: begin
+            enums::STATE_CMD_READFRAME: begin
                 cmd_addr         = cmd_readframe_addr;
                 ram_data_out     = cmd_readframe_do;
                 ram_write_enable = cmd_readframe_we;
                 ram_access_start = cmd_readframe_as;
                 state_done       = cmd_readframe_done;
             end
-            STATE_CMD_READROW: begin
+            enums::STATE_CMD_READROW: begin
                 cmd_addr         = cmd_readrow_addr;
                 ram_data_out     = cmd_readrow_do;
                 ram_write_enable = cmd_readrow_we;
                 ram_access_start = cmd_readrow_as;
                 state_done       = cmd_readrow_done;
             end
-            STATE_CMD_BLANKPANEL: begin
+            enums::STATE_CMD_BLANKPANEL: begin
                 cmd_addr             = cmd_blankpanel_addr;
                 ram_data_out         = cmd_blankpanel_do;
                 ram_write_enable     = cmd_blankpanel_we;
@@ -291,7 +278,7 @@ module control_module #(
                 state_done           = cmd_blankpanel_done;
                 ready_for_data_logic = 1'b0;
             end
-            STATE_CMD_FILLPANEL: begin
+            enums::STATE_CMD_FILLPANEL: begin
                 cmd_addr             = cmd_fillpanel_addr;
                 ram_data_out         = cmd_fillpanel_do;
                 ram_write_enable     = cmd_fillpanel_we;
@@ -299,7 +286,7 @@ module control_module #(
                 state_done           = cmd_fillpanel_done;
                 ready_for_data_logic = cmd_fillpanel_rfd;
             end
-            STATE_CMD_FILLRECT: begin
+            enums::STATE_CMD_FILLRECT: begin
                 cmd_addr             = cmd_fillrect_addr;
                 ram_data_out         = cmd_fillrect_do;
                 ram_write_enable     = cmd_fillrect_we;
@@ -307,7 +294,7 @@ module control_module #(
                 state_done           = cmd_fillrect_done;
                 ready_for_data_logic = cmd_fillrect_rfd;
             end
-            STATE_CMD_READPIXEL: begin
+            enums::STATE_CMD_READPIXEL: begin
                 cmd_addr         = cmd_readpixel_addr;
                 ram_data_out     = cmd_readpixel_do;
                 ram_write_enable = cmd_readpixel_we;
@@ -315,7 +302,7 @@ module control_module #(
                 state_done       = cmd_readpixel_done;
             end
 `ifdef USE_WATCHDOG
-            STATE_CMD_WATCHDOG: begin
+            enums::STATE_CMD_WATCHDOG: begin
                 state_done = cmd_watchdog_done;
             end
 `endif
@@ -323,7 +310,7 @@ module control_module #(
             end
         endcase
     end
-    assign busy = ~(cmd_line_state == STATE_IDLE || state_done);
+    assign busy = ~(cmd_line_state == enums::STATE_IDLE || state_done);
     assign ready_for_data = ready_for_data_logic || ~busy;
 `ifdef DOUBLE_BUFFER
     logic frame_select_temp;
@@ -338,13 +325,13 @@ module control_module #(
             brightness_enable <= '1;  // all 1's
             brightness_temp <= '1;  // all 1's;
 
-            cmd_line_state <= STATE_IDLE;
+            cmd_line_state <= enums::STATE_IDLE;
 `ifdef DEBUGGER
             num_commands_processed <= 8'b0;
 `endif
         end else begin
             if (state_done) begin
-                if (data_ready_n && cmd_line_state != STATE_IDLE) cmd_line_state <= STATE_IDLE;
+                if (data_ready_n && cmd_line_state != enums::STATE_IDLE) cmd_line_state <= enums::STATE_IDLE;
 `ifdef DEBUGGER
                 num_commands_processed <= num_commands_processed + 'd1;
 `endif
@@ -359,93 +346,93 @@ module control_module #(
             if (frame_select_temp != frame_select) frame_select <= frame_select_temp;
 `endif
             /* CMD: Main */
-            if ((cmd_line_state == STATE_IDLE || state_done) && ~data_ready_n) begin
+            if ((cmd_line_state == enums::STATE_IDLE || state_done) && ~data_ready_n) begin
                 case (data_rx_latch.opcode)
                     cmd::RED_ENABLE: begin
                         rgb_enable.red <= 1'b1;
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
                     cmd::RED_DISABLE: begin
                         rgb_enable.red <= 1'b0;
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
                     cmd::GREEN_ENABLE: begin
                         rgb_enable.green <= 1'b1;
-                        cmd_line_state   <= STATE_IDLE;
+                        cmd_line_state   <= enums::STATE_IDLE;
                     end
                     cmd::GREEN_DISABLE: begin
                         rgb_enable.green <= 1'b0;
-                        cmd_line_state   <= STATE_IDLE;
+                        cmd_line_state   <= enums::STATE_IDLE;
                     end
                     cmd::BLUE_ENABLE: begin
                         rgb_enable.blue <= 1'b1;
-                        cmd_line_state  <= STATE_IDLE;
+                        cmd_line_state  <= enums::STATE_IDLE;
                     end
                     cmd::BLUE_DISABLE: begin
                         rgb_enable.blue <= 1'b0;
-                        cmd_line_state  <= STATE_IDLE;
+                        cmd_line_state  <= enums::STATE_IDLE;
                     end
                     // TODO: Change this. If the scale is (off/dark) 0 -> 9 (on/bright), then BRIGHTNESS_ONE (alone) should be relatively dim.
                     //       However, this reads to me (as-is) that BRIGHTNESS_ONE will toggle the heights-weight bit
                     cmd::BRIGHTNESS_ONE: begin
                         brightness_temp[BRIGHTNESS_LEVELS-1] <= ~brightness_enable[BRIGHTNESS_LEVELS-1];
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
                     cmd::BRIGHTNESS_TWO: begin
                         brightness_temp[BRIGHTNESS_LEVELS-2] <= ~brightness_enable[BRIGHTNESS_LEVELS-2];
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
                     cmd::BRIGHTNESS_THREE: begin
                         brightness_temp[BRIGHTNESS_LEVELS-3] <= ~brightness_enable[BRIGHTNESS_LEVELS-3];
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
                     cmd::BRIGHTNESS_FOUR: begin
                         brightness_temp[BRIGHTNESS_LEVELS-4] <= ~brightness_enable[BRIGHTNESS_LEVELS-4];
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
                     cmd::BRIGHTNESS_FIVE: begin
                         brightness_temp[BRIGHTNESS_LEVELS-5] <= ~brightness_enable[BRIGHTNESS_LEVELS-5];
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
                     cmd::BRIGHTNESS_SIX: begin
                         brightness_temp[BRIGHTNESS_LEVELS-6] <= ~brightness_enable[BRIGHTNESS_LEVELS-6];
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
 `ifdef RGB24
                     cmd::BRIGHTNESS_SEVEN: begin
                         brightness_temp[BRIGHTNESS_LEVELS-7] <= ~brightness_enable[BRIGHTNESS_LEVELS-7];
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
                     cmd::BRIGHTNESS_EIGHT: begin
                         brightness_temp[BRIGHTNESS_LEVELS-8] <= ~brightness_enable[BRIGHTNESS_LEVELS-8];
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                     end
 `endif
                     cmd::BRIGHTNESS_ZERO: begin
                         brightness_temp <= 'b0;
-                        cmd_line_state  <= STATE_IDLE;
+                        cmd_line_state  <= enums::STATE_IDLE;
                     end
                     cmd::BRIGHTNESS_NINE: begin
                         brightness_temp <= '1;  // all 1's
-                        cmd_line_state  <= STATE_IDLE;
+                        cmd_line_state  <= enums::STATE_IDLE;
                     end
-                    cmd::READBRIGHTNESS: cmd_line_state <= STATE_CMD_READBRIGHTNESS;
-                    cmd::BLANKPANEL: cmd_line_state <= STATE_CMD_BLANKPANEL;
-                    cmd::FILLPANEL: cmd_line_state <= STATE_CMD_FILLPANEL;
-                    cmd::FILLRECT: cmd_line_state <= STATE_CMD_FILLRECT;
-                    cmd::READFRAME: cmd_line_state <= STATE_CMD_READFRAME;
+                    cmd::READBRIGHTNESS: cmd_line_state <= enums::STATE_CMD_READBRIGHTNESS;
+                    cmd::BLANKPANEL: cmd_line_state <= enums::STATE_CMD_BLANKPANEL;
+                    cmd::FILLPANEL: cmd_line_state <= enums::STATE_CMD_FILLPANEL;
+                    cmd::FILLRECT: cmd_line_state <= enums::STATE_CMD_FILLRECT;
+                    cmd::READFRAME: cmd_line_state <= enums::STATE_CMD_READFRAME;
                     cmd::READROW: begin
-                        cmd_line_state <= STATE_CMD_READROW;
+                        cmd_line_state <= enums::STATE_CMD_READROW;
                     end
-                    cmd::READPIXEL: cmd_line_state <= STATE_CMD_READPIXEL;
+                    cmd::READPIXEL: cmd_line_state <= enums::STATE_CMD_READPIXEL;
 `ifdef USE_WATCHDOG
-                    cmd::WATCHDOG: cmd_line_state <= STATE_CMD_WATCHDOG;
+                    cmd::WATCHDOG: cmd_line_state <= enums::STATE_CMD_WATCHDOG;
 `endif
 `ifdef DOUBLE_BUFFER
                     cmd::TOGGLE_FRAME: frame_select_temp <= ~frame_select;
 `endif
                     default: begin
-                        cmd_line_state <= STATE_IDLE;
+                        cmd_line_state <= enums::STATE_IDLE;
                         if (brightness_change_enable) brightness_temp <= brightness_data_out;
                     end
                 endcase
