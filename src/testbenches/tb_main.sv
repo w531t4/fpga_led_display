@@ -29,9 +29,6 @@ module tb_main #(
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = params::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
     localparam int CMD_LINE_STATE_SEQ_LEN = 19;
-    localparam logic [3:0] CMD_STATE_IDLE = 4'd0;
-    localparam logic [3:0] CMD_STATE_READFRAME = 4'd7;
-    localparam logic [3:0] CMD_STATE_READPIXEL = 4'd6;
     localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
     localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
@@ -250,43 +247,43 @@ module tb_main #(
     end
 `endif
 
-    function automatic logic [3:0] cmd_line_state_expected(input int idx);
+    function automatic enums::control_module_fsm_e cmd_line_state_expected(input int idx);
         case (idx)
-            0: cmd_line_state_expected = 4'd3;
-            1: cmd_line_state_expected = 4'd0;
-            2: cmd_line_state_expected = 4'd8;
-            3: cmd_line_state_expected = 4'd0;
-            4: cmd_line_state_expected = 4'd4;
-            5: cmd_line_state_expected = 4'd0;
-            6: cmd_line_state_expected = 4'd5;
-            7: cmd_line_state_expected = 4'd0;
-            8: cmd_line_state_expected = 4'd6;
-            9: cmd_line_state_expected = 4'd0;
-            10: cmd_line_state_expected = 4'd6;
-            11: cmd_line_state_expected = 4'd0;
-            12: cmd_line_state_expected = 4'd2;
-            13: cmd_line_state_expected = 4'd0;
-            14: cmd_line_state_expected = 4'd2;
-            15: cmd_line_state_expected = 4'd0;
-            16: cmd_line_state_expected = 4'd1;
-            17: cmd_line_state_expected = 4'd0;
-            18: cmd_line_state_expected = CMD_STATE_READFRAME;
-            default: cmd_line_state_expected = 4'hf;
+            0: cmd_line_state_expected = enums::STATE_CMD_BLANKPANEL;
+            1: cmd_line_state_expected = enums::STATE_IDLE;
+            2: cmd_line_state_expected = enums::STATE_CMD_WATCHDOG;
+            3: cmd_line_state_expected = enums::STATE_IDLE;
+            4: cmd_line_state_expected = enums::STATE_CMD_FILLPANEL;
+            5: cmd_line_state_expected = enums::STATE_IDLE;
+            6: cmd_line_state_expected = enums::STATE_CMD_FILLRECT;
+            7: cmd_line_state_expected = enums::STATE_IDLE;
+            8: cmd_line_state_expected = enums::STATE_CMD_READPIXEL;
+            9: cmd_line_state_expected = enums::STATE_IDLE;
+            10: cmd_line_state_expected = enums::STATE_CMD_READPIXEL;
+            11: cmd_line_state_expected = enums::STATE_IDLE;
+            12: cmd_line_state_expected = enums::STATE_CMD_READBRIGHTNESS;
+            13: cmd_line_state_expected = enums::STATE_IDLE;
+            14: cmd_line_state_expected = enums::STATE_CMD_READBRIGHTNESS;
+            15: cmd_line_state_expected = enums::STATE_IDLE;
+            16: cmd_line_state_expected = enums::STATE_CMD_READROW;
+            17: cmd_line_state_expected = enums::STATE_IDLE;
+            18: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
+            default: cmd_line_state_expected = enums::control_module_fsm_e'('hf);
         endcase
     endfunction
 
     initial begin : assert_cmd_line_state_sequence
         integer idx;
-        logic [3:0] expected;
-        logic [3:0] prev_expected;
+        enums::control_module_fsm_e expected;
+        enums::control_module_fsm_e prev_expected;
         integer unsigned step_cycles;
         cmd_line_state_seq_done = 1'b0;
         // Sentinel for "no previous state yet"; used to avoid readframe idle timing on first step.
-        prev_expected = 4'hf;
+        prev_expected = enums::control_module_fsm_e'('hf);
         for (idx = 0; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
             expected = cmd_line_state_expected(idx);
             // Allow extra time for the full readframe payload to land before expecting idle.
-            if ((expected == CMD_STATE_IDLE) && (prev_expected == CMD_STATE_READFRAME)) begin
+            if ((expected == enums::STATE_IDLE) && (prev_expected == enums::STATE_CMD_READFRAME)) begin
                 step_cycles = int'(READFRAME_WAIT_CYCLES);
             end else begin
                 step_cycles = int'(CMD_LINE_STATE_STEP_CYCLES);
@@ -301,11 +298,10 @@ module tb_main #(
 
     initial begin : assert_readframe_pipelining
         // Verify that a readpixel command following readframe is accepted without a host-side gap.
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == CMD_STATE_READFRAME, TB_MAIN_WAIT_CYCLES)
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == CMD_STATE_READPIXEL,
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READFRAME, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READPIXEL,
                      int'(READFRAME_WAIT_CYCLES))
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == CMD_STATE_IDLE,
-                     int'(CMD_LINE_STATE_STEP_CYCLES))
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_IDLE, int'(CMD_LINE_STATE_STEP_CYCLES))
     end
 `ifdef SPI
     always begin
