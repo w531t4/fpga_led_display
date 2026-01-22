@@ -230,7 +230,7 @@ ifeq ($(YOSYS_DEBUG), true)
 endif
 YOSYS_READSLANG_CMD:=read_slang $(YOSYS_READSLANG_ARGS)
 
-YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top main -json $(ARTIFACT_DIR)/mydesign.json
+YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top main
 
 YOSYS_SCRIPT:=
 ifeq ($(YOSYS_DEBUG), true)
@@ -244,6 +244,8 @@ ifeq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)), -DUSE_INFER_BRAM_PLU
 	YOSYS_SCRIPT +=ecp5_infer_bram_outreg;
 	# YOSYS_SCRIPT +=write_verilog -noattr -noexpr $(ARTIFACT_DIR)/code_postblah.sv;
 endif
+# Write JSON after optional BRAM outreg packing so nextpnr sees OUTREG.
+YOSYS_SCRIPT +=write_json $(ARTIFACT_DIR)/mydesign.json;
 YOSYS_SCRIPT +=show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show;
 YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il;
 YOSYS_SCRIPT +=write_verilog -selected $(ARTIFACT_DIR)/mydesign_final.sv;
