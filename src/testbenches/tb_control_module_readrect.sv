@@ -49,13 +49,15 @@ module tb_control_module_readrect;
     wire types::mem_write_data_t         ram_data_out;
     wire types::mem_write_addr_t         ram_address;
     wire                                 ram_write_enable;
+`ifdef DOUBLE_BUFFER
+    localparam types::mem_write_data_t   RAM_DATA_STUB = '0;
+    mem_copy_if                         copy_int();
+`endif
     wire                                 busy;
     wire                                 ready_for_data;
     wire                                 ram_clk_enable;
     wire                                 watchdog_reset;
     wire                                 frame_select;
-    wire                                 ram_copy_active;
-    logic                                copy_done;
 
     // === Scoreboard memory ===
     // byte unsigned mem_actual[0:MEM_TOTAL_BYTES-1];
@@ -78,12 +80,20 @@ module tb_control_module_readrect;
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
+`ifdef DOUBLE_BUFFER
+        .cmd_copyframe_if(copy_int),
+`endif
         .busy(busy),
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
+`ifdef DOUBLE_BUFFER
         .frame_select(frame_select),
+`endif
         .watchdog_reset(watchdog_reset)
     );
+`ifdef DOUBLE_BUFFER
+    assign copy_int.read_data_in = RAM_DATA_STUB;
+`endif
 
     // === Address helpers ===
     // Convert the split subpanel/row address into a full row index.
@@ -253,7 +263,6 @@ module tb_control_module_readrect;
         reset = 1;
         data_rx = 8'b0;
         data_ready_n = 1'b1;
-        copy_done = 1'b0;
 
         // Initialize scoreboard memories to zero before building expected data.
         for (int i = 0; i < MEM_TOTAL_BYTES; i++) begin
@@ -321,8 +330,6 @@ module tb_control_module_readrect;
                         ram_address,
                         watchdog_reset,
                         frame_select,
-                        copy_done,
-                        ram_copy_active,
                         busy,
                         ram_clk_enable,
                         1'b0};

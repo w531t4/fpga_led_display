@@ -18,6 +18,7 @@ package cmd;
 `endif
 `ifdef DOUBLE_BUFFER
         TOGGLE_FRAME   = "t",
+        COPY_FRAME     = "C",
 `endif
         RED_ENABLE     = "R",
         RED_DISABLE    = "r",

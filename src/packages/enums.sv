@@ -15,5 +15,8 @@ package enums;
 `ifdef USE_WATCHDOG,
         STATE_CMD_WATCHDOG
 `endif
+`ifdef DOUBLE_BUFFER,
+        STATE_CMD_COPYFRAME
+`endif
     } control_module_fsm_e;
 endpackage
