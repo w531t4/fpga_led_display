@@ -71,17 +71,33 @@ module main #(
     wire clk_pixel_load;
     wire clk_pixel;
     wire row_latch;
-    wire types::mem_write_data_t ram_a_data_in;
-    wire types::mem_write_data_t _unused_ok_ram_a_data_out_frame1;
-    wire types::mem_write_addr_t ram_a_address;
-    wire ram_a_write_enable;
+    wire types::mem_write_data_t ram_a_data_out_frame1;
+    wire types::mem_write_data_t ram_a_data_out_front;
+    wire types::mem_write_data_t ram_a_data_in_frame1;
+    wire types::mem_write_addr_t ram_a_address_frame1;
+    wire                         ram_a_write_enable_frame1;
+`ifdef DOUBLE_BUFFER
+    wire types::mem_write_data_t ram_a_data_in_frame2;
+    wire types::mem_write_addr_t ram_a_address_frame2;
+    wire                         ram_a_write_enable_frame2;
+`endif
     wire ram_a_clk_enable;
+    wire types::mem_write_data_t ctrl_ram_data_out;
+    wire types::mem_write_addr_t ctrl_ram_address;
+    wire                         ctrl_ram_write_enable;
+    wire                         ctrl_ram_clk_enable;
+`ifdef DOUBLE_BUFFER
+    mem_copy_if                  copy_int();
+    logic                        copy_ram_access_start_latch;
+    wire                         copy_ram_clk_enable;
+`endif
     wire types::mem_read_data_t ram_b_data_out;
     wire types::mem_read_data_t ram_b_data_out_frame1;
 `ifdef DOUBLE_BUFFER
     wire frame_select;
-    wire types::mem_write_data_t _unused_ok_ram_a_data_out_frame2;
-    wire types::mem_read_data_t ram_b_data_out_frame2;
+    wire types::mem_write_data_t ram_a_data_out_frame2;
+    wire types::mem_read_data_t  ram_b_data_out_frame2;
+    wire                         ram_copy_active;
 `endif
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
@@ -90,7 +106,6 @@ module main #(
     wire types::color_field_t pixeldata_bottom;
     wire ctrl_busy;
     wire ctrl_ready_for_data;
-    wire _used_ok_ram_copy_active;
 
 `ifdef DEBUGGER
     localparam integer unsigned debug_data_width = 32;
@@ -343,16 +358,17 @@ module main #(
         .brightness_enable(brightness_enable),
         .busy(ctrl_busy),
         .ready_for_data(ctrl_ready_for_data),
-        .ram_data_out(ram_a_data_in),
-        .ram_address(ram_a_address),
-        .ram_write_enable(ram_a_write_enable),
+        .ram_data_out(ctrl_ram_data_out),
+        .ram_address(ctrl_ram_address),
+        .ram_write_enable(ctrl_ram_write_enable),
 `ifdef DOUBLE_BUFFER
+        .cmd_copyframe_if(copy_int),
         .frame_select(frame_select),
 `endif
 `ifdef USE_WATCHDOG
         .watchdog_reset(watchdog_reset),
 `endif
-        .ram_clk_enable(ram_a_clk_enable)
+        .ram_clk_enable(ctrl_ram_clk_enable)
 `ifdef DEBUGGER,
         .cmd_line_state2(cmd_line_state2),
         .ram_access_start2(ram_access_start),
@@ -362,25 +378,74 @@ module main #(
 `endif
     );
 
+`ifdef DOUBLE_BUFFER
+    assign copy_int.read_data_in = ram_a_data_out_front;
+    assign ram_copy_active = copy_int.active;
+    assign copy_ram_clk_enable = copy_int.access_start ^ copy_ram_access_start_latch;
+    always @(posedge clk_root) begin
+        if (global_reset_sync) begin
+            copy_ram_access_start_latch <= 1'b0;
+        end else if (copy_ram_clk_enable) begin
+            copy_ram_access_start_latch <= copy_int.access_start;
+        end else begin
+        end
+    end
+    assign ram_a_clk_enable = ram_copy_active ? copy_ram_clk_enable : ctrl_ram_clk_enable;
+`else
+    assign ram_a_clk_enable = ctrl_ram_clk_enable;
+`endif
+
+`ifdef DOUBLE_BUFFER
+    // Front buffer is selected by frame_select; back buffer is the opposite.
+    assign ram_a_address_frame1 = ram_copy_active
+        ? (frame_select
+            ? types::mem_write_addr_t'(copy_int.write_addr)
+            : types::mem_write_addr_t'(copy_int.read_addr))
+        : ctrl_ram_address;
+    assign ram_a_address_frame2 = ram_copy_active
+        ? (frame_select
+            ? types::mem_write_addr_t'(copy_int.read_addr)
+            : types::mem_write_addr_t'(copy_int.write_addr))
+        : ctrl_ram_address;
+
+    assign ram_a_data_in_frame1 = ram_copy_active
+        ? (frame_select ? copy_int.write_data_out : types::mem_write_data_t'(8'h00))
+        : ctrl_ram_data_out;
+    assign ram_a_data_in_frame2 = ram_copy_active
+        ? (frame_select ? types::mem_write_data_t'(8'h00) : copy_int.write_data_out)
+        : ctrl_ram_data_out;
+
+    assign ram_a_write_enable_frame1 = ram_copy_active
+        ? (frame_select ? copy_int.write_enable : 1'b0)
+        : (ctrl_ram_write_enable & frame_select);
+    assign ram_a_write_enable_frame2 = ram_copy_active
+        ? (frame_select ? 1'b0 : copy_int.write_enable)
+        : (ctrl_ram_write_enable & ~frame_select);
+`else
+    assign ram_a_address_frame1 = ctrl_ram_address;
+    assign ram_a_data_in_frame1 = ctrl_ram_data_out;
+    assign ram_a_write_enable_frame1 = ctrl_ram_write_enable;
+`endif
+
     multimem #(
         ._UNUSED('d0)
     ) fb (
         .ClockA(clk_root),
-        .AddressA(ram_a_address),
-        .DataInA(ram_a_data_in),
-`ifdef DOUBLE_BUFFER
-        .WrA(ram_a_write_enable & frame_select),
-`else
-        .WrA(ram_a_write_enable),
-`endif
+        .AddressA(ram_a_address_frame1),
+        .DataInA(ram_a_data_in_frame1),
+        .WrA(ram_a_write_enable_frame1),
         .ResetA(global_reset_sync),
         .ClockB(clk_root),
         .DataInB(16'b0),
         .AddressB(ram_b_address),
         .WrB(1'b0),
         .ResetB(global_reset_sync),
-        .CopyMode(_used_ok_ram_copy_active),
-        .QA(_unused_ok_ram_a_data_out_frame1),
+`ifdef DOUBLE_BUFFER
+        .CopyMode(ram_copy_active),
+`else
+        .CopyMode(1'b0),
+`endif
+        .QA(ram_a_data_out_frame1),
         .QB(ram_b_data_out_frame1),
         .ClockEnA(ram_a_clk_enable),
         .ClockEnB(ram_b_clk_enable)
@@ -390,24 +455,26 @@ module main #(
         ._UNUSED('d0)
     ) fb2 (
         .ClockA(clk_root),
-        .AddressA(ram_a_address),
-        .DataInA(ram_a_data_in),
-        .WrA(ram_a_write_enable & ~frame_select),
+        .AddressA(ram_a_address_frame2),
+        .DataInA(ram_a_data_in_frame2),
+        .WrA(ram_a_write_enable_frame2),
         .ResetA(global_reset_sync),
         .ClockB(clk_root),
         .DataInB(16'b0),
         .AddressB(ram_b_address),
         .WrB(1'b0),
         .ResetB(global_reset_sync),
-        .CopyMode(_used_ok_ram_copy_active),
-        .QA(_unused_ok_ram_a_data_out_frame2),
+        .CopyMode(ram_copy_active),
+        .QA(ram_a_data_out_frame2),
         .QB(ram_b_data_out_frame2),
         .ClockEnA(ram_a_clk_enable),
         .ClockEnB(ram_b_clk_enable)
     );
     assign ram_b_data_out = frame_select ? ram_b_data_out_frame2 : ram_b_data_out_frame1;
+    assign ram_a_data_out_front = frame_select ? ram_a_data_out_frame2 : ram_a_data_out_frame1;
 `else
     assign ram_b_data_out = ram_b_data_out_frame1;
+    assign ram_a_data_out_front = ram_a_data_out_frame1;
 `endif
     /* split the pixels and get the current brightness' bit */
     pixel_split #(

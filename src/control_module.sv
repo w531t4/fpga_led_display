@@ -20,6 +20,7 @@ module control_module #(
     output busy,
     output ready_for_data,
 `ifdef DOUBLE_BUFFER
+    mem_copy_if.engine cmd_copyframe_if,
     output logic frame_select,
 `endif
 `ifdef USE_WATCHDOG
@@ -51,6 +52,9 @@ module control_module #(
     logic state_done;
     logic brightness_change_enable;
     types::brightness_level_t brightness_data_out;
+`ifdef DOUBLE_BUFFER
+    logic cmd_copyframe_done;
+`endif
 
 `ifdef DEBUGGER
     assign cmd_line_state2 = cmd_line_state;
@@ -263,6 +267,25 @@ module control_module #(
         .done            (cmd_readframe_done)
     );
 
+`ifdef DOUBLE_BUFFER
+    // Copy engine: read the front buffer QA and write to the back buffer.
+    assign cmd_copyframe_if.active = (cmd_line_state == enums::STATE_CMD_COPYFRAME);
+    control_cmd_copyframe #(
+        ._UNUSED('d0)
+    ) cmd_copyframe (
+        .reset           (reset),
+        .enable          (cmd_copyframe_if.active),
+        .clk             (clk_in),
+        .data_in         (cmd_copyframe_if.read_data_in),
+        .read_addr       (cmd_copyframe_if.read_addr),
+        .write_addr      (cmd_copyframe_if.write_addr),
+        .data_out        (cmd_copyframe_if.write_data_out),
+        .ram_write_enable(cmd_copyframe_if.write_enable),
+        .ram_access_start(cmd_copyframe_if.access_start),
+        .done            (cmd_copyframe_done)
+    );
+`endif
+
 `ifdef USE_WATCHDOG
     wire cmd_watchdog_done;
     wire cmd_watchdog_sysreset;
@@ -355,6 +378,12 @@ module control_module #(
                 ram_access_start = cmd_readpixel_as;
                 state_done       = cmd_readpixel_done;
             end
+`ifdef DOUBLE_BUFFER
+            enums::STATE_CMD_COPYFRAME: begin
+                state_done           = cmd_copyframe_done;
+                ready_for_data_logic = 1'b0;
+            end
+`endif
 `ifdef USE_WATCHDOG
             enums::STATE_CMD_WATCHDOG: begin
                 state_done = cmd_watchdog_done;
@@ -488,6 +517,7 @@ module control_module #(
 `endif
 `ifdef DOUBLE_BUFFER
                     cmd::TOGGLE_FRAME: frame_select_temp <= ~frame_select;
+                    cmd::COPY_FRAME: cmd_line_state <= enums::STATE_CMD_COPYFRAME;
 `endif
                     default: begin
                         cmd_line_state <= enums::STATE_IDLE;

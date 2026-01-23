@@ -23,6 +23,8 @@ module tb_control_module;
     wire types::mem_write_data_t ram_data_out;
     wire types::mem_write_addr_t ram_address;
     wire ram_write_enable;
+    localparam types::mem_write_data_t RAM_DATA_STUB = '0;
+    mem_copy_if copy_int();
     wire                         busy;
     wire                         ready_for_data;
     wire ram_clk_enable;
@@ -45,12 +47,14 @@ module tb_control_module;
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
+        .cmd_copyframe_if(copy_int),
         .busy(busy),
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
         .frame_select(frame_select),
         .watchdog_reset(watchdog_reset)
     );
+    assign copy_int.read_data_in = RAM_DATA_STUB;
 
     // === Stimulus helpers ===
     task automatic stream_byte(input logic [7:0] byte_value);

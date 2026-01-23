@@ -237,6 +237,9 @@ package types;
     } fillpanel_cmd_t;
 
     typedef struct packed {cmd::opcode_t opcode;} blankpanel_cmd_t;
+`ifdef DOUBLE_BUFFER
+    typedef struct packed {cmd::opcode_t opcode;} copyframe_cmd_t;
+`endif
 
     typedef struct packed {
         cmd::opcode_t opcode;
