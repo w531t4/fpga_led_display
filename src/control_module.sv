@@ -37,6 +37,13 @@ module control_module #(
 
 );
     localparam integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS;
+`ifdef DOUBLE_BUFFER
+    // Dirty bounds default to full frame so the first copyframe keeps behavior identical to legacy.
+    localparam types::row_addr_t DIRTY_ROW_MIN_RESET = types::row_addr_t'(0);
+    localparam types::col_addr_t DIRTY_COL_MIN_RESET = types::col_addr_t'(0);
+    localparam types::row_addr_t DIRTY_ROW_MAX_RESET = types::row_addr_t'(params::PIXEL_HEIGHT - 1);
+    localparam types::col_addr_t DIRTY_COL_MAX_RESET = types::col_addr_t'(params::PIXEL_WIDTH - 1);
+`endif
     // for now, if adding new states, ensure cmd_line_state2 is updated.
     cmd::indata8_t data_rx_latch;
     logic ready_for_data_logic;
@@ -54,6 +61,20 @@ module control_module #(
     types::brightness_level_t brightness_data_out;
 `ifdef DOUBLE_BUFFER
     logic cmd_copyframe_done;
+    // Dirty-rect tracking for copyframe.
+    logic dirty_valid;
+    types::row_addr_t dirty_row_min;
+    types::row_addr_t dirty_row_max;
+    types::col_addr_t dirty_col_min;
+    types::col_addr_t dirty_col_max;
+    // Delay state_done so dirty bound updates are off the main control critical path.
+    logic state_done_q;
+    // Per-command capture so we only update dirty bounds once per command.
+    logic dirty_cmd_has_write;
+    types::row_addr_t dirty_cmd_first_row;
+    types::row_addr_t dirty_cmd_last_row;
+    types::col_addr_t dirty_cmd_first_col;
+    types::col_addr_t dirty_cmd_last_col;
 `endif
 
 `ifdef DEBUGGER
@@ -277,6 +298,11 @@ module control_module #(
         .enable          (cmd_copyframe_if.active),
         .clk             (clk_in),
         .data_in         (cmd_copyframe_if.read_data_in),
+        .dirty_valid     (dirty_valid),
+        .dirty_row_min   (dirty_row_min),
+        .dirty_row_max   (dirty_row_max),
+        .dirty_col_min   (dirty_col_min),
+        .dirty_col_max   (dirty_col_max),
         .read_addr       (cmd_copyframe_if.read_addr),
         .write_addr      (cmd_copyframe_if.write_addr),
         .data_out        (cmd_copyframe_if.write_data_out),
@@ -404,6 +430,18 @@ module control_module #(
 `ifdef DOUBLE_BUFFER
             frame_select <= 1'b0;
             frame_select_temp <= 1'b0;
+            // Start dirty tracking at full-frame so copyframe still syncs buffers after reset.
+            dirty_valid <= 1'b1;
+            dirty_row_min <= DIRTY_ROW_MIN_RESET;
+            dirty_row_max <= DIRTY_ROW_MAX_RESET;
+            dirty_col_min <= DIRTY_COL_MIN_RESET;
+            dirty_col_max <= DIRTY_COL_MAX_RESET;
+            state_done_q <= 1'b0;
+            dirty_cmd_has_write <= 1'b0;
+            dirty_cmd_first_row <= '0;
+            dirty_cmd_last_row <= '0;
+            dirty_cmd_first_col <= '0;
+            dirty_cmd_last_col <= '0;
 `endif
             brightness_enable <= '1;  // all 1's
             brightness_temp <= '1;  // all 1's;
@@ -413,6 +451,42 @@ module control_module #(
             num_commands_processed <= 8'b0;
 `endif
         end else begin
+`ifdef DOUBLE_BUFFER
+            // Pipeline command completion to decouple dirty min/max logic from cmd control paths.
+            state_done_q <= state_done;
+            // Track the first/last write address for each command so we can update dirty bounds once.
+            if (ram_write_enable) begin
+                if (!dirty_cmd_has_write) begin
+                    dirty_cmd_has_write <= 1'b1;
+                    dirty_cmd_first_row <= cmd_addr.row;
+                    dirty_cmd_first_col <= cmd_addr.col;
+                end
+                dirty_cmd_last_row <= cmd_addr.row;
+                dirty_cmd_last_col <= cmd_addr.col;
+            end
+            // When a command completes, fold its address range into the dirty rectangle.
+            // The extra cycle ensures single-byte commands are captured without comb fanout.
+            if (state_done_q && dirty_cmd_has_write) begin
+                if (!dirty_valid) begin
+                    dirty_valid <= 1'b1;
+                    dirty_row_min <= dirty_cmd_first_row;
+                    dirty_row_max <= dirty_cmd_last_row;
+                    dirty_col_min <= dirty_cmd_first_col;
+                    dirty_col_max <= dirty_cmd_last_col;
+                end else begin
+                    if (dirty_cmd_first_row < dirty_row_min) dirty_row_min <= dirty_cmd_first_row;
+                    if (dirty_cmd_last_row > dirty_row_max) dirty_row_max <= dirty_cmd_last_row;
+                    if (dirty_cmd_first_col < dirty_col_min) dirty_col_min <= dirty_cmd_first_col;
+                    if (dirty_cmd_last_col > dirty_col_max) dirty_col_max <= dirty_cmd_last_col;
+                end
+                // Only clear when no new write starts in the same cycle.
+                if (!ram_write_enable) dirty_cmd_has_write <= 1'b0;
+            end
+            // Clear dirty tracking once the copyframe finishes (back buffer resynced).
+            if (cmd_copyframe_done) begin
+                dirty_valid <= 1'b0;
+            end
+`endif
             if (state_done) begin
                 if (data_ready_n && cmd_line_state != enums::STATE_IDLE) cmd_line_state <= enums::STATE_IDLE;
 `ifdef DEBUGGER

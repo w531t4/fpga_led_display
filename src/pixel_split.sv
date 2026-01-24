@@ -7,6 +7,7 @@ module pixel_split #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
+    input clk,
     input types::color_field_t pixel_data,
     input types::brightness_level_t brightness_mask,
     input types::brightness_level_t brightness_enable,
@@ -20,6 +21,7 @@ module pixel_split #(
 
 `ifdef RGB24
     rgb24 rgb_888 (
+        .clk(clk),
         // W/ the use of
         //      - _~_cmd_line_pixelselect_num (in control_module) for write addr:
         //             ({pixel_data[15:8], pixel_data[23:16], pixel_data[31:24]}) produced correct colors.
@@ -48,6 +50,8 @@ module pixel_split #(
         .green(green_gamma),
         .blue(blue_gamma)
     );
+    // clk unused when RGB24 is disabled.
+    wire _unused_ok_clk = &{1'b0, clk, 1'b0};
 `endif
 
     /* apply the brightness mask to the gamma-corrected sub-pixel value */

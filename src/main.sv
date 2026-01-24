@@ -134,6 +134,21 @@ module main #(
     wire types::row_subpanel_addr_t row_address;
     wire types::row_subpanel_addr_t row_address_active;
     wire types::brightness_level_t brightness_mask;
+`ifdef RGB24
+    // Align brightness_mask with the rgb24 pipeline so PWM bits correspond
+    // to the same pixel data being shifted out.
+    types::brightness_level_t brightness_mask_pipe_1;
+    always_ff @(posedge clk_root) begin
+        if (global_reset_sync) begin
+            brightness_mask_pipe_1 <= '0;
+        end else begin
+            brightness_mask_pipe_1 <= brightness_mask;
+        end
+    end
+    wire types::brightness_level_t brightness_mask_aligned = brightness_mask_pipe_1;
+`else
+    wire types::brightness_level_t brightness_mask_aligned = brightness_mask;
+`endif
 
     wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
@@ -480,8 +495,9 @@ module main #(
     pixel_split #(
         ._UNUSED('d0)
     ) px_top (
+        .clk(clk_root),
         .pixel_data(pixeldata_top),
-        .brightness_mask(brightness_mask),
+        .brightness_mask(brightness_mask_aligned),
         .brightness_enable(brightness_enable),
         .rgb_enable(rgb_enable),
 `ifdef USE_FM6126A
@@ -493,8 +509,9 @@ module main #(
     pixel_split #(
         ._UNUSED('d0)
     ) px_bottom (
+        .clk(clk_root),
         .pixel_data(pixeldata_bottom),
-        .brightness_mask(brightness_mask),
+        .brightness_mask(brightness_mask_aligned),
         .brightness_enable(brightness_enable),
         .rgb_enable(rgb_enable),
 `ifdef USE_FM6126A

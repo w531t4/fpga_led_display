@@ -6,6 +6,7 @@ module rgb24 #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
+    input         clk,
     input  [23:0] data_in,
     input  [ 7:0] brightness,
     output [ 7:0] red,
@@ -33,11 +34,20 @@ module rgb24 #(
     wire [17:0] r_mul = red_u * bright_u;
     wire [17:0] g_mul = green_u * bright_u;
     wire [17:0] b_mul = blue_u * bright_u;
+    // Register the DSP outputs to shorten the multiplier critical path.
+    (* keep = "true" *) logic [17:0] r_mul_q;
+    (* keep = "true" *) logic [17:0] g_mul_q;
+    (* keep = "true" *) logic [17:0] b_mul_q;
+    always @(posedge clk) begin
+        r_mul_q <= r_mul;
+        g_mul_q <= g_mul;
+        b_mul_q <= b_mul;
+    end
 
     // verilator lint_off WIDTHTRUNC
-    wire [ 7:0] r_eff = (r_mul + 18'd127) >> 8;
-    wire [ 7:0] g_eff = (g_mul + 18'd127) >> 8;
-    wire [ 7:0] b_eff = (b_mul + 18'd127) >> 8;
+    wire [ 7:0] r_eff = (r_mul_q + 18'd127) >> 8;
+    wire [ 7:0] g_eff = (g_mul_q + 18'd127) >> 8;
+    wire [ 7:0] b_eff = (b_mul_q + 18'd127) >> 8;
     // verilator lint_on WIDTHTRUNC
 
 `ifdef GAMMA

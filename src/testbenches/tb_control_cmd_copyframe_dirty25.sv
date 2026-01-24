@@ -6,23 +6,30 @@
 // verilog_format: on
 `include "tb_helper.svh"
 
-// Verifies the copy engine clones the front buffer into the back buffer.
-module tb_control_cmd_copyframe;
+// Verifies the copy engine clones only the dirty rectangle (25% of the frame).
+module tb_control_cmd_copyframe_dirty25;
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
     // Copy engine is 1 byte/clk after the read pipeline fills.
     localparam int unsigned COPY_READ_LATENCY = 5;
     localparam int unsigned COPY_PIPE_FLUSH_CYCLES = COPY_READ_LATENCY + 4;
-    localparam int unsigned COPY_CYCLES_MAX = TOTAL_BYTES + COPY_PIPE_FLUSH_CYCLES;
+    // Dirty rectangle is 25% of the frame (half width x half height).
+    localparam int unsigned DIRTY_WIDTH = params::PIXEL_WIDTH / 2;
+    localparam int unsigned DIRTY_HEIGHT = params::PIXEL_HEIGHT / 2;
+    localparam int unsigned DIRTY_TOTAL_BYTES = DIRTY_WIDTH * DIRTY_HEIGHT * params::BYTES_PER_PIXEL;
+    localparam int unsigned COPY_CYCLES_MAX = DIRTY_TOTAL_BYTES + COPY_PIPE_FLUSH_CYCLES;
     // Port-B read latency is driven by the framebuffer fetch timing.
     localparam int unsigned READ_LATENCY_B = params::FB_FETCH_TIMEOUT_TICKS + 1;
     // Seed values to ensure the front/back patterns are different pre-copy.
     localparam types::mem_write_data_t FRONT_SEED = 'hA5;
     localparam types::mem_write_data_t BACK_SEED = 'h3C;
     // Last address in the copy sequence (row-major, pixel counts down to 0).
-    localparam types::row_addr_t LAST_ROW_FULL = types::row_addr_t'(params::PIXEL_HEIGHT - 1);
-    localparam types::col_addr_t LAST_COL_FULL = types::col_addr_t'(params::PIXEL_WIDTH - 1);
     localparam types::pixel_addr_t LAST_PIXEL_COUNTDOWN = types::pixel_addr_t'(0);
+    // Dirty-rectangle bounds for the test (top-left quarter).
+    localparam types::row_addr_t DIRTY_ROW_MIN = types::row_addr_t'(0);
+    localparam types::col_addr_t DIRTY_COL_MIN = types::col_addr_t'(0);
+    localparam types::row_addr_t DIRTY_ROW_MAX = types::row_addr_t'(DIRTY_HEIGHT - 1);
+    localparam types::col_addr_t DIRTY_COL_MAX = types::col_addr_t'(DIRTY_WIDTH - 1);
     // Endpoint coordinates for the test pattern (row within subpanel, pixel counts up).
     localparam types::row_subpanel_addr_t FIRST_ROW_SUBPANEL = types::row_subpanel_addr_t'(0);
     localparam types::col_addr_t FIRST_COL = types::col_addr_t'(0);
@@ -74,11 +81,16 @@ module tb_control_cmd_copyframe;
     wire types::mem_read_data_t  ram_b_data_out_frame1;
     wire types::mem_read_data_t  ram_b_data_out_frame2;
 
-    // === Done semantics tracking ===
+    // === Done semantics + cycle tracking ===
     logic                       done_prev;
     logic                       last_write_seen;
     logic                       pending_post_done_check;
     int                         done_pulses;
+    longint unsigned            cycle_count;
+    longint unsigned            copyframe_start_cycle;
+    longint unsigned            copyframe_cycles;
+    logic                       measure_copyframe;
+    logic                       copy_enable_prev;
 
     // === Helper functions/tasks ===
     function automatic types::mem_write_data_t pattern_first_byte(input types::mem_write_data_t seed);
@@ -110,6 +122,17 @@ module tb_control_cmd_copyframe;
         end else begin
             pattern_byte = idx_byte + seed;
         end
+    endfunction
+
+    function automatic logic lane_is_dirty(input int unsigned sp,
+                                           input types::row_subpanel_addr_t row,
+                                           input types::col_addr_t col);
+        int unsigned full_row;
+        // Convert subpanel/row_subpanel into the full-row address used by copyframe.
+        full_row = (sp * params::PIXEL_HALFHEIGHT) + int'(row);
+        // DIRTY_ROW_MIN/DIRTY_COL_MIN are zero for this test, so only max checks matter.
+        lane_is_dirty = (full_row <= int'(DIRTY_ROW_MAX))
+            && (int'(col) <= int'(DIRTY_COL_MAX));
     endfunction
 
     task automatic init_write(input logic target_frame2,
@@ -178,15 +201,38 @@ module tb_control_cmd_copyframe;
                     params::PIXEL_HALFHEIGHT - 1, params::PIXEL_WIDTH - 1);
     endtask
 
-    task automatic assert_buffers_match;
-        types::mem_read_data_t a;
-        types::mem_read_data_t b;
+    task automatic assert_buffers_match_dirty;
+        types::mem_read_data_t back_data;
+        types::mem_read_data_t front_data;
+        types::mem_structure_t lane_sel;
+        int unsigned lane_idx;
+        types::mem_write_data_t expected_front;
+        types::mem_write_data_t expected_back;
+        // Walk the entire buffer but validate per-lane dirty coverage.
         for (int row = 0; row < params::PIXEL_HALFHEIGHT; row++) begin
             for (int col = 0; col < params::PIXEL_WIDTH; col++) begin
-                read_rowcol(types::row_subpanel_addr_t'(row), types::col_addr_t'(col), a, b);
-                assert (a.raw == b.raw)
-                else $fatal(1, "Copy mismatch at row=%0d col=%0d front=0x%0h back=0x%0h",
-                            row, col, a.raw, b.raw);
+                read_rowcol(types::row_subpanel_addr_t'(row), types::col_addr_t'(col),
+                            back_data, front_data);
+                for (int sp = 0; sp < NUM_SUBPANELS; sp++) begin
+                    for (int pix = 0; pix < params::BYTES_PER_PIXEL; pix++) begin
+                        expected_front = pattern_byte(sp, row, col, pix, FRONT_SEED);
+                        if (lane_is_dirty(sp, types::row_subpanel_addr_t'(row),
+                                          types::col_addr_t'(col))) begin
+                            expected_back = expected_front;
+                        end else begin
+                            expected_back = pattern_byte(sp, row, col, pix, BACK_SEED);
+                        end
+                        lane_sel.subpanel = types::subpanel_addr_t'(sp);
+                        lane_sel.pixel = types::pixel_addr_t'(pix);
+                        lane_idx = int'(lane_sel);
+                        assert (back_data.lane[lane_idx] == expected_back)
+                        else $fatal(1, "Back mismatch row=%0d col=%0d sp=%0d pix=%0d exp=0x%0h got=0x%0h",
+                                    row, col, sp, pix, expected_back, back_data.lane[lane_idx]);
+                        assert (front_data.lane[lane_idx] == expected_front)
+                        else $fatal(1, "Front mismatch row=%0d col=%0d sp=%0d pix=%0d exp=0x%0h got=0x%0h",
+                                    row, col, sp, pix, expected_front, front_data.lane[lane_idx]);
+                    end
+                end
             end
         end
     endtask
@@ -233,6 +279,38 @@ module tb_control_cmd_copyframe;
         read_rowcol(LAST_ROW_SUBPANEL, LAST_COL_SUBPANEL, last_row_frame1, last_row_frame2);
         assert_pattern_endpoints_for_frame(first_row_frame1, last_row_frame1, frame1_seed, "frame1");
         assert_pattern_endpoints_for_frame(first_row_frame2, last_row_frame2, frame2_seed, "frame2");
+    endtask
+
+    task automatic assert_dirty_endpoints;
+        types::mem_read_data_t first_row_frame1;
+        types::mem_read_data_t first_row_frame2;
+        types::mem_read_data_t last_row_frame1;
+        types::mem_read_data_t last_row_frame2;
+        // First row/col lies inside the dirty rectangle; last row/col is outside.
+        read_rowcol(FIRST_ROW_SUBPANEL, FIRST_COL, first_row_frame1, first_row_frame2);
+        read_rowcol(LAST_ROW_SUBPANEL, LAST_COL_SUBPANEL, last_row_frame1, last_row_frame2);
+        // Dirty area should match the front seed in both frames.
+        assert_lane_byte(first_row_frame1,
+                         FIRST_SUBPANEL,
+                         FIRST_PIXEL_BYTE,
+                         pattern_first_byte(FRONT_SEED),
+                         "back first byte");
+        assert_lane_byte(first_row_frame2,
+                         FIRST_SUBPANEL,
+                         FIRST_PIXEL_BYTE,
+                         pattern_first_byte(FRONT_SEED),
+                         "front first byte");
+        // Clean area should remain on the back seed while the front stays on front seed.
+        assert_lane_byte(last_row_frame1,
+                         LAST_SUBPANEL,
+                         LAST_PIXEL_BYTE,
+                         pattern_last_byte(BACK_SEED),
+                         "back last byte");
+        assert_lane_byte(last_row_frame2,
+                         LAST_SUBPANEL,
+                         LAST_PIXEL_BYTE,
+                         pattern_last_byte(FRONT_SEED),
+                         "front last byte");
     endtask
 
     // === Clock enable for copy engine (mirrors main.sv) ===
@@ -341,7 +419,7 @@ module tb_control_cmd_copyframe;
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
 `endif
-        $dumpvars(0, tb_control_cmd_copyframe);
+        $dumpvars(0, tb_control_cmd_copyframe_dirty25);
         clk = 0;
         reset = 1;
         copy_enable = 0;
@@ -355,10 +433,10 @@ module tb_control_cmd_copyframe;
         // Select frame2 as front, frame1 as back (matches main.sv wiring).
         frame_select = 1'b1;
         dirty_valid = 1'b1;
-        dirty_row_min = types::row_addr_t'(0);
-        dirty_row_max = LAST_ROW_FULL;
-        dirty_col_min = types::col_addr_t'(0);
-        dirty_col_max = LAST_COL_FULL;
+        dirty_row_min = DIRTY_ROW_MIN;
+        dirty_row_max = DIRTY_ROW_MAX;
+        dirty_col_min = DIRTY_COL_MIN;
+        dirty_col_max = DIRTY_COL_MAX;
         @(posedge clk) @(posedge clk) reset = 0;
     end
 
@@ -386,10 +464,13 @@ module tb_control_cmd_copyframe;
         assert (done_pulses == 1)
         else $fatal(1, "Expected a single done pulse, saw %0d", done_pulses);
 
-        // Verify the entire back buffer now matches the front buffer.
-        assert_buffers_match();
-        // Re-check the endpoint bytes post-copy (back buffer should match front seed).
-        assert_pattern_endpoints(FRONT_SEED, FRONT_SEED);
+        // Verify the back buffer matches the front only inside the dirty rectangle.
+        assert_buffers_match_dirty();
+        // Re-check endpoints with dirty vs clean expectations.
+        assert_dirty_endpoints();
+        $display("copyframe_cycles=%0d dirty_bytes=%0d", copyframe_cycles, DIRTY_TOTAL_BYTES);
+        assert (copyframe_cycles <= longint'(COPY_CYCLES_MAX))
+        else $fatal(1, "copyframe_cycles=%0d exceeded max=%0d", copyframe_cycles, COPY_CYCLES_MAX);
         repeat (5) @(posedge clk);
         $finish;
     end
@@ -410,11 +491,17 @@ module tb_control_cmd_copyframe;
             last_write_seen <= 1'b0;
             pending_post_done_check <= 1'b0;
             done_pulses <= 0;
+            cycle_count <= 0;
+            copyframe_start_cycle <= 0;
+            copyframe_cycles <= 0;
+            measure_copyframe <= 1'b0;
+            copy_enable_prev <= 1'b0;
         end else begin
+            cycle_count <= cycle_count + 1'b1;
             // Track the final write address so done can be validated.
             if (copy_int.write_enable
-                && (copy_int.write_addr.row == LAST_ROW_FULL)
-                && (copy_int.write_addr.col == LAST_COL_FULL)
+                && (copy_int.write_addr.row == DIRTY_ROW_MAX)
+                && (copy_int.write_addr.col == DIRTY_COL_MAX)
                 && (copy_int.write_addr.pixel == LAST_PIXEL_COUNTDOWN)) begin
                 last_write_seen <= 1'b1;
             end
@@ -430,6 +517,10 @@ module tb_control_cmd_copyframe;
 
             if (cmd_copyframe_done) begin
                 done_pulses <= done_pulses + 1;
+                if (measure_copyframe) begin
+                    copyframe_cycles <= cycle_count - copyframe_start_cycle;
+                    measure_copyframe <= 1'b0;
+                end
                 // done should be a single-cycle pulse.
                 assert (!done_prev)
                 else $fatal(1, "done asserted for multiple cycles");
@@ -439,6 +530,12 @@ module tb_control_cmd_copyframe;
                 pending_post_done_check <= 1'b1;
             end
             done_prev <= cmd_copyframe_done;
+            if (copy_enable && !copy_enable_prev && !measure_copyframe) begin
+                // Start timing on the rising edge of copy_enable.
+                copyframe_start_cycle <= cycle_count;
+                measure_copyframe <= 1'b1;
+            end
+            copy_enable_prev <= copy_enable;
         end
     end
 
