@@ -19,7 +19,7 @@ module matrix_scan #(
     output output_enable,   /* the minimum output enable pulse should not be shorter than 1us... */
 
 `ifdef DEBUGGER
-    output [1:0] row_latch_state2,
+    output types::edge_detect_t row_latch_state2,
     output row_latch2,
     output state_advance2,
     output clk_pixel_load_en2,
@@ -46,24 +46,22 @@ module matrix_scan #(
     assign row_address_active = active.row_address;
     assign active.column_address = '0;  // unused
 
-    typedef logic [1:0] scan_state_t;
-    scan_state_t clk_latch_state;
+    types::edge_detect_t clk_latch_state;
     wire clk_latch;
     wire state_advance;
 
     wire clk_pixel_load_en;  /* enables the pixel load clock */
     logic clk_pixel_en;  /* enables the pixel clock, delayed by one cycle from the load clock */
-    typedef logic [1:0] row_latch_state_t;
-    row_latch_state_t row_latch_state;
+    types::edge_detect_t row_latch_state;
     wire brightness_exceeded_overlap_time;
 
     assign clk_pixel_load = clk_in && clk_pixel_load_en;
     assign clk_pixel = clk_in && clk_pixel_en;
 
     wire types::col_addr_count_t pixel_load_en_counter_output;
-    assign row_latch = row_latch_state == 2'b10;
+    assign row_latch = types::falling_edge(row_latch_state);
 
-    assign clk_latch = clk_latch_state == 2'b10;
+    assign clk_latch = types::falling_edge(clk_latch_state);
 `ifdef DEBUGGER
     assign row_latch_state2 = row_latch_state[1:0];
     assign row_latch2 = row_latch;

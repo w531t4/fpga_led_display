@@ -220,6 +220,18 @@ package types;
     typedef logic [$clog2(params::FB_FETCH_TIMEOUT_TICKS + 1)-1:0] fb_fetch_count_t;
     // ==== /FRAMEBUFFER FETCH ====
 
+
+    // ==== EDGES ====
+    typedef logic [1:0] edge_detect_t;
+
+    function automatic logic falling_edge(edge_detect_t s);
+        return s == 2'b10;  // prev=1, curr=0
+    endfunction
+
+    function automatic logic rising_edge(edge_detect_t s);
+        return s == 2'b01;  // prev=0, curr=1
+    endfunction
+    // ==== /EDGES ====
     //
     // COMMANDS
     //
