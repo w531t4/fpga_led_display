@@ -22,6 +22,12 @@ module tb_matrix_scan #(
     wire types::brightness_level_t brightness_mask;
 
 
+`ifdef DEBUGGER
+    types::edge_detect_t row_latch_state2;
+    wire row_latch2;
+    wire state_advance2;
+    wire clk_pixel_load_en2;
+`endif
     matrix_scan #(
         ._UNUSED('d0)
     ) matrix_scan_instance (
@@ -35,6 +41,12 @@ module tb_matrix_scan #(
         .row_latch(row_latch),
         .output_enable(output_enable),
         .brightness_mask(brightness_mask)
+`ifdef DEBUGGER,
+        .row_latch_state2(row_latch_state2),
+        .row_latch2(row_latch2),
+        .state_advance2(state_advance2),
+        .clk_pixel_load_en2(clk_pixel_load_en2)
+`endif
     );
     initial begin
 `ifdef DUMP_FILE_NAME
@@ -63,5 +75,13 @@ module tb_matrix_scan #(
                         output_enable,
                         brightness_mask,
                         1'b0};
+`ifdef DEBUGGER
+    wire _unused_ok_debugger = &{1'b0,
+                                 row_latch_state2,
+                                 row_latch2,
+                                 state_advance2,
+                                 clk_pixel_load_en2,
+                                 1'b0};
+`endif
     // verilog_format: on
 endmodule
