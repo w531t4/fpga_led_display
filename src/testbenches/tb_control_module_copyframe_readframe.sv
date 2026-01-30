@@ -50,12 +50,19 @@ module tb_control_module_copyframe_readframe;
     wire                                 ready_for_data;
     wire                                 ram_clk_enable;
     wire                                 frame_select;
+`ifdef DEBUGGER
+    enums::control_module_fsm_e       cmd_line_state2;
+    wire                              ram_access_start2;
+    wire                              ram_access_start_latch2;
+    types::mem_write_addr_t           cmd_line_addr2;
+    logic                       [7:0] num_commands_processed;
+`endif
 `ifdef USE_WATCHDOG
     wire watchdog_reset;
 `endif
 
     // === Copy engine wiring ===
-    mem_copy_if copy_int();
+    mem_copy_if copy_int ();
     // Stub the front-buffer data; timing is the focus of this test.
     localparam types::mem_write_data_t COPY_DATA_STUB = '0;
 
@@ -99,6 +106,13 @@ module tb_control_module_copyframe_readframe;
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
         .frame_select(frame_select)
+`ifdef DEBUGGER,
+        .cmd_line_state2(cmd_line_state2),
+        .ram_access_start2(ram_access_start2),
+        .ram_access_start_latch2(ram_access_start_latch2),
+        .cmd_line_addr2(cmd_line_addr2),
+        .num_commands_processed(num_commands_processed)
+`endif
 `ifdef USE_WATCHDOG,
         .watchdog_reset(watchdog_reset)
 `endif
@@ -280,6 +294,16 @@ module tb_control_module_copyframe_readframe;
     wire _unused_ok_watchdog = &{1'b0,
                                  watchdog_reset,
                                  1'b0};
+`endif
+`ifdef DEBUGGER
+    wire _unused_ok_debugger = &{1'b0,
+                                 cmd_line_state2,
+                                 ram_access_start2,
+                                 ram_access_start_latch2,
+                                 cmd_line_addr2,
+                                 num_commands_processed,
+                                 1'b0};
+
 `endif
     // verilog_format: on
 endmodule
