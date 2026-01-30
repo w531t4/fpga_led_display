@@ -123,7 +123,7 @@ module main #(
     // end controller
     // from matrix_scan
     wire state_advance;
-    wire [1:0] row_latch_state;
+    wire types::edge_detect_t row_latch_state;
     wire clk_pixel_load_en;
     wire matrix_row_latch2;
     // end matrix_scan
