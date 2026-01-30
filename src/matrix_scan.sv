@@ -47,7 +47,7 @@ module matrix_scan #(
     assign active.column_address = '0;  // unused
 
     typedef logic [1:0] scan_state_t;
-    scan_state_t state;
+    scan_state_t clk_latch_state;
     wire clk_latch;
     wire state_advance;
 
@@ -63,7 +63,7 @@ module matrix_scan #(
     wire types::col_addr_count_t pixel_load_en_counter_output;
     assign row_latch = row_latch_state == 2'b10;
 
-    assign clk_latch = state == 2'b10;
+    assign clk_latch = clk_latch_state == 2'b10;
 `ifdef DEBUGGER
     assign row_latch_state2 = row_latch_state[1:0];
     assign row_latch2 = row_latch;
@@ -147,9 +147,9 @@ module matrix_scan #(
     /* shift the state advance signal into the bitfield */
     always @(posedge clk_in) begin
         if (reset) begin
-            state <= 2'b01;
+            clk_latch_state <= 2'b01;
         end else begin
-            state <= {state[0], state_advance};
+            clk_latch_state <= {clk_latch_state[0], state_advance};
         end
     end
 
