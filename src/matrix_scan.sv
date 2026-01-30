@@ -48,7 +48,7 @@ module matrix_scan #(
 
     typedef logic [1:0] scan_state_t;
     scan_state_t state;
-    wire clk_state;
+    wire clk_latch;
     wire state_advance;
 
     wire clk_pixel_load_en;  /* enables the pixel load clock */
@@ -63,7 +63,7 @@ module matrix_scan #(
     wire types::col_addr_count_t pixel_load_en_counter_output;
     assign row_latch = row_latch_state == 2'b10;
 
-    assign clk_state = state == 2'b10;
+    assign clk_latch = state == 2'b10;
 `ifdef DEBUGGER
     assign row_latch_state2 = row_latch_state[1:0];
     assign row_latch2 = row_latch;
@@ -78,7 +78,7 @@ module matrix_scan #(
     ) timeout_clk_pixel_load_en (
         .reset  (reset),
         .clk_in (clk_in),
-        .start  (clk_state),
+        .start  (clk_latch),
         .value  (types::col_addr_count_t'(params::PIXEL_WIDTH)),  // 7'd64
         .counter(pixel_load_en_counter_output),
         .running(clk_pixel_load_en)
@@ -93,7 +93,7 @@ module matrix_scan #(
     ) timeout_column_address (
         .reset  (reset),
         .clk_in (clk_in),
-        .start  (clk_state),
+        .start  (clk_latch),
         .value  (types::col_addr_t'(params::PIXEL_WIDTH - 1)),  // 6'd63
         .counter(current.column_address),
         .running(unused_timer_runpin)
