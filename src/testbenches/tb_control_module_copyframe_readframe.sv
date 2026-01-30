@@ -62,7 +62,7 @@ module tb_control_module_copyframe_readframe;
 `endif
 
     // === Copy engine wiring ===
-    mem_copy_if copy_int ();
+    mem_copy_if copy_int();
     // Stub the front-buffer data; timing is the focus of this test.
     localparam types::mem_write_data_t COPY_DATA_STUB = '0;
 
