@@ -33,6 +33,14 @@ module tb_control_module;
 
     integer writes_seen;
 
+`ifdef DEBUGGER
+    enums::control_module_fsm_e       cmd_line_state2;
+    wire                              ram_access_start2;
+    wire                              ram_access_start_latch2;
+    types::mem_write_addr_t           cmd_line_addr2;
+    logic                       [7:0] num_commands_processed;
+`endif
+
     // === DUT ===
     control_module #(
         .WATCHDOG_CONTROL_TICKS(params::WATCHDOG_CONTROL_TICKS),
@@ -53,6 +61,13 @@ module tb_control_module;
         .ram_clk_enable(ram_clk_enable),
         .frame_select(frame_select),
         .watchdog_reset(watchdog_reset)
+`ifdef DEBUGGER,
+        .cmd_line_state2(cmd_line_state2),
+        .ram_access_start2(ram_access_start2),
+        .ram_access_start_latch2(ram_access_start_latch2),
+        .cmd_line_addr2(cmd_line_addr2),
+        .num_commands_processed(num_commands_processed)
+`endif
     );
     assign copy_int.read_data_in = RAM_DATA_STUB;
 
@@ -129,5 +144,14 @@ module tb_control_module;
                         busy,
                         ram_clk_enable,
                         1'b0};
+`ifdef DEBUGGER
+    wire _unused_ok_debugger = &{1'b0,
+                                 cmd_line_state2,
+                                 ram_access_start2,
+                                 ram_access_start_latch2,
+                                 cmd_line_addr2,
+                                 num_commands_processed,
+                                 1'b0};
+`endif
     // verilog_format: on
 endmodule
