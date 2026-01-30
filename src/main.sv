@@ -108,12 +108,10 @@ module main #(
     wire ctrl_ready_for_data;
 
 `ifdef DEBUGGER
-    localparam integer unsigned debug_data_width = 32;
     wire debugger_debug_start;
     wire [4:0] debugger_current_state;
     wire debugger_do_close;
     wire debugger_tx_start;
-    wire [$clog2(debug_data_width)-1:0] debugger_current_position;
     // from controller
     enums::control_module_fsm_e cmd_line_state2;
     wire ram_access_start;
@@ -201,19 +199,20 @@ module main #(
 `endif
 
 `ifdef DEBUGGER
+`define DEBUGGER_DATA_FIELDS \
+    rxdata_to_controller, \
+    num_commands_processed, \
+    rgb_enable, \
+    cmd_line_state2, \
+    brightness_enable
+
     wire [7:0] debug_command;
     wire debug_command_pulse;
     wire debug_command_busy;
     wire debug_uart_tx;
     wire debug_uart_rx;
-    wire [debug_data_width-1:0] ddata = {
-        rxdata_to_controller[7:0],
-        num_commands_processed[7:0],
-        rgb_enable,
-        cmd_line_state2,
-        brightness_enable[7:0],
-        2'b0
-    };
+    wire [$clog2($bits({`DEBUGGER_DATA_FIELDS}))-1:0] debugger_current_position;
+    wire [$bits({`DEBUGGER_DATA_FIELDS})-1:0] ddata = {`DEBUGGER_DATA_FIELDS};
 `endif
 
     reset_on_start #() RoS_obj (
@@ -508,7 +507,7 @@ module main #(
     debugger #(
         // Describes the sample rate of messages sent to debugger client
         .DIVIDER_TICKS(params::DEBUG_MSGS_PER_SEC_TICKS),
-        .DATA_WIDTH(debug_data_width),
+        .DATA_WIDTH($bits({`DEBUGGER_DATA_FIELDS})),
         // Describes the baudrate for sending messages to debugger client
         .UART_TICKS_PER_BIT(params::DEBUG_TX_UART_TICKS_PER_BIT)
     ) mydebug (
