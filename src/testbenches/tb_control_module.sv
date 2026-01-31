@@ -35,9 +35,6 @@ module tb_control_module;
 
 `ifdef DEBUGGER
     debugger_if debug_if (clk);
-    wire                              ram_access_start2;
-    wire                              ram_access_start_latch2;
-    types::mem_write_addr_t           cmd_line_addr2;
 `endif
 
     // === DUT ===
@@ -61,9 +58,6 @@ module tb_control_module;
         .watchdog_reset(watchdog_reset),
 `ifdef DEBUGGER
         .debug_if(debug_if),
-        .ram_access_start2(ram_access_start2),
-        .ram_access_start_latch2(ram_access_start_latch2),
-        .cmd_line_addr2(cmd_line_addr2),
 `endif
         .frame_select(frame_select)
     );
@@ -142,12 +136,5 @@ module tb_control_module;
                         busy,
                         ram_clk_enable,
                         1'b0};
-`ifdef DEBUGGER
-    wire _unused_ok_debugger = &{1'b0,
-                                 ram_access_start2,
-                                 ram_access_start_latch2,
-                                 cmd_line_addr2,
-                                 1'b0};
-`endif
     // verilog_format: on
 endmodule

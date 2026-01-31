@@ -14,13 +14,19 @@ interface debugger_if (
     // control_module (out)
     logic                       [7:0] num_commands_processed;
     enums::control_module_fsm_e       cmd_line_state2;
+    logic                             ram_access_start2;
+    logic                             ram_access_start_latch2;
+    types::mem_write_addr_t           cmd_line_addr2;
     // end control_module
     `define DEBUGGER_DATA_FIELDS \
     rxdata_to_controller, \
     num_commands_processed, \
     rgb_enable, \
     cmd_line_state2, \
-    brightness_enable
+    brightness_enable, \
+    ram_access_start2, \
+    ram_access_start_latch2, \
+    cmd_line_addr2
 
     localparam integer unsigned DEBUGGER_DATA_WIDTH = $bits({`DEBUGGER_DATA_FIELDS});
     logic [DEBUGGER_DATA_WIDTH-1:0] ddata;
@@ -31,7 +37,13 @@ interface debugger_if (
     end
 
     // control_module signals for debugging
-    modport control_module(output num_commands_processed, output cmd_line_state2);
+    modport control_module(
+        output num_commands_processed,
+        output cmd_line_state2,
+        output ram_access_start2,
+        output ram_access_start_latch2,
+        output cmd_line_addr2
+    );
 
     // debugger
     modport debugger(output current_position, output ddata);
@@ -47,6 +59,9 @@ interface debugger_if (
                             num_commands_processed,
                             cmd_line_state2,
                             current_position,
+                            ram_access_start2,
+                            ram_access_start_latch2,
+                            cmd_line_addr2,
                             1'b0};
 `endif
 endinterface

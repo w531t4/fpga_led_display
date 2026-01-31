@@ -28,9 +28,6 @@ module control_module #(
 `endif
 `ifdef DEBUGGER
     debugger_if.control_module debug_if,
-    output ram_access_start2,
-    output ram_access_start_latch2,
-    output types::mem_write_addr_t cmd_line_addr2,
 `endif
     output logic ram_clk_enable
 
@@ -57,9 +54,9 @@ module control_module #(
 
 `ifdef DEBUGGER
     assign debug_if.cmd_line_state2 = cmd_line_state;
-    assign cmd_line_addr2 = cmd_line_addr;
-    assign ram_access_start2 = ram_access_start;
-    assign ram_access_start_latch2 = ram_access_start_latch;
+    assign debug_if.cmd_line_addr2 = cmd_line_addr;
+    assign debug_if.ram_access_start2 = ram_access_start;
+    assign debug_if.ram_access_start_latch2 = ram_access_start_latch;
 `endif
 
     assign ram_clk_enable = ram_access_start ^ ram_access_start_latch;
