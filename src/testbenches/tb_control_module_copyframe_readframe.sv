@@ -52,9 +52,6 @@ module tb_control_module_copyframe_readframe;
     wire                                 frame_select;
 `ifdef DEBUGGER
     debugger_if debug_if (clk);
-    wire                              ram_access_start2;
-    wire                              ram_access_start_latch2;
-    types::mem_write_addr_t           cmd_line_addr2;
 `endif
 `ifdef USE_WATCHDOG
     wire watchdog_reset;
@@ -106,9 +103,6 @@ module tb_control_module_copyframe_readframe;
         .ram_clk_enable(ram_clk_enable),
 `ifdef DEBUGGER
         .debug_if(debug_if),
-        .ram_access_start2(ram_access_start2),
-        .ram_access_start_latch2(ram_access_start_latch2),
-        .cmd_line_addr2(cmd_line_addr2),
 `endif
 `ifdef USE_WATCHDOG
         .watchdog_reset(watchdog_reset),
@@ -292,14 +286,6 @@ module tb_control_module_copyframe_readframe;
     wire _unused_ok_watchdog = &{1'b0,
                                  watchdog_reset,
                                  1'b0};
-`endif
-`ifdef DEBUGGER
-    wire _unused_ok_debugger = &{1'b0,
-                                 ram_access_start2,
-                                 ram_access_start_latch2,
-                                 cmd_line_addr2,
-                                 1'b0};
-
 `endif
     // verilog_format: on
 endmodule

@@ -113,11 +113,6 @@ module main #(
     wire [4:0] debugger_current_state;
     wire debugger_do_close;
     wire debugger_tx_start;
-    // from controller
-    wire ram_access_start;
-    wire ram_access_start_latch;
-    wire types::mem_write_addr_t cmd_line_addr2;
-    // end controller
     // from matrix_scan
     wire state_advance;
     wire types::edge_detect_t row_latch_state;
@@ -363,9 +358,6 @@ module main #(
 `endif
 `ifdef DEBUGGER
         .debug_if(debug_if),
-        .ram_access_start2(ram_access_start),
-        .ram_access_start_latch2(ram_access_start_latch),
-        .cmd_line_addr2(cmd_line_addr2),
 `endif
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
@@ -562,7 +554,7 @@ module main #(
     assign gn14 = gp14;  // ctrl serial port RX
 
     // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
-    // assign gn1 = ram_access_start;
+    // assign gn1 = debug_if.ram_access_start;
     // assign {gn15, gn12, gn10, gn5, gn4, gn3, gn2 } = {~cmd_line_addr2[6:1], cmd_line_addr2[0]};
     // assign {gn9, gn8, gn7, gn16} = ram_a_data_in[5:0];
     // assign gn0 = ram_a_write_enable;
@@ -582,9 +574,6 @@ module main #(
                             debug_uart_tx,
                             debug_uart_rx,
                             debug_command,
-    //from controller
-    ram_access_start, ram_access_start_latch, cmd_line_addr2,
-    //end controller
     //from matrix_scan
     state_advance, row_latch_state, clk_pixel_load_en, matrix_row_latch2,
     // end matrix_scan
