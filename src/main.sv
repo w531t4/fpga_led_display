@@ -108,16 +108,15 @@ module main #(
     wire ctrl_ready_for_data;
 
 `ifdef DEBUGGER
+    debugger_if debug_if (clk_root);
     wire debugger_debug_start;
     wire [4:0] debugger_current_state;
     wire debugger_do_close;
     wire debugger_tx_start;
     // from controller
-    enums::control_module_fsm_e cmd_line_state2;
     wire ram_access_start;
     wire ram_access_start_latch;
     wire types::mem_write_addr_t cmd_line_addr2;
-    wire [7:0] num_commands_processed;
     // end controller
     // from matrix_scan
     wire state_advance;
@@ -199,20 +198,15 @@ module main #(
 `endif
 
 `ifdef DEBUGGER
-`define DEBUGGER_DATA_FIELDS \
-    rxdata_to_controller, \
-    num_commands_processed, \
-    rgb_enable, \
-    cmd_line_state2, \
-    brightness_enable
-
+    // TODO: Would be great if these signals were assigned in the module
+    assign debug_if.rxdata_to_controller = rxdata_to_controller;
+    assign debug_if.brightness_enable = brightness_enable;
+    assign debug_if.rgb_enable = rgb_enable;
     wire [7:0] debug_command;
     wire debug_command_pulse;
     wire debug_command_busy;
     wire debug_uart_tx;
     wire debug_uart_rx;
-    wire [$clog2($bits({`DEBUGGER_DATA_FIELDS}))-1:0] debugger_current_position;
-    wire [$bits({`DEBUGGER_DATA_FIELDS})-1:0] ddata = {`DEBUGGER_DATA_FIELDS};
 `endif
 
     reset_on_start #() RoS_obj (
@@ -368,11 +362,10 @@ module main #(
         .watchdog_reset(watchdog_reset),
 `endif
 `ifdef DEBUGGER
-        .cmd_line_state2(cmd_line_state2),
+        .debug_if(debug_if),
         .ram_access_start2(ram_access_start),
         .ram_access_start_latch2(ram_access_start_latch),
         .cmd_line_addr2(cmd_line_addr2),
-        .num_commands_processed(num_commands_processed),
 `endif
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
@@ -507,13 +500,12 @@ module main #(
     debugger #(
         // Describes the sample rate of messages sent to debugger client
         .DIVIDER_TICKS(params::DEBUG_MSGS_PER_SEC_TICKS),
-        .DATA_WIDTH($bits({`DEBUGGER_DATA_FIELDS})),
         // Describes the baudrate for sending messages to debugger client
         .UART_TICKS_PER_BIT(params::DEBUG_TX_UART_TICKS_PER_BIT)
     ) mydebug (
         .clk_in(clk_root),
         .reset(global_reset),
-        .data_in(ddata),
+        .debug_if(debug_if),
         .debug_uart_rx_in(debug_uart_rx),
         .debug_command(debug_command),
         .debug_command_pulse(debug_command_pulse),
@@ -522,7 +514,6 @@ module main #(
         .currentState(debugger_current_state),
         .do_close(debugger_do_close),
         .tx_start(debugger_tx_start),
-        .current_position(debugger_current_position),
         .tx_out(debug_uart_tx)
     );
     assign gp16 = debug_uart_tx;
@@ -586,14 +577,13 @@ module main #(
                             debugger_current_state,
                             debugger_do_close,
                             debugger_tx_start,
-                            debugger_current_position,
                             debug_command_pulse,
                             debug_command_busy,
                             debug_uart_tx,
                             debug_uart_rx,
                             debug_command,
     //from controller
-    ram_access_start, ram_access_start_latch, cmd_line_addr2, num_commands_processed,
+    ram_access_start, ram_access_start_latch, cmd_line_addr2,
     //end controller
     //from matrix_scan
     state_advance, row_latch_state, clk_pixel_load_en, matrix_row_latch2,

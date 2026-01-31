@@ -27,11 +27,10 @@ module control_module #(
     output logic watchdog_reset,
 `endif
 `ifdef DEBUGGER
-    output enums::control_module_fsm_e cmd_line_state2,
+    debugger_if.control_module debug_if,
     output ram_access_start2,
     output ram_access_start_latch2,
     output types::mem_write_addr_t cmd_line_addr2,
-    output logic [7:0] num_commands_processed,
 `endif
     output logic ram_clk_enable
 
@@ -57,7 +56,7 @@ module control_module #(
 `endif
 
 `ifdef DEBUGGER
-    assign cmd_line_state2 = cmd_line_state;
+    assign debug_if.cmd_line_state2 = cmd_line_state;
     assign cmd_line_addr2 = cmd_line_addr;
     assign ram_access_start2 = ram_access_start;
     assign ram_access_start_latch2 = ram_access_start_latch;
@@ -410,13 +409,13 @@ module control_module #(
 
             cmd_line_state <= enums::STATE_IDLE;
 `ifdef DEBUGGER
-            num_commands_processed <= 8'b0;
+            debug_if.num_commands_processed <= 8'b0;
 `endif
         end else begin
             if (state_done) begin
                 if (data_ready_n && cmd_line_state != enums::STATE_IDLE) cmd_line_state <= enums::STATE_IDLE;
 `ifdef DEBUGGER
-                num_commands_processed <= num_commands_processed + 'd1;
+                debug_if.num_commands_processed <= debug_if.num_commands_processed + 'd1;
 `endif
             end
             if (brightness_enable != brightness_temp) begin

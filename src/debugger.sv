@@ -3,7 +3,6 @@
 `default_nettype none
 module debugger #(
     parameter integer unsigned DIVIDER_TICKS = 28'd67000000,
-    parameter integer unsigned DATA_WIDTH = 8,
     // 22MHz / 191 = 115183 baud
     parameter integer unsigned UART_TICKS_PER_BIT = 191,
     // verilator lint_off UNUSEDPARAM
@@ -12,14 +11,13 @@ module debugger #(
 ) (
     input clk_in,
     input reset,
-    input [DATA_WIDTH-1:0] data_in,
+    debugger_if.debugger debug_if,
     input debug_uart_rx_in,
     output tx_out,
     output logic debug_start,
     output logic [4:0] currentState,
     output logic do_close,
     output logic tx_start,
-    output logic [$clog2(DATA_WIDTH)-1:0] current_position,
     output [7:0] debug_command,
     output debug_command_pulse,
     output debug_command_busy
@@ -27,8 +25,8 @@ module debugger #(
     typedef logic [$clog2(DIVIDER_TICKS)-1:0] divider_ticks_index_t;
     logic [7:0] debug_bits;
     divider_ticks_index_t count;
-    typedef logic [DATA_WIDTH-1:0] data_t;
-    typedef logic [$clog2(DATA_WIDTH)-1:0] data_index_t;
+    typedef logic [debug_if.DEBUGGER_DATA_WIDTH-1:0] data_t;
+    typedef logic [$clog2(debug_if.DEBUGGER_DATA_WIDTH)-1:0] data_index_t;
 
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in) begin
@@ -64,18 +62,18 @@ module debugger #(
             do_close <= 0;
             data_copy <= 0;
             currentState <= STATE_IDLE;
-            current_position <= data_index_t'($bits(data_t));
+            debug_if.current_position <= data_index_t'($bits(data_t));
             tx_start <= 0;
             debug_bits <= 0;
         end else begin
             //            if (debug_start && currentState == STATE_IDLE) begin
             if (debug_start && currentState == STATE_IDLE) begin
-                current_position <= data_index_t'($bits(data_t));
-                data_copy <= data_in;
+                debug_if.current_position <= data_index_t'($bits(data_t));
+                data_copy <= debug_if.ddata;
                 currentState <= STATE_START;
             end else if (currentState != STATE_IDLE) begin
                 if (currentState == STATE_START) begin
-                    if (current_position == 0) begin
+                    if (debug_if.current_position == 0) begin
                         do_close <= 1;
                     end else begin
                     end
@@ -85,7 +83,7 @@ module debugger #(
                         if (do_close) begin
                             debug_bits <= 8'b00001010;  // newline
                         end else begin
-                            debug_bits <= data_copy[current_position-1-:8];
+                            debug_bits <= data_copy[debug_if.current_position-1-:8];
                             // latch 8 bits here from input
                         end
                         tx_start <= 1;
@@ -100,7 +98,7 @@ module debugger #(
                             do_close <= 0;
                             currentState <= STATE_IDLE;
                         end else begin
-                            current_position <= current_position - 8;
+                            debug_if.current_position <= debug_if.current_position - 8;
                             currentState <= STATE_START;
                         end
                     end else begin
