@@ -96,28 +96,7 @@ interface debugger_if (
     // verilog_format: off
     wire _unused_ok_sim = &{1'b0,
                             ddata,
-                            rxdata_to_controller,
-                            brightness_enable,
-                            rgb_enable,
-                            num_commands_processed,
-                            cmd_line_state2,
-                            current_position,
-                            ram_access_start2,
-                            ram_access_start_latch2,
-                            cmd_line_addr2,
-                            // matrix_scan
-                            row_latch_state2,
-                            row_latch2,
-                            state_advance2,
-                            clk_pixel_load_en2,
-                            // end matrix_scan
-                            // debugger
-                            debug_start,
-                            do_close,
-                            tx_start,
-                            command_pulse,
-                            command_busy,
-                            // end debugger
+                            `DEBUGGER_DATA_FIELDS,
                             1'b0};
     // verilog_format: on
 `endif
