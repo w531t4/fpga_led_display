@@ -113,12 +113,6 @@ module main #(
     wire [4:0] debugger_current_state;
     wire debugger_do_close;
     wire debugger_tx_start;
-    // from matrix_scan
-    wire state_advance;
-    wire types::edge_detect_t row_latch_state;
-    wire clk_pixel_load_en;
-    wire matrix_row_latch2;
-    // end matrix_scan
 `endif
 
     // [5:0]
@@ -265,10 +259,7 @@ module main #(
 `endif
         .brightness_mask(brightness_mask)
 `ifdef DEBUGGER,
-        .state_advance2(state_advance),
-        .row_latch_state2(row_latch_state),
-        .clk_pixel_load_en2(clk_pixel_load_en),
-        .row_latch2(matrix_row_latch2)
+        .debug_if(debug_if)
 `endif
     );
 
@@ -574,9 +565,6 @@ module main #(
                             debug_uart_tx,
                             debug_uart_rx,
                             debug_command,
-    //from matrix_scan
-    state_advance, row_latch_state, clk_pixel_load_en, matrix_row_latch2,
-    // end matrix_scan
     1'b0};
 `else
     wire _unused_ok_debugger = &{1'b0, gp15, 1'b0};
