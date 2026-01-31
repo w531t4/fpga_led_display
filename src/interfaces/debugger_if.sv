@@ -11,6 +11,13 @@ interface debugger_if (
     types::rgb_signals_t              rgb_enable;  // from control_module
     // end main
 
+    // matrix_scan (out)
+    types::edge_detect_t              row_latch_state2;
+    logic                             row_latch2;
+    logic                             state_advance2;
+    logic                             clk_pixel_load_en2;
+    // end matrix_scan
+
     // control_module (out)
     logic                       [7:0] num_commands_processed;
     enums::control_module_fsm_e       cmd_line_state2;
@@ -26,7 +33,11 @@ interface debugger_if (
     brightness_enable, \
     ram_access_start2, \
     ram_access_start_latch2, \
-    cmd_line_addr2
+    cmd_line_addr2, \
+    row_latch_state2, \
+    row_latch2, \
+    state_advance2, \
+    clk_pixel_load_en2
 
     localparam integer unsigned DEBUGGER_DATA_WIDTH = $bits({`DEBUGGER_DATA_FIELDS});
     logic [DEBUGGER_DATA_WIDTH-1:0] ddata;
@@ -45,12 +56,22 @@ interface debugger_if (
         output cmd_line_addr2
     );
 
+    // verilog_format: off
+    modport matrix_scan(
+        output row_latch_state2,
+        output row_latch2,
+        output state_advance2,
+        output clk_pixel_load_en2
+    );
+    // verilog_format: on
+
     // debugger
     modport debugger(output current_position, output ddata);
 
 `ifdef SIM
     // Simulation-only sink so testbenches do not need to manually list every field in _unused_ok.
     // This keeps lint noise down without affecting synthesis builds.
+    // verilog_format: off
     wire _unused_ok_sim = &{1'b0,
                             ddata,
                             rxdata_to_controller,
@@ -62,6 +83,13 @@ interface debugger_if (
                             ram_access_start2,
                             ram_access_start_latch2,
                             cmd_line_addr2,
+                            // matrix_scan
+                            row_latch_state2,
+                            row_latch2,
+                            state_advance2,
+                            clk_pixel_load_en2,
+                            // end matrix_scan
                             1'b0};
+    // verilog_format: on
 `endif
 endinterface

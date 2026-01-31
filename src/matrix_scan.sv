@@ -19,10 +19,7 @@ module matrix_scan #(
     output output_enable,   /* the minimum output enable pulse should not be shorter than 1us... */
 
 `ifdef DEBUGGER
-    output types::edge_detect_t row_latch_state2,
-    output row_latch2,
-    output state_advance2,
-    output clk_pixel_load_en2,
+    debugger_if.matrix_scan debug_if,
 `endif
     output types::brightness_level_t brightness_mask  /* used to pick a bit from the sub-pixel's brightness */
 );
@@ -63,10 +60,10 @@ module matrix_scan #(
 
     assign clk_latch = types::falling_edge(clk_latch_state);
 `ifdef DEBUGGER
-    assign row_latch_state2 = row_latch_state[1:0];
-    assign row_latch2 = row_latch;
-    assign clk_pixel_load_en2 = clk_pixel_load_en;
-    assign state_advance2 = state_advance;
+    assign debug_if.row_latch_state2 = row_latch_state[1:0];
+    assign debug_if.row_latch2 = row_latch;
+    assign debug_if.clk_pixel_load_en2 = clk_pixel_load_en;
+    assign debug_if.state_advance2 = state_advance;
 `endif
     wire unused_timer_runpin;
     /* produce 64 load clocks per line...
