@@ -367,14 +367,14 @@ module main #(
 `ifdef USE_WATCHDOG
         .watchdog_reset(watchdog_reset),
 `endif
-        .ram_clk_enable(ctrl_ram_clk_enable)
-`ifdef DEBUGGER,
+`ifdef DEBUGGER
         .cmd_line_state2(cmd_line_state2),
         .ram_access_start2(ram_access_start),
         .ram_access_start_latch2(ram_access_start_latch),
         .cmd_line_addr2(cmd_line_addr2),
-        .num_commands_processed(num_commands_processed)
+        .num_commands_processed(num_commands_processed),
 `endif
+        .ram_clk_enable(ctrl_ram_clk_enable)
     );
 
 `ifdef DOUBLE_BUFFER
