@@ -15,9 +15,7 @@ module debugger #(
     input debug_uart_rx_in,
     output tx_out,
     output logic [4:0] currentState,
-    output [7:0] debug_command,
-    output debug_command_pulse,
-    output debug_command_busy
+    output [7:0] debug_command
 );
     typedef logic [$clog2(DIVIDER_TICKS)-1:0] divider_ticks_index_t;
     logic [7:0] debug_bits;
@@ -114,8 +112,8 @@ module debugger #(
         .i_enable(1'b1),
         .i_din_priortobuffer(debug_uart_rx_in),
         .o_rxdata(debug_command),
-        .o_recvdata(debug_command_pulse),
-        .o_busy(debug_command_busy)
+        .o_recvdata(debug_if.command_pulse),
+        .o_busy(debug_if.command_busy)
     );
 
     uart_tx #(

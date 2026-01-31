@@ -30,6 +30,8 @@ interface debugger_if (
     logic                             debug_start;
     logic                             do_close;
     logic                             tx_start;
+    logic                             command_pulse;
+    logic                             command_busy;
     // end debugger
     `define DEBUGGER_DATA_FIELDS \
     rxdata_to_controller, \
@@ -46,7 +48,9 @@ interface debugger_if (
     clk_pixel_load_en2, \
     debug_start, \
     do_close, \
-    tx_start
+    tx_start, \
+    command_pulse, \
+    command_busy
 
     localparam integer unsigned DEBUGGER_DATA_WIDTH = $bits({`DEBUGGER_DATA_FIELDS});
     logic [DEBUGGER_DATA_WIDTH-1:0] ddata;
@@ -81,7 +85,9 @@ interface debugger_if (
         output ddata,
         output debug_start,
         output do_close,
-        output tx_start
+        output tx_start,
+        output command_pulse,
+        output command_busy
     );
     // verilog_format: on
 `ifdef SIM
@@ -109,6 +115,8 @@ interface debugger_if (
                             debug_start,
                             do_close,
                             tx_start,
+                            command_pulse,
+                            command_busy,
                             // end debugger
                             1'b0};
     // verilog_format: on

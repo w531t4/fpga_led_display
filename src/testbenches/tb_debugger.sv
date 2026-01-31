@@ -41,9 +41,7 @@ module tb_debugger #(
         .tx_out(tx_out),
         .debug_uart_rx_in(rx_line2),
         .currentState(_unused_ok_main[4:0]),
-        .debug_command(_unused_ok_main[19:12]),
-        .debug_command_pulse(_unused_ok_main[20]),
-        .debug_command_busy(_unused_ok_main[21])
+        .debug_command(_unused_ok_main[19:12])
     );
 
     initial begin

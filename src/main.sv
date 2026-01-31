@@ -189,8 +189,6 @@ module main #(
     assign debug_if.brightness_enable = brightness_enable;
     assign debug_if.rgb_enable = rgb_enable;
     wire [7:0] debug_command;
-    wire debug_command_pulse;
-    wire debug_command_busy;
     wire debug_uart_tx;
     wire debug_uart_rx;
 `endif
@@ -488,8 +486,6 @@ module main #(
         .debug_if(debug_if),
         .debug_uart_rx_in(debug_uart_rx),
         .debug_command(debug_command),
-        .debug_command_pulse(debug_command_pulse),
-        .debug_command_busy(debug_command_busy),
         .currentState(debugger_current_state),
         .tx_out(debug_uart_tx)
     );
@@ -551,8 +547,6 @@ module main #(
 `ifdef DEBUGGER
     wire _unused_ok_debugger =  &{1'b0,
                             debugger_current_state,
-                            debug_command_pulse,
-                            debug_command_busy,
                             debug_uart_tx,
                             debug_uart_rx,
                             debug_command,
