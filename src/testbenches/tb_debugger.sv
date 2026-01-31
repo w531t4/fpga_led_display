@@ -16,7 +16,6 @@ module tb_debugger #(
     logic reset;
     wire tx_out;
     logic clk_out;
-    wire debug_start;
     // TODO: move command into .svh
     logic [1071:0] mystring = "01112233445566778811223344556677881122334455667788112233445566778811223344556677881122334455667788112233445566778811223344556677-L Rrb";
     wire tb_clk_baudrate;
@@ -40,14 +39,11 @@ module tb_debugger #(
         .reset(reset),
         .debug_if(debug_if),
         .tx_out(tx_out),
-        .debug_start(debug_start),
         .debug_uart_rx_in(rx_line2),
         .currentState(_unused_ok_main[4:0]),
-        .tx_start(_unused_ok_main[5]),
         .debug_command(_unused_ok_main[19:12]),
         .debug_command_pulse(_unused_ok_main[20]),
-        .debug_command_busy(_unused_ok_main[21]),
-        .do_close(_unused_ok_main[22])
+        .debug_command_busy(_unused_ok_main[21])
     );
 
     initial begin
@@ -101,7 +97,6 @@ module tb_debugger #(
     wire _unused_ok = &{1'b0,
                         tx_out,
                         clk_out,
-                        debug_start,
                         1'b0};
     // verilog_format: on
 endmodule

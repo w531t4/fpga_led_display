@@ -109,10 +109,7 @@ module main #(
 
 `ifdef DEBUGGER
     debugger_if debug_if (clk_root);
-    wire debugger_debug_start;
     wire [4:0] debugger_current_state;
-    wire debugger_do_close;
-    wire debugger_tx_start;
 `endif
 
     // [5:0]
@@ -493,10 +490,7 @@ module main #(
         .debug_command(debug_command),
         .debug_command_pulse(debug_command_pulse),
         .debug_command_busy(debug_command_busy),
-        .debug_start(debugger_debug_start),
         .currentState(debugger_current_state),
-        .do_close(debugger_do_close),
-        .tx_start(debugger_tx_start),
         .tx_out(debug_uart_tx)
     );
     assign gp16 = debug_uart_tx;
@@ -556,10 +550,7 @@ module main #(
     //     assign {gn15, gn14, gn13, gn12, gn11, gn10, gn9, gn8, gn7, gn16, gn5, gn4, gn3, gn2, gn1, gn0}
 `ifdef DEBUGGER
     wire _unused_ok_debugger =  &{1'b0,
-                            debugger_debug_start,
                             debugger_current_state,
-                            debugger_do_close,
-                            debugger_tx_start,
                             debug_command_pulse,
                             debug_command_busy,
                             debug_uart_tx,

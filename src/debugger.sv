@@ -14,10 +14,7 @@ module debugger #(
     debugger_if.debugger debug_if,
     input debug_uart_rx_in,
     output tx_out,
-    output logic debug_start,
     output logic [4:0] currentState,
-    output logic do_close,
-    output logic tx_start,
     output [7:0] debug_command,
     output debug_command_pulse,
     output debug_command_busy
@@ -31,14 +28,14 @@ module debugger #(
     // This essentially shows to debug messages sent via TX per second
     always @(posedge clk_in) begin
         if (reset) begin
-            debug_start <= 0;
+            debug_if.debug_start <= 0;
             count <= 0;
         end else begin
             if (types::uint_t'(count) == DIVIDER_TICKS - 1) begin
-                debug_start <= 1;
+                debug_if.debug_start <= 1;
                 count <= 0;
             end else begin
-                debug_start <= 0;
+                debug_if.debug_start <= 0;
                 count <= count + 1;
             end
         end
@@ -59,43 +56,43 @@ module debugger #(
     localparam logic [4:0] STATE_IDLE = 5'b00001, STATE_START = 5'b00010, STATE_SEND = 5'b00100, STATE_WAIT = 5'b01000;
     always @(posedge clk_in) begin
         if (reset) begin
-            do_close <= 0;
+            debug_if.do_close <= 0;
             data_copy <= 0;
             currentState <= STATE_IDLE;
             debug_if.current_position <= data_index_t'($bits(data_t));
-            tx_start <= 0;
+            debug_if.tx_start <= 0;
             debug_bits <= 0;
         end else begin
             //            if (debug_start && currentState == STATE_IDLE) begin
-            if (debug_start && currentState == STATE_IDLE) begin
+            if (debug_if.debug_start && currentState == STATE_IDLE) begin
                 debug_if.current_position <= data_index_t'($bits(data_t));
                 data_copy <= debug_if.ddata;
                 currentState <= STATE_START;
             end else if (currentState != STATE_IDLE) begin
                 if (currentState == STATE_START) begin
                     if (debug_if.current_position == 0) begin
-                        do_close <= 1;
+                        debug_if.do_close <= 1;
                     end else begin
                     end
                     currentState <= STATE_SEND;
                 end else if (currentState == STATE_SEND) begin
                     if (~tx_busy) begin
-                        if (do_close) begin
+                        if (debug_if.do_close) begin
                             debug_bits <= 8'b00001010;  // newline
                         end else begin
                             debug_bits <= data_copy[debug_if.current_position-1-:8];
                             // latch 8 bits here from input
                         end
-                        tx_start <= 1;
+                        debug_if.tx_start <= 1;
                         // latch bits onto tx here
                         currentState <= STATE_WAIT;
                     end else begin
                     end
                 end else if (currentState == STATE_WAIT) begin
-                    tx_start <= 0;
+                    debug_if.tx_start <= 0;
                     if (~tx_busy) begin
-                        if (do_close) begin
-                            do_close <= 0;
+                        if (debug_if.do_close) begin
+                            debug_if.do_close <= 0;
                             currentState <= STATE_IDLE;
                         end else begin
                             debug_if.current_position <= debug_if.current_position - 8;
@@ -125,7 +122,7 @@ module debugger #(
         .TICKS_PER_BIT(UART_TICKS_PER_BIT)
     ) txuart (
         .i_clk  (clk_in),
-        .i_start(tx_start),
+        .i_start(debug_if.tx_start),
         .i_data (debug_bits),
         .o_done (tx_done),
         .o_busy (tx_busy),
