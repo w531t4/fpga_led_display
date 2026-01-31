@@ -25,6 +25,12 @@ interface debugger_if (
     logic                             ram_access_start_latch2;
     types::mem_write_addr_t           cmd_line_addr2;
     // end control_module
+
+    // debugger
+    logic                             debug_start;
+    logic                             do_close;
+    logic                             tx_start;
+    // end debugger
     `define DEBUGGER_DATA_FIELDS \
     rxdata_to_controller, \
     num_commands_processed, \
@@ -37,7 +43,10 @@ interface debugger_if (
     row_latch_state2, \
     row_latch2, \
     state_advance2, \
-    clk_pixel_load_en2
+    clk_pixel_load_en2, \
+    debug_start, \
+    do_close, \
+    tx_start
 
     localparam integer unsigned DEBUGGER_DATA_WIDTH = $bits({`DEBUGGER_DATA_FIELDS});
     logic [DEBUGGER_DATA_WIDTH-1:0] ddata;
@@ -66,8 +75,15 @@ interface debugger_if (
     // verilog_format: on
 
     // debugger
-    modport debugger(output current_position, output ddata);
-
+    // verilog_format: off
+    modport debugger(
+        output current_position,
+        output ddata,
+        output debug_start,
+        output do_close,
+        output tx_start
+    );
+    // verilog_format: on
 `ifdef SIM
     // Simulation-only sink so testbenches do not need to manually list every field in _unused_ok.
     // This keeps lint noise down without affecting synthesis builds.
@@ -89,6 +105,11 @@ interface debugger_if (
                             state_advance2,
                             clk_pixel_load_en2,
                             // end matrix_scan
+                            // debugger
+                            debug_start,
+                            do_close,
+                            tx_start,
+                            // end debugger
                             1'b0};
     // verilog_format: on
 `endif
