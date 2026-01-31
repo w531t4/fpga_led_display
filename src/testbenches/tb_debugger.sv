@@ -64,7 +64,7 @@ module tb_debugger #(
         reset = 0;
         rx_line2 = 0;
         clk_out = 0;
-        data_in = DATA_WIDTH'('b111100001010101000001101);
+        data_in = DATA_WIDTH'('b0);
 
     end
 
