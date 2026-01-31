@@ -59,15 +59,15 @@ module tb_control_module;
         .busy(busy),
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
-        .frame_select(frame_select),
-        .watchdog_reset(watchdog_reset)
-`ifdef DEBUGGER,
+        .watchdog_reset(watchdog_reset),
+`ifdef DEBUGGER
         .cmd_line_state2(cmd_line_state2),
         .ram_access_start2(ram_access_start2),
         .ram_access_start_latch2(ram_access_start_latch2),
         .cmd_line_addr2(cmd_line_addr2),
-        .num_commands_processed(num_commands_processed)
+        .num_commands_processed(num_commands_processed),
 `endif
+        .frame_select(frame_select)
     );
     assign copy_int.read_data_in = RAM_DATA_STUB;
 

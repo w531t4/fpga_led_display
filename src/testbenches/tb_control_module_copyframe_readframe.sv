@@ -105,17 +105,17 @@ module tb_control_module_copyframe_readframe;
         .busy(busy),
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
-        .frame_select(frame_select)
-`ifdef DEBUGGER,
+`ifdef DEBUGGER
         .cmd_line_state2(cmd_line_state2),
         .ram_access_start2(ram_access_start2),
         .ram_access_start_latch2(ram_access_start_latch2),
         .cmd_line_addr2(cmd_line_addr2),
-        .num_commands_processed(num_commands_processed)
+        .num_commands_processed(num_commands_processed),
 `endif
-`ifdef USE_WATCHDOG,
-        .watchdog_reset(watchdog_reset)
+`ifdef USE_WATCHDOG
+        .watchdog_reset(watchdog_reset),
 `endif
+        .frame_select(frame_select)
     );
     assign copy_int.read_data_in = COPY_DATA_STUB;
 
