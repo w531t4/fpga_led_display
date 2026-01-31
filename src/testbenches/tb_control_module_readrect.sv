@@ -67,11 +67,10 @@ module tb_control_module_readrect;
     int unsigned                         writes_seen;
 
 `ifdef DEBUGGER
-    enums::control_module_fsm_e       cmd_line_state2;
+    debugger_if debug_if (clk);
     wire                              ram_access_start2;
     wire                              ram_access_start_latch2;
     types::mem_write_addr_t           cmd_line_addr2;
-    logic                       [7:0] num_commands_processed;
 `endif
 
     // === DUT ===
@@ -95,11 +94,10 @@ module tb_control_module_readrect;
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
 `ifdef DEBUGGER
-        .cmd_line_state2(cmd_line_state2),
+        .debug_if(debug_if),
         .ram_access_start2(ram_access_start2),
         .ram_access_start_latch2(ram_access_start_latch2),
         .cmd_line_addr2(cmd_line_addr2),
-        .num_commands_processed(num_commands_processed),
 `endif
 `ifdef DOUBLE_BUFFER
         .frame_select(frame_select),
@@ -350,11 +348,9 @@ module tb_control_module_readrect;
                         1'b0};
 `ifdef DEBUGGER
     wire _unused_ok_debugger = &{1'b0,
-                                 cmd_line_state2,
                                  ram_access_start2,
                                  ram_access_start_latch2,
                                  cmd_line_addr2,
-                                 num_commands_processed,
                                  1'b0};
 
 `endif
