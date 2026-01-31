@@ -64,13 +64,13 @@ module debugger #(
             do_close <= 0;
             data_copy <= 0;
             currentState <= STATE_IDLE;
-            current_position <= data_index_t'(DATA_WIDTH);
+            current_position <= data_index_t'($bits(data_t));
             tx_start <= 0;
             debug_bits <= 0;
         end else begin
             //            if (debug_start && currentState == STATE_IDLE) begin
             if (debug_start && currentState == STATE_IDLE) begin
-                current_position <= data_index_t'(DATA_WIDTH);
+                current_position <= data_index_t'($bits(data_t));
                 data_copy <= data_in;
                 currentState <= STATE_START;
             end else if (currentState != STATE_IDLE) begin
