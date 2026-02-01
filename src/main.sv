@@ -71,21 +71,12 @@ module main #(
     wire                         clk_pixel_load;
     wire                         clk_pixel;
     wire                         row_latch;
-    types::mem_write_addr_t      ram_a_address_frames             [params::NUM_FRAMEBUFFERS];
-    types::mem_write_data_t      ram_a_data_in_frames             [params::NUM_FRAMEBUFFERS];
-    logic                        ram_a_write_enable_frames        [params::NUM_FRAMEBUFFERS];
-    types::mem_write_data_t      ram_a_data_out_frames            [params::NUM_FRAMEBUFFERS];
-    types::mem_read_data_t       ram_b_data_out_frames            [params::NUM_FRAMEBUFFERS];
-    logic                        ram_copy_mode;
-    logic                        ram_a_clk_enable;
     wire types::mem_write_data_t ctrl_ram_data_out;
     wire types::mem_write_addr_t ctrl_ram_address;
     wire                         ctrl_ram_write_enable;
     wire                         ctrl_ram_clk_enable;
 `ifdef DOUBLE_BUFFER
     mem_copy_if copy_int ();
-    logic copy_ram_access_start_latch;
-    wire  copy_ram_clk_enable;
     wire  frame_select;
 `endif
     types::mem_read_data_t ram_b_data_out;
@@ -333,101 +324,22 @@ module main #(
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
 
-`ifdef DOUBLE_BUFFER
-    assign copy_ram_clk_enable = copy_int.access_start ^ copy_ram_access_start_latch;
-    always @(posedge clk_root) begin
-        if (global_reset_sync) begin
-            copy_ram_access_start_latch <= 1'b0;
-        end else if (copy_ram_clk_enable) begin
-            copy_ram_access_start_latch <= copy_int.access_start;
-        end else begin
-        end
-    end
+    // Framebuffer fabric (mux + multimem instances).
+    framebuffer_fabric fb_fabric (
+        .clk_root(clk_root),
+        .reset(global_reset_sync),
+        .ctrl_ram_address(ctrl_ram_address),
+        .ctrl_ram_data_out(ctrl_ram_data_out),
+        .ctrl_ram_write_enable(ctrl_ram_write_enable),
+        .ctrl_ram_clk_enable(ctrl_ram_clk_enable),
+        .ram_b_address(ram_b_address),
+        .ram_b_clk_enable(ram_b_clk_enable),
+        .ram_b_data_out(ram_b_data_out)
+`ifdef DOUBLE_BUFFER,
+        .frame_select(frame_select),
+        .copy_if(copy_int)
 `endif
-
-`ifdef DOUBLE_BUFFER
-    // derive front/back values once
-    types::mem_write_addr_t front_addr, back_addr;
-    types::mem_write_data_t front_data, back_data;
-    logic front_we;
-    logic back_we;
-
-    always_comb begin
-        // defaults
-        front_addr = ctrl_ram_address;
-        back_addr = ctrl_ram_address;
-        front_data = ctrl_ram_data_out;
-        back_data = ctrl_ram_data_out;
-        front_we = 1'b0;
-        back_we = 1'b0;
-        ram_copy_mode = copy_int.active;
-        ram_a_clk_enable = ctrl_ram_clk_enable;
-
-        if (copy_int.active) begin
-            front_addr = types::mem_write_addr_t'(copy_int.read_addr);
-            back_addr = types::mem_write_addr_t'(copy_int.write_addr);
-            front_data = types::mem_write_data_t'(8'h00);
-            back_data = copy_int.write_data_out;
-            back_we = copy_int.write_enable;
-            ram_a_clk_enable = copy_ram_clk_enable;
-        end else begin
-            back_we = ctrl_ram_write_enable;
-        end
-
-        // map front/back to frames
-        if (frame_select) begin  // 0=back, 1=front
-            ram_a_address_frames[0] = back_addr;
-            ram_a_address_frames[1] = front_addr;
-            ram_a_data_in_frames[0] = back_data;
-            ram_a_data_in_frames[1] = front_data;
-            ram_a_write_enable_frames[0] = back_we;
-            ram_a_write_enable_frames[1] = front_we;
-            ram_b_data_out = ram_b_data_out_frames[1];
-            copy_int.read_data_in = ram_a_data_out_frames[1];
-        end else begin  // 0=front, 1=back
-            ram_a_address_frames[0] = front_addr;
-            ram_a_address_frames[1] = back_addr;
-            ram_a_data_in_frames[0] = front_data;
-            ram_a_data_in_frames[1] = back_data;
-            ram_a_write_enable_frames[0] = front_we;
-            ram_a_write_enable_frames[1] = back_we;
-            ram_b_data_out = ram_b_data_out_frames[0];
-            copy_int.read_data_in = ram_a_data_out_frames[0];
-        end
-    end
-`else
-    assign ram_copy_mode = 1'b0;
-    assign ram_a_address_frames[0] = ctrl_ram_address;
-    assign ram_a_data_in_frames[0] = ctrl_ram_data_out;
-    assign ram_a_write_enable_frames[0] = ctrl_ram_write_enable;
-    assign ram_a_clk_enable = ctrl_ram_clk_enable;
-    assign ram_b_data_out = ram_b_data_out_frames[0];
-`endif
-
-    genvar frame_idx;
-    generate
-        for (frame_idx = 0; frame_idx < params::NUM_FRAMEBUFFERS; frame_idx = frame_idx + 1) begin : gen_fb
-            multimem #(
-                ._UNUSED('d0)
-            ) fb (
-                .ClockA(clk_root),
-                .AddressA(ram_a_address_frames[frame_idx]),
-                .DataInA(ram_a_data_in_frames[frame_idx]),
-                .WrA(ram_a_write_enable_frames[frame_idx]),
-                .ResetA(global_reset_sync),
-                .ClockB(clk_root),
-                .DataInB(16'b0),
-                .AddressB(ram_b_address),
-                .WrB(1'b0),
-                .ResetB(global_reset_sync),
-                .CopyMode(ram_copy_mode),
-                .QA(ram_a_data_out_frames[frame_idx]),
-                .QB(ram_b_data_out_frames[frame_idx]),
-                .ClockEnA(ram_a_clk_enable),
-                .ClockEnB(ram_b_clk_enable)
-            );
-        end
-    endgenerate
+    );
 
     genvar subpanel_idx;
     generate
