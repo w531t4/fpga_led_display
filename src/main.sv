@@ -152,8 +152,7 @@ module main #(
     );
 
 `ifdef USE_FM6126A
-    wire types::rgb_signals_t rgb1_fm6126init;
-    wire types::rgb_signals_t rgb2_fm6126init;
+    wire types::rgb_signals_t rgb_fm6126init;
     wire row_latch_fm6126init;
     wire pixclock_fm6126init;
     wire output_enable_intermediary;
@@ -166,16 +165,15 @@ module main #(
     fm6126init do_init (
         .clk_in(clk_matrix),
         .reset(alt_reset),
-        .rgb1_out(rgb1_fm6126init),
-        .rgb2_out(rgb2_fm6126init),
+        .rgb_out(rgb_fm6126init),
         .latch_out(row_latch_fm6126init),
         .mask_en(fm6126mask_en),
         .pixclock_out(pixclock_fm6126init),
         .reset_notify(init_reset_strobe)
     );
     assign output_enable = output_enable_intermediary & fm6126mask_en;
-    assign rgb1 = (rgb1_intermediary & {3{fm6126mask_en}}) | (rgb1_fm6126init & {3{~fm6126mask_en}});
-    assign rgb2 = (rgb2_intermediary & {3{fm6126mask_en}}) | (rgb2_fm6126init & {3{~fm6126mask_en}});
+    assign rgb1 = (rgb1_intermediary & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
+    assign rgb2 = (rgb2_intermediary & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
     assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
     assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
 `endif
