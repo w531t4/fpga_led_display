@@ -118,5 +118,10 @@ package params;
 
     parameter integer BRIGHTNESS_BASE_TIMEOUT = 10;
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = 'd67;
+`ifdef DOUBLE_BUFFER
+    parameter integer unsigned NUM_FRAMEBUFFERS = 2;
+`else
+    parameter integer unsigned NUM_FRAMEBUFFERS = 1;
+`endif
     // verilator lint_on UNUSEDPARAM
 endpackage
