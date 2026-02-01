@@ -16,12 +16,13 @@ module framebuffer_fetch #(
     input types::mem_read_data_t ram_data_in,
     output types::mem_read_addr_t ram_address,
     output ram_clk_enable,
-    output types::color_field_t pixeldata_top,
-    output types::color_field_t pixeldata_bottom
+    output types::color_field_t pixeldata_subpanels[calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT)]
 
 );
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     /* grab data on falling edge of pixel clock */
     wire types::fb_fetch_count_t pixel_load_counter;
+    integer subpanel_idx;
 
     // When we write data... i = 0,  1,  2,      n
     //                  command{D0, D1, D2, ... Dn) ...
@@ -50,12 +51,14 @@ module framebuffer_fetch #(
 
     always @(posedge clk_in) begin
         if (reset) begin
-            pixeldata_top <= 'b0;
-            pixeldata_bottom <= 'b0;
-        end else begin
-            if (pixel_load_counter == types::fb_fetch_count_t'(params::FB_FETCH_SAMPLE_TICK)) begin
-                pixeldata_bottom <= ram_data_in.subpanel[1].field;
-                pixeldata_top <= ram_data_in.subpanel[0].field;
+            // Clear all subpanel outputs on reset to avoid stale pixeldata.
+            for (subpanel_idx = 0; subpanel_idx < NUM_SUBPANELS; subpanel_idx = subpanel_idx + 1) begin
+                pixeldata_subpanels[subpanel_idx] <= 'b0;
+            end
+        end else if (pixel_load_counter == types::fb_fetch_count_t'(params::FB_FETCH_SAMPLE_TICK)) begin
+            // Preserve subpanel ordering from memory: index 0 is top, 1 is bottom.
+            for (subpanel_idx = 0; subpanel_idx < NUM_SUBPANELS; subpanel_idx = subpanel_idx + 1) begin
+                pixeldata_subpanels[subpanel_idx] <= ram_data_in.subpanel[subpanel_idx].field;
             end
         end
     end
