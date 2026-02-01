@@ -94,6 +94,13 @@ module main #(
 
     wire types::color_field_t pixeldata_top;
     wire types::color_field_t pixeldata_bottom;
+    // Map top/bottom into an indexed array so pixel_split can be generated.
+    localparam int unsigned NUM_SUBPANELS =
+        calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
+    localparam int unsigned SUBPANEL_TOP_IDX = 0;
+    localparam int unsigned SUBPANEL_BOTTOM_IDX = 1;
+    wire types::color_field_t pixeldata_subpanels [NUM_SUBPANELS];
+    wire types::rgb_signals_t rgb_subpanels [NUM_SUBPANELS];
     wire ctrl_busy;
     wire ctrl_ready_for_data;
 
@@ -434,33 +441,34 @@ module main #(
         end
     endgenerate
 
-    /* split the pixels and get the current brightness' bit */
-    pixel_split #(
-        ._UNUSED('d0)
-    ) px_top (
-        .pixel_data(pixeldata_top),
-        .brightness_mask(brightness_mask),
-        .brightness_enable(brightness_enable),
-        .rgb_enable(rgb_enable),
+    // Map discrete top/bottom signals into arrays
+    assign pixeldata_subpanels[SUBPANEL_TOP_IDX] = pixeldata_top;
+    assign pixeldata_subpanels[SUBPANEL_BOTTOM_IDX] = pixeldata_bottom;
 `ifdef USE_FM6126A
-        .rgb_output(rgb1_intermediary)
+    // FM6126A masking happens later, so feed the intermediaries.
+    assign rgb1_intermediary = rgb_subpanels[SUBPANEL_TOP_IDX];
+    assign rgb2_intermediary = rgb_subpanels[SUBPANEL_BOTTOM_IDX];
 `else
-        .rgb_output(rgb1)
+    // Directly drive the final RGB signals when no masking is needed.
+    assign rgb1 = rgb_subpanels[SUBPANEL_TOP_IDX];
+    assign rgb2 = rgb_subpanels[SUBPANEL_BOTTOM_IDX];
 `endif
-    );
-    pixel_split #(
-        ._UNUSED('d0)
-    ) px_bottom (
-        .pixel_data(pixeldata_bottom),
-        .brightness_mask(brightness_mask),
-        .brightness_enable(brightness_enable),
-        .rgb_enable(rgb_enable),
-`ifdef USE_FM6126A
-        .rgb_output(rgb2_intermediary)
-`else
-        .rgb_output(rgb2)
-`endif
-    );
+
+    // Split the pixels and get the current brightness bit per subpanel.
+    genvar split_idx;
+    generate
+        for (split_idx = 0; split_idx < NUM_SUBPANELS; split_idx = split_idx + 1) begin : gen_pixel_split
+            pixel_split #(
+                ._UNUSED('d0)
+            ) px (
+                .pixel_data(pixeldata_subpanels[split_idx]),
+                .brightness_mask(brightness_mask),
+                .brightness_enable(brightness_enable),
+                .rgb_enable(rgb_enable),
+                .rgb_output(rgb_subpanels[split_idx])
+            );
+        end
+    endgenerate
 
 `ifdef DEBUGGER
     debugger #(
