@@ -120,8 +120,7 @@ module main #(
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
-    wire types::rgb_signals_t rgb1;  /* the current RGB value for the top-half of the display */
-    wire types::rgb_signals_t rgb2;  /* the current RGB value for the bottom-half of the display */
+    wire types::rgb_signals_t rgb[NUM_SUBPANELS];  // 0=top, 1=bottom
     wire output_enable;
     wire alt_reset;
     wire pll_locked;
@@ -156,9 +155,8 @@ module main #(
     wire row_latch_fm6126init;
     wire pixclock_fm6126init;
     wire output_enable_intermediary;
-    wire types::rgb_signals_t rgb2_intermediary;
+    wire types::rgb_signals_t rgb_intermediary[NUM_SUBPANELS];
     wire clk_pixel_intermediary;
-    wire types::rgb_signals_t rgb1_intermediary;
     wire row_latch_intermediary;
     wire init_reset_strobe;
     wire fm6126mask_en;
@@ -172,8 +170,12 @@ module main #(
         .reset_notify(init_reset_strobe)
     );
     assign output_enable = output_enable_intermediary & fm6126mask_en;
-    assign rgb1 = (rgb1_intermediary & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
-    assign rgb2 = (rgb2_intermediary & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
+    genvar fm6126_idx;
+    generate
+        for (fm6126_idx = 0; fm6126_idx < NUM_SUBPANELS; fm6126_idx = fm6126_idx + 1) begin : gen_fm6126_split
+            assign rgb[fm6126_idx] = (rgb_intermediary[fm6126_idx] & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
+        end
+    endgenerate
     assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
     assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
 `endif
@@ -442,15 +444,19 @@ module main #(
     // Map discrete top/bottom signals into arrays
     assign pixeldata_subpanels[SUBPANEL_TOP_IDX] = pixeldata_top;
     assign pixeldata_subpanels[SUBPANEL_BOTTOM_IDX] = pixeldata_bottom;
+
+    genvar rgb_idx;
+    generate
+        for (rgb_idx = 0; rgb_idx < NUM_SUBPANELS; rgb_idx = rgb_idx + 1) begin : gen_rgb_idx
 `ifdef USE_FM6126A
-    // FM6126A masking happens later, so feed the intermediaries.
-    assign rgb1_intermediary = rgb_subpanels[SUBPANEL_TOP_IDX];
-    assign rgb2_intermediary = rgb_subpanels[SUBPANEL_BOTTOM_IDX];
+            // FM6126A masking happens later, so feed the intermediaries.
+            assign rgb_intermediary[rgb_idx] = rgb_subpanels[rgb_idx];
 `else
-    // Directly drive the final RGB signals when no masking is needed.
-    assign rgb1 = rgb_subpanels[SUBPANEL_TOP_IDX];
-    assign rgb2 = rgb_subpanels[SUBPANEL_BOTTOM_IDX];
+            // Directly drive the final RGB signals when no masking is needed.
+            assign rgb[rgb_idx] = rgb_subpanels[rgb_idx];
 `endif
+        end
+    endgenerate
 
     // Split the pixels and get the current brightness bit per subpanel.
     genvar split_idx;
@@ -489,11 +495,11 @@ module main #(
     assign gp16 = 1'b0;
 `endif
 `ifdef SWAP_BLUE_GREEN_CHAN
-    assign {gp0, gp1, gp2} = {rgb1.red, rgb1.blue, rgb1.green};
-    assign {gp3, gp4, gp5} = {rgb2.red, rgb2.blue, rgb2.green};
+    assign {gp0, gp1, gp2} = {rgb[0].red, rgb[0].blue, rgb[0].green};
+    assign {gp3, gp4, gp5} = {rgb[1].red, rgb[1].blue, rgb[1].green};
 `else
-    assign {gp0, gp1, gp2} = rgb1;
-    assign {gp3, gp4, gp5} = rgb2;
+    assign {gp0, gp1, gp2} = rgb[0];
+    assign {gp3, gp4, gp5} = rgb[1];
 `endif
     assign gp11 = clk_pixel;  // Pixel Clk
     assign gp12 = row_latch;  // Row Latch
@@ -520,11 +526,11 @@ module main #(
     assign gn13 = ~output_enable;  // #OE
     assign {gn10, gn9, gn8, gn7} = 4'(row_address_active);  // D, C, B, A
 `ifdef SWAP_BLUE_GREEN_CHAN
-    assign {gn0, gn1, gn2} = {rgb1.red, rgb1.blue, rgb1.green};
-    assign {gn3, gn4, gn5} = {rgb2.red, rgb2.blue, rgb2.green};
+    assign {gn0, gn1, gn2} = {rgb[0].red, rgb[0].blue, rgb[0].green};
+    assign {gn3, gn4, gn5} = {rgb[1].red, rgb[1].blue, rgb[1].green};
 `else
-    assign {gn0, gn1, gn2} = rgb1;
-    assign {gn3, gn4, gn5} = rgb2;
+    assign {gn0, gn1, gn2} = rgb[0];
+    assign {gn3, gn4, gn5} = rgb[1];
 `endif
     assign gn14 = gp14;  // ctrl serial port RX
 
