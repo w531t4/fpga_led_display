@@ -130,6 +130,13 @@ SIMBINS := $(filter-out $(SIM_BIN_DIR)/fm6126init, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/fm6126init.fst, $(FSTOBJS))
 endif
 
+ifneq ($(findstring -DDEBUGGER,$(BUILD_FLAGS)), -DDEBUGGER)
+VSOURCES := $(filter-out $(SRC_DIR)/debugger.sv, $(VSOURCES))
+TBSRCS := $(filter-out $(TB_DIR)/tb_debugger.sv, $(TBSRCS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/debugger, $(SIMBINS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/debugger.fst, $(FSTOBJS))
+endif
+
 .PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build verilator_argfiles
 .DELETE_ON_ERROR:
 .SECONDARY: $(SIMBINS)
