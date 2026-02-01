@@ -8,8 +8,7 @@ module tb_fm6126init;
     logic clk_root;
     logic reset;
     wire mask_en;
-    wire [2:0] rgb1_out;
-    wire [2:0] rgb2_out;
+    wire [2:0] rgb_out;
     wire latch_out;
     wire pixclock_out;
     wire reset_notify;
@@ -29,8 +28,7 @@ module tb_fm6126init;
         .clk_in(clk_root),
         .reset(reset),
         .mask_en(mask_en),
-        .rgb1_out(rgb1_out),
-        .rgb2_out(rgb2_out),
+        .rgb_out(rgb_out),
         .pixclock_out(pixclock_out),
         .reset_notify(reset_notify),
         .latch_out(latch_out)
@@ -38,8 +36,7 @@ module tb_fm6126init;
     // verilog_format: off
     wire _unused_ok = &{1'b0,
                         mask_en,
-                        rgb1_out,
-                        rgb2_out,
+                        rgb_out,
                         latch_out,
                         pixclock_out,
                         reset_notify,

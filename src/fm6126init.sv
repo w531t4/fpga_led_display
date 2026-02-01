@@ -10,8 +10,7 @@ module fm6126init #(
 ) (
     input clk_in,
     input reset,
-    output logic [2:0] rgb1_out,
-    output logic [2:0] rgb2_out,
+    output logic [2:0] rgb_out,
     output logic latch_out,
     output logic mask_en,
     output logic pixclock_out,
@@ -29,7 +28,7 @@ module fm6126init #(
     logic [15:0] C12;
     logic [15:0] C13;
     state_e currentState;
-    logic [ 5:0] widthCounter;  // 16 bits
+    logic [5:0] widthCounter;  // 16 bits
 
     //TODO: how do i not manually specify 64 here?
     localparam integer unsigned LED_WIDTH = 'd64;  // 64 pixel width led display
@@ -45,8 +44,7 @@ module fm6126init #(
             currentState <= STATE_INIT;
             widthState <= {LED_WIDTH{1'b0}};
             widthCounter <= 6'd0;
-            rgb1_out <= 3'b0;
-            rgb2_out <= 3'b0;
+            rgb_out <= 3'b0;
             latch_out <= 1'b0;
             pixclock_out <= 1'b0;
             reset_notify <= 1'b0;
@@ -66,8 +64,7 @@ module fm6126init #(
                 latch_out <= (~(|widthState));
                 pixclock_out <= 1'b0;
                 // shift right one, regardless
-                rgb1_out[2:0] <= {C12[widthCounter%'d16], C12[widthCounter%'d16], C12[widthCounter%'d16]};
-                rgb2_out[2:0] <= {C12[widthCounter%'d16], C12[widthCounter%'d16], C12[widthCounter%'d16]};
+                rgb_out[2:0] <= {C12[widthCounter%'d16], C12[widthCounter%'d16], C12[widthCounter%'d16]};
             end  // reached STATE1_END and we've counted all the pixels, move to stage 2
             else if (currentState == STATE1_END && (~(|(widthCounter + 1'b1)))) begin
                 currentState <= STATE2_BEGIN;
@@ -94,8 +91,7 @@ module fm6126init #(
                 latch_out <= (~(|widthState));
                 // shift right one, regardless
                 pixclock_out <= 1'b0;
-                rgb1_out <= {C13[widthCounter%'d16], C13[widthCounter%'d16], C13[widthCounter%'d16]};
-                rgb2_out <= {C13[widthCounter%'d16], C13[widthCounter%'d16], C13[widthCounter%'d16]};
+                rgb_out <= {C13[widthCounter%'d16], C13[widthCounter%'d16], C13[widthCounter%'d16]};
             end else if (currentState == STATE2_END && (~(|(widthCounter + 1'b1)))) begin
                 currentState <= STATE_FINISH;
                 latch_out <= 1'b0;
