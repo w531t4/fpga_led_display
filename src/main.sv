@@ -445,32 +445,26 @@ module main #(
     assign pixeldata_subpanels[SUBPANEL_TOP_IDX] = pixeldata_top;
     assign pixeldata_subpanels[SUBPANEL_BOTTOM_IDX] = pixeldata_bottom;
 
-    genvar rgb_idx;
+    genvar subpanel_idx;
     generate
-        for (rgb_idx = 0; rgb_idx < NUM_SUBPANELS; rgb_idx = rgb_idx + 1) begin : gen_rgb_idx
-`ifdef USE_FM6126A
-            // FM6126A masking happens later, so feed the intermediaries.
-            assign rgb_intermediary[rgb_idx] = rgb_subpanels[rgb_idx];
-`else
-            // Directly drive the final RGB signals when no masking is needed.
-            assign rgb[rgb_idx] = rgb_subpanels[rgb_idx];
-`endif
-        end
-    endgenerate
-
-    // Split the pixels and get the current brightness bit per subpanel.
-    genvar split_idx;
-    generate
-        for (split_idx = 0; split_idx < NUM_SUBPANELS; split_idx = split_idx + 1) begin : gen_pixel_split
+        for (subpanel_idx = 0; subpanel_idx < NUM_SUBPANELS; subpanel_idx = subpanel_idx + 1) begin : gen_subpanel_idx
+            // Split the pixels and get the current brightness bit per subpanel.
             pixel_split #(
                 ._UNUSED('d0)
             ) px (
-                .pixel_data(pixeldata_subpanels[split_idx]),
+                .pixel_data(pixeldata_subpanels[subpanel_idx]),
                 .brightness_mask(brightness_mask),
                 .brightness_enable(brightness_enable),
                 .rgb_enable(rgb_enable),
-                .rgb_output(rgb_subpanels[split_idx])
+                .rgb_output(rgb_subpanels[subpanel_idx])
             );
+`ifdef USE_FM6126A
+            // FM6126A masking happens later, so feed the intermediaries.
+            assign rgb_intermediary[subpanel_idx] = rgb_subpanels[subpanel_idx];
+`else
+            // Directly drive the final RGB signals when no masking is needed.
+            assign rgb[subpanel_idx] = rgb_subpanels[subpanel_idx];
+`endif
         end
     endgenerate
 
