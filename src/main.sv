@@ -59,18 +59,18 @@ module main #(
     // output gn16
 );
 
-    wire clk_root;
-    wire clk_matrix;
+    wire                         clk_root;
+    wire                         clk_matrix;
 
-    wire global_reset;
-    logic global_reset_sync;
+    wire                         global_reset;
+    logic                        global_reset_sync;
     types::ready_holdoff_count_t _unused_ok_ready_holdoff_counter;
-    wire ready_holdoff_running;
-    logic fpga_ready;
+    wire                         ready_holdoff_running;
+    logic                        fpga_ready;
 
-    wire clk_pixel_load;
-    wire clk_pixel;
-    wire row_latch;
+    wire                         clk_pixel_load;
+    wire                         clk_pixel;
+    wire                         row_latch;
     types::mem_write_addr_t      ram_a_address_frames             [params::NUM_FRAMEBUFFERS];
     types::mem_write_data_t      ram_a_data_in_frames             [params::NUM_FRAMEBUFFERS];
     logic                        ram_a_write_enable_frames        [params::NUM_FRAMEBUFFERS];
@@ -83,20 +83,19 @@ module main #(
     wire                         ctrl_ram_write_enable;
     wire                         ctrl_ram_clk_enable;
 `ifdef DOUBLE_BUFFER
-    mem_copy_if                  copy_int();
-    logic                        copy_ram_access_start_latch;
-    wire                         copy_ram_clk_enable;
-    wire frame_select;
+    mem_copy_if copy_int ();
+    logic copy_ram_access_start_latch;
+    wire  copy_ram_clk_enable;
+    wire  frame_select;
 `endif
     types::mem_read_data_t ram_b_data_out;
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
 
     // Per-subpanel pixeldata fetched from framebuffer.
-    localparam int unsigned NUM_SUBPANELS =
-        calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
-    wire types::color_field_t pixeldata_subpanels [NUM_SUBPANELS];
-    wire types::rgb_signals_t rgb_subpanels [NUM_SUBPANELS];
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
+    wire types::color_field_t pixeldata_subpanels[NUM_SUBPANELS];
+    wire types::rgb_signals_t rgb_subpanels[NUM_SUBPANELS];
     wire ctrl_busy;
     wire ctrl_ready_for_data;
 
@@ -525,12 +524,7 @@ module main #(
     // template
     //     assign {gn15, gn14, gn13, gn12, gn11, gn10, gn9, gn8, gn7, gn16, gn5, gn4, gn3, gn2, gn1, gn0}
 `ifdef DEBUGGER
-    wire _unused_ok_debugger =  &{1'b0,
-                            debugger_current_state,
-                            debug_uart_tx,
-                            debug_uart_rx,
-                            debug_command,
-    1'b0};
+    wire _unused_ok_debugger = &{1'b0, debugger_current_state, debug_uart_tx, debug_uart_rx, debug_command, 1'b0};
 `else
     wire _unused_ok_debugger = &{1'b0, gp15, 1'b0};
 `endif
