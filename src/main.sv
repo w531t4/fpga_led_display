@@ -92,13 +92,9 @@ module main #(
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
 
-    wire types::color_field_t pixeldata_top;
-    wire types::color_field_t pixeldata_bottom;
-    // Map top/bottom into an indexed array so pixel_split can be generated.
+    // Per-subpanel pixeldata fetched from framebuffer.
     localparam int unsigned NUM_SUBPANELS =
         calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
-    localparam int unsigned SUBPANEL_TOP_IDX = 0;
-    localparam int unsigned SUBPANEL_BOTTOM_IDX = 1;
     wire types::color_field_t pixeldata_subpanels [NUM_SUBPANELS];
     wire types::rgb_signals_t rgb_subpanels [NUM_SUBPANELS];
     wire ctrl_busy;
@@ -265,8 +261,7 @@ module main #(
         .ram_address(ram_b_address),
         .ram_clk_enable(ram_b_clk_enable),
 
-        .pixeldata_top(pixeldata_top),
-        .pixeldata_bottom(pixeldata_bottom)
+        .pixeldata_subpanels(pixeldata_subpanels)
     );
 
     // for controller
@@ -434,10 +429,6 @@ module main #(
             );
         end
     endgenerate
-
-    // Map discrete top/bottom signals into arrays
-    assign pixeldata_subpanels[SUBPANEL_TOP_IDX] = pixeldata_top;
-    assign pixeldata_subpanels[SUBPANEL_BOTTOM_IDX] = pixeldata_bottom;
 
     genvar subpanel_idx;
     generate
