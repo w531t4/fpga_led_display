@@ -170,12 +170,6 @@ module main #(
         .reset_notify(init_reset_strobe)
     );
     assign output_enable = output_enable_intermediary & fm6126mask_en;
-    genvar fm6126_idx;
-    generate
-        for (fm6126_idx = 0; fm6126_idx < NUM_SUBPANELS; fm6126_idx = fm6126_idx + 1) begin : gen_fm6126_split
-            assign rgb[fm6126_idx] = (rgb_intermediary[fm6126_idx] & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
-        end
-    endgenerate
     assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
     assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
 `endif
@@ -461,6 +455,7 @@ module main #(
 `ifdef USE_FM6126A
             // FM6126A masking happens later, so feed the intermediaries.
             assign rgb_intermediary[subpanel_idx] = rgb_subpanels[subpanel_idx];
+            assign rgb[subpanel_idx] = (rgb_intermediary[subpanel_idx] & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
 `else
             // Directly drive the final RGB signals when no masking is needed.
             assign rgb[subpanel_idx] = rgb_subpanels[subpanel_idx];
