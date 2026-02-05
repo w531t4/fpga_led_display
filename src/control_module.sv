@@ -410,7 +410,9 @@ module control_module #(
 `endif
         end else begin
             if (state_done) begin
-                if (data_ready_n && cmd_line_state != enums::STATE_IDLE) cmd_line_state <= enums::STATE_IDLE;
+                if (data_ready_n && cmd_line_state != enums::STATE_IDLE) begin
+                    cmd_line_state <= enums::STATE_IDLE;
+                end
 `ifdef DEBUGGER
                 debug_if.num_commands_processed <= debug_if.num_commands_processed + 'd1;
 `endif
@@ -495,25 +497,45 @@ module control_module #(
                         brightness_temp <= '1;  // all 1's
                         cmd_line_state  <= enums::STATE_IDLE;
                     end
-                    cmd::READBRIGHTNESS: cmd_line_state <= enums::STATE_CMD_READBRIGHTNESS;
-                    cmd::BLANKPANEL: cmd_line_state <= enums::STATE_CMD_BLANKPANEL;
-                    cmd::FILLPANEL: cmd_line_state <= enums::STATE_CMD_FILLPANEL;
-                    cmd::FILLRECT: cmd_line_state <= enums::STATE_CMD_FILLRECT;
-                    cmd::READRECT: cmd_line_state <= enums::STATE_CMD_READRECT;
-                    cmd::READFRAME: cmd_line_state <= enums::STATE_CMD_READFRAME;
+                    cmd::READBRIGHTNESS: begin
+                        cmd_line_state <= enums::STATE_CMD_READBRIGHTNESS;
+                    end
+                    cmd::BLANKPANEL: begin
+                        cmd_line_state <= enums::STATE_CMD_BLANKPANEL;
+                    end
+                    cmd::FILLPANEL: begin
+                        cmd_line_state <= enums::STATE_CMD_FILLPANEL;
+                    end
+                    cmd::FILLRECT: begin
+                        cmd_line_state <= enums::STATE_CMD_FILLRECT;
+                    end
+                    cmd::READRECT: begin
+                        cmd_line_state <= enums::STATE_CMD_READRECT;
+                    end
+                    cmd::READFRAME: begin
+                        cmd_line_state <= enums::STATE_CMD_READFRAME;
+                    end
                     cmd::READROW: begin
                         cmd_line_state <= enums::STATE_CMD_READROW;
                     end
                     cmd::READCOL: begin
                         cmd_line_state <= enums::STATE_CMD_READCOL;
                     end
-                    cmd::READPIXEL: cmd_line_state <= enums::STATE_CMD_READPIXEL;
+                    cmd::READPIXEL: begin
+                        cmd_line_state <= enums::STATE_CMD_READPIXEL;
+                    end
 `ifdef USE_WATCHDOG
-                    cmd::WATCHDOG: cmd_line_state <= enums::STATE_CMD_WATCHDOG;
+                    cmd::WATCHDOG: begin
+                        cmd_line_state <= enums::STATE_CMD_WATCHDOG;
+                    end
 `endif
 `ifdef DOUBLE_BUFFER
-                    cmd::TOGGLE_FRAME: frame_select_temp <= ~frame_select;
-                    cmd::COPY_FRAME: cmd_line_state <= enums::STATE_CMD_COPYFRAME;
+                    cmd::TOGGLE_FRAME: begin
+                        frame_select_temp <= ~frame_select;
+                    end
+                    cmd::COPY_FRAME: begin
+                        cmd_line_state <= enums::STATE_CMD_COPYFRAME;
+                    end
 `endif
                     default: begin
                         cmd_line_state <= enums::STATE_IDLE;
