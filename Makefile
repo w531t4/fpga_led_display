@@ -316,7 +316,17 @@ memprog: $(ARTIFACT_DIR)/ulx3s.bit
 	$(TOOLPATH)/fujprog $<
 
 simulation: $(ARTIFACT_DIR) verilator_argfiles
-	+@$(MAKE) --no-print-directory $(SIM_MAKEFLAGS) $(FSTOBJS)
+	@# Capture simulation output so errors can be summarized at the end on failure.
+	@set -o pipefail; \
+	log="$(ARTIFACT_DIR)/simulation.log"; \
+	$(MAKE) --no-print-directory $(SIM_MAKEFLAGS) $(FSTOBJS) 2>&1 | tee $$log; \
+	status=$${PIPESTATUS[0]}; \
+	if [ $$status -ne 0 ]; then \
+		echo; \
+		echo "==== SIMULATION ERRORS (summary) ===="; \
+		grep -n -E "%Error|%Warning|^make(\\[[0-9]+\\])?: \\*\\*\\*" $$log || true; \
+		exit $$status; \
+	fi
 
 $(ARTIFACT_DIR)/mydesign_vizclean.json: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
 	jq 'del(.modules.BB, .modules.BBPU, .modules.BBPD, .modules.TRELLIS_IO)' $< > $@

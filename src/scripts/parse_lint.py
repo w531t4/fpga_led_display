@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """ Parse linting output from verilator, and emit any items failing to match a denylist filter"""
 import sys
-from typing import List, NamedTuple
+from typing import List, NamedTuple, Optional, Set
 from pathlib import Path
 
 
@@ -75,6 +75,24 @@ def main() -> None:
     issue_summary: List[LintTitle] = list()
     grouping_text = list()
     issue_items = list()
+    # Track title lines that have already been emitted so duplicate lint items are skipped.
+    seen_groups: Set[str] = set()
+    current_title: Optional[LintTitle] = None
+
+    def maybe_emit_group() -> None:
+        """emit group once and track summary for unique groups"""
+        nonlocal grouping_text, issue_items, issue_summary, current_title
+        if len(grouping_text) == 0:
+            return
+        # De-dupe based on the title line to collapse repeats across different instances.
+        group_key = grouping_text[0]
+        if group_key in seen_groups:
+            return
+        seen_groups.add(group_key)
+        print_grouping(grouping_text)
+        issue_items.append(grouping_text)
+        if current_title is not None:
+            issue_summary.append(current_title)
 
     for line in sys.stdin:
         line = line.rstrip()
@@ -93,26 +111,24 @@ def main() -> None:
 
         if len(line) > 0 and line[0] == "%":
             if in_grouping and not suppress_current_group:
-                print_grouping(grouping_text)
-                issue_items.append(grouping_text)
+                maybe_emit_group()
                 grouping_text = list()
                 in_grouping = False
             # elif in_grouping and suppress_current_group:
             #     suppress_current_group = False
             in_grouping = True
             title_obj = parse_lint_title(line)
+            current_title = title_obj
             suppress_current_group = title_obj.file in files_to_filter
             if not suppress_current_group:
                 grouping_text.append(line)
-                issue_summary.append(title_obj)
         elif in_grouping and suppress_current_group:
             continue
         elif in_grouping and not suppress_current_group:
             grouping_text.append(line)
 
     if in_grouping and len(grouping_text) > 0 and not suppress_current_group:
-        print_grouping(grouping_text)
-        issue_items.append(grouping_text)
+        maybe_emit_group()
         grouping_text = list()
 
     print_summary(issue_summary)
