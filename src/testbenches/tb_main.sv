@@ -5,6 +5,8 @@
 `default_nettype none
 // verilog_format: on
 `include "tb_helper.svh"
+`include "tb_cmd_line_state_checker.svh"
+`include "tb_spi_streamer.svh"
 module tb_main #(
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -28,7 +30,6 @@ module tb_main #(
     `include "row4.svh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = params::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
-    localparam int CMD_LINE_STATE_SEQ_LEN = 20;
     localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
     localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
@@ -55,10 +56,8 @@ module tb_main #(
 
     wire  rxdata;
 `ifdef SPI
-    logic [7:0] thebyte;
-    wire spi_master_txdone;
-    integer i;
-    logic spi_clk_en;
+    wire spi_done;
+    wire spi_clk_en;
     wire spi_clk;
     wire spi_cs;
     logic spi_start;
@@ -141,23 +140,32 @@ module tb_main #(
 `endif
     // verilog_format: on
 `ifdef SPI
-    wire [7:0] _unused_ok_rdata;
-    spi_master #() spimaster (
-        .rstb (~reset),
-        .clk  (clk && spi_clk_en),
-        .mlb  (1'b1),               // shift msb first
-        .start(spi_start),          // indicator to start activity
-        .tdat (thebyte),
-        .cdiv (SPI_CDIV),           // 2'b0 = divide by 4
-        .din  (1'b0),               // data from slave, disable
-        .ss   (spi_cs),             // chip select for slave
-        .sck  (spi_clk),            // clock to send to slave
-        .dout (rxdata),             // data to send to slave
-        .done (spi_master_txdone),
-        .rdata(_unused_ok_rdata)
+    wire [7:0] _unused_data_rx;
+    wire _unused_data_ready_n;
+    tb_spi_streamer #(
+        .SPI_CDIV(SPI_CDIV),
+        .DATA_BITS($bits(cmd_series)),
+        .USE_SLAVE(1'b0)
+    ) spi_streamer (
+        .clk           (clk),
+        .reset         (reset),
+        .start         (spi_start),
+        .ready_for_data(tb_main.tbi_main.ctrl.ready_for_data),
+        .data          (cmd_series),
+        .done          (spi_done),
+        .spi_clk_en    (spi_clk_en),
+        .spi_mosi      (rxdata),
+        .spi_clk       (spi_clk),
+        .spi_cs        (spi_cs),
+        .data_rx       (_unused_data_rx),
+        .data_ready_n  (_unused_data_ready_n)
     );
     // verilog_format: off
     wire _unused_ok_ifdef_spi = &{1'b0,
+                                  spi_clk_en,
+                                  spi_done,
+                                  _unused_data_rx,
+                                  _unused_data_ready_n,
                                   1'b0};
     // verilog_format: on
 `else
@@ -208,9 +216,7 @@ module tb_main #(
 `endif
         clk = 0;
 `ifdef SPI
-        i = 0;
-        thebyte = 8'd0;
-        spi_clk_en = 1'b1;
+        spi_start = 1'b0;
 `endif
 
         debugger_rxin = 0;
@@ -260,58 +266,17 @@ module tb_main #(
     end
 `endif
 
-    function automatic enums::control_module_fsm_e cmd_line_state_expected(input int idx);
-        case (idx)
-            0: cmd_line_state_expected = enums::STATE_CMD_BLANKPANEL;
-            1: cmd_line_state_expected = enums::STATE_IDLE;
-            2: cmd_line_state_expected = enums::STATE_CMD_WATCHDOG;
-            3: cmd_line_state_expected = enums::STATE_IDLE;
-            4: cmd_line_state_expected = enums::STATE_CMD_FILLPANEL;
-            5: cmd_line_state_expected = enums::STATE_IDLE;
-            6: cmd_line_state_expected = enums::STATE_CMD_FILLRECT;
-            7: cmd_line_state_expected = enums::STATE_IDLE;
-            8: cmd_line_state_expected = enums::STATE_CMD_READPIXEL;
-            9: cmd_line_state_expected = enums::STATE_IDLE;
-            10: cmd_line_state_expected = enums::STATE_CMD_READPIXEL;
-            11: cmd_line_state_expected = enums::STATE_IDLE;
-            12: cmd_line_state_expected = enums::STATE_CMD_READBRIGHTNESS;
-            13: cmd_line_state_expected = enums::STATE_IDLE;
-            14: cmd_line_state_expected = enums::STATE_CMD_READBRIGHTNESS;
-            15: cmd_line_state_expected = enums::STATE_IDLE;
-            16: cmd_line_state_expected = enums::STATE_CMD_READROW;
-            17: cmd_line_state_expected = enums::STATE_IDLE;
-            18: cmd_line_state_expected = enums::STATE_CMD_READRECT;
-            19: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
-            default: cmd_line_state_expected = enums::control_module_fsm_e'('hf);
-        endcase
-    endfunction
-
-    initial begin : assert_cmd_line_state_sequence
-        integer idx;
-        enums::control_module_fsm_e expected;
-        enums::control_module_fsm_e prev_expected;
-        integer unsigned step_cycles;
-        cmd_line_state_seq_done = 1'b0;
-        // Sentinel for "no previous state yet"; used to avoid readframe idle timing on first step.
-        prev_expected = enums::control_module_fsm_e'('hf);
-        for (idx = 0; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
-            expected = cmd_line_state_expected(idx);
-            // Allow extra time for the full readframe payload to land before expecting idle.
-            if ((expected == enums::STATE_CMD_READFRAME) && (prev_expected == enums::STATE_CMD_READRECT)) begin
-                // Allow the readrect payload to drain before expecting readframe to start.
-                step_cycles = int'(READRECT_WAIT_CYCLES);
-            end else if ((expected == enums::STATE_IDLE) && (prev_expected == enums::STATE_CMD_READFRAME)) begin
-                step_cycles = int'(READFRAME_WAIT_CYCLES);
-            end else begin
-                step_cycles = int'(CMD_LINE_STATE_STEP_CYCLES);
-            end
-            `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state === expected, int'(step_cycles))
-            $display("cmd_line_state[%0d] expected %0d observed %0d at %0t", idx, expected,
-                     tb_main.tbi_main.ctrl.cmd_line_state, $time);
-            prev_expected = expected;
-        end
-        cmd_line_state_seq_done = 1'b1;
-    end
+    // Shared cmd_line_state sequence checker (keep in sync with cmd_series).
+    tb_cmd_line_state_checker #(
+        .SPI_CDIV(SPI_CDIV),
+        .READRECT_W(READRECT_W),
+        .READRECT_TOTAL_BYTES(READRECT_TOTAL_BYTES)
+    ) cmd_line_state_checker (
+        .clk           (clk),
+        .reset         (reset),
+        .cmd_line_state(tb_main.tbi_main.ctrl.cmd_line_state),
+        .seq_done      (cmd_line_state_seq_done)
+    );
 
     initial begin : assert_readrect_pipelining
         // Verify that a readframe command following readrect is accepted without a host-side gap.
@@ -327,20 +292,6 @@ module tb_main #(
                      int'(READFRAME_WAIT_CYCLES))
         `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_IDLE, int'(CMD_LINE_STATE_STEP_CYCLES))
     end
-`ifdef SPI
-    always begin
-        @(posedge spi_master_txdone) begin
-            if (tb_main.tbi_main.ctrl.ready_for_data) begin
-                if ((i < ($bits(cmd_series) / 8))) begin
-                    thebyte <= cmd_series[$bits(cmd_series)-1-(i*8)-:8];
-                    i <= i + 1;
-                end else if ((i == ($bits(cmd_series) / 8))) begin
-                    spi_clk_en = 1'b0;
-                end
-            end
-        end
-    end
-`endif
     always begin
         #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
