@@ -29,10 +29,37 @@ module control_cmd_readcol #(
         STATE_READ_COLUMNCONTENT,  // stream remaining payload bytes
         STATE_DONE                 // cleanup and wait for next opcode
     } ctrl_fsm_t;
-    ctrl_fsm_t state;
+    ctrl_fsm_t state, next_state;
     types::col_addr_field_t column_bits;
     types::col_addr_field_byte_index_t column_byte_counter;
 
+    always_comb begin
+        next_state = state;
+        done = 'b0;
+        unique case (state)
+            STATE_COLUMN_CAPTURE: begin
+                if (enable && (column_byte_counter == LAST_COL_BYTE_INDEX)) begin
+                    next_state = STATE_COLUMN_PRIMEMEMWRITE;
+                end
+            end
+            STATE_COLUMN_PRIMEMEMWRITE: begin
+                if (enable) begin
+                    next_state = STATE_READ_COLUMNCONTENT;
+                end
+            end
+            STATE_READ_COLUMNCONTENT: begin
+                if (enable && (addr.row == LAST_ROW && ((addr.pixel - 'd1) == 0))) begin
+                    next_state = STATE_DONE;
+                end
+            end
+            STATE_DONE: begin
+                done = 1'b1;
+                next_state = STATE_COLUMN_CAPTURE;
+            end
+            default begin
+            end
+        endcase
+    end
     always @(posedge clk) begin
         if (reset) begin
             data_out <= 8'd0;
@@ -42,29 +69,27 @@ module control_cmd_readcol #(
             addr.row <= 'b0;
             addr.col <= 'b0;
             addr.pixel <= 'b0;
-            done <= 1'b0;
             column_byte_counter <= 'b0;
             column_bits <= 'b0;
         end else begin
             // Keep the decoded column address visible once the field is captured.
             addr.col <= types::col_addr_from_field(column_bits);
+            state <= next_state;
             case (state)
                 STATE_COLUMN_CAPTURE: begin
                     // Header phase: latch the (possibly multi-byte) column index, MSB-first.
                     if (enable) begin
                         ram_write_enable <= 1'b0;
                         data_out <= 8'b0;
-                        done <= 1'b0;
-                        column_bits.bytes[LAST_COL_BYTE_INDEX - column_byte_counter] <= data_in;
-                        if (column_byte_counter == LAST_COL_BYTE_INDEX) begin
-                            state <= STATE_COLUMN_PRIMEMEMWRITE;
-                        end else column_byte_counter <= column_byte_counter + 1;
+                        column_bits.bytes[LAST_COL_BYTE_INDEX-column_byte_counter] <= data_in;
+                        if (column_byte_counter != LAST_COL_BYTE_INDEX) begin
+                            column_byte_counter <= column_byte_counter + 1;
+                        end
                     end
                 end
                 STATE_COLUMN_PRIMEMEMWRITE: begin
                     // First payload byte: start at row 0 and the MSB byte of the pixel.
                     if (enable) begin
-                        state <= STATE_READ_COLUMNCONTENT;
                         addr.row <= 'b0;
                         addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         ram_write_enable <= 1'b1;
@@ -81,10 +106,6 @@ module control_cmd_readcol #(
                                 addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                                 addr.row <= addr.row + 'd1;
                             end else begin
-                                if (addr.row == LAST_ROW && ((addr.pixel - 'd1) == 0)) begin
-                                    done <= 1'b1;
-                                    state <= STATE_DONE;
-                                end
                                 addr.pixel <= addr.pixel - 'd1;
                             end
                             data_out <= data_in;
@@ -93,8 +114,6 @@ module control_cmd_readcol #(
                 end
                 STATE_DONE: begin
                     // Reset internal state so the next column stream starts cleanly.
-                    state <= STATE_COLUMN_CAPTURE;
-                    done <= 1'b0;
                     data_out <= 8'b0;
                     ram_write_enable <= 1'b0;
                     column_byte_counter <= 'b0;
@@ -102,7 +121,8 @@ module control_cmd_readcol #(
                     addr.row <= 'd0;
                     column_bits <= 'd0;
                 end
-                default: state <= state;
+                default: begin
+                end
             endcase
         end
     end
