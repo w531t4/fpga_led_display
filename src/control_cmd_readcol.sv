@@ -36,6 +36,7 @@ module control_cmd_readcol #(
     always_comb begin
         next_state = state;
         done = 'b0;
+        ram_write_enable = 'b0;
         unique case (state)
             STATE_COLUMN_CAPTURE: begin
                 if (enable && (column_byte_counter == LAST_COL_BYTE_INDEX)) begin
@@ -48,11 +49,13 @@ module control_cmd_readcol #(
                 end
             end
             STATE_READ_COLUMNCONTENT: begin
+                ram_write_enable = 'b1;
                 if (enable && (addr.row == LAST_ROW && ((addr.pixel - 'd1) == 0))) begin
                     next_state = STATE_DONE;
                 end
             end
             STATE_DONE: begin
+                ram_write_enable = 'b1;
                 done = 1'b1;
                 next_state = STATE_COLUMN_CAPTURE;
             end
@@ -63,7 +66,6 @@ module control_cmd_readcol #(
     always @(posedge clk) begin
         if (reset) begin
             data_out <= 8'd0;
-            ram_write_enable <= 1'b0;
             ram_access_start <= 1'b0;
             state <= STATE_COLUMN_CAPTURE;
             addr.row <= 'b0;
@@ -79,7 +81,6 @@ module control_cmd_readcol #(
                 STATE_COLUMN_CAPTURE: begin
                     // Header phase: latch the (possibly multi-byte) column index, MSB-first.
                     if (enable) begin
-                        ram_write_enable <= 1'b0;
                         data_out <= 8'b0;
                         column_bits.bytes[LAST_COL_BYTE_INDEX-column_byte_counter] <= data_in;
                         if (column_byte_counter != LAST_COL_BYTE_INDEX) begin
@@ -92,7 +93,6 @@ module control_cmd_readcol #(
                     if (enable) begin
                         addr.row <= 'b0;
                         addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
-                        ram_write_enable <= 1'b1;
                         data_out <= data_in;
                         ram_access_start <= !ram_access_start;
                     end
@@ -115,7 +115,6 @@ module control_cmd_readcol #(
                 STATE_DONE: begin
                     // Reset internal state so the next column stream starts cleanly.
                     data_out <= 8'b0;
-                    ram_write_enable <= 1'b0;
                     column_byte_counter <= 'b0;
                     ram_access_start <= 1'b0;
                     addr.row <= 'd0;
