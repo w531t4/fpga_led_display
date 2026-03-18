@@ -27,7 +27,6 @@ module multimem #(
     input wire WrB,
     input wire ResetA,
     input wire ResetB,
-    input wire CopyMode,
     output wire types::mem_write_data_t QA,
     output wire types::mem_read_data_t QB
 );
@@ -141,5 +140,5 @@ module multimem #(
         if (ClockEnA) qa_pipe_q <= qa_sel;
     end
     assign QA = qa_pipe_q;
-    wire _unused_ok = &{1'b0, CopyMode, WrB, DataInB, 1'b0};
+    wire _unused_ok = &{1'b0, WrB, DataInB, 1'b0};
 endmodule
