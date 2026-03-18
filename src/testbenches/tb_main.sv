@@ -143,7 +143,7 @@ module tb_main #(
     wire [7:0] _unused_data_rx;
     wire _unused_data_ready_n;
     tb_spi_streamer #(
-        .SPI_CDIV(SPI_CDIV),
+        .SPI_CDIV (SPI_CDIV),
         .DATA_BITS($bits(cmd_series)),
         .USE_SLAVE(1'b0)
     ) spi_streamer (
