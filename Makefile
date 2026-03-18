@@ -284,8 +284,11 @@ $(ARTIFACT_DIR)/mydesign_show_pre.svg: $(ARTIFACT_DIR)/mydesign_show_pre.dot | $
 	$(TOOLPATH)/dot -Kdot -o $@ -Tsvg $<
 
 route: $(ARTIFACT_DIR)/ulx3s_out.config
-$(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/nextpnr-report.json $(ARTIFACT_DIR)/nextpnr-report.pretty.json: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
+$(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/nextpnr-report.json $(ARTIFACT_DIR)/nextpnr-report.pretty.json: $(ARTIFACT_DIR)/mydesign.json $(SRC_DIR)/scripts/check_nextpnr_timing.py Makefile | $(ARTIFACT_DIR)
 	@status=0; \
+	cleanup_route_outputs() { \
+		rm -f $(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/nextpnr-report.json $(ARTIFACT_DIR)/nextpnr-report.pretty.json; \
+	}; \
 	$(TOOLPATH)/nextpnr-ecp5 --85k --json $< \
 		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
 		--log $(ARTIFACT_DIR)/nextpnr.log \
@@ -295,16 +298,24 @@ $(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/nextpnr-report.json $(ARTIFACT_
 		--placer-heap-critexp 3 --placer-heap-timingweight 20 \
 		--detailed-timing-report \
 		--textcfg $(ARTIFACT_DIR)/ulx3s_out.config || status=$$?; \
-	test -f $(ARTIFACT_DIR)/nextpnr-report.json; \
-	python3 -m json.tool $(ARTIFACT_DIR)/nextpnr-report.json > $(ARTIFACT_DIR)/nextpnr-report.pretty.json; \
-	if [ "$@" = "$(ARTIFACT_DIR)/ulx3s_out.config" ] && [ $$status -ne 0 ]; then exit $$status; fi
+	if [ $$status -eq 0 ] && ! test -f $(ARTIFACT_DIR)/nextpnr-report.json; then status=1; fi; \
+	if [ $$status -eq 0 ]; then \
+		python3 -m json.tool $(ARTIFACT_DIR)/nextpnr-report.json > $(ARTIFACT_DIR)/nextpnr-report.pretty.json || status=$$?; \
+	fi; \
+	if [ $$status -eq 0 ]; then \
+		python3 $(SRC_DIR)/scripts/check_nextpnr_timing.py $(ARTIFACT_DIR)/nextpnr-report.json || status=$$?; \
+	fi; \
+	if [ $$status -ne 0 ]; then \
+		cleanup_route_outputs; \
+		exit $$status; \
+	fi
 
 critical_path: $(CRITICAL_PATH_SVG)
 $(CRITICAL_PATH_SVG): $(ARTIFACT_DIR)/nextpnr-report.json $(SRC_DIR)/scripts/render_critical_path_svg.py | $(ARTIFACT_DIR)
 	python3 $(SRC_DIR)/scripts/render_critical_path_svg.py $(ARTIFACT_DIR)/nextpnr-report.json --out $@
 
 pack: $(ARTIFACT_DIR)/ulx3s.bit | $(ARTIFACT_DIR)
-$(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config | $(ARTIFACT_DIR)
+$(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config Makefile | $(ARTIFACT_DIR)
 	$(TOOLPATH)/ecppack $< $@
 
 memprog: $(ARTIFACT_DIR)/ulx3s.bit
