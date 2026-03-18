@@ -43,7 +43,7 @@ module control_cmd_readrect #(
     types::row_addr_count_t height;
 
     // Precompute bounds for row/column traversal.
-    wire types::col_addr_t x1_addr = types::col_addr_t'(x1);
+    types::col_addr_t x1_addr;
     types::col_addr_t x2;
     types::row_addr_t y2;
 
@@ -57,6 +57,7 @@ module control_cmd_readrect #(
             addr.row <= 'b0;
             addr.col <= 'b0;
             addr.pixel <= 'b0;
+            x1_addr <= 'b0;
             x1 <= 'b0;
             x2 <= 'b0;
             width <= 'b0;
@@ -84,6 +85,7 @@ module control_cmd_readrect #(
                     ram_write_enable <= 1'b0;
                     done <= 1'b0;
                     if (enable) begin
+                        x1_addr <= types::col_addr_t'(x1);
                         y1 <= types::row_addr_t'(data_in);
                         state <= STATE_WIDTH_CAPTURE;
                     end
@@ -167,6 +169,7 @@ module control_cmd_readrect #(
                     addr.row <= 'b0;
                     addr.col <= 'b0;
                     addr.pixel <= 'b0;
+                    x1_addr <= 'b0;
                     x1 <= 'b0;
                     width <= 'b0;
                     y1 <= 'b0;
