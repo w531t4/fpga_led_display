@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
 package enums;
-    typedef enum {
+    typedef enum logic [3:0] {
         STATE_IDLE,
         STATE_CMD_READROW,
         STATE_CMD_READCOL,
