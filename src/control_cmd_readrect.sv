@@ -44,14 +44,8 @@ module control_cmd_readrect #(
 
     // Precompute bounds for row/column traversal.
     wire types::col_addr_t x1_addr = types::col_addr_t'(x1);
-    wire types::col_addr_t x2;
-    wire types::row_addr_t y2;
-    assign x2 = types::col_addr_t'(types::col_addr_count_t'(x1_addr)
-                                  + types::col_addr_count_t'(width)
-                                  - types::col_addr_count_t'(1));
-    assign y2 = types::row_addr_t'(types::row_addr_count_t'(y1)
-                                  + height
-                                  - types::row_addr_count_t'(1));
+    types::col_addr_t x2;
+    types::row_addr_t y2;
 
     always @(posedge clk) begin
         if (reset) begin
@@ -64,8 +58,10 @@ module control_cmd_readrect #(
             addr.col <= 'b0;
             addr.pixel <= 'b0;
             x1 <= 'b0;
+            x2 <= 'b0;
             width <= 'b0;
             y1 <= 'b0;
+            y2 <= 'b0;
             height <= 'b0;
             x1_byte_counter <= 'b0;
             width_byte_counter <= 'b0;
@@ -123,6 +119,10 @@ module control_cmd_readrect #(
                     // First payload byte seeds row/col/pixel traversal.
                     done <= 1'b0;
                     if (enable) begin
+                        x2 <= types::col_addr_t'(types::col_addr_count_t'(x1_addr)
+                                                     + types::col_addr_count_t'(width)
+                                                     - types::col_addr_count_t'(1));
+                        y2 <= types::row_addr_t'(types::row_addr_count_t'(y1) + height - types::row_addr_count_t'(1));
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
                         ram_access_start <= !ram_access_start;
