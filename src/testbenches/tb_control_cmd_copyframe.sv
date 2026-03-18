@@ -28,29 +28,28 @@ module tb_control_cmd_copyframe;
     localparam types::col_addr_t FIRST_COL = types::col_addr_t'(0);
     localparam types::subpanel_addr_t FIRST_SUBPANEL = types::subpanel_addr_t'(0);
     localparam types::pixel_addr_t FIRST_PIXEL_BYTE = types::pixel_addr_t'(0);
-    localparam types::row_subpanel_addr_t LAST_ROW_SUBPANEL =
-        types::row_subpanel_addr_t'(params::PIXEL_HALFHEIGHT - 1);
+    localparam types::row_subpanel_addr_t LAST_ROW_SUBPANEL = types::row_subpanel_addr_t'(params::PIXEL_HALFHEIGHT - 1);
     localparam types::col_addr_t LAST_COL_SUBPANEL = types::col_addr_t'(params::PIXEL_WIDTH - 1);
     localparam types::subpanel_addr_t LAST_SUBPANEL = types::subpanel_addr_t'(NUM_SUBPANELS - 1);
     localparam types::pixel_addr_t LAST_PIXEL_BYTE = types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
 
     // === Testbench scaffolding ===
-    logic                       clk;
-    logic                       reset;
-    logic                       copy_enable;
-    logic                       init_mode;
-    logic                       init_we_frame1;
-    logic                       init_we_frame2;
-    types::mem_write_addr_t     init_addr;
-    types::mem_write_data_t     init_data;
-    logic                       frame_select;
+    logic                   clk;
+    logic                   reset;
+    logic                   copy_enable;
+    logic                   init_mode;
+    logic                   init_we_frame1;
+    logic                   init_we_frame2;
+    types::mem_write_addr_t init_addr;
+    types::mem_write_data_t init_data;
+    logic                   frame_select;
 
     // === Copy engine wiring ===
-    mem_copy_if                copy_int();
-    wire                        cmd_copyframe_done;
+    mem_copy_if copy_int ();
+    wire                         cmd_copyframe_done;
 
-    logic                       copy_ram_access_start_latch;
-    wire                        copy_ram_clk_enable;
+    logic                        copy_ram_access_start_latch;
+    wire                         copy_ram_clk_enable;
 
     wire types::mem_write_addr_t ram_a_address_frame1;
     wire types::mem_write_addr_t ram_a_address_frame2;
@@ -59,8 +58,8 @@ module tb_control_cmd_copyframe;
     wire                         ram_a_clk_enable;
 
     // === Port-B verification wiring ===
-    types::mem_read_addr_t ram_b_address;
-    logic                  ram_b_clk_enable;
+    types::mem_read_addr_t       ram_b_address;
+    logic                        ram_b_clk_enable;
 
     wire types::mem_write_data_t ram_a_data_out_frame1;
     wire types::mem_write_data_t ram_a_data_out_frame2;
@@ -69,10 +68,10 @@ module tb_control_cmd_copyframe;
     wire types::mem_read_data_t  ram_b_data_out_frame2;
 
     // === Done semantics tracking ===
-    logic                       done_prev;
-    logic                       last_write_seen;
-    logic                       pending_post_done_check;
-    int                         done_pulses;
+    logic                        done_prev;
+    logic                        last_write_seen;
+    logic                        pending_post_done_check;
+    int                          done_pulses;
 
     // === Helper functions/tasks ===
     function automatic types::mem_write_data_t pattern_first_byte(input types::mem_write_data_t seed);
@@ -85,10 +84,8 @@ module tb_control_cmd_copyframe;
         pattern_last_byte = seed + types::mem_write_data_t'(1);
     endfunction
 
-    function automatic types::mem_write_data_t pattern_byte(input int unsigned sp,
-                                                            input int unsigned row,
-                                                            input int unsigned col,
-                                                            input int unsigned pix,
+    function automatic types::mem_write_data_t pattern_byte(input int unsigned sp, input int unsigned row,
+                                                            input int unsigned col, input int unsigned pix,
                                                             input types::mem_write_data_t seed);
         int unsigned idx_full;
         types::mem_write_data_t idx_byte;
@@ -106,8 +103,7 @@ module tb_control_cmd_copyframe;
         end
     endfunction
 
-    task automatic init_write(input logic target_frame2,
-                              input types::mem_write_addr_t addr,
+    task automatic init_write(input logic target_frame2, input types::mem_write_addr_t addr,
                               input types::mem_write_data_t data);
         // Hold address/data for two cycles to align with multimem's registered write path.
         @(negedge clk);
@@ -145,10 +141,8 @@ module tb_control_cmd_copyframe;
         end
     endtask
 
-    task automatic read_rowcol(input types::row_subpanel_addr_t row,
-                               input types::col_addr_t col,
-                               output types::mem_read_data_t out_frame1,
-                               output types::mem_read_data_t out_frame2);
+    task automatic read_rowcol(input types::row_subpanel_addr_t row, input types::col_addr_t col,
+                               output types::mem_read_data_t out_frame1, output types::mem_read_data_t out_frame2);
         @(negedge clk);
         ram_b_address.row = row;
         ram_b_address.col = col;
@@ -165,11 +159,15 @@ module tb_control_cmd_copyframe;
         assert (a.raw != b.raw)
         else $fatal(1, "Pre-copy buffers match at row=0 col=0; expected different patterns.");
         read_rowcol(types::row_subpanel_addr_t'(params::PIXEL_HALFHEIGHT - 1),
-                    types::col_addr_t'(params::PIXEL_WIDTH - 1),
-                    a, b);
+                    types::col_addr_t'(params::PIXEL_WIDTH - 1), a, b);
         assert (a.raw != b.raw)
-        else $fatal(1, "Pre-copy buffers match at row=%0d col=%0d; expected different patterns.",
-                    params::PIXEL_HALFHEIGHT - 1, params::PIXEL_WIDTH - 1);
+        else
+            $fatal(
+                1,
+                "Pre-copy buffers match at row=%0d col=%0d; expected different patterns.",
+                params::PIXEL_HALFHEIGHT - 1,
+                params::PIXEL_WIDTH - 1
+            );
     endtask
 
     task automatic assert_buffers_match;
@@ -179,16 +177,13 @@ module tb_control_cmd_copyframe;
             for (int col = 0; col < params::PIXEL_WIDTH; col++) begin
                 read_rowcol(types::row_subpanel_addr_t'(row), types::col_addr_t'(col), a, b);
                 assert (a.raw == b.raw)
-                else $fatal(1, "Copy mismatch at row=%0d col=%0d front=0x%0h back=0x%0h",
-                            row, col, a.raw, b.raw);
+                else $fatal(1, "Copy mismatch at row=%0d col=%0d front=0x%0h back=0x%0h", row, col, a.raw, b.raw);
             end
         end
     endtask
 
-    task automatic assert_lane_byte(input types::mem_read_data_t data,
-                                    input types::subpanel_addr_t subpanel,
-                                    input types::pixel_addr_t pixel,
-                                    input types::mem_write_data_t expected,
+    task automatic assert_lane_byte(input types::mem_read_data_t data, input types::subpanel_addr_t subpanel,
+                                    input types::pixel_addr_t pixel, input types::mem_write_data_t expected,
                                     input string label);
         types::mem_structure_t lane_sel;
         int unsigned lane_idx;
@@ -201,20 +196,13 @@ module tb_control_cmd_copyframe;
 
     task automatic assert_pattern_endpoints_for_frame(input types::mem_read_data_t first_row_data,
                                                       input types::mem_read_data_t last_row_data,
-                                                      input types::mem_write_data_t seed,
-                                                      input string label_prefix);
+                                                      input types::mem_write_data_t seed, input string label_prefix);
         // Check the first byte at row=0/col=0/subpanel=0/pixel=0.
-        assert_lane_byte(first_row_data,
-                         FIRST_SUBPANEL,
-                         FIRST_PIXEL_BYTE,
-                         pattern_first_byte(seed),
-                         {label_prefix, " first byte"});
+        assert_lane_byte(first_row_data, FIRST_SUBPANEL, FIRST_PIXEL_BYTE, pattern_first_byte(seed), {
+                         label_prefix, " first byte"});
         // Check the last byte at last row/col/subpanel and highest pixel index.
-        assert_lane_byte(last_row_data,
-                         LAST_SUBPANEL,
-                         LAST_PIXEL_BYTE,
-                         pattern_last_byte(seed),
-                         {label_prefix, " last byte"});
+        assert_lane_byte(last_row_data, LAST_SUBPANEL, LAST_PIXEL_BYTE, pattern_last_byte(seed), {
+                         label_prefix, " last byte"});
     endtask
 
     task automatic assert_pattern_endpoints(input types::mem_write_data_t frame1_seed,
@@ -350,7 +338,7 @@ module tb_control_cmd_copyframe;
 
         // Build distinct patterns into front/back so copy can be proven.
         init_fill_frame(1'b1, FRONT_SEED);  // front buffer (frame2)
-        init_fill_frame(1'b0, BACK_SEED);   // back buffer (frame1)
+        init_fill_frame(1'b0, BACK_SEED);  // back buffer (frame1)
         assert_buffers_differ_sample();
         assert_pattern_endpoints(BACK_SEED, FRONT_SEED);
 

@@ -96,7 +96,7 @@ module multimem #(
 
             always @(posedge ClockA) begin
                 addra_q <= {AddressA.row, AddressA.col};
-                dia_q <= DataInA;
+                dia_q   <= DataInA;
             end
             // Register per-lane QA locally to reduce BRAM->mux routing delay.
             // Keep this unconditional so the packed BRAM outreg uses a constant OCEA.
