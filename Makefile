@@ -51,6 +51,7 @@ BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER 
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
+CRITICAL_PATH_SVG:=$(ARTIFACT_DIR)/critical_path.svg
 # PKG_SOURCES are listed manually because their compilation order matters
 PKG_SOURCES := $(PKG_DIR)/params.sv $(PKG_DIR)/calc.sv $(PKG_DIR)/cmd.sv $(PKG_DIR)/types.sv $(PKG_DIR)/enums.sv
 INTERFACE_SOURCES := $(sort $(shell find $(INTERFACE_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
@@ -137,7 +138,7 @@ SIMBINS := $(filter-out $(SIM_BIN_DIR)/debugger, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/debugger.fst, $(FSTOBJS))
 endif
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build verilator_argfiles
+.PHONY: all critical_path diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build verilator_argfiles
 .DELETE_ON_ERROR:
 .SECONDARY: $(SIMBINS)
 all: verilator_argfiles simulation lint
@@ -283,7 +284,8 @@ $(ARTIFACT_DIR)/mydesign_show_pre.svg: $(ARTIFACT_DIR)/mydesign_show_pre.dot | $
 	$(TOOLPATH)/dot -Kdot -o $@ -Tsvg $<
 
 route: $(ARTIFACT_DIR)/ulx3s_out.config
-$(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
+$(ARTIFACT_DIR)/ulx3s_out.config $(ARTIFACT_DIR)/nextpnr-report.json $(ARTIFACT_DIR)/nextpnr-report.pretty.json: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
+	@status=0; \
 	$(TOOLPATH)/nextpnr-ecp5 --85k --json $< \
 		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
 		--log $(ARTIFACT_DIR)/nextpnr.log \
@@ -292,8 +294,15 @@ $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR
 		--report $(ARTIFACT_DIR)/nextpnr-report.json \
 		--placer-heap-critexp 3 --placer-heap-timingweight 20 \
 		--detailed-timing-report \
-		--textcfg $@
-	python3 -m json.tool $(ARTIFACT_DIR)/nextpnr-report.json > $(ARTIFACT_DIR)/nextpnr-report.pretty.json
+		--textcfg $(ARTIFACT_DIR)/ulx3s_out.config || status=$$?; \
+	test -f $(ARTIFACT_DIR)/nextpnr-report.json; \
+	python3 -m json.tool $(ARTIFACT_DIR)/nextpnr-report.json > $(ARTIFACT_DIR)/nextpnr-report.pretty.json; \
+	if [ "$@" = "$(ARTIFACT_DIR)/ulx3s_out.config" ] && [ $$status -ne 0 ]; then exit $$status; fi
+
+critical_path: $(CRITICAL_PATH_SVG)
+$(CRITICAL_PATH_SVG): $(ARTIFACT_DIR)/nextpnr-report.json $(SRC_DIR)/scripts/render_critical_path_svg.py | $(ARTIFACT_DIR)
+	python3 $(SRC_DIR)/scripts/render_critical_path_svg.py $(ARTIFACT_DIR)/nextpnr-report.json --out $@
+
 pack: $(ARTIFACT_DIR)/ulx3s.bit | $(ARTIFACT_DIR)
 $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config | $(ARTIFACT_DIR)
 	$(TOOLPATH)/ecppack $< $@
