@@ -24,13 +24,13 @@ module control_cmd_readrect #(
 
     // Header capture -> payload streaming state machine.
     typedef enum {
-        STATE_X1_CAPTURE,          // capture x1 bytes (big endian)
-        STATE_Y1_CAPTURE,          // capture y1 byte
-        STATE_WIDTH_CAPTURE,       // capture width bytes (big endian)
-        STATE_HEIGHT_CAPTURE,      // capture height byte and clamp
-        STATE_ROW_PRIMEMEMWRITE,   // prime first payload write
-        STATE_ROW_MEMWRITE,        // stream payload writes
-        STATE_DONE                 // cleanup for next command
+        STATE_X1_CAPTURE,         // capture x1 bytes (big endian)
+        STATE_Y1_CAPTURE,         // capture y1 byte
+        STATE_WIDTH_CAPTURE,      // capture width bytes (big endian)
+        STATE_HEIGHT_CAPTURE,     // capture height byte and clamp
+        STATE_ROW_PRIMEMEMWRITE,  // prime first payload write
+        STATE_ROW_MEMWRITE,       // stream payload writes
+        STATE_DONE                // cleanup for next command
     } ctrl_fsm_t;
     ctrl_fsm_t state;
 
@@ -72,7 +72,7 @@ module control_cmd_readrect #(
                     ram_write_enable <= 1'b0;
                     done <= 1'b0;
                     if (enable) begin
-                        x1.bytes[LAST_COL_BYTE_INDEX - x1_byte_counter] <= data_in;
+                        x1.bytes[LAST_COL_BYTE_INDEX-x1_byte_counter] <= data_in;
                         if (x1_byte_counter == LAST_COL_BYTE_INDEX) begin
                             state <= STATE_Y1_CAPTURE;
                         end else begin
@@ -93,7 +93,7 @@ module control_cmd_readrect #(
                     ram_write_enable <= 1'b0;
                     done <= 1'b0;
                     if (enable) begin
-                        width.bytes[LAST_COL_BYTE_INDEX - width_byte_counter] <= data_in;
+                        width.bytes[LAST_COL_BYTE_INDEX-width_byte_counter] <= data_in;
                         if (width_byte_counter == LAST_COL_BYTE_INDEX) begin
                             state <= STATE_HEIGHT_CAPTURE;
                         end else begin
@@ -150,7 +150,7 @@ module control_cmd_readrect #(
                         end else begin
                             // Assert done on the last payload byte so the next opcode can pipeline cleanly.
                             if (addr.row == y2 && addr.col == x2 && ((addr.pixel - 'd1) == 0)) begin
-                                done <= 1'b1;
+                                done  <= 1'b1;
                                 state <= STATE_DONE;
                             end
                             addr.pixel <= addr.pixel - 'd1;
