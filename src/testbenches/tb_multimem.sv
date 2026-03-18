@@ -41,7 +41,6 @@ module tb_multimem #(
         .AddressB(ram_b_address),
         .DataInB(16'b0),
         .WrB(1'b0),
-        .CopyMode(1'b0),
         .QA(_unused_ok_QA),
         .ClockA(clk_a),
         .ClockB(clk_b),

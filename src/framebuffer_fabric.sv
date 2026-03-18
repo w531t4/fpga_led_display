@@ -33,7 +33,6 @@ module framebuffer_fabric (
     logic                   ram_a_write_enable_frames[params::NUM_FRAMEBUFFERS];
     types::mem_write_data_t ram_a_data_out_frames    [params::NUM_FRAMEBUFFERS];
     types::mem_read_data_t  ram_b_data_out_frames    [params::NUM_FRAMEBUFFERS];
-    logic                   ram_copy_mode;
     logic                   ram_a_clk_enable;
 
 `ifdef DOUBLE_BUFFER
@@ -64,7 +63,6 @@ module framebuffer_fabric (
         back_data  = ctrl_ram_data_out;
         front_we   = 1'b0;
         back_we    = 1'b0;
-        ram_copy_mode = copy_if.active;
         ram_a_clk_enable = ctrl_ram_clk_enable;
 
         if (copy_if.active) begin
@@ -129,7 +127,6 @@ module framebuffer_fabric (
                 .AddressB(ram_b_address),
                 .WrB(1'b0),
                 .ResetB(reset),
-                .CopyMode(ram_copy_mode),
                 .QA(ram_a_data_out_frames[frame_idx]),
                 .QB(ram_b_data_out_frames[frame_idx]),
                 .ClockEnA(ram_a_clk_enable),
