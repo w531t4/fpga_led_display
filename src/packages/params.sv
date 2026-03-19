@@ -123,5 +123,14 @@ package params;
 `else
     parameter integer unsigned NUM_FRAMEBUFFERS = 1;
 `endif
+    /*
+        read_addr_q registered (copy engine, 1)
+        + addra_q in multimem (1)
+        + BRAM read register (1)
+        + BRAM OUTREG / qa_lane_q (1)
+        + qa_masked_q / stage 4 (1)
+        = 5
+    */
+    parameter integer unsigned MULTIMEM_LATENCY = 4;
     // verilator lint_on UNUSEDPARAM
 endpackage

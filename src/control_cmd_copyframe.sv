@@ -24,7 +24,7 @@ module control_cmd_copyframe #(
     //  - write that data to the back buffer each cycle
     localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
     // Matches the AddressA -> QA latency in multimem (addr reg + BRAM + QA pipeline).
-    localparam int unsigned READ_LATENCY = 5;
+    localparam int unsigned READ_LATENCY = params::MULTIMEM_LATENCY + 1; // +1 because of registered read in this module
 
     typedef logic [$clog2(TOTAL_BYTES + 1)-1:0] copy_count_t;
     localparam copy_count_t TOTAL_BYTES_COUNT = copy_count_t'(TOTAL_BYTES);
