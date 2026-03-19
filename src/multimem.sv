@@ -4,7 +4,7 @@
 // multimem: A banked framebuffer RAM
 //      - on ClockA, one byte written to single lane (subpanel + pixel‑color select) selected by AddressA
 //      - on ClockB:
-//          - AddressB reads that address from all lanes in parallel [2‑cycle read]
+//          - AddressB reads that address from all lanes in parallel [3‑cycle read]
 //          - Concatenates the data read from lanes into QB (via mem_lane)
 //      - on ClockA:
 //          - QA provides a single‑lane readback for the copy engine
@@ -33,6 +33,7 @@ module multimem #(
     localparam integer unsigned LANES = (1 << $bits(types::mem_structure_t));
     localparam integer unsigned QA_SELECT_PIPE_DEPTH = params::MULTIMEM_QA_LATENCY - 1; // stage 4 (3, base0) is unrelated to SELECTION
     wire types::mem_read_data_t qb_lanes_w;
+    types::mem_read_data_t qb_pipe_q;
     wire types::mem_write_data_t qa_lanes_w[LANES];
     wire types::mem_write_data_t qa_masked_per_lane[LANES];
     wire types::mem_structure_t lane_idx_from_addr = types::mem_structure(AddressA);
@@ -102,7 +103,6 @@ module multimem #(
         end
     endgenerate
 
-    assign QB = qb_lanes_w;
     // Select the single lane addressed by AddressA for the copy engine.
     types::mem_write_data_t qa_sel;
     always_comb begin
@@ -110,5 +110,14 @@ module multimem #(
         for (int lane = 0; lane < LANES; lane++) qa_sel |= qa_masked_per_lane[lane];
     end
     assign QA = qa_sel;
+
+    // Keep the QB output stage unconditional so single-cycle ClockEnB pulses
+    // still return data without routing a wide enable into every lane.
+    always @(posedge ClockB) begin
+        if (ResetA || ResetB) qb_pipe_q <= '0;
+        else qb_pipe_q <= qb_lanes_w;
+    end
+
+    assign QB = qb_pipe_q;
     wire _unused_ok = &{1'b0, WrB, DataInB, 1'b0};
 endmodule
