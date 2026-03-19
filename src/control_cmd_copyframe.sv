@@ -23,8 +23,6 @@ module control_cmd_copyframe #(
     //  - QA output is valid READ_LATENCY cycles later
     //  - write that data to the back buffer each cycle
     localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
-    // Matches the AddressA -> QA latency in multimem (addr reg + BRAM + QA pipeline).
-    localparam int unsigned READ_LATENCY = params::MULTIMEM_QA_LATENCY + 1; // +1 because of registered read in this module
 
     typedef logic [$clog2(TOTAL_BYTES + 1)-1:0] copy_count_t;
     localparam copy_count_t TOTAL_BYTES_COUNT = copy_count_t'(TOTAL_BYTES);
@@ -38,8 +36,8 @@ module control_cmd_copyframe #(
     ctrl_fsm_t state;
 
     types::fb_addr_t read_addr_q;
-    types::fb_addr_t read_addr_pipe[READ_LATENCY];
-    logic [READ_LATENCY-1:0] read_valid_pipe;
+    types::fb_addr_t read_addr_pipe[params::COPYFRAME_READ_LATENCY];
+    logic [params::COPYFRAME_READ_LATENCY-1:0] read_valid_pipe;
     copy_count_t read_count;
     copy_count_t write_count;
 
@@ -47,13 +45,13 @@ module control_cmd_copyframe #(
     localparam types::pixel_addr_t LAST_PIXEL = types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
 
     assign read_addr  = read_addr_q;
-    assign write_addr = read_addr_pipe[READ_LATENCY-1];
+    assign write_addr = read_addr_pipe[params::COPYFRAME_READ_LATENCY-1];
 
     always @(posedge clk) begin
         if (reset) begin
             state <= STATE_IDLE;
             read_addr_q <= '0;
-            for (int i = 0; i < READ_LATENCY; i++) begin
+            for (int i = 0; i < params::COPYFRAME_READ_LATENCY; i++) begin
                 read_addr_pipe[i] <= '0;
             end
             read_valid_pipe <= '0;
@@ -75,7 +73,7 @@ module control_cmd_copyframe #(
                         read_addr_q.row <= '0;
                         read_addr_q.col <= '0;
                         read_addr_q.pixel <= LAST_PIXEL;
-                        for (int i = 0; i < READ_LATENCY; i++) begin
+                        for (int i = 0; i < params::COPYFRAME_READ_LATENCY; i++) begin
                             read_addr_pipe[i] <= '0;
                         end
                         read_valid_pipe <= '0;
@@ -89,7 +87,7 @@ module control_cmd_copyframe #(
                     ram_access_start <= 1'b1;
 
                     // Shift the address/valid pipelines.
-                    for (int i = READ_LATENCY - 1; i > 0; i--) begin
+                    for (int i = params::COPYFRAME_READ_LATENCY - 1; i > 0; i--) begin
                         read_addr_pipe[i]  <= read_addr_pipe[i-1];
                         read_valid_pipe[i] <= read_valid_pipe[i-1];
                     end
@@ -117,7 +115,7 @@ module control_cmd_copyframe #(
                     end
 
                     // Emit a write when the read data is aligned to the pipeline tail.
-                    if (read_valid_pipe[READ_LATENCY-1]) begin
+                    if (read_valid_pipe[params::COPYFRAME_READ_LATENCY-1]) begin
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
                         if (write_count == TOTAL_BYTES_LAST) begin

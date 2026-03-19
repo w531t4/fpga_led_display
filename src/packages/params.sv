@@ -129,13 +129,16 @@ package params;
     parameter integer unsigned NUM_FRAMEBUFFERS = 1;
 `endif
     /*
-        read_addr_q registered (copy engine, 1)
-        + addra_q in multimem (1)
-        + BRAM read register (1)
-        + BRAM OUTREG / qa_lane_q (1)
-        + qa_masked_q / stage 4 (1)
+        The following describes the pipeline for QA
+        | desc                                    | numcyc | module    | var     |
+        | read_addr_q registered (copy engine)    | 1      | copyframe | COPYFRAME_READ_LATENCY
+        | addra_q in multimem                     | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
+        | BRAM read register                      | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
+        | BRAM OUTREG / qa_lane_q                 | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
+        | qa_masked_q / stage 4                   | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
         = 5
     */
     parameter integer unsigned MULTIMEM_QA_LATENCY = 4;
+    localparam int unsigned COPYFRAME_READ_LATENCY = params::MULTIMEM_QA_LATENCY + 1; // +1 because of registered read in this module
     // verilator lint_on UNUSEDPARAM
 endpackage
