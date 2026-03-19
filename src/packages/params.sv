@@ -131,6 +131,6 @@ package params;
         + qa_masked_q / stage 4 (1)
         = 5
     */
-    parameter integer unsigned MULTIMEM_LATENCY = 4;
+    parameter integer unsigned MULTIMEM_QA_LATENCY = 4;
     // verilator lint_on UNUSEDPARAM
 endpackage
