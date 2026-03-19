@@ -30,22 +30,6 @@ module multimem #(
     output wire types::mem_write_data_t QA,
     output wire types::mem_read_data_t QB
 );
-    // consider
-    // 8 bits addr a, 2 bits colorselect, 2 bits display
-    //      addrA = 8
-    //      colorselect = 2
-    //      display = 2
-
-    //      7 display          = (addrA - 1)
-    //      6 display          = (addrA - display)
-    //      5 body             = (addrA - display) -1           // aka addrb
-    //      4 body             =                                // aka addrb
-    //      3 body             =                                // aka addrb
-    //      2 body             = (colorselect - 1) + 1          // aka addrb
-    //      1 pixelcolorselect = colorselect - 1
-    //      0 pixelcolorselect = 0
-    //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
-
     localparam integer unsigned LANES = (1 << $bits(types::mem_structure_t));
     localparam integer unsigned QA_SELECT_PIPE_DEPTH = params::MULTIMEM_LATENCY - 1; // stage 4 (3, base0) is unrelated to SELECTION
     wire types::mem_read_data_t qb_lanes_w;
