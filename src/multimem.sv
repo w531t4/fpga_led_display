@@ -50,26 +50,12 @@ module multimem #(
     localparam integer unsigned QA_PIPE_DEPTH = 3;
     wire types::mem_read_data_t qb_lanes_w;
     wire types::mem_write_data_t qa_lanes_w[LANES];
-    types::mem_write_data_t qa_lane_q[LANES];
+    wire types::mem_write_data_t qa_masked_per_lane[LANES];
     wire types::mem_structure_t lane_idx_from_addr = types::mem_structure(AddressA);
-    // Delay lane selection to align with the multi-stage QA read pipeline.
-    types::mem_structure_t lane_idx_pipe[QA_PIPE_DEPTH];
     // Register write qualifiers once to keep the wide ClockEnA fanout out of the per-lane BRAM enables.
     logic wr_en_q;
     types::mem_structure_t lane_idx_w_q;
 
-    // Align lane select with the registered Port A read data.
-    // QA latency is: AddressA -> addra_q -> mem_lane doa -> qa_lane_q -> qa_pipe_q.
-    // Shift the lane index by the same number of cycles so QA selects the correct lane
-    // even when AddressA changes every cycle (copyframe fast path).
-    always @(posedge ClockA) begin
-        if (ResetA) begin
-            for (int i = 0; i < QA_PIPE_DEPTH; i++) lane_idx_pipe[i] <= '0;
-        end else if (ClockEnA) begin
-            lane_idx_pipe[0] <= lane_idx_from_addr;
-            for (int i = 1; i < QA_PIPE_DEPTH; i++) lane_idx_pipe[i] <= lane_idx_pipe[i-1];
-        end
-    end
     // Capture the write lane index and enable in the same stage as addra_q/dia_q.
     // This preserves the existing one-cycle write latency while shortening the critical enable route.
     always @(posedge ClockA) begin
@@ -87,17 +73,31 @@ module multimem #(
         for (i = 0; i < LANES; i = i + 1) begin : g_lane
             (* keep = "true" *) types::mem_read_addr_t addra_q;
             (* keep = "true" *) types::mem_write_data_t dia_q;
+            types::mem_write_data_t qa_lane_q;
+            types::mem_write_data_t qa_masked_q;
+            // Per-lane boolean pipeline: tracks whether this lane is selected,
+            // delayed QA_PIPE_DEPTH stages to align with the BRAM OUTREG output.
+            logic lane_sel_pipe[QA_PIPE_DEPTH];
+
             // Use the registered write qualifier to keep per-lane write enables local.
             wire we_lane_sel = wr_en_q & (lane_idx_w_q == types::mem_structure_t'(i));
+
+            // Align lane select with the registered Port A read data.
+            // QA latency is: AddressA -> addra_q -> mem_lane doa -> qa_lane_q -> qa_pipe_q.
+            // Shift the lane index by the same number of cycles so QA selects the correct lane
+            // even when AddressA changes every cycle (copyframe fast path).
+            always @(posedge ClockA) begin
+                if (ResetA) begin
+                    for (int stage = 0; stage < QA_PIPE_DEPTH; stage++) lane_sel_pipe[stage] <= '0;
+                end else if (ClockEnA) begin
+                    lane_sel_pipe[0] <= (lane_idx_from_addr == types::mem_structure_t'(i));
+                    for (int stage = 1; stage < QA_PIPE_DEPTH; stage++) lane_sel_pipe[stage] <= lane_sel_pipe[stage-1];
+                end
+            end
 
             always @(posedge ClockA) begin
                 addra_q <= {AddressA.row, AddressA.col};
                 dia_q   <= DataInA;
-            end
-            // Register per-lane QA locally to reduce BRAM->mux routing delay.
-            // Keep this unconditional so the packed BRAM outreg uses a constant OCEA.
-            always @(posedge ClockA) begin
-                qa_lane_q[i] <= qa_lanes_w[i];
             end
 
             mem_lane #(
@@ -116,25 +116,30 @@ module multimem #(
                 .addrb(AddressB),
                 .dob  (qb_lanes_w.lane[i])
             );
+
+            // Unconditional so ecp5_infer_bram_outreg can pack this into the BRAM OUTREG (constant OCEA).
+            always @(posedge ClockA) begin
+                qa_lane_q <= qa_lanes_w[i];
+            end
+
+            // Mask this lane's output here, near the BRAM.
+            // The long BRAM OUTREG routing stays before this register boundary.
+            always @(posedge ClockA) begin
+                if (ClockEnA) qa_masked_q <= lane_sel_pipe[QA_PIPE_DEPTH-1] ? qa_lane_q : '0;
+            end
+
+            assign qa_masked_per_lane[i] = qa_masked_q;
+
         end
     endgenerate
 
     assign QB = qb_lanes_w;
     // Select the single lane addressed by AddressA for the copy engine.
     types::mem_write_data_t qa_sel;
-    types::mem_write_data_t qa_pipe_q;
     always_comb begin
         qa_sel = '0;
-        for (int lane = 0; lane < LANES; lane = lane + 1) begin
-            if (lane_idx_pipe[QA_PIPE_DEPTH-1] == types::mem_structure_t'(lane)) begin
-                qa_sel = qa_lane_q[lane];
-            end
-        end
+        for (int lane = 0; lane < LANES; lane++) qa_sel |= qa_masked_per_lane[lane];
     end
-    // Pipeline the QA path to shorten the BRAM -> copy engine timing.
-    always @(posedge ClockA) begin
-        if (ClockEnA) qa_pipe_q <= qa_sel;
-    end
-    assign QA = qa_pipe_q;
+    assign QA = qa_sel;
     wire _unused_ok = &{1'b0, WrB, DataInB, 1'b0};
 endmodule
