@@ -97,8 +97,7 @@ module tb_multimem #(
         ram_b_clk_enable = 1'b1;
         ram_b_address = addr_b;
         expected = build_expected(addr_b);
-        @(posedge clk_b);
-        @(posedge clk_b);
+        repeat (params::MULTIMEM_QB_LATENCY) @(posedge clk_b);
         #1;
         if (ram_b_data_out !== expected) begin  // check read bus matches model for this address
             $fatal(1, "read mismatch addr_b=%0d expected=%0h got=%0h", addr_b, expected, ram_b_data_out);
