@@ -34,11 +34,8 @@ module control_subcmd_fillarea #(
             |    -------.
             |           ^(x1+width, y1+height)
     */
-    wire types::col_addr_t x2;
-    wire types::row_addr_t y2;
-
-    assign x2 = types::col_addr_t'(types::col_addr_count_t'(x1) + width - types::col_addr_count_t'(1));
-    assign y2 = types::row_addr_t'(y1 + height - types::row_addr_t'(1));
+    types::col_addr_t x2;
+    types::row_addr_t y2;
 
     typedef enum {
         STATE_ROW_PRIMEMEMWRITE,
@@ -56,6 +53,8 @@ module control_subcmd_fillarea #(
             column <= 'b0;
             pixel <= 'b0;
             done <= 1'b0;
+            x2 <= 'b0;
+            y2 <= 'b0;
         end else begin
             case (state)
                 STATE_ROW_PRIMEMEMWRITE: begin
@@ -69,6 +68,8 @@ module control_subcmd_fillarea #(
                         ram_write_enable <= 1'b1;
                         data_out <= color.bytes[params::BYTES_PER_PIXEL-1];
                         ram_access_start <= !ram_access_start;
+                        x2 <= types::col_addr_t'(types::col_addr_count_t'(x1) + width - types::col_addr_count_t'(1));
+                        y2 <= types::row_addr_t'(y1 + height - types::row_addr_t'(1));
                     end
                 end
                 STATE_ROW_MEMWRITE: begin
