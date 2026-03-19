@@ -76,7 +76,6 @@ module tb_main #(
         .gp11       (clk_pixel),
         .gp12       (row_latch),
         .gp13       (OE),
-        .clk_25mhz  (clk),
         .gp7        (ROA0),
         .gp8        (ROA1),
         .gp9        (ROA2),
@@ -96,37 +95,38 @@ module tb_main #(
         .gp4        (rgb2.green),
         .gp5        (rgb2.blue),
 `endif
-        .gp14       (rxdata),
+        // .gp14       (rxdata),
         .gp16       (debugger_txout),
         .gp15       (debugger_rxin),
 `ifdef SPI
 `ifdef SPI_ESP32
-        .sd_clk     (spi_clk),             // clk
-        .sd_d       ({rxdata, 3'b0}),      // sd_d[3]=mosi
+        .sd_clk     (spi_clk),         // clk
+        .sd_d       ({rxdata, 3'b0}),  // sd_d[3]=mosi
         .wifi_gpio21(spi_cs),
         .wifi_gpio27(fpga_ready),
-        .wifi_gpio35(ctrl_busy),           // controller busy indicator
+        .wifi_gpio35(ctrl_busy),       // controller busy indicator
 `else
-        .gp17       (rxdata),              // spi miso
+        .gp17       (rxdata),          // spi miso
         //.gp18()       // spi_mosi
-        .gp19       (spi_clk),             // spi_clk
-        .gp20       (spi_cs),              // spi_cs
+        .gp19       (spi_clk),         // spi_clk
+        .gp20       (spi_cs)           // spi_cs
 `endif
 `endif
-        .gn11       (_unused_output[0]),
-        .gn12       (_unused_output[1]),
-        .gn13       (_unused_output[2]),
-        .gn7        (_unused_output[3]),
-        .gn8        (_unused_output[4]),
-        .gn9        (_unused_output[5]),
-        .gn10       (_unused_output[6]),
-        .gn0        (_unused_output[7]),
-        .gn1        (_unused_output[8]),
-        .gn2        (_unused_output[9]),
-        .gn3        (_unused_output[10]),
-        .gn4        (_unused_output[11]),
-        .gn5        (_unused_output[12]),
-        .gn14       (_unused_output[13])
+        // .gn11       (_unused_output[0]),
+        // .gn12       (_unused_output[1]),
+        // .gn13       (_unused_output[2]),
+        // .gn7        (_unused_output[3]),
+        // .gn8        (_unused_output[4]),
+        // .gn9        (_unused_output[5]),
+        // .gn10       (_unused_output[6]),
+        // .gn0        (_unused_output[7]),
+        // .gn1        (_unused_output[8]),
+        // .gn2        (_unused_output[9]),
+        // .gn3        (_unused_output[10]),
+        // .gn4        (_unused_output[11]),
+        // .gn5        (_unused_output[12]),
+        // .gn14       (_unused_output[13])
+        .clk_25mhz  (clk)
     );
     // verilog_format: off
     wire _unused_ok_main = &{1'b0,

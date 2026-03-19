@@ -37,24 +37,24 @@ module main #(
     output       gp11,
     output       gp12,
     output       gp13,
-    input        gp14,
+    // input        gp14,
     input        gp15,
     output       gp16,
-    input        clk_25mhz,
-    output       gn0,
-    output       gn1,
-    output       gn2,
-    output       gn3,
-    output       gn4,
-    output       gn5,
-    output       gn7,
-    output       gn8,
-    output       gn9,
-    output       gn10,
-    output       gn11,
-    output       gn12,
-    output       gn13,
-    output       gn14
+    input        clk_25mhz
+    // output       gn0,
+    // output       gn1,
+    // output       gn2,
+    // output       gn3,
+    // output       gn4,
+    // output       gn5,
+    // output       gn7,
+    // output       gn8,
+    // output       gn9,
+    // output       gn10,
+    // output       gn11,
+    // output       gn12,
+    // output       gn13,
+    // output       gn14
     // output gn15,
     // output gn16
 );
@@ -77,7 +77,7 @@ module main #(
     wire                         ctrl_ram_clk_enable;
 `ifdef DOUBLE_BUFFER
     mem_copy_if copy_int ();
-    wire  frame_select;
+    wire frame_select;
 `endif
     types::mem_read_data_t ram_b_data_out;
     wire types::mem_read_addr_t ram_b_address;
@@ -412,18 +412,18 @@ module main #(
     assign rxdata = gp14;
 `endif
 
-    assign gn11 = clk_pixel;  // Pixel Clk
-    assign gn12 = row_latch;  // Row Latch
-    assign gn13 = ~output_enable;  // #OE
-    assign {gn10, gn9, gn8, gn7} = 4'(row_address_active);  // D, C, B, A
-`ifdef SWAP_BLUE_GREEN_CHAN
-    assign {gn0, gn1, gn2} = {rgb[0].red, rgb[0].blue, rgb[0].green};
-    assign {gn3, gn4, gn5} = {rgb[1].red, rgb[1].blue, rgb[1].green};
-`else
-    assign {gn0, gn1, gn2} = rgb[0];
-    assign {gn3, gn4, gn5} = rgb[1];
-`endif
-    assign gn14 = gp14;  // ctrl serial port RX
+    //     assign gn11 = clk_pixel;  // Pixel Clk
+    //     assign gn12 = row_latch;  // Row Latch
+    //     assign gn13 = ~output_enable;  // #OE
+    //     assign {gn10, gn9, gn8, gn7} = 4'(row_address_active);  // D, C, B, A
+    // `ifdef SWAP_BLUE_GREEN_CHAN
+    //     assign {gn0, gn1, gn2} = {rgb[0].red, rgb[0].blue, rgb[0].green};
+    //     assign {gn3, gn4, gn5} = {rgb[1].red, rgb[1].blue, rgb[1].green};
+    // `else
+    //     assign {gn0, gn1, gn2} = rgb[0];
+    //     assign {gn3, gn4, gn5} = rgb[1];
+    // `endif
+    //     assign gn14 = gp14;  // ctrl serial port RX
 
     // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
     // assign gn1 = debug_if.ram_access_start;
