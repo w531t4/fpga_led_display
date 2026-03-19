@@ -56,6 +56,7 @@ module control_subcmd_fillarea #(
             x2 <= 'b0;
             y2 <= 'b0;
         end else begin
+            ram_access_start <= 1'b0;
             case (state)
                 STATE_ROW_PRIMEMEMWRITE: begin
                     if (enable) begin
@@ -67,14 +68,14 @@ module control_subcmd_fillarea #(
                         // Engage memory gears
                         ram_write_enable <= 1'b1;
                         data_out <= color.bytes[params::BYTES_PER_PIXEL-1];
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                         x2 <= types::col_addr_t'(types::col_addr_count_t'(x1) + width - types::col_addr_count_t'(1));
                         y2 <= types::row_addr_t'(y1 + height - types::row_addr_t'(1));
                     end
                 end
                 STATE_ROW_MEMWRITE: begin
                     if (enable) begin
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                         if (row < y2 || column < x2 || pixel != 'd0) begin
                             if (pixel == 'd0) begin
                                 pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);

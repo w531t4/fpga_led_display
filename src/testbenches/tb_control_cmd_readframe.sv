@@ -24,7 +24,6 @@ module tb_control_cmd_readframe;
     int                         payload_idx;
     int                         done_count;
     int                         done_payload_idx;
-    logic                       prev_as;
 
     // === DUT wiring ===
     control_cmd_readframe #(
@@ -62,7 +61,6 @@ module tb_control_cmd_readframe;
         payload_idx = 0;
         done_count = 0;
         done_payload_idx = -1;
-        prev_as = 0;
         enable = 1;
         // Drive bytes on negedge so data_in is stable for the next posedge capture.
         for (int i = 0; i < TOTAL_BYTES; i++) begin
@@ -81,7 +79,7 @@ module tb_control_cmd_readframe;
     end
 
     // === Scoreboard / monitor ===
-    // Each payload write must be in-range and toggle ram_access_start; data ordering is driven by DUT.
+    // Each payload write must be in-range and assert ram_access_start; data ordering is driven by DUT.
     task automatic expect_payload(input int idx, input byte b);
         int pixel_idx;
         int exp_row;
@@ -101,8 +99,8 @@ module tb_control_cmd_readframe;
         else $fatal(1, "Column mismatch at idx %0d: expected %0d got %0d", idx, exp_col, addr.col);
         assert (addr.pixel == types::pixel_addr_t'(exp_pix))
         else $fatal(1, "Pixel mismatch at idx %0d: expected %0d got %0d", idx, exp_pix, addr.pixel);
-        assert (ram_access_start != prev_as)
-        else $fatal(1, "ram_access_start not toggling at idx %0d", idx);
+        assert (ram_access_start == 1'b1)
+        else $fatal(1, "ram_access_start low at idx %0d", idx);
         assert (data_out == b)
         else $fatal(1, "Payload mismatch at idx %0d expected=0x%0h got=0x%0h", idx, b, data_out);
     endtask
@@ -114,11 +112,10 @@ module tb_control_cmd_readframe;
             payload_idx <= 0;
             done_count <= 0;
             done_payload_idx <= -1;
-            prev_as <= 0;
             data_in_q <= 8'h00;
         end else begin
             next_payload_idx = payload_idx;
-            // Each payload write must be in-range and toggle ram_access_start; data ordering is driven by DUT.
+            // Each payload write must be in-range and assert ram_access_start; data ordering is driven by DUT.
             if (ram_write_enable && enable) begin
                 assert (payload_idx < TOTAL_BYTES)
                 else $fatal(1, "Payload idx out of range: %0d", payload_idx);
@@ -145,7 +142,6 @@ module tb_control_cmd_readframe;
                         1, "Done asserted early at payload_idx=%0d (expected >= %0d)", next_payload_idx, TOTAL_BYTES
                     );
             end
-            prev_as <= ram_access_start;
             if (enable) data_in_q <= data_in;
             payload_idx <= next_payload_idx;
         end
@@ -158,7 +154,6 @@ module tb_control_cmd_readframe;
 
     // verilog_format: off
     wire _unused_ok = &{1'b0,
-                        ram_access_start,
                         1'b0};
     // verilog_format: on
 endmodule

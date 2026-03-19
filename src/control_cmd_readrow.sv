@@ -35,6 +35,7 @@ module control_cmd_readrow #(
             addr.pixel <= 'b0;
             done <= 1'b0;
         end else begin
+            ram_access_start <= 1'b0;
             case (state)
                 STATE_ROW_CAPTURE: begin
                     if (enable) begin
@@ -56,12 +57,12 @@ module control_cmd_readrow #(
 
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                     end
                 end
                 STATE_READ_ROWCONTENT: begin
                     if (enable) begin
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                         if (addr.col != types::col_addr_t'(params::PIXEL_WIDTH - 1) || addr.pixel != 'd0) begin
                             if (addr.pixel == 'd0) begin
                                 addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);

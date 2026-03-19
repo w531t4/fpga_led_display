@@ -27,7 +27,6 @@ module tb_control_cmd_readrect;
     byte data_in_q;
     int payload_idx;
     int done_count;
-    logic prev_as;
 
     // === DUT wiring ===
     control_cmd_readrect #(
@@ -56,7 +55,6 @@ module tb_control_cmd_readrect;
         data_in = 8'b0;
         payload_idx = 0;
         done_count = 0;
-        prev_as = 0;
         data_in_q = 8'h00;
         @(posedge clk) @(posedge clk) reset = 0;
     end
@@ -98,7 +96,7 @@ module tb_control_cmd_readrect;
     end
 
     // === Scoreboard / monitor ===
-    // Each payload write must map to the expected row/col/pixel and toggle ram_access_start.
+    // Each payload write must map to the expected row/col/pixel and assert ram_access_start.
     task automatic expect_payload(input int idx, input byte payload_byte);
         int pixel_idx;
         int exp_row;
@@ -106,8 +104,8 @@ module tb_control_cmd_readrect;
         int exp_pix;
         assert (ram_write_enable == 1'b1)
         else $fatal(1, "ram_write_enable low at idx %0d", idx);
-        assert (ram_access_start != prev_as)
-        else $fatal(1, "ram_access_start not toggling at idx %0d", idx);
+        assert (ram_access_start == 1'b1)
+        else $fatal(1, "ram_access_start low at idx %0d", idx);
         pixel_idx = idx / params::BYTES_PER_PIXEL;
         exp_row = RECT_Y1 + (pixel_idx / RECT_W);
         exp_col = RECT_X1 + (pixel_idx % RECT_W);
@@ -129,17 +127,15 @@ module tb_control_cmd_readrect;
         if (reset) begin
             payload_idx <= 0;
             done_count <= 0;
-            prev_as <= 0;
             data_in_q <= 8'h00;
         end else begin
-            if (ram_write_enable && (ram_access_start != prev_as)) begin
+            if (ram_write_enable && ram_access_start) begin
                 expect_payload(payload_idx, data_in_q);
                 next_payload_idx = payload_idx + 1;
             end
             if (done) begin
                 done_count <= done_count + 1;
             end
-            prev_as <= ram_access_start;
             if (enable) data_in_q <= data_in;
             payload_idx <= next_payload_idx;
         end

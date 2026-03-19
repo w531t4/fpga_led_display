@@ -46,6 +46,7 @@ module control_cmd_readcol #(
             column_byte_counter <= 'b0;
             column_bits <= 'b0;
         end else begin
+            ram_access_start <= 1'b0;
             // Keep the decoded column address visible once the field is captured.
             addr.col <= types::col_addr_from_field(column_bits);
             case (state)
@@ -69,13 +70,13 @@ module control_cmd_readcol #(
                         addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                     end
                 end
                 STATE_READ_COLUMNCONTENT: begin
                     // Payload phase: walk rows top-to-bottom, pixel bytes MSB-to-LSB per row.
                     if (enable) begin
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                         if (addr.row != LAST_ROW || addr.pixel != 'd0) begin
                             if (addr.pixel == 'd0) begin
                                 addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);

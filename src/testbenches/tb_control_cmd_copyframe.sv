@@ -48,7 +48,6 @@ module tb_control_cmd_copyframe;
     mem_copy_if copy_int ();
     wire                         cmd_copyframe_done;
 
-    logic                        copy_ram_access_start_latch;
     wire                         copy_ram_clk_enable;
 
     wire types::mem_write_addr_t ram_a_address_frame1;
@@ -218,14 +217,7 @@ module tb_control_cmd_copyframe;
     endtask
 
     // === Clock enable for copy engine (mirrors main.sv) ===
-    assign copy_ram_clk_enable = copy_int.access_start ^ copy_ram_access_start_latch;
-    always @(posedge clk) begin
-        if (reset) begin
-            copy_ram_access_start_latch <= 1'b0;
-        end else if (copy_ram_clk_enable) begin
-            copy_ram_access_start_latch <= copy_int.access_start;
-        end
-    end
+    assign copy_ram_clk_enable = copy_int.access_start;
 
     // === RAM A muxing between init and copy engine ===
     assign ram_a_address_frame1 = init_mode

@@ -69,6 +69,7 @@ module control_cmd_readrect #(
             x1_byte_counter <= 'b0;
             width_byte_counter <= 'b0;
         end else begin
+            ram_access_start <= 1'b0;
             case (state)
                 STATE_X1_CAPTURE: begin
                     // Big endian capture of x1.
@@ -129,7 +130,7 @@ module control_cmd_readrect #(
                         y2 <= types::row_addr_t'(types::row_addr_count_t'(y1) + height - types::row_addr_count_t'(1));
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                         addr.row <= y1;
                         addr.col <= x1_addr;
                         addr.pixel <= types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
@@ -140,7 +141,7 @@ module control_cmd_readrect #(
                     if (enable) begin
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                         done <= 1'b0;
                         // Walk pixels: decrement pixel index, then advance columns/rows.
                         if (addr.pixel == 'd0) begin

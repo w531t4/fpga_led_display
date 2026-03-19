@@ -43,6 +43,7 @@ module control_cmd_readpixel #(
             column_bits <= 'b0;
             addr.col <= 'b0;
         end else begin
+            ram_access_start <= 1'b0;
             addr.col <= types::col_addr_from_field(column_bits);
             case (state)
                 STATE_ROW_CAPTURE: begin
@@ -72,7 +73,7 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                         if (params::BYTES_PER_PIXEL == 1) begin
                             done  <= 1'b1;
                             state <= STATE_DONE;
@@ -86,7 +87,7 @@ module control_cmd_readpixel #(
                     if (enable) begin
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
-                        ram_access_start <= !ram_access_start;
+                        ram_access_start <= 1'b1;
                         if (addr.pixel == 'd1) begin
                             done  <= 1'b1;
                             state <= STATE_DONE;

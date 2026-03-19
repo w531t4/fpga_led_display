@@ -36,18 +36,8 @@ module framebuffer_fabric (
     logic                   ram_a_clk_enable;
 
 `ifdef DOUBLE_BUFFER
-    // Create a one-cycle enable pulse on copy_access_start edges.
-    logic copy_ram_access_start_latch;
     logic copy_ram_clk_enable;
-    assign copy_ram_clk_enable = copy_if.access_start ^ copy_ram_access_start_latch;
-    always @(posedge clk_root) begin
-        if (reset) begin
-            copy_ram_access_start_latch <= 1'b0;
-        end else if (copy_ram_clk_enable) begin
-            copy_ram_access_start_latch <= copy_if.access_start;
-        end else begin
-        end
-    end
+    assign copy_ram_clk_enable = copy_if.access_start;
 
     // Scratch front/back values before mapping into frame indices.
     types::mem_write_addr_t front_addr, back_addr;
