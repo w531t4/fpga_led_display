@@ -11,7 +11,7 @@ module tb_control_cmd_copyframe;
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
     // Copy engine is 1 byte/clk after the read pipeline fills.
-    localparam int unsigned COPY_READ_LATENCY = 5;
+    localparam int unsigned COPY_READ_LATENCY = params::MULTIMEM_QA_LATENCY + 1;
     localparam int unsigned COPY_PIPE_FLUSH_CYCLES = COPY_READ_LATENCY + 4;
     localparam int unsigned COPY_CYCLES_MAX = TOTAL_BYTES + COPY_PIPE_FLUSH_CYCLES;
     // Port-B read latency is driven by the framebuffer fetch timing.
