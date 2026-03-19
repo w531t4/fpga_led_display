@@ -31,7 +31,7 @@ module multimem #(
     output wire types::mem_read_data_t QB
 );
     localparam integer unsigned LANES = (1 << $bits(types::mem_structure_t));
-    localparam integer unsigned QA_SELECT_PIPE_DEPTH = params::MULTIMEM_LATENCY - 1; // stage 4 (3, base0) is unrelated to SELECTION
+    localparam integer unsigned QA_SELECT_PIPE_DEPTH = params::MULTIMEM_QA_LATENCY - 1; // stage 4 (3, base0) is unrelated to SELECTION
     wire types::mem_read_data_t qb_lanes_w;
     wire types::mem_write_data_t qa_lanes_w[LANES];
     wire types::mem_write_data_t qa_masked_per_lane[LANES];
