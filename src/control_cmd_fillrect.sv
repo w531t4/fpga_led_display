@@ -38,11 +38,13 @@ module control_cmd_fillrect #(
     types::col_addr_field_t x1;
     // TODO: This probably isn't the right type
     types::col_addr_field_t width;
+    types::col_addr_field_t width_q;
     // verilator lint_on UNUSEDSIGNAL
     types::col_addr_field_byte_index_t x1_byte_counter;
     types::col_addr_field_byte_index_t width_byte_counter;
     types::row_addr_t y1;
     types::row_addr_count_t height;
+    types::row_addr_count_t height_q;
     logic subcmd_enable;
     wire cmd_blankpanel_done;
     types::color_field_t selected_color;
@@ -74,8 +76,10 @@ module control_cmd_fillrect #(
             width_byte_counter <= 'b0;
             x1 <= 'b0;
             width <= 'b0;
+            width_q <= 'b0;
             y1 <= 'b0;
             height <= 'b0;
+            height_q <= 'b0;
             local_reset <= 1'b0;
         end else begin
             case (state)
@@ -109,7 +113,7 @@ module control_cmd_fillrect #(
                         state <= STATE_COLOR_CAPTURE;
                         // The following assignment of width is done to reduce the burden on clk_root.
                         // TODO: types::col_addr_field_t' is the wrong type here - it's a _count_t that doesn't exist yet
-                        width <= types::col_addr_field_t'(calc::clamp_remaining_dimension(
+                        width_q <= types::col_addr_field_t'(calc::clamp_remaining_dimension(
                             types::uint_t'(x1), types::uint_t'(width), params::PIXEL_WIDTH
                         ));
                     end
@@ -122,7 +126,7 @@ module control_cmd_fillrect #(
                             state <= STATE_START;
                             ready_for_data <= 1'b0;
                             // The following assignment of height is done to reduce the burden on clk_root.
-                            height <= types::row_addr_count_t'(calc::clamp_remaining_dimension(
+                            height_q <= types::row_addr_count_t'(calc::clamp_remaining_dimension(
                                 types::uint_t'(y1), types::uint_t'(height), params::PIXEL_HEIGHT
                             ));
 
@@ -157,8 +161,10 @@ module control_cmd_fillrect #(
                     selected_color <= 'b0;
                     x1 <= 'b0;
                     width <= 'b0;
+                    width_q <= 'b0;
                     y1 <= 'b0;
                     height <= 'b0;
+                    height_q <= 'b0;
                 end
                 default state <= state;
             endcase
@@ -174,8 +180,8 @@ module control_cmd_fillrect #(
         .ack(done),
         .x1(types::col_addr_t'(x1)),
         .y1(y1),
-        .width(types::col_addr_count_t'(width)),
-        .height(types::row_addr_count_t'(height)),
+        .width(types::col_addr_count_t'(width_q)),
+        .height(types::row_addr_count_t'(height_q)),
         .color(selected_color),
         .row(addr.row),
         .column(addr.col),
