@@ -38,7 +38,6 @@ module control_module #(
     logic ready_for_data_logic;
     types::brightness_level_t brightness_temp;
     logic ram_access_start;
-    logic ram_access_start_latch;
     enums::control_module_fsm_e cmd_line_state;
     types::fb_addr_t cmd_addr;
 
@@ -56,20 +55,10 @@ module control_module #(
     assign debug_if.cmd_line_state2 = cmd_line_state;
     assign debug_if.cmd_line_addr2 = cmd_line_addr;
     assign debug_if.ram_access_start2 = ram_access_start;
-    assign debug_if.ram_access_start_latch2 = ram_access_start_latch;
+    assign debug_if.ram_access_start_latch2 = 1'b0;
 `endif
 
-    assign ram_clk_enable = ram_access_start ^ ram_access_start_latch;
-    always @(posedge clk_in) begin
-        if (reset) begin
-            ram_access_start_latch <= 1'b0;
-        end else begin
-            if (ram_clk_enable) begin
-                ram_access_start_latch <= ram_access_start;
-            end else begin
-            end
-        end
-    end
+    assign ram_clk_enable = ram_access_start;
 
     // this prevents testbench from continuing to send data (even though we're not ready to accept)
     always_ff @(posedge clk_in) begin

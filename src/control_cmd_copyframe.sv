@@ -66,6 +66,7 @@ module control_cmd_copyframe #(
         end else begin
             done <= 1'b0;
             ram_write_enable <= 1'b0;
+            ram_access_start <= 1'b0;
             data_out <= '0;
             case (state)
                 STATE_IDLE: begin
@@ -80,15 +81,12 @@ module control_cmd_copyframe #(
                         read_valid_pipe <= '0;
                         read_count <= '0;
                         write_count <= '0;
-                        // Prime the access toggle so ClockEnA is high on the first copy cycle.
+                        // Kick the RAM pipeline immediately on copy start.
                         ram_access_start <= 1'b1;
-                    end else begin
-                        ram_access_start <= 1'b0;
                     end
                 end
                 STATE_COPY: begin
-                    // Toggle every cycle to keep ClockEnA asserted.
-                    ram_access_start <= ~ram_access_start;
+                    ram_access_start <= 1'b1;
 
                     // Shift the address/valid pipelines.
                     for (int i = READ_LATENCY - 1; i > 0; i--) begin
