@@ -86,7 +86,7 @@ module control_cmd_fillrect #(
                 STATE_X1_CAPTURE: begin
                     // Big Endian
                     if (enable) begin
-                        x1.bytes[LAST_COL_BYTE_INDEX - x1_byte_counter] <= data_in;
+                        x1.bytes[LAST_COL_BYTE_INDEX-x1_byte_counter] <= data_in;
                         if (x1_byte_counter == LAST_COL_BYTE_INDEX) begin
                             state <= STATE_Y1_CAPTURE;
                         end else x1_byte_counter <= x1_byte_counter + 1;
@@ -101,7 +101,7 @@ module control_cmd_fillrect #(
                 STATE_WIDTH_CAPTURE: begin
                     // Big Endian
                     if (enable) begin
-                        width.bytes[LAST_COL_BYTE_INDEX - width_byte_counter] <= data_in;
+                        width.bytes[LAST_COL_BYTE_INDEX-width_byte_counter] <= data_in;
                         if (width_byte_counter == LAST_COL_BYTE_INDEX) begin
                             state <= STATE_HEIGHT_CAPTURE;
                         end else width_byte_counter <= width_byte_counter + 1;

@@ -46,7 +46,7 @@ module control_cmd_copyframe #(
     localparam types::col_addr_t LAST_COL = types::col_addr_t'(params::PIXEL_WIDTH - 1);
     localparam types::pixel_addr_t LAST_PIXEL = types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
 
-    assign read_addr = read_addr_q;
+    assign read_addr  = read_addr_q;
     assign write_addr = read_addr_pipe[READ_LATENCY-1];
 
     always @(posedge clk) begin
@@ -92,8 +92,8 @@ module control_cmd_copyframe #(
 
                     // Shift the address/valid pipelines.
                     for (int i = READ_LATENCY - 1; i > 0; i--) begin
-                        read_addr_pipe[i] <= read_addr_pipe[i - 1];
-                        read_valid_pipe[i] <= read_valid_pipe[i - 1];
+                        read_addr_pipe[i]  <= read_addr_pipe[i-1];
+                        read_valid_pipe[i] <= read_valid_pipe[i-1];
                     end
 
                     // Issue a new read when there are bytes remaining.
@@ -114,16 +114,16 @@ module control_cmd_copyframe #(
                             read_addr_q.pixel <= read_addr_q.pixel - 'd1;
                         end
                     end else begin
-                        read_addr_pipe[0] <= read_addr_q;
+                        read_addr_pipe[0]  <= read_addr_q;
                         read_valid_pipe[0] <= 1'b0;
                     end
 
                     // Emit a write when the read data is aligned to the pipeline tail.
-                    if (read_valid_pipe[READ_LATENCY - 1]) begin
+                    if (read_valid_pipe[READ_LATENCY-1]) begin
                         ram_write_enable <= 1'b1;
                         data_out <= data_in;
                         if (write_count == TOTAL_BYTES_LAST) begin
-                            done <= 1'b1;
+                            done  <= 1'b1;
                             state <= STATE_DONE;
                         end
                         write_count <= write_count + 1;
