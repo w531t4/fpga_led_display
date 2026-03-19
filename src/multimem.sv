@@ -47,14 +47,13 @@ module multimem #(
     //  [7:0] mem [displaybits,colorselectbits] [addr_b bits]
 
     localparam integer unsigned LANES = (1 << $bits(types::mem_structure_t));
+    localparam integer unsigned QA_PIPE_DEPTH = 3;
     wire types::mem_read_data_t qb_lanes_w;
     wire types::mem_write_data_t qa_lanes_w[LANES];
     types::mem_write_data_t qa_lane_q[LANES];
     wire types::mem_structure_t lane_idx_from_addr = types::mem_structure(AddressA);
     // Delay lane selection to align with the multi-stage QA read pipeline.
-    types::mem_structure_t lane_idx_q0;
-    types::mem_structure_t lane_idx_q1;
-    types::mem_structure_t lane_idx_q2;
+    types::mem_structure_t lane_idx_pipe[QA_PIPE_DEPTH];
     // Register write qualifiers once to keep the wide ClockEnA fanout out of the per-lane BRAM enables.
     logic wr_en_q;
     types::mem_structure_t lane_idx_w_q;
@@ -65,13 +64,10 @@ module multimem #(
     // even when AddressA changes every cycle (copyframe fast path).
     always @(posedge ClockA) begin
         if (ResetA) begin
-            lane_idx_q0 <= '0;
-            lane_idx_q1 <= '0;
-            lane_idx_q2 <= '0;
+            for (int i = 0; i < QA_PIPE_DEPTH; i++) lane_idx_pipe[i] <= '0;
         end else if (ClockEnA) begin
-            lane_idx_q0 <= lane_idx_from_addr;
-            lane_idx_q1 <= lane_idx_q0;
-            lane_idx_q2 <= lane_idx_q1;
+            lane_idx_pipe[0] <= lane_idx_from_addr;
+            for (int i = 1; i < QA_PIPE_DEPTH; i++) lane_idx_pipe[i] <= lane_idx_pipe[i-1];
         end
     end
     // Capture the write lane index and enable in the same stage as addra_q/dia_q.
@@ -130,7 +126,7 @@ module multimem #(
     always_comb begin
         qa_sel = '0;
         for (int lane = 0; lane < LANES; lane = lane + 1) begin
-            if (lane_idx_q2 == types::mem_structure_t'(lane)) begin
+            if (lane_idx_pipe[QA_PIPE_DEPTH-1] == types::mem_structure_t'(lane)) begin
                 qa_sel = qa_lane_q[lane];
             end
         end
