@@ -27,6 +27,7 @@ module mem_lane #(
     output reg  [       DW-1:0] dob
 );
     localparam int DEPTH = (1 << ADDR_BITS);
+    localparam integer unsigned PORT_A_LATENCY = 1;
     localparam integer unsigned PORT_B_LATENCY = 2;
 
     // Force BRAM, avoid hazard glue
@@ -46,9 +47,13 @@ module mem_lane #(
 
     // Port A read: registered output for copy engine.
     // Keep this unconditional to avoid routing a wide enable into every BRAM OCEA.
+    // NOTE: the OUTREG stage for Port A lives in multimem (qa_lane_q), not here.
+    reg [PORT_A_LATENCY-1:0][DW-1:0] doa_pipe;
     always @(posedge clka) begin
-        doa <= mem[addra];
+        doa_pipe[0] <= mem[addra];
+        for (int stage = 1; stage < PORT_A_LATENCY; stage++) doa_pipe[stage] <= doa_pipe[stage-1];
     end
+    assign doa = doa_pipe[PORT_A_LATENCY-1];
 
     // Port B read: 2-cycle latency (sync read + explicit outreg stage)
     // Keep the output stage explicit so the ECP5 outreg plugin can pack it into DP16KD.
