@@ -14,12 +14,13 @@
 module tb_mem_lane #(
     parameter integer ADDR_BITS = 4,
     parameter integer DW = 8,
+    parameter integer unsigned PORT_A_READ_LATENCY = 2,
+    parameter integer unsigned PORT_B_READ_LATENCY = 2,
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 );
     localparam int DEPTH = (1 << ADDR_BITS);
-    localparam int READ_LATENCY = 2;
     localparam real SIM_HALF_PERIOD_A_NS = params::SIM_HALF_PERIOD_NS;
     localparam real SIM_HALF_PERIOD_B_NS = params::SIM_HALF_PERIOD_NS + 1.0;
     localparam logic [ADDR_BITS-1:0] ADDR_MIN = '0;
@@ -100,29 +101,10 @@ module tb_mem_lane #(
         @(negedge clkb);
         enb   = 1'b1;
         addrb = addr;
-        repeat (READ_LATENCY) @(posedge clkb);
+        repeat (PORT_B_READ_LATENCY) @(posedge clkb);
         #1;
         if (dob !== expected) begin  // check read data matches model after latency
             $fatal(1, "read mismatch addr=%0d expected=%0h got=%0h", addr, expected, dob);
-        end
-        @(negedge clkb);
-        enb = 1'b0;
-    endtask
-
-    task automatic read_expect_latency(input logic [ADDR_BITS-1:0] addr, input logic [DW-1:0] expected,
-                                       input logic [DW-1:0] previous);
-        @(negedge clkb);
-        enb   = 1'b1;
-        addrb = addr;
-        @(posedge clkb);
-        #1;
-        if (dob !== previous) begin  // check dob still shows prior address data after 1st cycle
-            $fatal(1, "latency early addr=%0d expected_prev=%0h got=%0h", addr, previous, dob);
-        end
-        @(posedge clkb);
-        #1;
-        if (dob !== expected) begin  // check dob updates after two cycles
-            $fatal(1, "latency late addr=%0d expected=%0h got=%0h", addr, expected, dob);
         end
         @(negedge clkb);
         enb = 1'b0;
@@ -134,15 +116,17 @@ module tb_mem_lane #(
         @(negedge clkb);
         enb   = 1'b1;
         addrb = next_addr;
-        @(posedge clkb);
-        #1;
-        if (dob !== prev_data) begin  // check data has not advanced after 1 cycle
-            $fatal(1, "latency short prev_addr=%0d expected=%0h got=%0h", prev_addr, prev_data, dob);
-        end
-        @(posedge clkb);
-        #1;
-        if (dob !== next_data) begin  // check data updates on the 2nd cycle
-            $fatal(1, "latency long next_addr=%0d expected=%0h got=%0h", next_addr, next_data, dob);
+        for (int cycle = 0; cycle < PORT_B_READ_LATENCY; cycle++) begin
+            @(posedge clkb);
+            #1;
+            if (cycle + 1 < PORT_B_READ_LATENCY) begin
+                if (dob !== prev_data) begin
+                    $fatal(1, "latency short prev_addr=%0d cycle=%0d expected=%0h got=%0h", prev_addr, cycle + 1,
+                           prev_data, dob);
+                end
+            end else if (dob !== next_data) begin
+                $fatal(1, "latency long next_addr=%0d expected=%0h got=%0h", next_addr, next_data, dob);
+            end
         end
         @(negedge clkb);
         enb = 1'b0;
@@ -152,7 +136,7 @@ module tb_mem_lane #(
         @(negedge clkb);
         enb   = 1'b0;
         addrb = addr;
-        repeat (READ_LATENCY) @(posedge clkb);
+        repeat (PORT_B_READ_LATENCY) @(posedge clkb);
         #1;
         // enb is intentionally ignored; reads still update while enb is low.
         if (dob !== expected) begin
@@ -183,7 +167,7 @@ module tb_mem_lane #(
         write_word(ADDR_MIN, DATA_MAX);
         @(negedge clka);
         addra = ADDR_MIN;
-        repeat (READ_LATENCY) @(posedge clka);
+        repeat (PORT_A_READ_LATENCY) @(posedge clka);
         #1;
         if (doa !== DATA_MAX) begin
             $fatal(1, "pre-reset doa not set expected=%0h got=%0h", DATA_MAX, doa);
@@ -237,7 +221,7 @@ module tb_mem_lane #(
         write_word(ADDR_MIN, DATA_MAX);
         write_word(ADDR_MAX, DATA_ALT);
 
-        // Prove read latency is exactly 2 cycles when changing addresses.
+        // Prove read latency matches the configured Port B pipeline depth.
         prove_read_latency_two(ADDR_MIN, model_mem[ADDR_MIN], ADDR_MAX, model_mem[ADDR_MAX]);
         prove_read_latency_two(ADDR_MAX, model_mem[ADDR_MAX], ADDR_MIN, model_mem[ADDR_MIN]);
 
