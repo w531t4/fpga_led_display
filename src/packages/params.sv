@@ -35,18 +35,6 @@ package params;
 
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
-    // FRAMEBUFFER FETCH
-    // Current QB latency: 2-cycle Port-B read in mem_lane + 1 multimem QB stage.
-    parameter int unsigned MULTIMEM_QB_LATENCY = 3;
-    // Fetch-side wait beyond the raw QB pipeline. Non-FM6126A builds keep one
-    // extra tick before sampling.
-`ifdef USE_FM6126A
-    parameter int unsigned FB_FETCH_SAMPLE_MARGIN_TICKS = 0;
-`else
-    parameter int unsigned FB_FETCH_SAMPLE_MARGIN_TICKS = 1;
-`endif
-    parameter int unsigned FB_FETCH_TIMEOUT_TICKS = MULTIMEM_QB_LATENCY + FB_FETCH_SAMPLE_MARGIN_TICKS;
-    parameter int unsigned FB_FETCH_SAMPLE_TICK = FB_FETCH_TIMEOUT_TICKS - 1;
 
     // READY HOLDOFF
     parameter longint unsigned READY_HOLDOFF_MSEC = 50;
@@ -129,6 +117,8 @@ package params;
     parameter integer unsigned NUM_FRAMEBUFFERS = 1;
 `endif
     /*
+        ==QA== PIPELINE
+
         The following describes the pipeline for QA
         | desc                                    | numcyc | module    | var     |
         | read_addr_q registered (copy engine)    | 1      | copyframe | COPYFRAME_READ_LATENCY
@@ -140,5 +130,22 @@ package params;
     */
     parameter integer unsigned MULTIMEM_QA_LATENCY = 4;
     localparam int unsigned COPYFRAME_READ_LATENCY = params::MULTIMEM_QA_LATENCY + 1; // +1 because of registered read in this module
+
+    /*
+        ==QB== PIPELINE
+
+    */
+    // FRAMEBUFFER FETCH
+    // Current QB latency: 2-cycle Port-B read in mem_lane + 1 multimem QB stage.
+    parameter int unsigned MULTIMEM_QB_LATENCY = 3;
+    // Fetch-side wait beyond the raw QB pipeline. Non-FM6126A builds keep one
+    // extra tick before sampling.
+`ifdef USE_FM6126A
+    parameter int unsigned FB_FETCH_SAMPLE_MARGIN_TICKS = 0;
+`else
+    parameter int unsigned FB_FETCH_SAMPLE_MARGIN_TICKS = 1;
+`endif
+    parameter int unsigned FB_FETCH_TIMEOUT_TICKS = MULTIMEM_QB_LATENCY + FB_FETCH_SAMPLE_MARGIN_TICKS;
+    parameter int unsigned FB_FETCH_SAMPLE_TICK = FB_FETCH_TIMEOUT_TICKS - 1;
     // verilator lint_on UNUSEDPARAM
 endpackage
