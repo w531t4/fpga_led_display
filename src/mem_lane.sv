@@ -16,6 +16,7 @@ module mem_lane #(
     input  wire                 clka,
     input  wire                 ena,
     input  wire                 wea,
+    input  wire                 rsta,
     input  wire [ADDR_BITS-1:0] addra,
     input  wire [       DW-1:0] dia,
     output reg  [       DW-1:0] doa,
@@ -27,7 +28,7 @@ module mem_lane #(
     output reg  [       DW-1:0] dob
 );
     localparam int DEPTH = (1 << ADDR_BITS);
-    localparam integer unsigned PORT_A_LATENCY = 1;
+    localparam integer unsigned PORT_A_LATENCY = 2;
     localparam integer unsigned PORT_B_LATENCY = 2;
 
     // Force BRAM, avoid hazard glue
@@ -40,18 +41,18 @@ module mem_lane #(
     end
     // synthesis translate_on
 
-    // Write port
-    always @(posedge clka) begin
-        if (ena && wea) mem[addra] <= dia;
-    end
-
-    // Port A read: registered output for copy engine.
-    // Keep this unconditional to avoid routing a wide enable into every BRAM OCEA.
-    // NOTE: the OUTREG stage for Port A lives in multimem (qa_lane_q), not here.
+    // Port A read: 2-cycle latency (sync read + explicit outreg stage)
+    // Keep the output stage explicit so Port A matches Port B timing behavior.
     reg [PORT_A_LATENCY-1:0][DW-1:0] doa_pipe;
     always @(posedge clka) begin
-        doa_pipe[0] <= mem[addra];
-        for (int stage = 1; stage < PORT_A_LATENCY; stage++) doa_pipe[stage] <= doa_pipe[stage-1];
+        if (rsta) begin
+            for (int stage = 0; stage < PORT_A_LATENCY; stage++) doa_pipe[stage] <= '0;
+        end else begin
+            // a write port. Keep this to ensure ram infers correctly, allowing for OUTREG
+            if (ena && wea) mem[addra] <= dia;
+            doa_pipe[0] <= mem[addra];
+            for (int stage = 1; stage < PORT_A_LATENCY; stage++) doa_pipe[stage] <= doa_pipe[stage-1];
+        end
     end
     assign doa = doa_pipe[PORT_A_LATENCY-1];
 

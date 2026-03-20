@@ -27,8 +27,7 @@ module tb_control_module_copyframe_readframe;
     localparam longint unsigned READFRAME_WAIT_CYCLES =
         (longint'(TOTAL_BYTES) + longint'(READFRAME_WAIT_EXTRA_BYTES)) * SPI_BYTE_CYCLES;
 
-    // Keep in sync with control_cmd_copyframe READ_LATENCY.
-    localparam int unsigned COPY_READ_LATENCY = 5;
+    localparam int unsigned COPY_READ_LATENCY = params::COPYFRAME_READ_LATENCY;
     localparam int unsigned COPY_PIPE_FLUSH_CYCLES = COPY_READ_LATENCY + 4;
     localparam longint unsigned COPYFRAME_WAIT_CYCLES = longint'(TOTAL_BYTES) + longint'(COPY_PIPE_FLUSH_CYCLES);
 
