@@ -30,6 +30,7 @@ module tb_mem_lane #(
     logic clka;
     logic ena;
     logic wea;
+    logic rsta;
     logic [ADDR_BITS-1:0] addra;
     logic [DW-1:0] dia;
 
@@ -49,6 +50,7 @@ module tb_mem_lane #(
         .clka (clka),
         .ena  (ena),
         .wea  (wea),
+        .rsta (rsta),
         .addra(addra),
         .dia  (dia),
         .doa  (doa),
@@ -177,6 +179,26 @@ module tb_mem_lane #(
         rstb = 1'b0;
     endtask
 
+    task automatic prove_reset_clears_doa;
+        write_word(ADDR_MIN, DATA_MAX);
+        @(negedge clka);
+        addra = ADDR_MIN;
+        repeat (READ_LATENCY) @(posedge clka);
+        #1;
+        if (doa !== DATA_MAX) begin
+            $fatal(1, "pre-reset doa not set expected=%0h got=%0h", DATA_MAX, doa);
+        end
+
+        @(negedge clka);
+        rsta = 1'b1;
+        @(posedge clka);
+        #1;
+        if (doa !== DATA_MIN) begin
+            $fatal(1, "Port A reset failed expected=%0h got=%0h", DATA_MIN, doa);
+        end
+        rsta = 1'b0;
+    endtask
+
     initial begin
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
@@ -186,6 +208,7 @@ module tb_mem_lane #(
         clkb  = 0;
         ena   = 0;
         wea   = 0;
+        rsta  = 0;
         addra = '0;
         dia   = '0;
         enb   = 0;
@@ -234,6 +257,7 @@ module tb_mem_lane #(
 
         // Prove that issuing a reset will present a 0 on dob.
         prove_reset_clears_dob();
+        prove_reset_clears_doa();
 
         // Memory contents should survive rstb on read path.
         read_expect(ADDR_MIN, model_mem[ADDR_MIN]);

@@ -124,11 +124,12 @@ package params;
         | read_addr_q registered (copy engine)    | 1      | copyframe | COPYFRAME_READ_LATENCY
         | addra_q in multimem                     | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
         | BRAM read register                      | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
-        | BRAM OUTREG / qa_lane_q                 | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
-        | qa_masked_q / stage 4                   | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
-        = 5
+        | BRAM OUTREG in mem_lane                 | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
+        | qa_lane_q                               | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
+        | qa_masked_q / stage 5                   | 1      | multimem  | COPYFRAME_READ_LATENCY | MULTIMEM_QA_LATENCY
+        = 6
     */
-    parameter integer unsigned MULTIMEM_QA_LATENCY = 4;
+    parameter integer unsigned MULTIMEM_QA_LATENCY = 5;
     localparam int unsigned COPYFRAME_READ_LATENCY = params::MULTIMEM_QA_LATENCY + 1; // +1 because of registered read in this module
 
     /*

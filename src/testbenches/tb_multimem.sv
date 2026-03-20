@@ -30,7 +30,7 @@ module tb_multimem #(
     logic ram_a_reset;
     logic ram_b_reset;
 
-    wire types::mem_write_data_t _unused_ok_QA;
+    wire types::mem_write_data_t ram_a_data_out;
     types::mem_write_data_t model_mem[LANES][DEPTH_B];
 
     multimem #(
@@ -41,7 +41,7 @@ module tb_multimem #(
         .AddressB(ram_b_address),
         .DataInB(16'b0),
         .WrB(1'b0),
-        .QA(_unused_ok_QA),
+        .QA(ram_a_data_out),
         .ClockA(clk_a),
         .ClockB(clk_b),
         .ClockEnA(ram_a_clk_enable),
@@ -106,6 +106,21 @@ module tb_multimem #(
         ram_b_clk_enable = 1'b0;
     endtask
 
+    task automatic read_check_a(input types::subpanel_addr_t subpanel, input types::pixel_addr_t pixel_sel,
+                                input types::mem_read_addr_t addr_b, input types::mem_write_data_t expected);
+        @(negedge clk_a);
+        ram_a_address = pack_addr_a(subpanel, addr_b, pixel_sel);
+        ram_a_clk_enable = 1'b1;
+        ram_a_wr = 1'b0;
+        repeat (params::MULTIMEM_QA_LATENCY) @(posedge clk_a);
+        #1;
+        if (ram_a_data_out !== expected) begin
+            $fatal(1, "QA mismatch addr_b=%0d expected=%0h got=%0h", addr_b, expected, ram_a_data_out);
+        end
+        @(negedge clk_a);
+        ram_a_clk_enable = 1'b0;
+    endtask
+
     initial begin
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
@@ -160,6 +175,17 @@ module tb_multimem #(
         write_lane(SUBPANEL0, PIXSEL0, ADDR_B_MAX, 8'h5A);
         read_check(ADDR_B_MAX);
 
+        // Reset the ClockA-side read pipeline and confirm QA is cleared too.
+        read_check_a(SUBPANEL0, PIXSEL0, ADDR_B_MAX, 8'h5A);
+        @(negedge clk_a);
+        ram_a_reset = 1'b1;
+        @(posedge clk_a);
+        #1;
+        if (ram_a_data_out !== '0) begin
+            $fatal(1, "QA reset failed expected=0 got=%0h", ram_a_data_out);
+        end
+        ram_a_reset = 1'b0;
+
         #200 $finish;
     end
 
@@ -169,6 +195,7 @@ module tb_multimem #(
     end
     // verilog_format: off
     wire _unused_ok = &{1'b0,
+                        ram_a_data_out,
                         ram_b_data_out,
                         1'b0};
     // verilog_format: on
