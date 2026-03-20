@@ -13,11 +13,11 @@ module mem_lane #(
     parameter integer ADDR_BITS = 11,
     parameter integer DW        = 8
 ) (
-    input wire                 clka,
-    input wire                 ena,
-    input wire                 wea,
-    input wire [ADDR_BITS-1:0] addra,
-    input wire [       DW-1:0] dia,
+    input  wire                 clka,
+    input  wire                 ena,
+    input  wire                 wea,
+    input  wire [ADDR_BITS-1:0] addra,
+    input  wire [       DW-1:0] dia,
     output reg  [       DW-1:0] doa,
 
     input  wire                 clkb,
@@ -27,6 +27,7 @@ module mem_lane #(
     output reg  [       DW-1:0] dob
 );
     localparam int DEPTH = (1 << ADDR_BITS);
+    localparam integer unsigned PORT_B_LATENCY = 2;
 
     // Force BRAM, avoid hazard glue
     (* ram_style="block", no_rw_check *)
@@ -53,16 +54,18 @@ module mem_lane #(
     // Keep the output stage explicit so the ECP5 outreg plugin can pack it into DP16KD.
     // NOTE: enb is intentionally not used here; driving CEB/OCEB with a global
     // enable creates a long fanout path. Gate usage of dob downstream instead.
-    reg [DW-1:0] dob_q;
+    reg [PORT_B_LATENCY-1:0][DW-1:0] dob_pipe;
+
     always @(posedge clkb) begin
-        if (rstb) dob_q <= '0;
-        else dob_q <= mem[addrb];
+        if (rstb) begin
+            for (int stage = 0; stage < PORT_B_LATENCY; stage++) dob_pipe[stage] <= '0;
+        end else begin
+            dob_pipe[0] <= mem[addrb];
+            for (int stage = 1; stage < PORT_B_LATENCY; stage++) dob_pipe[stage] <= dob_pipe[stage-1];
+        end
     end
-    // Let the output stage run every cycle so single-cycle enb pulses still return data.
-    always @(posedge clkb) begin
-        if (rstb) dob <= '0;
-        else dob <= dob_q;
-    end
+    assign dob = dob_pipe[PORT_B_LATENCY-1];
+
     // enb intentionally unused: keep CEB/OCEB constant to avoid long enable fanout.
     wire _unused_ok_enb = &{1'b0, enb, 1'b0};
 endmodule
