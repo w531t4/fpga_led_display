@@ -104,8 +104,8 @@ module main #(
     wire types::row_subpanel_addr_t row_address_active;
     wire types::brightness_level_t brightness_mask;
 
-    types::rgb_signals_t rgb_enable;
-    types::brightness_level_t brightness_enable;
+    wire types::rgb_signals_t rgb_enable;
+    wire types::brightness_level_t brightness_enable;
     wire types::rgb_signals_t rgb_enable_ctrl;
     wire types::brightness_level_t brightness_enable_ctrl;
 `ifdef USE_BOARDLEDS_BRIGHTNESS
@@ -255,7 +255,7 @@ module main #(
         ._UNUSED('d0)
     ) fb_f (
         .reset (global_reset_sync),
-        .clk_in(clk_root),
+        .clk_in(clk_ctrl),
 
         .column_address(column_address),
         .row_address(row_address),
@@ -392,23 +392,15 @@ module main #(
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
 
-    // Controller state now runs on clk_ctrl, but pixel generation remains on
-    // clk_root. Synchronize the infrequently changing display-control vectors
-    // into the root domain instead of keeping the whole controller there.
-    always_ff @(posedge clk_root) begin
-        if (global_reset_sync) begin
-            rgb_enable <= '0;
-            brightness_enable <= '0;
-        end else begin
-            rgb_enable <= rgb_enable_ctrl;
-            brightness_enable <= brightness_enable_ctrl;
-        end
-    end
+    // Keep scan/fetch/display-control in the slower controller/scan domain so
+    // BRAM B-port timing does not count against clk_root.
+    assign rgb_enable = rgb_enable_ctrl;
+    assign brightness_enable = brightness_enable_ctrl;
 
     // Framebuffer fabric (mux + multimem instances).
     framebuffer_fabric fb_fabric (
         .clk_a(clk_ctrl),
-        .clk_b(clk_root),
+        .clk_b(clk_ctrl),
         .reset(global_reset_sync),
         .ctrl_ram_address(ctrl_ram_address),
         .ctrl_ram_data_out(ctrl_ram_data_out),
