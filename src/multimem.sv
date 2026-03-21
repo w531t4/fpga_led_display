@@ -31,7 +31,7 @@ module multimem #(
     output wire types::mem_read_data_t QB
 );
     localparam integer unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
-    localparam integer unsigned SUBPANEL_WORD_BITS = $bits(types::color_field_t);
+    localparam integer unsigned SUBPANEL_WORD_BITS = $bits(types::color_field_subpanel_t);
     // addra_q is QA stage 1; the lane-select pipe covers the remaining registered QA stages.
     localparam integer unsigned QA_SELECT_PIPE_DEPTH = params::MULTIMEM_QA_LATENCY - 1;
     wire [SUBPANEL_WORD_BITS-1:0] qb_subpanel_w[NUM_SUBPANELS];
@@ -148,7 +148,7 @@ module multimem #(
             qb_pipe_q <= '0;
         end else begin
             for (int subpanel = 0; subpanel < NUM_SUBPANELS; subpanel++) begin
-                qb_pipe_q.subpanel[subpanel].field <= qb_subpanel_w[subpanel];
+                qb_pipe_q.subpanel[subpanel] <= types::color_field_subpanel_t'(qb_subpanel_w[subpanel]);
             end
         end
     end

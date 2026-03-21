@@ -15,6 +15,7 @@ module tb_multimem #(
     localparam types::subpanel_addr_t SUBPANEL1 = types::subpanel_addr_t'(1);
     localparam types::pixel_addr_t PIXSEL0 = 'b0;
     localparam types::pixel_addr_t PIXSEL1 = types::pixel_addr_t'(1);
+    localparam types::pixel_addr_t PIXSEL_LAST = types::pixel_addr_t'(params::BYTES_PER_PIXEL - 1);
     localparam types::mem_read_addr_t ADDR_B_MAX = '1;  // all 1's
     localparam types::mem_read_addr_t ADDR_B_TOP0_MAX = {1'b0, {$bits(types::mem_read_addr_t) - 1{1'b1}}};
 
@@ -165,10 +166,13 @@ module tb_multimem #(
         // Write two lanes at the same address and read both back.
         write_lane(SUBPANEL0, PIXSEL0, ADDR_B_MAX, 8'hA1);
         write_lane(SUBPANEL0, PIXSEL1, ADDR_B_MAX, 8'hB2);
+        if (params::BYTES_PER_PIXEL > 2) begin
+            write_lane(SUBPANEL0, PIXSEL_LAST, ADDR_B_MAX, 8'hC3);
+        end
         read_check(ADDR_B_MAX);
 
         // Write a different subpanel at a different address.
-        write_lane(SUBPANEL1, PIXSEL0, ADDR_B_TOP0_MAX, 8'hC3);
+        write_lane(SUBPANEL1, PIXSEL0, ADDR_B_TOP0_MAX, 8'hD4);
         read_check(ADDR_B_TOP0_MAX);
 
         // Overwrite an existing lane/address.
