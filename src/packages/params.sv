@@ -35,6 +35,7 @@ package params;
 
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
+    parameter int unsigned CTRL_RX_FIFO_DEPTH = 32;
 
     // READY HOLDOFF
     parameter longint unsigned READY_HOLDOFF_MSEC = 50;

@@ -12,7 +12,10 @@ module tb_cmd_line_state_checker #(
     parameter logic [1:0] SPI_CDIV = 2'b0,
     // Readrect sizing from row4.svh (used to size wait windows).
     parameter int unsigned READRECT_W = 0,
-    parameter int unsigned READRECT_TOTAL_BYTES = 0
+    parameter int unsigned READRECT_TOTAL_BYTES = 0,
+    // Scale expected timing windows when the controller runs slower than the
+    // transport clock used by the testbench.
+    parameter int unsigned STEP_SCALE = 1
 ) (
     input  logic                       clk,
     input  logic                       reset,
@@ -21,8 +24,10 @@ module tb_cmd_line_state_checker #(
 );
     // Mirror tb_main timing assumptions: 500us per step at ROOT_CLOCK.
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;
-    localparam longint unsigned CMD_LINE_STATE_STEP_CYCLES =
+    localparam longint unsigned CMD_LINE_STATE_STEP_CYCLES_BASE =
         (64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000;
+    localparam longint unsigned CMD_LINE_STATE_STEP_CYCLES =
+        STEP_SCALE * CMD_LINE_STATE_STEP_CYCLES_BASE;
 
     // Derive SPI byte cadence from the same divider as tb_main's spi_master.
     localparam int unsigned SPI_CLK_DIVIDE = 4 << SPI_CDIV;  // spi_master: 00=/4, 01=/8, 10=/16, 11=/32
@@ -35,14 +40,14 @@ module tb_cmd_line_state_checker #(
     // Add a full row of bytes as margin for SPI idle/finish overheads.
     localparam longint unsigned READFRAME_WAIT_EXTRA_BYTES = longint'(params::PIXEL_WIDTH) * params::BYTES_PER_PIXEL;
     localparam longint unsigned READFRAME_WAIT_CYCLES =
-        CMD_LINE_STATE_STEP_CYCLES +
-        ((READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
+        (STEP_SCALE * CMD_LINE_STATE_STEP_CYCLES_BASE) +
+        (STEP_SCALE * ((READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES));
 
     // Readrect payload is smaller; still compute a safe wait window for pipelined follow-ups.
     localparam longint unsigned READRECT_WAIT_EXTRA_BYTES = longint'(READRECT_W) * params::BYTES_PER_PIXEL;
     localparam longint unsigned READRECT_WAIT_CYCLES =
-        CMD_LINE_STATE_STEP_CYCLES +
-        ((longint'(READRECT_TOTAL_BYTES) + READRECT_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
+        (STEP_SCALE * CMD_LINE_STATE_STEP_CYCLES_BASE) +
+        (STEP_SCALE * ((longint'(READRECT_TOTAL_BYTES) + READRECT_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES));
 
     // Command sequence length depends on watchdog being enabled.
 `ifdef USE_WATCHDOG

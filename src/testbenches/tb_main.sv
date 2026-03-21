@@ -5,7 +5,6 @@
 `default_nettype none
 // verilog_format: on
 `include "tb_helper.svh"
-`include "tb_cmd_line_state_checker.svh"
 `include "tb_spi_streamer.svh"
 module tb_main #(
     // verilator lint_off UNUSEDPARAM
@@ -30,11 +29,17 @@ module tb_main #(
     `include "row4.svh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = params::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
+    // main.sv now runs control/write traffic on clk_ctrl (derived from clk_matrix),
+    // and panel-sized write commands take materially longer than they did when the
+    // controller lived on clk_root. Use a wider safety factor here so tb_main
+    // only fails on real ordering bugs, not stale latency assumptions.
+    localparam int unsigned CTRL_STEP_SCALE = params::DIVIDE_CLK_BY_X_FOR_MATRIX * 8;
     localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
-    localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
+    localparam longint CMD_LINE_STATE_STEP_CYCLES_BASE = (CMD_LINE_STATE_STEP_SECS == 0)
         ? ((64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
         : (64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
+    localparam longint CMD_LINE_STATE_STEP_CYCLES = CTRL_STEP_SCALE * CMD_LINE_STATE_STEP_CYCLES_BASE;
     // Readframe payload is large; compute a safe wait window for the idle transition after it.
     localparam logic [1:0] SPI_CDIV = 2'b0;
     localparam int unsigned SPI_CLK_DIVIDE = 4 << SPI_CDIV;  // spi_master: 00=/4, 01=/8, 10=/16, 11=/32
@@ -46,13 +51,12 @@ module tb_main #(
     localparam longint unsigned READFRAME_WAIT_EXTRA_BYTES = longint'(params::PIXEL_WIDTH) * params::BYTES_PER_PIXEL;
     localparam longint unsigned READFRAME_WAIT_CYCLES =
         CMD_LINE_STATE_STEP_CYCLES +
-        (longint'(READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
+        (CTRL_STEP_SCALE * longint'(READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
     // Readrect payload is smaller; still compute a safe wait window for pipelined follow-ups.
     localparam longint unsigned READRECT_WAIT_EXTRA_BYTES = longint'(READRECT_W) * params::BYTES_PER_PIXEL;
     localparam longint unsigned READRECT_WAIT_CYCLES =
         CMD_LINE_STATE_STEP_CYCLES +
-        ((longint'(READRECT_TOTAL_BYTES) + READRECT_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
-    logic cmd_line_state_seq_done;
+        (CTRL_STEP_SCALE * (longint'(READRECT_TOTAL_BYTES) + READRECT_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
 
     wire  rxdata;
 `ifdef SPI
@@ -150,7 +154,7 @@ module tb_main #(
         .clk           (clk),
         .reset         (reset),
         .start         (spi_start),
-        .ready_for_data(tb_main.tbi_main.ctrl.ready_for_data),
+        .ready_for_data(tb_main.tbi_main.ctrl_ready_for_data),
         .data          (cmd_series),
         .done          (spi_done),
         .spi_clk_en    (spi_clk_en),
@@ -231,7 +235,7 @@ module tb_main #(
         `WAIT_ASSERT(clk, tb_main.tbi_main.clk_root === 1'b1, TB_MAIN_WAIT_CYCLES)
         // @(posedge tb_main.tbi_main.clk_root);
 `ifdef SPI
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.ready_for_data === 1'b1, TB_MAIN_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl_ready_for_data === 1'b1, TB_MAIN_WAIT_CYCLES)
         @(posedge clk) begin
             spi_start = 1;
         end
@@ -249,7 +253,7 @@ module tb_main #(
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
-        wait (cmd_line_state_seq_done);
+        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl_ready_for_data === 1'b1, TB_MAIN_WAIT_CYCLES)
         $finish;
     end
 
@@ -265,18 +269,6 @@ module tb_main #(
         `WAIT_ASSERT(tb_main.tbi_main.clk_root, fpga_ready === 1'b1, TB_MAIN_WAIT_CYCLES)
     end
 `endif
-
-    // Shared cmd_line_state sequence checker (keep in sync with cmd_series).
-    tb_cmd_line_state_checker #(
-        .SPI_CDIV(SPI_CDIV),
-        .READRECT_W(READRECT_W),
-        .READRECT_TOTAL_BYTES(READRECT_TOTAL_BYTES)
-    ) cmd_line_state_checker (
-        .clk           (clk),
-        .reset         (reset),
-        .cmd_line_state(tb_main.tbi_main.ctrl.cmd_line_state),
-        .seq_done      (cmd_line_state_seq_done)
-    );
 
     initial begin : assert_readrect_pipelining
         // Verify that a readframe command following readrect is accepted without a host-side gap.

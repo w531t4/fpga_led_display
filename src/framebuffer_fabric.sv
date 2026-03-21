@@ -3,7 +3,8 @@
 `default_nettype none
 
 module framebuffer_fabric (
-    input logic clk_root,
+    input logic clk_a,
+    input logic clk_b,
     input logic reset,
 
     // Controller write path.
@@ -107,12 +108,12 @@ module framebuffer_fabric (
             multimem #(
                 ._UNUSED('d0)
             ) fb (
-                .ClockA(clk_root),
+                .ClockA(clk_a),
                 .AddressA(ram_a_address_frames[frame_idx]),
                 .DataInA(ram_a_data_in_frames[frame_idx]),
                 .WrA(ram_a_write_enable_frames[frame_idx]),
                 .ResetA(reset),
-                .ClockB(clk_root),
+                .ClockB(clk_b),
                 .DataInB(16'b0),
                 .AddressB(ram_b_address),
                 .WrB(1'b0),
