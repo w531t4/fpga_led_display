@@ -61,6 +61,7 @@ module main #(
 
     wire                         clk_root;
     wire                         clk_matrix;
+    wire                         clk_ctrl;
 
     wire                         global_reset;
     logic                        global_reset_sync;
@@ -88,7 +89,9 @@ module main #(
     wire types::color_field_t pixeldata_subpanels[NUM_SUBPANELS];
     wire types::rgb_signals_t rgb_subpanels[NUM_SUBPANELS];
     wire ctrl_busy;
+    wire ctrl_busy_raw;
     wire ctrl_ready_for_data;
+    wire ctrl_ready_for_data_raw;
 
 `ifdef DEBUGGER
     debugger_if debug_if (clk_root);
@@ -101,8 +104,10 @@ module main #(
     wire types::row_subpanel_addr_t row_address_active;
     wire types::brightness_level_t brightness_mask;
 
-    wire types::rgb_signals_t rgb_enable;
-    wire types::brightness_level_t brightness_enable;
+    types::rgb_signals_t rgb_enable;
+    types::brightness_level_t brightness_enable;
+    wire types::rgb_signals_t rgb_enable_ctrl;
+    wire types::brightness_level_t brightness_enable_ctrl;
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -112,9 +117,16 @@ module main #(
     wire pll_locked;
     wire rxdata;
     wire rxdata_ready;
-    wire rxdata_ready_level;
-    wire rxdata_ready_pulse;
     wire [7:0] rxdata_to_controller;
+    wire rxdata_ready_root_level;
+    wire rxdata_ready_root_pulse;
+    wire ctrl_rx_fifo_full;
+    wire ctrl_rx_fifo_empty;
+    wire ctrl_rx_fifo_write_en;
+    wire ctrl_rx_fifo_read_en;
+    logic ctrl_data_issue_pending;
+    cmd::indata8_t ctrl_rx_fifo_data;
+    logic ctrl_data_ready_pulse;
 `ifdef SPI
     wire spi_clk;
     wire spi_cs;
@@ -127,6 +139,8 @@ module main #(
     wire watchdog_reset;
 `endif
     // No wires past here
+
+    assign clk_ctrl = clk_matrix;
 
     new_pll #(
         .SPEED(params::PLL_SPEED)
@@ -282,14 +296,68 @@ module main #(
     );
 `endif
 
-    // bring uart-data into main clock domain
+`ifdef SPI
+    // The SPI slave already produces bytes in the SPI clock domain. Write the
+    // async FIFO directly from that domain so clk_root is not burdened with the
+    // ingress write-pointer/full-detect path.
+    assign rxdata_ready_root_level = 1'b0;
+    assign rxdata_ready_root_pulse = 1'b0;
+    assign ctrl_rx_fifo_write_en = rxdata_ready;
+`else
+    // UART ingress already lives on clk_root, so keep the existing root-domain
+    // edge capture for that build.
     ff_sync #() uart_sync (
         .clk(clk_root),
         .signal(rxdata_ready),
-        .sync_level(rxdata_ready_level),
-        .sync_pulse(rxdata_ready_pulse),
+        .sync_level(rxdata_ready_root_level),
+        .sync_pulse(rxdata_ready_root_pulse),
         .reset(global_reset)
     );
+
+    assign ctrl_rx_fifo_write_en = rxdata_ready_root_pulse;
+`endif
+
+    async_fifo #(
+        .WIDTH($bits(cmd::indata8_t)),
+        .DEPTH(params::CTRL_RX_FIFO_DEPTH),
+        ._UNUSED('d0)
+    ) ctrl_rx_fifo (
+`ifdef SPI
+        .wr_clk(spi_clk),
+        .wr_reset(global_reset),
+`else
+        .wr_clk(clk_root),
+        .wr_reset(global_reset_sync),
+`endif
+        .wr_en(ctrl_rx_fifo_write_en),
+        .wr_data(cmd::indata8_t'(rxdata_to_controller)),
+        .full(ctrl_rx_fifo_full),
+        .rd_clk(clk_ctrl),
+        .rd_reset(global_reset),
+        .rd_en(ctrl_rx_fifo_read_en),
+        .rd_data(ctrl_rx_fifo_data),
+        .empty(ctrl_rx_fifo_empty)
+    );
+
+    always_ff @(posedge clk_ctrl) begin
+        if (global_reset) begin
+            ctrl_data_issue_pending <= 1'b0;
+            ctrl_data_ready_pulse <= 1'b0;
+        end else begin
+            ctrl_data_ready_pulse <= 1'b0;
+
+            if (ctrl_data_issue_pending) begin
+                ctrl_data_ready_pulse <= 1'b1;
+                ctrl_data_issue_pending <= 1'b0;
+            end else if (ctrl_rx_fifo_read_en) begin
+                ctrl_data_issue_pending <= 1'b1;
+            end
+        end
+    end
+
+    assign ctrl_rx_fifo_read_en = !ctrl_data_issue_pending && ctrl_ready_for_data_raw && !ctrl_rx_fifo_empty;
+    assign ctrl_ready_for_data = ctrl_ready_for_data_raw && !ctrl_rx_fifo_full;
+    assign ctrl_busy = ctrl_busy_raw || ctrl_rx_fifo_full;
 
     /* the control module */
     control_module #(
@@ -297,17 +365,17 @@ module main #(
         ._UNUSED('d0)
     ) ctrl (
         .reset(global_reset),
-        .clk_in(clk_root),
-        .data_rx(rxdata_to_controller),
+        .clk_in(clk_ctrl),
+        .data_rx(ctrl_rx_fifo_data),
 `ifdef SPI
-        .data_ready_n(~rxdata_ready_pulse),
+        .data_ready_n(~ctrl_data_ready_pulse),
 `else
-        .data_ready_n(rxdata_ready_pulse),
+        .data_ready_n(ctrl_data_ready_pulse),
 `endif
-        .rgb_enable(rgb_enable),
-        .brightness_enable(brightness_enable),
-        .busy(ctrl_busy),
-        .ready_for_data(ctrl_ready_for_data),
+        .rgb_enable(rgb_enable_ctrl),
+        .brightness_enable(brightness_enable_ctrl),
+        .busy(ctrl_busy_raw),
+        .ready_for_data(ctrl_ready_for_data_raw),
         .ram_data_out(ctrl_ram_data_out),
         .ram_address(ctrl_ram_address),
         .ram_write_enable(ctrl_ram_write_enable),
@@ -324,9 +392,23 @@ module main #(
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
 
+    // Controller state now runs on clk_ctrl, but pixel generation remains on
+    // clk_root. Synchronize the infrequently changing display-control vectors
+    // into the root domain instead of keeping the whole controller there.
+    always_ff @(posedge clk_root) begin
+        if (global_reset_sync) begin
+            rgb_enable <= '0;
+            brightness_enable <= '0;
+        end else begin
+            rgb_enable <= rgb_enable_ctrl;
+            brightness_enable <= brightness_enable_ctrl;
+        end
+    end
+
     // Framebuffer fabric (mux + multimem instances).
     framebuffer_fabric fb_fabric (
-        .clk_root(clk_root),
+        .clk_a(clk_ctrl),
+        .clk_b(clk_root),
         .reset(global_reset_sync),
         .ctrl_ram_address(ctrl_ram_address),
         .ctrl_ram_data_out(ctrl_ram_data_out),
@@ -454,5 +536,5 @@ module main #(
 `ifdef USE_FM6126A
     wire _unused_ok_fm6126a = &{1'b0, init_reset_strobe, 1'b0};
 `endif
-    wire _unused_ok = &{1'b0, pll_locked, rxdata_ready_level, ctrl_busy, ctrl_ready_for_data, 1'b0};
+    wire _unused_ok = &{1'b0, pll_locked, rxdata_ready_root_level, rxdata_ready_root_pulse, 1'b0};
 endmodule
