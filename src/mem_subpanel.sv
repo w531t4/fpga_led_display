@@ -3,8 +3,8 @@
 // mem_subpanel: Dual-clock RAM storing one subpanel's color payload per address.
 //  - Port A writes a single byte slot within that payload.
 //  - Port A / Port B both keep the same 2-cycle read shape used elsewhere.
-//  - The RAM stores only the real pixel bytes; multimem reintroduces any
-//    padded byte slots when it rebuilds QB.
+//  - The RAM stores the full padded subpanel payload so the multimem QB bus
+//    keeps the same packed layout as the old lane-based implementation.
 //  - Each byte slot is stored in its own byte-wide memory. This keeps the
 //    subpanel-word interface in multimem without synthesizing a BRAM-side
 //    read-modify-write or a wide byte-select mux on DIA.
