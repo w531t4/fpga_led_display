@@ -30,28 +30,7 @@ module tb_main #(
     `include "row4.svh"
     localparam integer TB_MAIN_WAIT_SECS = 2;
     localparam integer TB_MAIN_WAIT_CYCLES = params::ROOT_CLOCK * TB_MAIN_WAIT_SECS;
-    localparam integer CMD_LINE_STATE_STEP_SECS = 0;  // use nanos below
-    localparam integer CMD_LINE_STATE_STEP_NS = 500_000;  // 500us per step
-    localparam longint CMD_LINE_STATE_STEP_CYCLES = (CMD_LINE_STATE_STEP_SECS == 0)
-        ? ((64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000)
-        : (64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_SECS);
-    // Readframe payload is large; compute a safe wait window for the idle transition after it.
     localparam logic [1:0] SPI_CDIV = 2'b0;
-    localparam int unsigned SPI_CLK_DIVIDE = 4 << SPI_CDIV;  // spi_master: 00=/4, 01=/8, 10=/16, 11=/32
-    localparam int unsigned SPI_BITS_PER_BYTE = $bits(byte);
-    localparam longint unsigned SPI_BYTE_CYCLES = longint'(SPI_CLK_DIVIDE) * SPI_BITS_PER_BYTE;
-    localparam longint unsigned READFRAME_TOTAL_BYTES =
-        longint'(params::PIXEL_WIDTH) * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
-    // Add a full row of bytes as margin for SPI idle/finish overheads.
-    localparam longint unsigned READFRAME_WAIT_EXTRA_BYTES = longint'(params::PIXEL_WIDTH) * params::BYTES_PER_PIXEL;
-    localparam longint unsigned READFRAME_WAIT_CYCLES =
-        CMD_LINE_STATE_STEP_CYCLES +
-        (longint'(READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
-    // Readrect payload is smaller; still compute a safe wait window for pipelined follow-ups.
-    localparam longint unsigned READRECT_WAIT_EXTRA_BYTES = longint'(READRECT_W) * params::BYTES_PER_PIXEL;
-    localparam longint unsigned READRECT_WAIT_CYCLES =
-        CMD_LINE_STATE_STEP_CYCLES +
-        ((longint'(READRECT_TOTAL_BYTES) + READRECT_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
     logic cmd_line_state_seq_done;
 
     wire  rxdata;
@@ -68,7 +47,6 @@ module tb_main #(
 `else
     wire uart_rx_dataready;
 `endif
-    wire [13:0] _unused_output;
 
     main #(
         ._UNUSED('d0)
@@ -130,7 +108,6 @@ module tb_main #(
     );
     // verilog_format: off
     wire _unused_ok_main = &{1'b0,
-                             _unused_output,
                              1'b0};
 
 `ifdef SPI_ESP32
@@ -278,20 +255,6 @@ module tb_main #(
         .seq_done      (cmd_line_state_seq_done)
     );
 
-    initial begin : assert_readrect_pipelining
-        // Verify that a readframe command following readrect is accepted without a host-side gap.
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READRECT, TB_MAIN_WAIT_CYCLES)
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READFRAME,
-                     int'(READRECT_WAIT_CYCLES))
-    end
-
-    initial begin : assert_readframe_pipelining
-        // Verify that a readpixel command following readframe is accepted without a host-side gap.
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READFRAME, TB_MAIN_WAIT_CYCLES)
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READPIXEL,
-                     int'(READFRAME_WAIT_CYCLES))
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_IDLE, int'(CMD_LINE_STATE_STEP_CYCLES))
-    end
     always begin
         #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end

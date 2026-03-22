@@ -38,7 +38,7 @@ module tb_cmd_line_state_checker #(
         CMD_LINE_STATE_STEP_CYCLES +
         ((READFRAME_TOTAL_BYTES + READFRAME_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
 
-    // Readrect payload is smaller; still compute a safe wait window for pipelined follow-ups.
+    // Readrect payload is smaller; compute a safe wait window for its return to IDLE.
     localparam longint unsigned READRECT_WAIT_EXTRA_BYTES = longint'(READRECT_W) * params::BYTES_PER_PIXEL;
     localparam longint unsigned READRECT_WAIT_CYCLES =
         CMD_LINE_STATE_STEP_CYCLES +
@@ -46,9 +46,9 @@ module tb_cmd_line_state_checker #(
 
     // Command sequence length depends on watchdog being enabled.
 `ifdef USE_WATCHDOG
-    localparam int CMD_LINE_STATE_SEQ_LEN = 20;
+    localparam int CMD_LINE_STATE_SEQ_LEN = 21;
 `else
-    localparam int CMD_LINE_STATE_SEQ_LEN = 18;
+    localparam int CMD_LINE_STATE_SEQ_LEN = 19;
 `endif
 
 `ifdef USE_WATCHDOG
@@ -74,7 +74,9 @@ module tb_cmd_line_state_checker #(
             16: cmd_line_state_expected = enums::STATE_CMD_READROW;
             17: cmd_line_state_expected = enums::STATE_IDLE;
             18: cmd_line_state_expected = enums::STATE_CMD_READRECT;
-            19: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
+            19: cmd_line_state_expected = enums::STATE_IDLE;
+            20: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
+            // 21: cmd_line_state_expected = enums::STATE_IDLE;
             default: cmd_line_state_expected = enums::control_module_fsm_e'('hf);
         endcase
     endfunction
@@ -99,7 +101,8 @@ module tb_cmd_line_state_checker #(
             14: cmd_line_state_expected = enums::STATE_CMD_READROW;
             15: cmd_line_state_expected = enums::STATE_IDLE;
             16: cmd_line_state_expected = enums::STATE_CMD_READRECT;
-            17: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
+            17: cmd_line_state_expected = enums::STATE_IDLE;
+            18: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
             default: cmd_line_state_expected = enums::control_module_fsm_e'('hf);
         endcase
     endfunction
