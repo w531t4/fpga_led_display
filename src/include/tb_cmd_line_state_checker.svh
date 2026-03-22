@@ -46,9 +46,9 @@ module tb_cmd_line_state_checker #(
 
     // Command sequence length depends on watchdog being enabled.
 `ifdef USE_WATCHDOG
-    localparam int CMD_LINE_STATE_SEQ_LEN = 21;
+    localparam int CMD_LINE_STATE_SEQ_LEN = 24;
 `else
-    localparam int CMD_LINE_STATE_SEQ_LEN = 19;
+    localparam int CMD_LINE_STATE_SEQ_LEN = 22;
 `endif
 
 `ifdef USE_WATCHDOG
@@ -76,7 +76,9 @@ module tb_cmd_line_state_checker #(
             18: cmd_line_state_expected = enums::STATE_CMD_READRECT;
             19: cmd_line_state_expected = enums::STATE_IDLE;
             20: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
-            // 21: cmd_line_state_expected = enums::STATE_IDLE;
+            21: cmd_line_state_expected = enums::STATE_IDLE;
+            22: cmd_line_state_expected = enums::STATE_CMD_READPIXEL;
+            23: cmd_line_state_expected = enums::STATE_IDLE;
             default: cmd_line_state_expected = enums::control_module_fsm_e'('hf);
         endcase
     endfunction
@@ -103,6 +105,9 @@ module tb_cmd_line_state_checker #(
             16: cmd_line_state_expected = enums::STATE_CMD_READRECT;
             17: cmd_line_state_expected = enums::STATE_IDLE;
             18: cmd_line_state_expected = enums::STATE_CMD_READFRAME;
+            19: cmd_line_state_expected = enums::STATE_IDLE;
+            20: cmd_line_state_expected = enums::STATE_CMD_READPIXEL;
+            21: cmd_line_state_expected = enums::STATE_IDLE;
             default: cmd_line_state_expected = enums::control_module_fsm_e'('hf);
         endcase
     endfunction
