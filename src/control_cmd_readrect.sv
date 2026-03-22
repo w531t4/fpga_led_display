@@ -37,6 +37,9 @@ module control_cmd_readrect #(
     // Header fields captured from the incoming stream.
     types::col_addr_field_t x1;
     types::col_addr_field_t width;
+    // verilator lint_off UNUSEDSIGNAL
+    types::col_addr_field_t width_q;
+    // verilator lint_on UNUSEDSIGNAL
     types::col_addr_field_byte_index_t x1_byte_counter;
     types::col_addr_field_byte_index_t width_byte_counter;
     types::row_addr_t y1;
@@ -61,6 +64,7 @@ module control_cmd_readrect #(
             x1 <= 'b0;
             x2 <= 'b0;
             width <= 'b0;
+            width_q <= 'b0;
             y1 <= 'b0;
             y2 <= 'b0;
             height <= 'b0;
@@ -108,7 +112,7 @@ module control_cmd_readrect #(
                     done <= 1'b0;
                     if (enable) begin
                         // Clamp width/height so the stream never writes out of bounds.
-                        width <= types::col_addr_field_t'(calc::clamp_remaining_dimension(
+                        width_q <= types::col_addr_field_t'(calc::clamp_remaining_dimension(
                             types::uint_t'(x1), types::uint_t'(width), params::PIXEL_WIDTH
                         ));
                         height <= types::row_addr_count_t'(calc::clamp_remaining_dimension(
@@ -122,7 +126,7 @@ module control_cmd_readrect #(
                     done <= 1'b0;
                     if (enable) begin
                         x2 <= types::col_addr_t'(types::col_addr_count_t'(x1_addr)
-                                                     + types::col_addr_count_t'(width)
+                                                     + types::col_addr_count_t'(width_q)
                                                      - types::col_addr_count_t'(1));
                         y2 <= types::row_addr_t'(types::row_addr_count_t'(y1) + height - types::row_addr_count_t'(1));
                         ram_write_enable <= 1'b1;
@@ -171,8 +175,11 @@ module control_cmd_readrect #(
                     addr.pixel <= 'b0;
                     x1_addr <= 'b0;
                     x1 <= 'b0;
+                    x2 <= 'b0;
                     width <= 'b0;
+                    width_q <= 'b0;
                     y1 <= 'b0;
+                    y2 <= 'b0;
                     height <= 'b0;
                     x1_byte_counter <= 'b0;
                     width_byte_counter <= 'b0;
