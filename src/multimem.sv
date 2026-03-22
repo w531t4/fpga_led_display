@@ -65,6 +65,12 @@ module multimem #(
             (* keep = "true" *) types::mem_write_data_t dia_q;
             (* keep = "true" *) types::pixel_addr_t bytea_q;
             logic we_subpanel_q;
+            // Register reset locally in each bank's clock domain so the BRAM
+            // reset fanout stays near the consuming subpanel instead of coming
+            // straight from the top-level global reset net.
+            logic rsta_q;
+            logic rstb_async;
+            logic rstb_q;
             // Per-bank boolean pipeline: delays the selected-subpanel bit so it
             // reaches qa_masked_q in the same cycle as the matching QA word.
             logic subpanel_sel_pipe[QA_SELECT_PIPE_DEPTH];
@@ -76,11 +82,16 @@ module multimem #(
             //   3. mem_subpanel doa_pipe[1] / qa_subpanel_w[i]
             //   4. qa_subpanel_q
             //   5. qa_masked_q
+            always @(posedge ClockA or posedge ResetA) begin
+                if (ResetA) rsta_q <= 1'b1;
+                else rsta_q <= 1'b0;
+            end
+
             always @(posedge ClockA) begin
                 addra_q <= {AddressA.row, AddressA.col};
                 dia_q   <= DataInA;
                 bytea_q <= AddressA.pixel;
-                if (ResetA) begin
+                if (rsta_q) begin
                     we_subpanel_q <= 1'b0;
                     for (int stage = 0; stage < QA_SELECT_PIPE_DEPTH; stage++) subpanel_sel_pipe[stage] <= '0;
                 end else begin
@@ -93,6 +104,12 @@ module multimem #(
                     end
                 end
             end
+
+            assign rstb_async = ResetA || ResetB;
+            always @(posedge ClockB or posedge rstb_async) begin
+                if (rstb_async) rstb_q <= 1'b1;
+                else rstb_q <= 1'b0;
+            end
             mem_subpanel #(
                 .ADDR_BITS($bits(types::mem_read_addr_t)),
                 .WORD_W(SUBPANEL_WORD_BITS),
@@ -101,14 +118,14 @@ module multimem #(
                 .clka (ClockA),
                 .ena  (1'b1),
                 .wea  (we_subpanel_q),
-                .rsta (ResetA),
+                .rsta (rsta_q),
                 .addra(addra_q),
                 .bytea(bytea_q),
                 .dia  (dia_q),
                 .doa  (qa_subpanel_w[i]),
                 .clkb (ClockB),
                 .enb  (ClockEnB),
-                .rstb (ResetA || ResetB),
+                .rstb (rstb_q),
                 .addrb(AddressB),
                 .dob  (qb_subpanel_w[i])
             );
@@ -117,14 +134,14 @@ module multimem #(
             // subpanel_sel_pipe advances in the shift loop above to stay aligned with qa_subpanel_q.
             logic [SUBPANEL_WORD_BITS-1:0] qa_subpanel_q;
             always @(posedge ClockA) begin
-                if (ResetA) qa_subpanel_q <= '0;
+                if (rsta_q) qa_subpanel_q <= '0;
                 else qa_subpanel_q <= qa_subpanel_w[i];
             end
 
             // ** Stage 5: per-subpanel masking
             logic [SUBPANEL_WORD_BITS-1:0] qa_masked_q;
             always @(posedge ClockA) begin
-                if (ResetA) qa_masked_q <= '0;
+                if (rsta_q) qa_masked_q <= '0;
                 else if (ClockEnA) qa_masked_q <= subpanel_sel_pipe[QA_SELECT_PIPE_DEPTH-1] ? qa_subpanel_q : '0;
             end
 

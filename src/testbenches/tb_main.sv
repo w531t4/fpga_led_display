@@ -5,6 +5,7 @@
 `default_nettype none
 // verilog_format: on
 `include "tb_helper.svh"
+`include "tb_cmd_line_state_checker.svh"
 `include "tb_spi_streamer.svh"
 module tb_main #(
     // verilator lint_off UNUSEDPARAM
@@ -57,6 +58,7 @@ module tb_main #(
     localparam longint unsigned READRECT_WAIT_CYCLES =
         CMD_LINE_STATE_STEP_CYCLES +
         (CTRL_STEP_SCALE * (longint'(READRECT_TOTAL_BYTES) + READRECT_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
+    logic cmd_line_state_seq_done;
 
     wire  rxdata;
 `ifdef SPI
@@ -253,7 +255,7 @@ module tb_main #(
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
-        `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl_ready_for_data === 1'b1, TB_MAIN_WAIT_CYCLES)
+        wait (cmd_line_state_seq_done);
         $finish;
     end
 
@@ -269,6 +271,18 @@ module tb_main #(
         `WAIT_ASSERT(tb_main.tbi_main.clk_root, fpga_ready === 1'b1, TB_MAIN_WAIT_CYCLES)
     end
 `endif
+
+    tb_cmd_line_state_checker #(
+        .SPI_CDIV(SPI_CDIV),
+        .READRECT_W(READRECT_W),
+        .READRECT_TOTAL_BYTES(READRECT_TOTAL_BYTES),
+        .STEP_SCALE(CTRL_STEP_SCALE)
+    ) cmd_line_state_checker (
+        .clk(clk),
+        .reset(reset),
+        .cmd_line_state(tb_main.tbi_main.ctrl.cmd_line_state),
+        .seq_done(cmd_line_state_seq_done)
+    );
 
     initial begin : assert_readrect_pipelining
         // Verify that a readframe command following readrect is accepted without a host-side gap.

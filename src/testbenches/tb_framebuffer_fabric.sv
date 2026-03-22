@@ -43,7 +43,8 @@ module tb_framebuffer_fabric;
     framebuffer_fabric dut (
         .clk_a(clk_root),
         .clk_b(clk_root),
-        .reset(reset),
+        .reset_a(reset),
+        .reset_b(reset),
         .ctrl_ram_address(ctrl_ram_address),
         .ctrl_ram_data_out(ctrl_ram_data_out),
         .ctrl_ram_write_enable(ctrl_ram_write_enable),

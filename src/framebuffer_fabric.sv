@@ -5,7 +5,8 @@
 module framebuffer_fabric (
     input logic clk_a,
     input logic clk_b,
-    input logic reset,
+    input logic reset_a,
+    input logic reset_b,
 
     // Controller write path.
     input types::mem_write_addr_t ctrl_ram_address,
@@ -112,12 +113,12 @@ module framebuffer_fabric (
                 .AddressA(ram_a_address_frames[frame_idx]),
                 .DataInA(ram_a_data_in_frames[frame_idx]),
                 .WrA(ram_a_write_enable_frames[frame_idx]),
-                .ResetA(reset),
+                .ResetA(reset_a),
                 .ClockB(clk_b),
                 .DataInB(16'b0),
                 .AddressB(ram_b_address),
                 .WrB(1'b0),
-                .ResetB(reset),
+                .ResetB(reset_b),
                 .QA(ram_a_data_out_frames[frame_idx]),
                 .QB(ram_b_data_out_frames[frame_idx]),
                 .ClockEnA(ram_a_clk_enable),

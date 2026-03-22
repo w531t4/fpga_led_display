@@ -62,7 +62,6 @@ module main #(
     wire                         clk_root;
     wire                         clk_matrix;
     wire                         clk_ctrl;
-
     wire                         global_reset;
     logic                        global_reset_sync;
     types::ready_holdoff_count_t _unused_ok_ready_holdoff_counter;
@@ -124,8 +123,11 @@ module main #(
     wire ctrl_rx_fifo_empty;
     wire ctrl_rx_fifo_write_en;
     wire ctrl_rx_fifo_read_en;
+    logic rxdata_ready_spi_q;
     logic ctrl_data_issue_pending;
+    logic ctrl_data_ready_pending;
     cmd::indata8_t ctrl_rx_fifo_data;
+    cmd::indata8_t ctrl_data_latched;
     logic ctrl_data_ready_pulse;
 `ifdef SPI
     wire spi_clk;
@@ -202,6 +204,7 @@ module main #(
     always_ff @(posedge clk_root) begin
         global_reset_sync <= global_reset;
     end
+
     timeout #(
         .COUNTER_WIDTH($bits(types::ready_holdoff_count_t))
     ) fpga_ready_holdoff (
@@ -297,23 +300,30 @@ module main #(
 `endif
 
 `ifdef SPI
-    // The SPI slave already produces bytes in the SPI clock domain. Write the
-    // async FIFO directly from that domain so clk_root is not burdened with the
-    // ingress write-pointer/full-detect path.
+    // The SPI slave already finishes bytes in the SPI clock domain, so write
+    // the elasticity FIFO there and keep that ingress fanout off clk_root.
+    // `spi_slave.done` is a level, not a guaranteed single-cycle pulse, so
+    // edge-detect it locally before using it as the FIFO write strobe.
     assign rxdata_ready_root_level = 1'b0;
     assign rxdata_ready_root_pulse = 1'b0;
-    assign ctrl_rx_fifo_write_en = rxdata_ready;
+    always_ff @(posedge spi_clk or posedge global_reset) begin
+        if (global_reset) begin
+            rxdata_ready_spi_q <= 1'b0;
+        end else begin
+            rxdata_ready_spi_q <= rxdata_ready;
+        end
+    end
+    assign ctrl_rx_fifo_write_en = rxdata_ready & ~rxdata_ready_spi_q;
 `else
     // UART ingress already lives on clk_root, so keep the existing root-domain
-    // edge capture for that build.
-    ff_sync #() uart_sync (
+    // pulse extraction before the async FIFO write side.
+    ff_sync #() rxdata_sync (
         .clk(clk_root),
         .signal(rxdata_ready),
         .sync_level(rxdata_ready_root_level),
         .sync_pulse(rxdata_ready_root_pulse),
         .reset(global_reset)
     );
-
     assign ctrl_rx_fifo_write_en = rxdata_ready_root_pulse;
 `endif
 
@@ -342,20 +352,28 @@ module main #(
     always_ff @(posedge clk_ctrl) begin
         if (global_reset) begin
             ctrl_data_issue_pending <= 1'b0;
+            ctrl_data_ready_pending <= 1'b0;
+            ctrl_data_latched <= '0;
             ctrl_data_ready_pulse <= 1'b0;
         end else begin
             ctrl_data_ready_pulse <= 1'b0;
 
-            if (ctrl_data_issue_pending) begin
+            if (ctrl_data_ready_pending) begin
                 ctrl_data_ready_pulse <= 1'b1;
+                ctrl_data_ready_pending <= 1'b0;
                 ctrl_data_issue_pending <= 1'b0;
-            end else if (ctrl_rx_fifo_read_en) begin
+            end else if (ctrl_data_issue_pending) begin
+                if (ctrl_ready_for_data_raw) begin
+                    ctrl_data_ready_pending <= 1'b1;
+                end
+            end else if (!ctrl_rx_fifo_empty && ctrl_ready_for_data_raw) begin
+                ctrl_data_latched <= ctrl_rx_fifo_data;
                 ctrl_data_issue_pending <= 1'b1;
             end
         end
     end
 
-    assign ctrl_rx_fifo_read_en = !ctrl_data_issue_pending && ctrl_ready_for_data_raw && !ctrl_rx_fifo_empty;
+    assign ctrl_rx_fifo_read_en = ctrl_data_ready_pending;
     assign ctrl_ready_for_data = ctrl_ready_for_data_raw && !ctrl_rx_fifo_full;
     assign ctrl_busy = ctrl_busy_raw || ctrl_rx_fifo_full;
 
@@ -366,7 +384,7 @@ module main #(
     ) ctrl (
         .reset(global_reset),
         .clk_in(clk_ctrl),
-        .data_rx(ctrl_rx_fifo_data),
+        .data_rx(ctrl_data_latched),
 `ifdef SPI
         .data_ready_n(~ctrl_data_ready_pulse),
 `else
@@ -392,9 +410,6 @@ module main #(
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
 
-    // Controller state now runs on clk_ctrl, but pixel generation remains on
-    // clk_root. Synchronize the infrequently changing display-control vectors
-    // into the root domain instead of keeping the whole controller there.
     always_ff @(posedge clk_root) begin
         if (global_reset_sync) begin
             rgb_enable <= '0;
@@ -409,7 +424,8 @@ module main #(
     framebuffer_fabric fb_fabric (
         .clk_a(clk_ctrl),
         .clk_b(clk_root),
-        .reset(global_reset_sync),
+        .reset_a(global_reset_sync),
+        .reset_b(global_reset_sync),
         .ctrl_ram_address(ctrl_ram_address),
         .ctrl_ram_data_out(ctrl_ram_data_out),
         .ctrl_ram_write_enable(ctrl_ram_write_enable),
