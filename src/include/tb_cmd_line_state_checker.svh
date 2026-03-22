@@ -108,6 +108,20 @@ module tb_cmd_line_state_checker #(
     endfunction
 `endif
 
+    function automatic int unsigned cmd_line_state_step_cycles(input enums::control_module_fsm_e prev_expected,
+                                                               input enums::control_module_fsm_e expected);
+        begin
+            // Allow extra time for large payloads to drain before expecting the next state.
+            if ((expected == enums::STATE_IDLE) && (prev_expected == enums::STATE_CMD_READRECT)) begin
+                cmd_line_state_step_cycles = int'(READRECT_WAIT_CYCLES);
+            end else if ((expected == enums::STATE_IDLE) && (prev_expected == enums::STATE_CMD_READFRAME)) begin
+                cmd_line_state_step_cycles = int'(READFRAME_WAIT_CYCLES);
+            end else begin
+                cmd_line_state_step_cycles = int'(CMD_LINE_STATE_STEP_CYCLES);
+            end
+        end
+    endfunction
+
 
     // Walk the expected state sequence and fail fast if any step is missing.
     initial begin : assert_cmd_line_state_sequence
@@ -121,19 +135,45 @@ module tb_cmd_line_state_checker #(
         prev_expected = enums::control_module_fsm_e'('hf);
         for (idx = 0; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
             expected = cmd_line_state_expected(idx);
-            // Allow extra time for large payloads to drain before expecting the next state.
-            if ((expected == enums::STATE_CMD_READFRAME) && (prev_expected == enums::STATE_CMD_READRECT)) begin
-                step_cycles = int'(READRECT_WAIT_CYCLES);
-            end else if ((expected == enums::STATE_IDLE) && (prev_expected == enums::STATE_CMD_READFRAME)) begin
-                step_cycles = int'(READFRAME_WAIT_CYCLES);
-            end else begin
-                step_cycles = int'(CMD_LINE_STATE_STEP_CYCLES);
-            end
+            step_cycles = cmd_line_state_step_cycles(prev_expected, expected);
             `WAIT_ASSERT(clk, cmd_line_state === expected, step_cycles)
             $display("cmd_line_state[%0d] expected %0d observed %0d at %0t", idx, expected, cmd_line_state, $time);
             prev_expected = expected;
         end
         seq_done = 1'b1;
+    end
+
+    // Prove that each expected state transition is immediate: once the DUT
+    // leaves one expected state, the next distinct state must be the next one
+    // in the sequence. This catches cases where an eventual-state check would
+    // miss an intermediate unexpected state.
+    initial begin : assert_cmd_line_state_next_distinct_transition
+        integer idx;
+        enums::control_module_fsm_e expected;
+        enums::control_module_fsm_e prev_expected;
+        int unsigned step_cycles;
+        int unsigned waited_cycles;
+        @(negedge reset);
+        prev_expected = cmd_line_state_expected(0);
+        `WAIT_ASSERT(clk, cmd_line_state === prev_expected, int'(CMD_LINE_STATE_STEP_CYCLES))
+        for (idx = 1; idx < CMD_LINE_STATE_SEQ_LEN; idx = idx + 1) begin
+            expected = cmd_line_state_expected(idx);
+            step_cycles = cmd_line_state_step_cycles(prev_expected, expected);
+            waited_cycles = 0;
+            while ((cmd_line_state === prev_expected) && (waited_cycles < step_cycles)) begin
+                @(posedge clk);
+                waited_cycles = waited_cycles + 1;
+            end
+            if (cmd_line_state === prev_expected) begin
+                $fatal(1, "Timeout after %0d cycles waiting for transition from %0d to %0d", step_cycles,
+                       prev_expected, expected);
+            end
+            if (cmd_line_state !== expected) begin
+                $fatal(1, "Next-state mismatch after %0d: saw %0d, expected %0d", prev_expected, cmd_line_state,
+                       expected);
+            end
+            prev_expected = expected;
+        end
     end
 endmodule
 `endif
