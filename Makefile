@@ -46,8 +46,9 @@ export CCACHE_DIR
 # USE_WATCHDOG - Requires recurring command sequence to be present, otherwise board resets
 # SWAP_BLUE_GREEN_CHAN - Swaps the pins for blue/green channels (see Adafruit note about "...green and blue channels are swapped..
 #				         .with the 2.5mm pitch 64x32 display..." https://www.adafruit.com/product/5036)
+# USE_PASSTHRU - Connects passthru pins which allows flashing the ESP32 from the same USB port as the FPGA
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
