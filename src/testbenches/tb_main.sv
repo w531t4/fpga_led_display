@@ -101,7 +101,7 @@ module tb_main #(
         .gp15       (debugger_rxin),
 `ifdef SPI
 `ifdef SPI_ESP32
-        .sd_clk     (spi_clk),             // clk
+        .wifi_gpio14(spi_clk),             // clk
         .sd_d       ({rxdata, 3'b0}),      // sd_d[3]=mosi
         .wifi_gpio21(spi_cs),
         .wifi_gpio27(fpga_ready),
