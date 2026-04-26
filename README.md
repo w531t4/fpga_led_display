@@ -44,7 +44,7 @@ NOTE: Displaying widgets on the display (as shown above) is out of scope for thi
 1. `sudo usermod -aG plugdev,dialout <user>`
 1. Get idProduct and idVendor from lsubsb - `sudo lsusb | grep "Future Technology Devices International, Ltd Bridge"`
     - Will print something like this `Bus 001 Device 002: ID 0403:6015 Future Technology Devices International, Ltd Bridge(I2C/SPI/UART/FIFO)`
-1. `printf '%s\n' 'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6010", GROUP="plugdev", MODE="0660"' | sudo tee /etc/udev/rules.d/99-ulx3s.rules`
+1. `printf '%s\n' 'SUBSYSTEM=="usb", ATTR{idVendor}=="0403", ATTR{idProduct}=="6015", GROUP="plugdev", MODE="0660"' | sudo tee /etc/udev/rules.d/99-ulx3s.rules`
 1. `sudo udevadm control --reload-rules`
 1. `sudo udevadm trigger`
 1.  Note, in above output of `lsusb`.. `Bus 001 Device 002:`
