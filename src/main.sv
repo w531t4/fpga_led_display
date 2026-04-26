@@ -24,6 +24,17 @@ module main #(
     input        gp20,         // ce
 `endif
 `endif
+`ifdef USE_PASSTHRU
+    input        ftdi_txd,
+    input        wifi_txd,
+    input        ftdi_ndtr,
+    input        ftdi_nrts,
+
+    output       ftdi_rxd,
+    output       wifi_rxd,
+    output       wifi_en,
+    output       wifi_gpio0,
+`endif
     output       gp0,
     output       gp1,
     output       gp2,
@@ -58,6 +69,15 @@ module main #(
     // output gn15,
     // output gn16
 );
+
+`ifdef USE_PASSTHRU
+    assign ftdi_rxd = wifi_txd;
+    assign wifi_rxd = ftdi_txd;
+    wire [1:0] pass_in = {ftdi_ndtr, ftdi_nrts};
+    wire [1:0] pass_out = (pass_in == 2'b10) ? 2'b01 : (pass_in == 2'b01) ? 2'b10 : 2'b11;
+    assign wifi_en    = pass_out[1];
+    assign wifi_gpio0 = pass_out[0];
+`endif
 
     wire                         clk_root;
     wire                         clk_matrix;

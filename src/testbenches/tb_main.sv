@@ -68,11 +68,33 @@ module tb_main #(
 `else
     wire uart_rx_dataready;
 `endif
+`ifdef USE_PASSTHRU
+    logic ftdi_txd;
+    logic wifi_txd;
+    logic ftdi_ndtr;
+    logic ftdi_nrts;
+
+    logic ftdi_rxd;
+    logic wifi_rxd;
+    logic wifi_en;
+    logic wifi_gpio0;
+`endif
     wire [13:0] _unused_output;
 
     main #(
         ._UNUSED('d0)
     ) tbi_main (
+`ifdef USE_PASSTHRU
+        .ftdi_txd (ftdi_txd),
+        .wifi_txd (wifi_txd),
+        .ftdi_ndtr(ftdi_ndtr),
+        .ftdi_nrts(ftdi_nrts),
+
+        .ftdi_rxd   (ftdi_rxd),
+        .wifi_rxd   (wifi_rxd),
+        .wifi_en    (wifi_en),
+        .wifi_gpio0 (wifi_gpio0),
+`endif
         .gp11       (clk_pixel),
         .gp12       (row_latch),
         .gp13       (OE),
@@ -221,6 +243,14 @@ module tb_main #(
 
         debugger_rxin = 0;
         reset = 1;
+`ifdef USE_PASSTHRU
+        // Match the board-level pull-ups for passthrough inputs when the testbench
+        // is not actively exercising the FTDI / WiFi serial path.
+        ftdi_txd  = 1'b1;
+        ftdi_ndtr = 1'b1;
+        ftdi_nrts = 1'b1;
+        wifi_txd  = 1'b1;
+`endif
 
         // wait for global_reset pulse and its deassertion before releasing tb reset
         `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b1, TB_MAIN_WAIT_CYCLES)
@@ -295,6 +325,19 @@ module tb_main #(
     always begin
         #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end
+`ifdef USE_PASSTHRU
+    wire _unused_ok_passthru = &{1'b0,
+                                 ftdi_txd,
+                                 wifi_txd,
+                                 ftdi_ndtr,
+                                 ftdi_nrts,
+
+                                 ftdi_rxd,
+                                 wifi_rxd,
+                                 wifi_en,
+                                 wifi_gpio0,
+                                 1'b0};
+`endif
     // verilog_format: off
     wire _unused_ok = &{1'b0,
                         clk_pixel,
