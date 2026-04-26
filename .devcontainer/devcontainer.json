@@ -16,7 +16,9 @@
     "initializeCommand": "mkdir -p ${HOME}/.cache/oss-cad-suite",
     "mounts": [
         // This is used to cache oss-cad-suite on main system
-        "source=${localEnv:HOME}/.cache/oss-cad-suite,target=/workspaces/.cache/oss-cad-suite,type=bind"
+        "source=${localEnv:HOME}/.cache/oss-cad-suite,target=/workspaces/.cache/oss-cad-suite,type=bind",
+        // To allow programming the fpga
+        "source=/dev/bus/usb,target=/dev/bus/usb,type=bind"
     ],
     "features": {
         "ghcr.io/devcontainers/features/node:1": {},
@@ -29,7 +31,6 @@
         "--security-opt",
         "label=disable",
         // To allow programming the fpga
-        "--mount=type=bind,source=/dev/bus/usb,target=/dev/bus/usb",
         "--device-cgroup-rule=c 189:* rmw"
     ],
     "customizations": {
