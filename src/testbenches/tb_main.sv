@@ -102,7 +102,7 @@ module tb_main #(
 `ifdef SPI
 `ifdef SPI_ESP32
         .wifi_gpio14(spi_clk),             // clk
-        .sd_d       ({rxdata, 3'b0}),      // sd_d[3]=mosi
+        .wifi_gpio13(rxdata),
         .wifi_gpio21(spi_cs),
         .wifi_gpio27(fpga_ready),
         .wifi_gpio35(ctrl_busy),           // controller busy indicator

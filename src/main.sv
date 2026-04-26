@@ -12,7 +12,7 @@ module main #(
 `endif
 `ifdef SPI
 `ifdef SPI_ESP32
-    input  [3:0] sd_d,         // sd_d[0]=mosi
+    input             wifi_gpio13,  // mosi
     input             wifi_gpio14,  // clk
     input        wifi_gpio21,  // ce
     output       wifi_gpio35,  // controller busy indicator (FPGA -> ESP32)
@@ -400,7 +400,7 @@ module main #(
 `ifdef SPI_ESP32
     assign spi_clk = wifi_gpio14;
     assign spi_cs = wifi_gpio21;
-    assign rxdata = sd_d[3];  // MOSI
+    assign rxdata = wifi_gpio13;  // MOSI
     assign wifi_gpio27 = fpga_ready;
     assign wifi_gpio35 = ctrl_busy;  // high while command executes
 `else
@@ -441,11 +441,6 @@ module main #(
     wire _unused_ok_debugger = &{1'b0, gp15, 1'b0};
 `endif
 
-`ifdef SPI
-`ifdef SPI_ESP32
-    wire _unused_ok_spi_esp32 = &{1'b0, sd_d[2:0], 1'b0};
-`endif
-`endif
 `ifdef SPI
     wire _unused_ok_spi = &{1'b0, spi_slave_sdout, 1'b0};
 `else
