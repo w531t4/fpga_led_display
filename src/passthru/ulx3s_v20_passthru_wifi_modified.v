@@ -21,8 +21,8 @@ module ulx3s_v20_passthru_wifi_modified (
     // ===============================
     output wire ftdi_rxd,
     input  wire ftdi_txd,
-    inout  wire ftdi_ndtr,
-    inout  wire ftdi_nrts,
+    input  wire ftdi_ndtr,
+    input  wire ftdi_nrts,
 
     // ===============================
     // ESP32 SERIAL + STRAPS (REQUIRED)
