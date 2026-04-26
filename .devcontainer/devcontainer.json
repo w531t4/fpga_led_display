@@ -29,9 +29,8 @@
         "--security-opt",
         "label=disable",
         // To allow programming the fpga
-        "--device=/dev/bus/usb:/dev/bus/usb",
-        "--group-add=dialout",
-        "--group-add=plugdev"
+        "--mount=type=bind,source=/dev/bus/usb,target=/dev/bus/usb",
+        "--device-cgroup-rule=c 189:* rmw"
     ],
     "customizations": {
         "vscode": {
