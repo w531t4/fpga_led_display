@@ -11,7 +11,8 @@
     "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && .devcontainer/setup",
     "postStartCommand": ".devcontainer/bootstrap",
     "containerEnv": {
-        "PYTHONASYNCIODEBUG": "1"
+        "PYTHONASYNCIODEBUG": "1",
+        "GIT_EDITOR": "code --wait"
     },
     "initializeCommand": "mkdir -p ${HOME}/.cache/oss-cad-suite",
     "mounts": [
@@ -26,8 +27,6 @@
     },
     // "appPort": [],
     "runArgs": [
-        "-e",
-        "GIT_EDITOR=code --wait",
         "--security-opt",
         "label=disable",
         // To allow programming the fpga
