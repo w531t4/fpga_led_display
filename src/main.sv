@@ -13,7 +13,7 @@ module main #(
 `ifdef SPI
 `ifdef SPI_ESP32
     input  [3:0] sd_d,         // sd_d[0]=mosi
-    input        sd_clk,       // clk
+    input             wifi_gpio14,  // clk
     input        wifi_gpio21,  // ce
     output       wifi_gpio35,  // controller busy indicator (FPGA -> ESP32)
     output       wifi_gpio27,  // fpga reset notify
@@ -398,7 +398,7 @@ module main #(
     assign {gp10, gp9, gp8, gp7} = 4'(row_address_active);  // D, C, B, A
 `ifdef SPI
 `ifdef SPI_ESP32
-    assign spi_clk = sd_clk;
+    assign spi_clk = wifi_gpio14;
     assign spi_cs = wifi_gpio21;
     assign rxdata = sd_d[3];  // MOSI
     assign wifi_gpio27 = fpga_ready;
