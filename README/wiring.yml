@@ -1,0 +1,134 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
+connectors:
+    HUB75_1:
+        type: D-Sub
+        subtype: female
+        hide_disconnected_pins: true
+        pinlabels:
+            [R1, G1, B1, GND, R2, G2, B2, GND, A, B, C, D, CLK, LAT, OE, GND]
+    ULX3S_J1:
+        type: D-Sub
+        subtype: male
+        hide_disconnected_pins: true
+        pinlabels:
+            [
+                +3.3V,
+                +2.5V,
+                GND,
+                GND,
+                gn0,
+                gp0,
+                gn1,
+                gp1,
+                gn2,
+                gp2,
+                gn3,
+                gp3,
+                gn4,
+                gp4,
+                gn5,
+                gp5,
+                gn6,
+                gp6,
+                +3.3V,
+                +2.5V,
+                GND,
+                GND,
+                gn7,
+                gp7,
+                gn8,
+                gp8,
+                gn9,
+                gp9,
+                gn10,
+                gp10,
+                gn11,
+                gp11,
+                gn12,
+                gp12,
+                gn13,
+                gp13,
+                GND,
+                GND,
+                +3.3V,
+                +2.5V,
+            ]
+    ULX3S_J2:
+        type: D-Sub
+        subtype: male
+        hide_disconnected_pins: true
+        pins: [41-80]
+        pinlabels:
+            [
+                +3.3V,
+                +2.5V,
+                GND,
+                GND,
+                gn14,
+                gp14,
+                gn15,
+                gp15,
+                gn16,
+                gp16,
+                gn17,
+                gp17,
+                gn18,
+                gp18,
+                gn19,
+                gp19,
+                gn20,
+                gp20,
+                +2.5V,
+                +3.3V,
+                GND,
+                GND,
+                gn21,
+                gp21,
+                gn22,
+                gp22,
+                gn23,
+                gp23,
+                gn24,
+                gp24,
+                gn25,
+                gp25,
+                gn26,
+                gp26,
+                gn27,
+                gp27,
+                GND,
+                GND,
+                +2.5V,
+                +3.3V,
+            ]
+cables:
+    W1:
+        gauge: 0.25 mm2
+        length: 0.2
+        wirecount: 16
+        colors: [RD, GN, BU, BK, RD, GN, BU, BK, OR, PK, YE, TQ, VT, GD, SL, BK]
+        shield: false
+
+connections:
+    - - ULX3S_J1:
+            [
+                gp0,
+                gp1,
+                gp2,
+                4,
+                gp3,
+                gp4,
+                gp5,
+                22,
+                gp7,
+                gp8,
+                gp9,
+                gp10,
+                gp11,
+                gp12,
+                gp13,
+                38,
+            ]
+      - W1: [1-16]
+      - HUB75_1: [R1, G1, B1, 4, R2, G2, B2, 8, A, B, C, D, CLK, LAT, OE, 16]

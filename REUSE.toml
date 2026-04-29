@@ -18,6 +18,7 @@ path = [
     ".verilator_lint",
     ".vscode/settings.json",
     ".devcontainer/devcontainer.json",
+    "README/wiring.svg",
     "src/testbenches/tb_control_cmd_blankpanel.args",
     "src/testbenches/tb_control_cmd_fillpanel.args",
     "src/testbenches/tb_control_cmd_fillrect.args",
