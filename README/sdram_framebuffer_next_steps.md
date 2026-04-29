@@ -112,7 +112,7 @@ Implementation note:
 
 ## Backend Abstraction Work
 
-### 4. Introduce `fb_store_if.sv`
+### 4. Introduce `fb_store_if.sv` (Completed)
 
 - create a new interface file in `src/interfaces/`
 - define the minimum storage operations required by the design:
@@ -129,6 +129,17 @@ Recommended constraint:
 Definition of done:
 
 - the store interface expresses what the rest of the design needs from storage, not how BRAM happens to implement it today
+
+Implementation note:
+
+- [src/interfaces/fb_store_if.sv](/workspaces/fpga_led_display/src/interfaces/fb_store_if.sv:1) now defines:
+  - command-side logical byte writes
+  - scan-side row-pair prefetch request/streaming response
+  - copyframe start/busy/done signaling
+  - front/back role selection
+  - backend ready/error signaling
+- the interface is intentionally logical and does not expose current `multimem` lane packing
+- status: completed
 
 ### 5. Wrap The Existing BRAM Path As `fb_store_bram.sv`
 
