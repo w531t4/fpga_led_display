@@ -344,6 +344,7 @@ module main #(
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
 
+`ifdef FB_BRAM
     // Framebuffer fabric (mux + multimem instances).
     framebuffer_fabric fb_fabric (
         .clk_root(clk_root),
@@ -360,6 +361,7 @@ module main #(
         .copy_if(copy_int)
 `endif
     );
+`endif
 
     genvar subpanel_idx;
     generate
