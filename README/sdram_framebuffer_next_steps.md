@@ -62,7 +62,7 @@ Reference note:
 - capture these semantics in [framebuffer_current_semantics.md](/workspaces/fpga_led_display/README/framebuffer_current_semantics.md:1)
 - current BRAM abstraction contract is captured in the `Current BRAM Contract` section of [framebuffer_current_semantics.md](/workspaces/fpga_led_display/README/framebuffer_current_semantics.md:1)
 
-### 2. Strengthen Baseline Tests Before Refactoring
+### 2. Strengthen Baseline Tests Before Refactoring (Completed)
 
 - review these testbenches for coverage gaps:
   - [src/testbenches/tb_framebuffer_fabric.sv](/workspaces/fpga_led_display/src/testbenches/tb_framebuffer_fabric.sv:1)
@@ -79,6 +79,15 @@ Reference note:
 Definition of done:
 
 - current BRAM-backed design has regression tests that will tell us when the migration breaks behavior
+
+Coverage note:
+
+- frame toggle behavior is covered by [src/testbenches/tb_control_module_copyframe_readframe.sv](/workspaces/fpga_led_display/src/testbenches/tb_control_module_copyframe_readframe.sv:1)
+- `COPY_FRAME` full-frame correctness is covered by [src/testbenches/tb_control_cmd_copyframe.sv](/workspaces/fpga_led_display/src/testbenches/tb_control_cmd_copyframe.sv:1)
+- `READFRAME` byte ordering is covered by [src/testbenches/tb_control_cmd_readframe.sv](/workspaces/fpga_led_display/src/testbenches/tb_control_cmd_readframe.sv:1)
+- `READRECT` ordering and bounds behavior is covered by [src/testbenches/tb_control_module_readrect.sv](/workspaces/fpga_led_display/src/testbenches/tb_control_module_readrect.sv:1)
+- row fetch ordering and subpanel extraction are covered by [src/testbenches/tb_framebuffer_fetch.sv](/workspaces/fpga_led_display/src/testbenches/tb_framebuffer_fetch.sv:1)
+- status: completed
 
 ### 3. Add Compile-Time Selection For Storage Backend
 

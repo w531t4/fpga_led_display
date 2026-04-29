@@ -249,6 +249,26 @@ module tb_control_module_copyframe_readframe;
             frame_select_before = frame_select;
             send_spi_byte(cmd::TOGGLE_FRAME);
             `WAIT_ASSERT(clk, frame_select != frame_select_before, READY_WAIT_CYCLES_INT)
+            assert (busy == 1'b0)
+            else $fatal(1, "TOGGLE_FRAME unexpectedly left control_module busy after first toggle");
+            assert (ready_for_data == 1'b1)
+            else $fatal(1, "TOGGLE_FRAME unexpectedly deasserted ready_for_data after first toggle");
+
+            // Toggle back and prove the role swap is reversible without stalling the controller.
+            send_spi_byte(cmd::TOGGLE_FRAME);
+            `WAIT_ASSERT(clk, frame_select == frame_select_before, READY_WAIT_CYCLES_INT)
+            assert (busy == 1'b0)
+            else $fatal(1, "TOGGLE_FRAME unexpectedly left control_module busy after second toggle");
+            assert (ready_for_data == 1'b1)
+            else $fatal(1, "TOGGLE_FRAME unexpectedly deasserted ready_for_data after second toggle");
+
+            // Restore the swapped state expected by the copyframe step below.
+            send_spi_byte(cmd::TOGGLE_FRAME);
+            `WAIT_ASSERT(clk, frame_select != frame_select_before, READY_WAIT_CYCLES_INT)
+            assert (busy == 1'b0)
+            else $fatal(1, "TOGGLE_FRAME unexpectedly left control_module busy after restore toggle");
+            assert (ready_for_data == 1'b1)
+            else $fatal(1, "TOGGLE_FRAME unexpectedly deasserted ready_for_data after restore toggle");
         end
 
         // 3) copyframe (internal copy engine).
