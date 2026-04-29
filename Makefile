@@ -47,8 +47,21 @@ export CCACHE_DIR
 # SWAP_BLUE_GREEN_CHAN - Swaps the pins for blue/green channels (see Adafruit note about "...green and blue channels are swapped..
 #				         .with the 2.5mm pitch 64x32 display..." https://www.adafruit.com/product/5036)
 # USE_PASSTHRU - Connects passthru pins which allows flashing the ESP32 from the same USB port as the FPGA
+# FB_BRAM - Select the current BRAM-backed framebuffer implementation
+# FB_SDRAM - Select the future SDRAM-backed framebuffer implementation
 
 BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
+ifeq ($(findstring -DFB_BRAM,$(BUILD_FLAGS))$(findstring -DFB_SDRAM,$(BUILD_FLAGS)),)
+BUILD_FLAGS += -DFB_BRAM
+endif
+ifneq ($(findstring -DFB_BRAM,$(BUILD_FLAGS)),)
+ifneq ($(findstring -DFB_SDRAM,$(BUILD_FLAGS)),)
+$(error Select exactly one framebuffer backend: FB_BRAM or FB_SDRAM)
+endif
+endif
+ifneq ($(findstring -DFB_SDRAM,$(BUILD_FLAGS)),)
+$(error FB_SDRAM backend is not implemented yet; use FB_BRAM for now)
+endif
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js

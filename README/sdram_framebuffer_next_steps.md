@@ -89,18 +89,26 @@ Coverage note:
 - row fetch ordering and subpanel extraction are covered by [src/testbenches/tb_framebuffer_fetch.sv](/workspaces/fpga_led_display/src/testbenches/tb_framebuffer_fetch.sv:1)
 - status: completed
 
-### 3. Add Compile-Time Selection For Storage Backend
+### 3. Add Compile-Time Selection For Storage Backend (Completed)
 
-- introduce a build flag for store backend selection
+- introduce compile-time flags for store backend selection
+- use:
+  - `FB_BRAM`
+  - `FB_SDRAM`
 - keep BRAM as the default backend until SDRAM is proven
-- choose names that make intent obvious, for example:
-  - `USE_SDRAM_FRAMEBUFFER`
-  - or `FRAMEBUFFER_BACKEND_SDRAM`
+- ensure the build selects exactly one backend at a time
 
 Definition of done:
 
 - the design can still build exactly as it does today with the default configuration
 - we have a clean switch for opting into the new backend later
+
+Implementation note:
+
+- `Makefile` now defaults to `FB_BRAM` when neither backend flag is provided
+- `Makefile` rejects `FB_SDRAM` until the SDRAM backend exists
+- `main.sv` now gates the current framebuffer-fabric instantiation behind `FB_BRAM`
+- status: completed
 
 ## Backend Abstraction Work
 
