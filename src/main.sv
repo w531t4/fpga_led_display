@@ -159,6 +159,7 @@ module main #(
     logic scan_prefetch_in_progress;
     logic scan_underflow_sticky;
     logic scan_invalidate_caches;
+    logic sdram_refresh_active;
     logic frame_select_last_q;
 `ifdef DOUBLE_BUFFER
     logic fb_store_copy_start;
@@ -229,6 +230,19 @@ module main #(
     assign debug_if.rxdata_to_controller = rxdata_to_controller;
     assign debug_if.brightness_enable = brightness_enable;
     assign debug_if.rgb_enable = rgb_enable;
+    assign debug_if.sdram_init_done2 = fb_store.backend_ready;
+`ifdef FB_SDRAM
+    assign debug_if.sdram_refresh_active2 = sdram_refresh_active;
+    assign debug_if.scan_prefetch_in_progress2 = scan_prefetch_in_progress;
+    assign debug_if.scan_cache_valid2 = {scan_cache_valid[1], scan_cache_valid[0]};
+    assign debug_if.scan_underflow_sticky2 = scan_underflow_sticky;
+`else
+    assign debug_if.sdram_refresh_active2 = 1'b0;
+    assign debug_if.scan_prefetch_in_progress2 = 1'b0;
+    assign debug_if.scan_cache_valid2 = 2'b00;
+    assign debug_if.scan_underflow_sticky2 = 1'b0;
+`endif
+    assign debug_if.copyframe_busy2 = fb_store.copy_busy;
     wire [7:0] debug_command;
     wire debug_uart_tx;
     wire debug_uart_rx;
@@ -535,12 +549,14 @@ module main #(
         .sdram_dqm(sdram_dqm),
         .sdram_dq_out(sdram_dq_out),
         .sdram_dq_oe(sdram_dq_oe),
-        .sdram_dq_in(sdram_dq_in)
+        .sdram_dq_in(sdram_dq_in),
+        .debug_refresh_active(sdram_refresh_active)
     );
 
     wire _unused_ok_scan = &{1'b0,
                              clk_pixel_load,
                              row_address,
+                             sdram_refresh_active,
                              scan_prefetch_in_progress,
                              scan_underflow_sticky,
                              scan_cache_valid[0],

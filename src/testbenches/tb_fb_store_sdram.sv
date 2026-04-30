@@ -22,6 +22,7 @@ module tb_fb_store_sdram;
     wire [params::SDRAM_DATA_BITS-1:0] sdram_dq_out;
     wire sdram_dq_oe;
     wire [params::SDRAM_DATA_BITS-1:0] sdram_dq_in;
+    wire debug_refresh_active;
 
     fb_store_sdram dut (
         .clk_root(clk),
@@ -38,7 +39,8 @@ module tb_fb_store_sdram;
         .sdram_dqm(sdram_dqm),
         .sdram_dq_out(sdram_dq_out),
         .sdram_dq_oe(sdram_dq_oe),
-        .sdram_dq_in(sdram_dq_in)
+        .sdram_dq_in(sdram_dq_in),
+        .debug_refresh_active(debug_refresh_active)
     );
 
     sdram_model_simple model (
@@ -205,6 +207,7 @@ module tb_fb_store_sdram;
 
     wire _unused_ok = &{1'b0,
                         sdram_dqm,
+                        debug_refresh_active,
                         store_if.backend_error,
                         store_if.prefetch_data_first,
                         store_if.prefetch_data_last,

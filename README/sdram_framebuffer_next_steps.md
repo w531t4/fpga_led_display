@@ -473,7 +473,7 @@ Implementation note:
 - updated [src/testbenches/tb_main.sv](/workspaces/fpga_led_display/src/testbenches/tb_main.sv:1) to connect [src/sdram_model_simple.sv](/workspaces/fpga_led_display/src/sdram_model_simple.sv:1) when `FB_SDRAM` is selected, so the full top-level simulation can exercise the new pins
 - status: completed
 
-### 19. Add Debug Observability
+### 19. Add Debug Observability (Completed)
 
 - expose enough status to diagnose SDRAM bring-up and cache behavior:
   - init complete
@@ -486,6 +486,22 @@ Implementation note:
 Definition of done:
 
 - failures in hardware can be distinguished between controller, cache, and command-path issues
+
+Implementation note:
+
+- extended [src/interfaces/debugger_if.sv](/workspaces/fpga_led_display/src/interfaces/debugger_if.sv:1) with framebuffer/SDRAM observability fields for:
+  - init complete
+  - refresh active
+  - prefetch in progress
+  - cache valid state
+  - underflow flag
+  - copyframe busy
+- wired those fields in [src/main.sv](/workspaces/fpga_led_display/src/main.sv:1):
+  - BRAM mode drives deterministic compatibility values
+  - SDRAM mode reports live cache/prefetch/copy status from the top-level scan path
+- exposed SDRAM refresh status from [src/fb_store_sdram.sv](/workspaces/fpga_led_display/src/fb_store_sdram.sv:1) into the shared debugger payload
+- updated [src/scripts/uart_rx.py](/workspaces/fpga_led_display/src/scripts/uart_rx.py:153) so the host-side decoder knows about the expanded payload
+- status: completed
 
 ## Validation Steps
 

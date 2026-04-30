@@ -26,6 +26,15 @@ interface debugger_if (
     types::mem_write_addr_t           cmd_line_addr2;
     // end control_module
 
+    // framebuffer / SDRAM observability
+    logic                             sdram_init_done2;
+    logic                             sdram_refresh_active2;
+    logic                             scan_prefetch_in_progress2;
+    logic                       [1:0] scan_cache_valid2;
+    logic                             scan_underflow_sticky2;
+    logic                             copyframe_busy2;
+    // end framebuffer / SDRAM observability
+
     // debugger
     logic                             debug_start;
     logic                             do_close;
@@ -39,6 +48,12 @@ interface debugger_if (
     rgb_enable, \
     cmd_line_state2, \
     brightness_enable, \
+    sdram_init_done2, \
+    sdram_refresh_active2, \
+    scan_prefetch_in_progress2, \
+    scan_cache_valid2, \
+    scan_underflow_sticky2, \
+    copyframe_busy2, \
     ram_access_start2, \
     ram_access_start_latch2, \
     cmd_line_addr2, \
