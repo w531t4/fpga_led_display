@@ -42,12 +42,14 @@ module scan_row_cache (
             for (reset_cache_idx = 0; reset_cache_idx < 2; reset_cache_idx = reset_cache_idx + 1) begin
                 cache_valid[reset_cache_idx] <= 1'b0;
                 cache_row[reset_cache_idx] <= '0;
+                /* verilator lint_off UNUSEDLOOP */
                 for (reset_col_idx = 0; reset_col_idx < params::PIXEL_WIDTH; reset_col_idx = reset_col_idx + 1) begin
                     for (reset_subpanel_idx = 0; reset_subpanel_idx < NUM_SUBPANELS;
                          reset_subpanel_idx = reset_subpanel_idx + 1) begin
                         cache_mem[reset_cache_idx][reset_col_idx][reset_subpanel_idx] <= '0;
                     end
                 end
+                /* verilator lint_on UNUSEDLOOP */
             end
         end else begin
             if (invalidate_all) begin

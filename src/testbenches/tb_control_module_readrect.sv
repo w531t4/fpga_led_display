@@ -50,7 +50,9 @@ module tb_control_module_readrect;
     wire types::mem_write_addr_t         ram_address;
     wire                                 ram_write_enable;
 `ifdef DOUBLE_BUFFER
+`ifndef FB_SDRAM
     localparam types::mem_write_data_t   RAM_DATA_STUB = '0;
+`endif
     mem_copy_if                         copy_int();
 `endif
     wire                                 busy;
@@ -69,6 +71,12 @@ module tb_control_module_readrect;
 `ifdef DEBUGGER
     debugger_if debug_if (clk);
 `endif
+`ifdef DOUBLE_BUFFER
+`ifdef FB_SDRAM
+    logic copyframe_start_unused;
+    logic copyframe_done_native;
+`endif
+`endif
 
     // === DUT ===
     control_module #(
@@ -85,7 +93,12 @@ module tb_control_module_readrect;
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
 `ifdef DOUBLE_BUFFER
+`ifdef FB_SDRAM
+        .cmd_copyframe_start(copyframe_start_unused),
+        .cmd_copyframe_done_native(copyframe_done_native),
+`else
         .cmd_copyframe_if(copy_int),
+`endif
 `endif
         .busy(busy),
         .ready_for_data(ready_for_data),
@@ -99,7 +112,11 @@ module tb_control_module_readrect;
         .watchdog_reset(watchdog_reset)
     );
 `ifdef DOUBLE_BUFFER
+`ifdef FB_SDRAM
+    assign copyframe_done_native = 1'b0;
+`else
     assign copy_int.read_data_in = RAM_DATA_STUB;
+`endif
 `endif
 
     // === Address helpers ===

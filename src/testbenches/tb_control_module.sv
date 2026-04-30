@@ -32,7 +32,9 @@ module tb_control_module;
     wire types::mem_write_data_t ram_data_out;
     wire types::mem_write_addr_t ram_address;
     wire ram_write_enable;
+`ifndef FB_SDRAM
     localparam types::mem_write_data_t RAM_DATA_STUB = '0;
+`endif
     mem_copy_if copy_int();
     wire                         busy;
     wire                         ready_for_data;
@@ -68,6 +70,10 @@ module tb_control_module;
 `ifdef DEBUGGER
     debugger_if debug_if (clk);
 `endif
+`ifdef FB_SDRAM
+    logic copyframe_start_unused;
+    logic copyframe_done_native;
+`endif
 
     // === DUT ===
     control_module #(
@@ -83,7 +89,12 @@ module tb_control_module;
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
+`ifdef FB_SDRAM
+        .cmd_copyframe_start(copyframe_start_unused),
+        .cmd_copyframe_done_native(copyframe_done_native),
+`else
         .cmd_copyframe_if(copy_int),
+`endif
         .busy(busy),
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
@@ -93,7 +104,11 @@ module tb_control_module;
 `endif
         .frame_select(frame_select)
     );
+`ifdef FB_SDRAM
+    assign copyframe_done_native = 1'b0;
+`else
     assign copy_int.read_data_in = RAM_DATA_STUB;
+`endif
 
     // === SPI path (mirror tb_main) ===
     tb_spi_streamer #(

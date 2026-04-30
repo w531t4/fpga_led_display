@@ -420,7 +420,7 @@ Implementation note:
 
 ## Top-Level Integration
 
-### 17. Replace Direct Use Of `framebuffer_fetch.sv`
+### 17. Replace Direct Use Of `framebuffer_fetch.sv` (Completed)
 
 - decide whether to:
   - retire `framebuffer_fetch.sv`
@@ -431,7 +431,21 @@ Definition of done:
 
 - scan-side data delivery is cache-based, not direct-from-frame-store based
 
-### 18. Update `main.sv` Wiring For SDRAM Pins
+Implementation note:
+
+- [src/main.sv](/workspaces/fpga_led_display/src/main.sv:1) now selects the scan path by backend:
+  - `FB_BRAM` keeps the existing `framebuffer_fetch.sv` path unchanged
+  - `FB_SDRAM` replaces it with `scan_prefetch.sv` + `scan_row_cache.sv`
+- in SDRAM mode:
+  - `scan_prefetch.sv` now drives the `fb_store_if` prefetch request/stream contract directly from the top level
+  - `scan_row_cache.sv` now feeds `pixel_split.sv` through the existing `pixeldata_subpanels` seam
+  - `main.sv` invalidates the row caches when `frame_select` changes so scan restarts cleanly on the new front frame
+- the control-module `COPY_FRAME` command now has a small compile-time SDRAM seam:
+  - BRAM mode still uses the legacy `mem_copy_if` engine
+  - SDRAM mode now issues a one-shot native copy start pulse and waits on backend `copy_done`
+- status: completed
+
+### 18. Update `main.sv` Wiring For SDRAM Pins (Completed)
 
 - add the SDRAM signals to the top level if not already present in the active build
 - wire them consistently with the existing LPF pin names in:
@@ -441,6 +455,23 @@ Definition of done:
 Definition of done:
 
 - the top-level design exposes the SDRAM interface needed by the controller
+
+Implementation note:
+
+- added SDRAM top-level ports in [src/main.sv](/workspaces/fpga_led_display/src/main.sv:1) matching the existing LPF names:
+  - `sdram_clk`
+  - `sdram_cke`
+  - `sdram_csn`
+  - `sdram_rasn`
+  - `sdram_casn`
+  - `sdram_wen`
+  - `sdram_a[]`
+  - `sdram_ba[]`
+  - `sdram_dqm[]`
+  - `sdram_d[]`
+- wired `fb_store_sdram.sv` into the SDRAM-mode top level with the expected bidirectional data-bus tristate behavior
+- updated [src/testbenches/tb_main.sv](/workspaces/fpga_led_display/src/testbenches/tb_main.sv:1) to connect [src/sdram_model_simple.sv](/workspaces/fpga_led_display/src/sdram_model_simple.sv:1) when `FB_SDRAM` is selected, so the full top-level simulation can exercise the new pins
+- status: completed
 
 ### 19. Add Debug Observability
 
