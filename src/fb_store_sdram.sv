@@ -74,17 +74,17 @@ module fb_store_sdram (
     types::col_addr_t prefetch_stream_col_q;
     logic copy_done_q;
 
-    function automatic logic front_frame_index(input logic frame_select);
+    function automatic logic front_frame_index(input logic frame_select_in);
 `ifdef DOUBLE_BUFFER
-        front_frame_index = frame_select;
+        front_frame_index = frame_select_in;
 `else
         front_frame_index = 1'b0;
 `endif
     endfunction
 
-    function automatic logic back_frame_index(input logic frame_select);
+    function automatic logic back_frame_index(input logic frame_select_in);
 `ifdef DOUBLE_BUFFER
-        back_frame_index = ~frame_select;
+        back_frame_index = ~frame_select_in;
 `else
         back_frame_index = 1'b0;
 `endif
