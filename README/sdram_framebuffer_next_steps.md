@@ -375,7 +375,7 @@ Implementation note:
 
 ## Double-Buffer Integration
 
-### 15. Make Front/Back Ownership Explicit In SDRAM Mode
+### 15. Make Front/Back Ownership Explicit In SDRAM Mode (Completed)
 
 - command writes go to back frame only
 - scan prefetch reads front frame only
@@ -386,7 +386,19 @@ Definition of done:
 
 - the double-buffer policy is enforced structurally, not informally
 
-### 16. Integrate Frame Toggle With Cache Invalidation
+Implementation note:
+
+- `fb_store_sdram.sv` already routes:
+  - command writes to `back_frame_index(store_if.frame_select)`
+  - scan prefetch reads to `front_frame_index(store_if.frame_select)`
+  - `copy_start` from the current front frame into the current back frame
+- expanded [src/testbenches/tb_fb_store_sdram.sv](/workspaces/fpga_led_display/src/testbenches/tb_fb_store_sdram.sv:1) to verify:
+  - back-frame writes stay invisible to scan reads before a frame-role swap
+  - toggling `frame_select` exposes the expected former back frame
+  - writes after a toggle land in the new back frame, not the current front frame
+- status: completed
+
+### 16. Integrate Frame Toggle With Cache Invalidation (Completed)
 
 - on frame toggle:
   - clear cache-valid bits
@@ -396,6 +408,15 @@ Definition of done:
 Definition of done:
 
 - toggling frames never displays data from the wrong frame due to stale cache contents
+
+Implementation note:
+
+- `scan_prefetch.sv` now treats `invalidate_caches` as a frame-toggle style restart:
+  - blank output immediately
+  - clear both cache-valid bits
+  - restart prefetching from logical row pair 0 before resuming row-ahead prefetch
+- extended [src/testbenches/tb_scan_prefetch.sv](/workspaces/fpga_led_display/src/testbenches/tb_scan_prefetch.sv:1) to verify cache invalidation suppresses stale display data and forces a clean row-0 restart
+- status: completed
 
 ## Top-Level Integration
 

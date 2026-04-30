@@ -195,6 +195,29 @@ module tb_scan_prefetch;
         assert (pixeldata_subpanels[0].raw == make_field(8'h71, 8'h72, 8'h73).raw)
         else $fatal(1, "row2 top pixel mismatch");
 
+        // Frame-toggle style invalidation: blank immediately, drop cached rows,
+        // and restart by fetching row pair 0 from the new front frame.
+        @(negedge clk);
+        invalidate_caches = 1'b1;
+        @(posedge clk);
+        @(negedge clk);
+        invalidate_caches = 1'b0;
+        row_address_active = '0;
+        @(posedge clk);
+        #1;
+        assert (blank_active === 1'b1)
+        else $fatal(1, "cache invalidation should suppress stale output");
+        assert (cache_valid[0] === 1'b0 && cache_valid[1] === 1'b0)
+        else $fatal(1, "cache invalidation should clear both cache-valid bits");
+
+        drive_stream_row(types::row_subpanel_addr_t'(0), 8'h90);
+        @(posedge clk);
+        #1;
+        assert (blank_active === 1'b0)
+        else $fatal(1, "restart row should become active after cache invalidation");
+        assert (pixeldata_subpanels[0].raw == make_field(8'h91, 8'h92, 8'h93).raw)
+        else $fatal(1, "restart row top pixel mismatch");
+
         $display("tb_scan_prefetch: PASS");
         $finish;
     end

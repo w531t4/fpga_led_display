@@ -151,6 +151,14 @@ module tb_fb_store_sdram;
         write_byte(types::row_addr_t'(2), types::col_addr_t'(1), types::pixel_addr_t'(1), 8'h55);
         write_byte(types::row_addr_t'(2), types::col_addr_t'(1), types::pixel_addr_t'(2), 8'h66);
 
+        // Scan reads the current front frame only, so the new back-frame data
+        // must stay invisible until a frame-role swap makes it front-visible.
+        request_prefetch(types::row_subpanel_addr_t'(0));
+        expect_column(types::col_addr_t'(1),
+                      types::color_field_t'('0),
+                      types::color_field_t'('0),
+                      "front frame should ignore back-frame writes");
+
         // Toggle so frame1 becomes the front frame, then prefetch logical row pair 0.
         store_if.frame_select = 1'b1;
         request_prefetch(types::row_subpanel_addr_t'(0));
@@ -159,7 +167,30 @@ module tb_fb_store_sdram;
                       types::color_field_t'({8'h00, 8'h66, 8'h55, 8'h44}),
                       "prefetch after toggle");
 
-        // Copy current front (frame1) to current back (frame0), then toggle back.
+        // With frame_select=1, writes must go to back=frame0 and must not leak
+        // into the current front=frame1 scan stream until the next toggle.
+        write_byte(types::row_addr_t'(0), types::col_addr_t'(2), types::pixel_addr_t'(0), 8'h77);
+        write_byte(types::row_addr_t'(0), types::col_addr_t'(2), types::pixel_addr_t'(1), 8'h88);
+        write_byte(types::row_addr_t'(0), types::col_addr_t'(2), types::pixel_addr_t'(2), 8'h99);
+        write_byte(types::row_addr_t'(2), types::col_addr_t'(2), types::pixel_addr_t'(0), 8'haa);
+        write_byte(types::row_addr_t'(2), types::col_addr_t'(2), types::pixel_addr_t'(1), 8'hbb);
+        write_byte(types::row_addr_t'(2), types::col_addr_t'(2), types::pixel_addr_t'(2), 8'hcc);
+        request_prefetch(types::row_subpanel_addr_t'(0));
+        expect_column(types::col_addr_t'(2),
+                      types::color_field_t'('0),
+                      types::color_field_t'('0),
+                      "new back-frame writes must stay hidden before toggle");
+
+        store_if.frame_select = 1'b0;
+        request_prefetch(types::row_subpanel_addr_t'(0));
+        expect_column(types::col_addr_t'(2),
+                      types::color_field_t'({8'h00, 8'h99, 8'h88, 8'h77}),
+                      types::color_field_t'({8'h00, 8'hcc, 8'hbb, 8'haa}),
+                      "toggled frame should expose former back-frame writes");
+
+        // Restore frame1 as the front frame so copyframe still exercises the
+        // original front->back direction (frame1 -> frame0).
+        store_if.frame_select = 1'b1;
         copy_frame();
         store_if.frame_select = 1'b0;
         request_prefetch(types::row_subpanel_addr_t'(0));
