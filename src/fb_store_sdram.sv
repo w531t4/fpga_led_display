@@ -19,7 +19,9 @@ module fb_store_sdram (
     output logic [params::SDRAM_DQM_BITS-1:0] sdram_dqm,
     output logic [params::SDRAM_DATA_BITS-1:0] sdram_dq_out,
     output logic sdram_dq_oe,
-    input  logic [params::SDRAM_DATA_BITS-1:0] sdram_dq_in
+    input  logic [params::SDRAM_DATA_BITS-1:0] sdram_dq_in,
+
+    output logic debug_refresh_active
 );
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     localparam int unsigned BURST_WORD_BITS = params::SDRAM_DATA_BITS * params::SDRAM_BURST_LENGTH;
@@ -425,6 +427,7 @@ module fb_store_sdram (
     assign store_if.copy_busy = (state == STORE_COPY_READ_REQ) || (state == STORE_COPY_READ_WAIT)
                                 || (state == STORE_COPY_WRITE_REQ) || (state == STORE_COPY_WRITE_WAIT);
     assign store_if.copy_done = copy_done_q;
+    assign debug_refresh_active = controller_refresh_active;
 
     genvar out_subpanel_idx;
     generate
@@ -434,7 +437,6 @@ module fb_store_sdram (
     endgenerate
 
     wire _unused_ok = &{1'b0,
-                        controller_refresh_active,
                         COLOR_BYTES,
                         controller_busy,
                         1'b0};
