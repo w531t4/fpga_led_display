@@ -141,7 +141,7 @@ Implementation note:
 - the interface is intentionally logical and does not expose current `multimem` lane packing
 - status: completed
 
-### 5. Wrap The Existing BRAM Path As `fb_store_bram.sv`
+### 5. Wrap The Existing BRAM Path As `fb_store_bram.sv` (Completed)
 
 - create a BRAM backend module that internally reuses:
   - `framebuffer_fabric.sv`
@@ -155,7 +155,15 @@ Definition of done:
 - `main.sv` can instantiate `fb_store_bram.sv` through the new interface
 - existing tests still pass with the BRAM backend selected
 
-### 6. Refactor `main.sv` To Use The Store Abstraction
+Implementation note:
+
+- [src/fb_store_bram.sv](/workspaces/fpga_led_display/src/fb_store_bram.sv:1) now wraps [src/framebuffer_fabric.sv](/workspaces/fpga_led_display/src/framebuffer_fabric.sv:1) behind [src/interfaces/fb_store_if.sv](/workspaces/fpga_led_display/src/interfaces/fb_store_if.sv:1)
+- command-side writes now enter through logical `fb_store_if` coordinates
+- the current direct scan read path and `mem_copy_if` copy path remain inside the BRAM backend as temporary compatibility seams
+- the logical prefetch and backend-native copy signaling remain deferred until the later scan-cache and SDRAM-native copy steps
+- status: completed
+
+### 6. Refactor `main.sv` To Use The Store Abstraction (Completed)
 
 - remove direct top-level dependence on the current BRAM fabric wiring
 - instantiate the storage backend behind one selection point
@@ -164,6 +172,13 @@ Definition of done:
 Definition of done:
 
 - the code path for choosing a storage backend is centralized and easy to reason about
+
+Implementation note:
+
+- [src/main.sv](/workspaces/fpga_led_display/src/main.sv:1) now drives a single `fb_store_if` instance
+- `FB_BRAM` selection now instantiates [src/fb_store_bram.sv](/workspaces/fpga_led_display/src/fb_store_bram.sv:1) instead of wiring [src/framebuffer_fabric.sv](/workspaces/fpga_led_display/src/framebuffer_fabric.sv:1) directly at top level
+- BRAM-specific address splitting is now localized in the BRAM backend instead of spread through `main.sv`
+- status: completed
 
 ## SDRAM Controller Work
 

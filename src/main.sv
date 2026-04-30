@@ -99,6 +99,7 @@ module main #(
     mem_copy_if copy_int ();
     wire  frame_select;
 `endif
+    fb_store_if fb_store ();
     types::mem_read_data_t ram_b_data_out;
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
@@ -274,6 +275,40 @@ module main #(
         .pixeldata_subpanels(pixeldata_subpanels)
     );
 
+    // Route the current control-module write path through the logical store
+    // interface. This keeps BRAM-specific row splitting out of main.sv and
+    // gives future backends one consistent command-side entry point.
+    assign fb_store.cmd_write_valid = ctrl_ram_clk_enable & ctrl_ram_write_enable;
+    assign fb_store.cmd_write_addr = types::fb_addr_t'({
+        ctrl_ram_address.subpanel,
+        ctrl_ram_address.row,
+        ctrl_ram_address.col,
+        ctrl_ram_address.pixel
+    });
+    assign fb_store.cmd_write_data = ctrl_ram_data_out;
+    assign fb_store.prefetch_req_valid = 1'b0;
+    assign fb_store.prefetch_row = '0;
+    assign fb_store.prefetch_data_ready = 1'b0;
+    assign fb_store.copy_start = 1'b0;
+`ifdef DOUBLE_BUFFER
+    assign fb_store.frame_select = frame_select;
+`else
+    assign fb_store.frame_select = 1'b0;
+`endif
+    wire _unused_ok_fb_store = &{1'b0,
+                                 fb_store.cmd_write_ready,
+                                 fb_store.prefetch_req_ready,
+                                 fb_store.prefetch_data_valid,
+                                 fb_store.prefetch_data_first,
+                                 fb_store.prefetch_data_last,
+                                 fb_store.prefetch_col,
+                                 fb_store.prefetch_pixels[0].raw,
+                                 fb_store.copy_busy,
+                                 fb_store.copy_done,
+                                 fb_store.backend_ready,
+                                 fb_store.backend_error,
+                                 1'b0};
+
     // for controller
 `ifdef SPI
     spi_slave spislave (
@@ -345,19 +380,16 @@ module main #(
     );
 
 `ifdef FB_BRAM
-    // Framebuffer fabric (mux + multimem instances).
-    framebuffer_fabric fb_fabric (
+    // BRAM-backed framebuffer store. Legacy scan/copy seams remain encapsulated
+    // inside the backend while the broader SDRAM refactor is still in progress.
+    fb_store_bram fb_backend (
         .clk_root(clk_root),
         .reset(global_reset_sync),
-        .ctrl_ram_address(ctrl_ram_address),
-        .ctrl_ram_data_out(ctrl_ram_data_out),
-        .ctrl_ram_write_enable(ctrl_ram_write_enable),
-        .ctrl_ram_clk_enable(ctrl_ram_clk_enable),
-        .ram_b_address(ram_b_address),
-        .ram_b_clk_enable(ram_b_clk_enable),
-        .ram_b_data_out(ram_b_data_out)
+        .store_if(fb_store),
+        .scan_ram_address(ram_b_address),
+        .scan_ram_clk_enable(ram_b_clk_enable),
+        .scan_ram_data(ram_b_data_out)
 `ifdef DOUBLE_BUFFER,
-        .frame_select(frame_select),
         .copy_if(copy_int)
 `endif
     );
