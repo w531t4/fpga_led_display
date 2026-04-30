@@ -92,6 +92,7 @@ module tb_control_module_readrect;
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
+        .ram_write_ready(1'b1),
 `ifdef DOUBLE_BUFFER
 `ifdef FB_SDRAM
         .cmd_copyframe_start(copyframe_start_unused),

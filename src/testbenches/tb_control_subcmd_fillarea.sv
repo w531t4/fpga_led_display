@@ -55,6 +55,7 @@ module tb_control_subcmd_fillarea #(
         .data_out(data_out),
         .ram_write_enable(ram_write_enable),
         .ram_access_start(ram_access_start),
+        .mem_ready(1'b1),
         .done(pre_done)
     );
 

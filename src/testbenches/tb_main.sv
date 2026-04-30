@@ -176,7 +176,7 @@ module tb_main #(
         .gn14       (_unused_output[13])
     );
 `ifdef FB_SDRAM
-    assign sdram_d = tb_main.tbi_main.sdram_dq_oe ? {params::SDRAM_DATA_BITS{1'bz}} : sdram_model_dq_out;
+    assign sdram_d = tb_main.tbi_main.sdram_dq_oe ? tb_main.tbi_main.sdram_dq_out : sdram_model_dq_out;
     sdram_model_simple sdram_model (
         .clk(sdram_clk),
         .cke(sdram_cke),

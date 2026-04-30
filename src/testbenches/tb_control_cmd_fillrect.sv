@@ -46,6 +46,7 @@ module tb_control_cmd_fillrect;
         .data_out(data_out),
         .ram_write_enable(ram_write_enable),
         .ram_access_start(ram_access_start),
+        .mem_ready(1'b1),
         .ready_for_data(ready_for_data),
         .done(done)
     );

@@ -105,6 +105,12 @@ package types;
         col_addr_t   col;
         pixel_addr_t pixel;
     } fb_addr_t;
+
+    function automatic row_addr_t logical_row_for_subpanel(input row_subpanel_addr_t row_in_subpanel,
+                                                           input subpanel_addr_t subpanel);
+        logical_row_for_subpanel = row_addr_t'(uint_t'(row_in_subpanel)
+                                               + (uint_t'(subpanel) * params::PIXEL_HALFHEIGHT));
+    endfunction
     // ==== /FRAMEBUFFER ADDRESS ====
 
     // ==== SDRAM ADDRESSING ====
@@ -177,6 +183,14 @@ package types;
         col_addr_t col;
         pixel_addr_t pixel;
     } mem_write_addr_t;
+
+    function automatic fb_addr_t fb_addr_from_mem_write_addr(input mem_write_addr_t addr_in);
+        fb_addr_t out;
+        out.row = logical_row_for_subpanel(addr_in.row, addr_in.subpanel);
+        out.col = addr_in.col;
+        out.pixel = addr_in.pixel;
+        fb_addr_from_mem_write_addr = out;
+    endfunction
 
     // aka: data A
     typedef logic [calc::num_data_a_bits()-1:0] mem_write_data_t;
