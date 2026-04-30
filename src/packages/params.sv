@@ -69,6 +69,82 @@ package params;
     // Use smaller value in testbench so we don't infinitely sim.
     parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = 'd15;
 
+    // SDRAM controller geometry/timing.
+`ifdef SDRAM_DATA_BITS
+    parameter int unsigned SDRAM_DATA_BITS = `SDRAM_DATA_BITS;
+`else
+    parameter int unsigned SDRAM_DATA_BITS = 16;
+`endif
+`ifdef SDRAM_DQM_BITS
+    parameter int unsigned SDRAM_DQM_BITS = `SDRAM_DQM_BITS;
+`else
+    parameter int unsigned SDRAM_DQM_BITS = SDRAM_DATA_BITS / 8;
+`endif
+`ifdef SDRAM_BANK_BITS
+    parameter int unsigned SDRAM_BANK_BITS = `SDRAM_BANK_BITS;
+`else
+    parameter int unsigned SDRAM_BANK_BITS = 2;
+`endif
+`ifdef SDRAM_ADDR_BITS
+    parameter int unsigned SDRAM_ADDR_BITS = `SDRAM_ADDR_BITS;
+`else
+    parameter int unsigned SDRAM_ADDR_BITS = 13;
+`endif
+`ifdef SDRAM_ROW_BITS
+    parameter int unsigned SDRAM_ROW_BITS = `SDRAM_ROW_BITS;
+`else
+    parameter int unsigned SDRAM_ROW_BITS = 13;
+`endif
+`ifdef SDRAM_COLUMN_BITS
+    parameter int unsigned SDRAM_COLUMN_BITS = `SDRAM_COLUMN_BITS;
+`else
+    parameter int unsigned SDRAM_COLUMN_BITS = 9;
+`endif
+`ifdef SDRAM_BURST_LENGTH
+    parameter int unsigned SDRAM_BURST_LENGTH = `SDRAM_BURST_LENGTH;
+`else
+    parameter int unsigned SDRAM_BURST_LENGTH = 4;
+`endif
+`ifdef SDRAM_CAS_LATENCY
+    parameter int unsigned SDRAM_CAS_LATENCY = `SDRAM_CAS_LATENCY;
+`else
+    parameter int unsigned SDRAM_CAS_LATENCY = 2;
+`endif
+`ifdef SDRAM_TRP_CYCLES
+    parameter int unsigned SDRAM_TRP_CYCLES = `SDRAM_TRP_CYCLES;
+`else
+    parameter int unsigned SDRAM_TRP_CYCLES = 2;
+`endif
+`ifdef SDRAM_TRCD_CYCLES
+    parameter int unsigned SDRAM_TRCD_CYCLES = `SDRAM_TRCD_CYCLES;
+`else
+    parameter int unsigned SDRAM_TRCD_CYCLES = 2;
+`endif
+`ifdef SDRAM_TRFC_CYCLES
+    parameter int unsigned SDRAM_TRFC_CYCLES = `SDRAM_TRFC_CYCLES;
+`else
+    parameter int unsigned SDRAM_TRFC_CYCLES = 7;
+`endif
+`ifdef SDRAM_TMRD_CYCLES
+    parameter int unsigned SDRAM_TMRD_CYCLES = `SDRAM_TMRD_CYCLES;
+`else
+    parameter int unsigned SDRAM_TMRD_CYCLES = 2;
+`endif
+`ifdef SDRAM_INIT_WAIT_CYCLES
+    parameter int unsigned SDRAM_INIT_WAIT_CYCLES = `SDRAM_INIT_WAIT_CYCLES;
+`elsif SIM
+    parameter int unsigned SDRAM_INIT_WAIT_CYCLES = 8;
+`else
+    parameter int unsigned SDRAM_INIT_WAIT_CYCLES = 10_000;
+`endif
+`ifdef SDRAM_REFRESH_INTERVAL_CYCLES
+    parameter int unsigned SDRAM_REFRESH_INTERVAL_CYCLES = `SDRAM_REFRESH_INTERVAL_CYCLES;
+`elsif SIM
+    parameter int unsigned SDRAM_REFRESH_INTERVAL_CYCLES = 32;
+`else
+    parameter int unsigned SDRAM_REFRESH_INTERVAL_CYCLES = 781;
+`endif
+
 `ifdef RGB24
     parameter int unsigned _BYTES_PER_PIXEL = 3;
     parameter int unsigned _BRIGHTNESS_LEVELS = 8;

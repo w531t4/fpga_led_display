@@ -182,7 +182,7 @@ Implementation note:
 
 ## SDRAM Controller Work
 
-### 7. Create A Standalone SDRAM Controller Subsystem
+### 7. Create A Standalone SDRAM Controller Subsystem (Completed)
 
 - add new modules for:
   - SDRAM init sequence
@@ -196,7 +196,16 @@ Definition of done:
 
 - the SDRAM controller can initialize memory and perform isolated burst reads/writes in simulation
 
-### 8. Add SDRAM-Focused Testbenches
+Implementation note:
+
+- added [src/sdram_init.sv](/workspaces/fpga_led_display/src/sdram_init.sv:1) for the power-up command sequence
+- added [src/sdram_refresh.sv](/workspaces/fpga_led_display/src/sdram_refresh.sv:1) for refresh scheduling
+- added [src/sdram_burst.sv](/workspaces/fpga_led_display/src/sdram_burst.sv:1) for fixed-length read/write burst execution
+- added [src/sdram_controller.sv](/workspaces/fpga_led_display/src/sdram_controller.sv:1) as the top-level arbitration/wrapper block
+- the current controller interface is intentionally isolated from framebuffer integration and uses explicit `dq_in` / `dq_out` / `dq_oe` signals for simulation-friendly bring-up
+- status: completed
+
+### 8. Add SDRAM-Focused Testbenches (Completed)
 
 - create dedicated controller tests under `src/testbenches/`
 - cover:
@@ -210,6 +219,19 @@ Definition of done:
 Definition of done:
 
 - SDRAM controller correctness can be verified independently of the display pipeline
+
+Implementation note:
+
+- added [src/testbenches/tb_sdram_controller.sv](/workspaces/fpga_led_display/src/testbenches/tb_sdram_controller.sv:1)
+- added [src/testbenches/tb_sdram_controller.args](/workspaces/fpga_led_display/src/testbenches/tb_sdram_controller.args:1) to shrink geometry and speed up controller-only simulation
+- the controller testbench includes a small behavioral SDRAM model and covers:
+  - initialization completion
+  - refresh activity
+  - burst write then burst readback
+  - burst wrap behavior
+  - back-to-back transactions
+  - idle periods followed by resumed access
+- status: completed
 
 ### 9. Decide And Document The Internal SDRAM Address Map
 

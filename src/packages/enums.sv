@@ -19,4 +19,14 @@ package enums;
         STATE_CMD_COPYFRAME
 `endif
     } control_module_fsm_e;
+
+    typedef enum logic [2:0] {
+        SDRAM_CMD_NOP,
+        SDRAM_CMD_ACTIVE,
+        SDRAM_CMD_READ,
+        SDRAM_CMD_WRITE,
+        SDRAM_CMD_PRECHARGE,
+        SDRAM_CMD_AUTO_REFRESH,
+        SDRAM_CMD_LOAD_MODE
+    } sdram_cmd_e;
 endpackage
