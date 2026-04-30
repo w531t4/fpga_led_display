@@ -59,9 +59,6 @@ ifneq ($(findstring -DFB_SDRAM,$(BUILD_FLAGS)),)
 $(error Select exactly one framebuffer backend: FB_BRAM or FB_SDRAM)
 endif
 endif
-ifneq ($(findstring -DFB_SDRAM,$(BUILD_FLAGS)),)
-$(error FB_SDRAM backend is not implemented yet; use FB_BRAM for now)
-endif
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js

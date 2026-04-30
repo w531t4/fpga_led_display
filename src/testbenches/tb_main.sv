@@ -25,6 +25,19 @@ module tb_main #(
     wire types::rgb_signals_t rgb1;
     wire debugger_txout;
     logic debugger_rxin;
+`ifdef FB_SDRAM
+    wire sdram_clk;
+    wire sdram_cke;
+    wire sdram_csn;
+    wire sdram_rasn;
+    wire sdram_casn;
+    wire sdram_wen;
+    wire [params::SDRAM_ADDR_BITS-1:0] sdram_a;
+    wire [params::SDRAM_BANK_BITS-1:0] sdram_ba;
+    wire [params::SDRAM_DQM_BITS-1:0] sdram_dqm;
+    wire [params::SDRAM_DATA_BITS-1:0] sdram_model_dq_out;
+    tri [params::SDRAM_DATA_BITS-1:0] sdram_d;
+`endif
 
     logic reset;
     `include "row4.svh"
@@ -103,6 +116,18 @@ module tb_main #(
         .gp8        (ROA1),
         .gp9        (ROA2),
         .gp10       (ROA3),
+`ifdef FB_SDRAM
+        .sdram_clk  (sdram_clk),
+        .sdram_cke  (sdram_cke),
+        .sdram_csn  (sdram_csn),
+        .sdram_rasn (sdram_rasn),
+        .sdram_casn (sdram_casn),
+        .sdram_wen  (sdram_wen),
+        .sdram_a    (sdram_a),
+        .sdram_ba   (sdram_ba),
+        .sdram_dqm  (sdram_dqm),
+        .sdram_d    (sdram_d),
+`endif
 `ifdef SWAP_BLUE_GREEN_CHAN
         .gp0        (rgb1.red),
         .gp1        (rgb1.blue),
@@ -150,10 +175,31 @@ module tb_main #(
         .gn5        (_unused_output[12]),
         .gn14       (_unused_output[13])
     );
+`ifdef FB_SDRAM
+    assign sdram_d = tb_main.tbi_main.sdram_dq_oe ? {params::SDRAM_DATA_BITS{1'bz}} : sdram_model_dq_out;
+    sdram_model_simple sdram_model (
+        .clk(sdram_clk),
+        .cke(sdram_cke),
+        .csn(sdram_csn),
+        .rasn(sdram_rasn),
+        .casn(sdram_casn),
+        .wen(sdram_wen),
+        .addr(sdram_a),
+        .bank(sdram_ba),
+        .dq_in(sdram_d),
+        .dq_oe(tb_main.tbi_main.sdram_dq_oe),
+        .dq_out(sdram_model_dq_out)
+    );
+`endif
     // verilog_format: off
     wire _unused_ok_main = &{1'b0,
                              _unused_output,
                              1'b0};
+`ifdef FB_SDRAM
+    wire _unused_ok_sdram_main = &{1'b0,
+                                   sdram_dqm,
+                                   1'b0};
+`endif
 
 `ifdef SPI_ESP32
     wire _unused_ok_ctrlbusy = &{1'b0,

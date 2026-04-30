@@ -51,6 +51,18 @@ module main #(
     input        gp14,
     input        gp15,
     output       gp16,
+`ifdef FB_SDRAM
+    output       sdram_clk,
+    output       sdram_cke,
+    output       sdram_csn,
+    output       sdram_rasn,
+    output       sdram_casn,
+    output       sdram_wen,
+    output [params::SDRAM_ADDR_BITS-1:0] sdram_a,
+    output [params::SDRAM_BANK_BITS-1:0] sdram_ba,
+    output [params::SDRAM_DQM_BITS-1:0] sdram_dqm,
+    inout  tri [params::SDRAM_DATA_BITS-1:0] sdram_d,
+`endif
     input        clk_25mhz,
     output       gn0,
     output       gn1,
@@ -96,13 +108,17 @@ module main #(
     wire                         ctrl_ram_write_enable;
     wire                         ctrl_ram_clk_enable;
 `ifdef DOUBLE_BUFFER
+`ifdef FB_BRAM
     mem_copy_if copy_int ();
+`endif
     wire  frame_select;
 `endif
     fb_store_if fb_store ();
+`ifdef FB_BRAM
     types::mem_read_data_t ram_b_data_out;
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
+`endif
 
     // Per-subpanel pixeldata fetched from framebuffer.
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
@@ -124,6 +140,33 @@ module main #(
 
     wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
+`ifdef FB_SDRAM
+    logic scan_blank_active;
+    logic scan_fill_cache_select;
+    logic scan_fill_valid;
+    logic scan_fill_commit;
+    types::row_subpanel_addr_t scan_fill_row;
+    types::col_addr_t scan_fill_col;
+    types::color_field_t scan_fill_pixels[NUM_SUBPANELS];
+    logic scan_activate_cache_select_valid;
+    logic scan_activate_cache_select;
+    logic scan_invalidate_all;
+    logic scan_invalidate_cache_select_valid;
+    logic scan_invalidate_cache_select;
+    logic scan_active_cache_select;
+    logic scan_cache_valid[2];
+    types::row_subpanel_addr_t scan_cache_row[2];
+    logic scan_prefetch_in_progress;
+    logic scan_underflow_sticky;
+    logic scan_invalidate_caches;
+    logic frame_select_last_q;
+`ifdef DOUBLE_BUFFER
+    logic fb_store_copy_start;
+`endif
+    logic [params::SDRAM_DATA_BITS-1:0] sdram_dq_out;
+    logic sdram_dq_oe;
+    logic [params::SDRAM_DATA_BITS-1:0] sdram_dq_in;
+`endif
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -256,8 +299,8 @@ module main #(
 `endif
     );
 
+`ifdef FB_BRAM
     /* the fetch controller */
-
     framebuffer_fetch #(
         ._UNUSED('d0)
     ) fb_f (
@@ -274,6 +317,71 @@ module main #(
 
         .pixeldata_subpanels(pixeldata_subpanels)
     );
+`endif
+`ifdef FB_SDRAM
+`ifdef DOUBLE_BUFFER
+    always_ff @(posedge clk_root) begin
+        if (global_reset_sync) begin
+            frame_select_last_q <= 1'b0;
+            scan_invalidate_caches <= 1'b0;
+        end else begin
+            // A frame-role swap invalidates both cached row pairs so scan
+            // restarts cleanly from row pair 0 of the new front frame.
+            scan_invalidate_caches <= (frame_select_last_q != frame_select);
+            frame_select_last_q <= frame_select;
+        end
+    end
+`else
+    assign scan_invalidate_caches = 1'b0;
+`endif
+
+    scan_prefetch scan_prefetch_inst (
+        .clk_in(clk_root),
+        .reset(global_reset_sync),
+        .row_address_active(row_address_active),
+        .invalidate_caches(scan_invalidate_caches),
+        .store_if(fb_store),
+        .active_cache_select(scan_active_cache_select),
+        .cache_valid(scan_cache_valid),
+        .cache_row(scan_cache_row),
+        .blank_active(scan_blank_active),
+        .fill_cache_select(scan_fill_cache_select),
+        .fill_valid(scan_fill_valid),
+        .fill_commit(scan_fill_commit),
+        .fill_row(scan_fill_row),
+        .fill_col(scan_fill_col),
+        .fill_pixels(scan_fill_pixels),
+        .activate_cache_select_valid(scan_activate_cache_select_valid),
+        .activate_cache_select(scan_activate_cache_select),
+        .invalidate_all(scan_invalidate_all),
+        .invalidate_cache_select_valid(scan_invalidate_cache_select_valid),
+        .invalidate_cache_select(scan_invalidate_cache_select),
+        .prefetch_in_progress(scan_prefetch_in_progress),
+        .underflow_sticky(scan_underflow_sticky)
+    );
+
+    scan_row_cache scan_row_cache_inst (
+        .clk_in(clk_root),
+        .reset(global_reset_sync),
+        .scan_col(column_address),
+        .blank_active(scan_blank_active),
+        .fill_cache_select(scan_fill_cache_select),
+        .fill_valid(scan_fill_valid),
+        .fill_commit(scan_fill_commit),
+        .fill_row(scan_fill_row),
+        .fill_col(scan_fill_col),
+        .fill_pixels(scan_fill_pixels),
+        .activate_cache_select_valid(scan_activate_cache_select_valid),
+        .activate_cache_select(scan_activate_cache_select),
+        .invalidate_all(scan_invalidate_all),
+        .invalidate_cache_select_valid(scan_invalidate_cache_select_valid),
+        .invalidate_cache_select(scan_invalidate_cache_select),
+        .active_cache_select(scan_active_cache_select),
+        .cache_valid(scan_cache_valid),
+        .cache_row(scan_cache_row),
+        .pixeldata_subpanels(pixeldata_subpanels)
+    );
+`endif
 
     // Route the current control-module write path through the logical store
     // interface. This keeps BRAM-specific row splitting out of main.sv and
@@ -286,10 +394,19 @@ module main #(
         ctrl_ram_address.pixel
     });
     assign fb_store.cmd_write_data = ctrl_ram_data_out;
+`ifdef FB_BRAM
     assign fb_store.prefetch_req_valid = 1'b0;
     assign fb_store.prefetch_row = '0;
     assign fb_store.prefetch_data_ready = 1'b0;
     assign fb_store.copy_start = 1'b0;
+`endif
+`ifdef FB_SDRAM
+`ifdef DOUBLE_BUFFER
+    assign fb_store.copy_start = fb_store_copy_start;
+`else
+    assign fb_store.copy_start = 1'b0;
+`endif
+`endif
 `ifdef DOUBLE_BUFFER
     assign fb_store.frame_select = frame_select;
 `else
@@ -367,7 +484,12 @@ module main #(
         .ram_address(ctrl_ram_address),
         .ram_write_enable(ctrl_ram_write_enable),
 `ifdef DOUBLE_BUFFER
+`ifdef FB_SDRAM
+        .cmd_copyframe_start(fb_store_copy_start),
+        .cmd_copyframe_done_native(fb_store.copy_done),
+`else
         .cmd_copyframe_if(copy_int),
+`endif
         .frame_select(frame_select),
 `endif
 `ifdef USE_WATCHDOG
@@ -393,6 +515,39 @@ module main #(
         .copy_if(copy_int)
 `endif
     );
+`endif
+`ifdef FB_SDRAM
+    assign sdram_d = sdram_dq_oe ? sdram_dq_out : {params::SDRAM_DATA_BITS{1'bz}};
+    assign sdram_dq_in = sdram_d;
+
+    fb_store_sdram fb_backend (
+        .clk_root(clk_root),
+        .reset(global_reset_sync),
+        .store_if(fb_store),
+        .sdram_clk(sdram_clk),
+        .sdram_cke(sdram_cke),
+        .sdram_csn(sdram_csn),
+        .sdram_rasn(sdram_rasn),
+        .sdram_casn(sdram_casn),
+        .sdram_wen(sdram_wen),
+        .sdram_a(sdram_a),
+        .sdram_ba(sdram_ba),
+        .sdram_dqm(sdram_dqm),
+        .sdram_dq_out(sdram_dq_out),
+        .sdram_dq_oe(sdram_dq_oe),
+        .sdram_dq_in(sdram_dq_in)
+    );
+
+    wire _unused_ok_scan = &{1'b0,
+                             clk_pixel_load,
+                             row_address,
+                             scan_prefetch_in_progress,
+                             scan_underflow_sticky,
+                             scan_cache_valid[0],
+                             scan_cache_valid[1],
+                             scan_cache_row[0],
+                             scan_cache_row[1],
+                             1'b0};
 `endif
 
     genvar subpanel_idx;

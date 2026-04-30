@@ -20,7 +20,12 @@ module control_module #(
     output busy,
     output ready_for_data,
 `ifdef DOUBLE_BUFFER
+`ifdef FB_SDRAM
+    output logic cmd_copyframe_start,
+    input logic cmd_copyframe_done_native,
+`else
     mem_copy_if.engine cmd_copyframe_if,
+`endif
     output logic frame_select,
 `endif
 `ifdef USE_WATCHDOG
@@ -50,6 +55,9 @@ module control_module #(
     types::brightness_level_t brightness_data_out;
 `ifdef DOUBLE_BUFFER
     logic cmd_copyframe_done;
+`ifdef FB_SDRAM
+    logic cmd_copyframe_issued;
+`endif
 `endif
 
 `ifdef DEBUGGER
@@ -264,6 +272,9 @@ module control_module #(
     );
 
 `ifdef DOUBLE_BUFFER
+`ifdef FB_SDRAM
+    assign cmd_copyframe_done = cmd_copyframe_done_native;
+`else
     // Copy engine: read the front buffer QA and write to the back buffer.
     assign cmd_copyframe_if.active = (cmd_line_state == enums::STATE_CMD_COPYFRAME);
     control_cmd_copyframe #(
@@ -280,6 +291,7 @@ module control_module #(
         .ram_access_start(cmd_copyframe_if.access_start),
         .done            (cmd_copyframe_done)
     );
+`endif
 `endif
 
 `ifdef USE_WATCHDOG
@@ -400,6 +412,10 @@ module control_module #(
 `ifdef DOUBLE_BUFFER
             frame_select <= 1'b0;
             frame_select_temp <= 1'b0;
+`ifdef FB_SDRAM
+            cmd_copyframe_start <= 1'b0;
+            cmd_copyframe_issued <= 1'b0;
+`endif
 `endif
             brightness_enable <= '1;  // all 1's
             brightness_temp <= '1;  // all 1's;
@@ -409,6 +425,19 @@ module control_module #(
             debug_if.num_commands_processed <= 8'b0;
 `endif
         end else begin
+`ifdef DOUBLE_BUFFER
+`ifdef FB_SDRAM
+            cmd_copyframe_start <= 1'b0;
+            if (cmd_line_state != enums::STATE_CMD_COPYFRAME) begin
+                cmd_copyframe_issued <= 1'b0;
+            end else if (!cmd_copyframe_issued) begin
+                // Issue a single-cycle start pulse and let the backend report
+                // completion through cmd_copyframe_done_native.
+                cmd_copyframe_start <= 1'b1;
+                cmd_copyframe_issued <= 1'b1;
+            end
+`endif
+`endif
             if (state_done) begin
                 if (data_ready_n && cmd_line_state != enums::STATE_IDLE) begin
                     cmd_line_state <= enums::STATE_IDLE;

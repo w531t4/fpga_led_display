@@ -82,6 +82,10 @@ module tb_control_module_copyframe_readframe;
     logic        measure_copyframe;
     logic        readframe_done;
     logic        copyframe_done;
+`ifdef FB_SDRAM
+    logic        copyframe_start_native;
+    logic        copyframe_done_native;
+`endif
 
     // === DUT: control module ===
     control_module #(
@@ -97,7 +101,12 @@ module tb_control_module_copyframe_readframe;
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
+`ifdef FB_SDRAM
+        .cmd_copyframe_start(copyframe_start_native),
+        .cmd_copyframe_done_native(copyframe_done_native),
+`else
         .cmd_copyframe_if(copy_int),
+`endif
         .busy(busy),
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
@@ -109,6 +118,10 @@ module tb_control_module_copyframe_readframe;
 `endif
         .frame_select(frame_select)
     );
+`ifdef FB_SDRAM
+    assign copyframe_done_native = copyframe_done;
+    wire _unused_ok_copyframe_native = &{1'b0, copyframe_start_native, 1'b0};
+`endif
     assign copy_int.read_data_in = COPY_DATA_STUB;
 
     // === Byte-stream helpers (SPI cadence model) ===
