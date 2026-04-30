@@ -307,7 +307,7 @@ Implementation note:
 
 ## Scan Cache Work
 
-### 12. Create `scan_row_cache.sv`
+### 12. Create `scan_row_cache.sv` (Completed)
 
 - store one active row pair and one prefetched row pair in BRAM
 - choose a cache representation that favors simple scan timing
@@ -317,7 +317,19 @@ Definition of done:
 
 - scan-side logic can fetch pixel data from BRAM cache with deterministic latency and without waiting on SDRAM
 
-### 13. Create `scan_prefetch.sv`
+Implementation note:
+
+- added [src/scan_row_cache.sv](/workspaces/fpga_led_display/src/scan_row_cache.sv:1)
+- the cache keeps two row-pair slots with explicit:
+  - fill/write controls
+  - per-slot row metadata
+  - active-slot selection
+  - selective invalidation
+  - output blanking without destroying cached data
+- added [src/testbenches/tb_scan_row_cache.sv](/workspaces/fpga_led_display/src/testbenches/tb_scan_row_cache.sv:1) and [src/testbenches/tb_scan_row_cache.args](/workspaces/fpga_led_display/src/testbenches/tb_scan_row_cache.args:1)
+- status: completed
+
+### 13. Create `scan_prefetch.sv` (Completed)
 
 - watch row transitions from `matrix_scan.sv`
 - request row-pair fetches from `fb_store_sdram.sv`
@@ -328,7 +340,18 @@ Definition of done:
 
 - row-pair prefetch runs one row ahead and keeps the active scan path fed
 
-### 14. Define Underflow Behavior Explicitly
+Implementation note:
+
+- added [src/scan_prefetch.sv](/workspaces/fpga_led_display/src/scan_prefetch.sv:1)
+- the prefetch controller now:
+  - watches `row_address_active`
+  - requests the current row on startup or recovery
+  - requests the next row when the current row is safely cached
+  - swaps the newly loaded cache into active use when appropriate
+- added [src/testbenches/tb_scan_prefetch.sv](/workspaces/fpga_led_display/src/testbenches/tb_scan_prefetch.sv:1) and [src/testbenches/tb_scan_prefetch.args](/workspaces/fpga_led_display/src/testbenches/tb_scan_prefetch.args:1)
+- status: completed
+
+### 14. Define Underflow Behavior Explicitly (Completed)
 
 - choose one failure behavior for missed prefetch deadlines:
   - blank the row
@@ -342,6 +365,13 @@ Recommended choice:
 Definition of done:
 
 - scan failure behavior is deterministic and debuggable
+
+Implementation note:
+
+- `scan_prefetch.sv` now blanks the active output when the needed row is not cached
+- underflow sets a sticky flag (`underflow_sticky`) instead of silently reusing stale row data
+- the underflow-and-recovery behavior is covered in [src/testbenches/tb_scan_prefetch.sv](/workspaces/fpga_led_display/src/testbenches/tb_scan_prefetch.sv:1)
+- status: completed
 
 ## Double-Buffer Integration
 
