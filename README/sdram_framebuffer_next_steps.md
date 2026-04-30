@@ -233,7 +233,7 @@ Implementation note:
   - idle periods followed by resumed access
 - status: completed
 
-### 9. Decide And Document The Internal SDRAM Address Map
+### 9. Decide And Document The Internal SDRAM Address Map (Completed)
 
 - formalize frame memory layout:
   - front frame base
@@ -250,6 +250,14 @@ Recommended formula:
 Definition of done:
 
 - every module that touches external frame storage uses one documented address model
+
+Implementation note:
+
+- documented the mapping in [README/sdram_address_map.md](/workspaces/fpga_led_display/README/sdram_address_map.md:1)
+- added shared SDRAM sizing constants in [src/packages/params.sv](/workspaces/fpga_led_display/src/packages/params.sv:120)
+- added shared linear-byte-address helpers and SDRAM `bank/row/col` decomposition helpers in [src/packages/types.sv](/workspaces/fpga_led_display/src/packages/types.sv:105)
+- added [src/testbenches/tb_types_sdram_address_map.sv](/workspaces/fpga_led_display/src/testbenches/tb_types_sdram_address_map.sv:1) to verify the agreed mapping against a small configuration
+- status: completed
 
 ## SDRAM Store Backend Work
 

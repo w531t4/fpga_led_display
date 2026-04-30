@@ -107,6 +107,61 @@ package types;
     } fb_addr_t;
     // ==== /FRAMEBUFFER ADDRESS ====
 
+    // ==== SDRAM ADDRESSING ====
+    typedef logic [params::SDRAM_BANK_BITS-1:0] sdram_bank_t;
+    typedef logic [params::SDRAM_ROW_BITS-1:0] sdram_row_t;
+    typedef logic [params::SDRAM_COLUMN_BITS-1:0] sdram_col_t;
+    typedef logic [calc::safe_clog2(params::SDRAM_WORD_BYTES)-1:0] sdram_byte_lane_t;
+    typedef logic [params::SDRAM_BANK_BITS + params::SDRAM_ROW_BITS + params::SDRAM_COLUMN_BITS - 1:0]
+        sdram_word_index_t;
+    typedef logic [params::SDRAM_BANK_BITS + params::SDRAM_ROW_BITS + params::SDRAM_COLUMN_BITS
+                   + calc::safe_clog2(params::SDRAM_WORD_BYTES) - 1:0] sdram_byte_addr_t;
+
+    typedef struct packed {
+        sdram_bank_t bank;
+        sdram_row_t  row;
+        sdram_col_t  col;
+    } sdram_word_addr_t;
+
+    function automatic sdram_byte_addr_t sdram_frame_base_bytes(input logic frame_index);
+        if (frame_index) begin
+            sdram_frame_base_bytes = sdram_byte_addr_t'(params::SDRAM_FRAME1_BASE_BYTES);
+        end else begin
+            sdram_frame_base_bytes = sdram_byte_addr_t'(params::SDRAM_FRAME0_BASE_BYTES);
+        end
+    endfunction
+
+    function automatic sdram_byte_addr_t sdram_frame_offset_bytes(input row_addr_t row,
+                                                                  input col_addr_t col,
+                                                                  input pixel_addr_t pixel);
+        sdram_frame_offset_bytes = sdram_byte_addr_t'(((uint_t'(row) * uint_t'(params::PIXEL_WIDTH))
+                                                       + uint_t'(col)) * uint_t'(params::BYTES_PER_PIXEL)
+                                                      + uint_t'(pixel));
+    endfunction
+
+    function automatic sdram_byte_addr_t sdram_frame_byte_addr(input logic frame_index, input fb_addr_t fb_addr);
+        sdram_frame_byte_addr = sdram_frame_base_bytes(frame_index)
+                                + sdram_frame_offset_bytes(fb_addr.row, fb_addr.col, fb_addr.pixel);
+    endfunction
+
+    function automatic sdram_word_index_t sdram_word_index_from_byte_addr(input sdram_byte_addr_t byte_addr);
+        sdram_word_index_from_byte_addr = sdram_word_index_t'(longint'(byte_addr) / longint'(params::SDRAM_WORD_BYTES));
+    endfunction
+
+    function automatic sdram_word_addr_t sdram_word_addr_from_byte_addr(input sdram_byte_addr_t byte_addr);
+        sdram_word_index_t word_index;
+        word_index = sdram_word_index_from_byte_addr(byte_addr);
+        sdram_word_addr_from_byte_addr.col = word_index[params::SDRAM_COLUMN_BITS-1:0];
+        sdram_word_addr_from_byte_addr.bank = word_index[params::SDRAM_COLUMN_BITS +: params::SDRAM_BANK_BITS];
+        sdram_word_addr_from_byte_addr.row = word_index[params::SDRAM_COLUMN_BITS + params::SDRAM_BANK_BITS +:
+                                                        params::SDRAM_ROW_BITS];
+    endfunction
+
+    function automatic sdram_byte_lane_t sdram_byte_lane_from_byte_addr(input sdram_byte_addr_t byte_addr);
+        sdram_byte_lane_from_byte_addr = sdram_byte_lane_t'(longint'(byte_addr) % longint'(params::SDRAM_WORD_BYTES));
+    endfunction
+    // ==== /SDRAM ADDRESSING ====
+
     // ==== MEM READ/WRITE ====
     // Address A (port A write address):
     //  -  upper bits select the “lane” (subpanel select + pixel‑byte select)
