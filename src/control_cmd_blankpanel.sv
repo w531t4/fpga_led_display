@@ -10,6 +10,7 @@ module control_cmd_blankpanel #(
     input enable,
     input clk,
     input mem_clk,
+    input mem_ready,
 
     output types::fb_addr_t addr,
     output logic [7:0] data_out,
@@ -72,6 +73,7 @@ module control_cmd_blankpanel #(
     ) subcmd_fillarea (
         .reset(reset || local_reset),
         .enable(subcmd_enable),
+        .mem_ready(mem_ready),
         .clk(mem_clk),
         .ack(done),
         .x1(0),

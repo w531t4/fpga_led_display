@@ -40,6 +40,7 @@ module tb_control_cmd_fillpanel;
         .enable(enable),
         .clk(clk),
         .mem_clk(clk),
+        .mem_ready(1'b1),
         .addr(addr),
         .data_out(data_out),
         .ram_write_enable(ram_write_enable),

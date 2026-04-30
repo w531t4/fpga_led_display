@@ -8,6 +8,7 @@ module control_subcmd_fillarea #(
 ) (
     input reset,
     input enable,
+    input mem_ready,
     input clk,
     input ack,
     input types::col_addr_t x1,
@@ -59,7 +60,7 @@ module control_subcmd_fillarea #(
         end else begin
             case (state)
                 STATE_ROW_PRIMEMEMWRITE: begin
-                    if (enable) begin
+                    if (enable && mem_ready) begin
 
                         state <= STATE_ROW_MEMWRITE;
                         row <= y1;
@@ -72,7 +73,7 @@ module control_subcmd_fillarea #(
                     end
                 end
                 STATE_ROW_MEMWRITE: begin
-                    if (enable) begin
+                    if (enable && mem_ready) begin
                         ram_access_start <= !ram_access_start;
                         if (row < y2 || column < x2 || pixel != 'd0) begin
                             if (pixel == 'd0) begin

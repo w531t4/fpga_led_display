@@ -126,6 +126,16 @@ module main #(
     wire types::rgb_signals_t rgb_subpanels[NUM_SUBPANELS];
     wire ctrl_busy;
     wire ctrl_ready_for_data;
+    logic ctrl_ram_write_ready;
+`ifdef FB_SDRAM
+    types::mem_write_addr_t ctrl_ram_address_q;
+    logic [7:0] ctrl_ram_data_out_q;
+    logic ctrl_ram_write_enable_q;
+    logic ctrl_ram_clk_enable_q;
+    logic fb_store_cmd_write_pending_q;
+    types::fb_addr_t fb_store_cmd_write_addr_q;
+    logic [7:0] fb_store_cmd_write_data_q;
+`endif
 
 `ifdef DEBUGGER
     debugger_if debug_if (clk_root);
@@ -397,17 +407,48 @@ module main #(
     );
 `endif
 
-    // Route the current control-module write path through the logical store
-    // interface. This keeps BRAM-specific row splitting out of main.sv and
-    // gives future backends one consistent command-side entry point.
-    assign fb_store.cmd_write_valid = ctrl_ram_clk_enable & ctrl_ram_write_enable;
-    assign fb_store.cmd_write_addr = types::fb_addr_t'({
-        ctrl_ram_address.subpanel,
-        ctrl_ram_address.row,
-        ctrl_ram_address.col,
-        ctrl_ram_address.pixel
-    });
+`ifdef FB_SDRAM
+    // SDRAM writes need a one-entry adapter because the backend can stall
+    // command-side writes while it completes burst work.
+    always_ff @(posedge clk_root) begin
+        if (global_reset_sync) begin
+            ctrl_ram_address_q <= '0;
+            ctrl_ram_data_out_q <= '0;
+            ctrl_ram_write_enable_q <= 1'b0;
+            ctrl_ram_clk_enable_q <= 1'b0;
+            fb_store_cmd_write_pending_q <= 1'b0;
+            fb_store_cmd_write_addr_q <= '0;
+            fb_store_cmd_write_data_q <= '0;
+        end else begin
+            if (fb_store_cmd_write_pending_q && fb_store.cmd_write_ready) begin
+                fb_store_cmd_write_pending_q <= 1'b0;
+            end
+
+            if (ctrl_ram_clk_enable_q && ctrl_ram_write_enable_q) begin
+                fb_store_cmd_write_pending_q <= 1'b1;
+                fb_store_cmd_write_addr_q <= types::fb_addr_from_mem_write_addr(ctrl_ram_address_q);
+                fb_store_cmd_write_data_q <= ctrl_ram_data_out_q;
+            end
+
+            ctrl_ram_address_q <= ctrl_ram_address;
+            ctrl_ram_data_out_q <= ctrl_ram_data_out;
+            ctrl_ram_write_enable_q <= ctrl_ram_write_enable;
+            ctrl_ram_clk_enable_q <= ctrl_ram_clk_enable;
+        end
+    end
+
+    assign ctrl_ram_write_ready = ~(fb_store_cmd_write_pending_q || ctrl_ram_clk_enable || ctrl_ram_clk_enable_q);
+    assign fb_store.cmd_write_valid = fb_store_cmd_write_pending_q;
+    assign fb_store.cmd_write_addr = fb_store_cmd_write_addr_q;
+    assign fb_store.cmd_write_data = fb_store_cmd_write_data_q;
+`else
+    // BRAM accepts one logical write per cycle, so keep the direct path to
+    // preserve pre-refactor throughput and existing top-level timing.
+    assign ctrl_ram_write_ready = 1'b1;
+    assign fb_store.cmd_write_valid = ctrl_ram_clk_enable && ctrl_ram_write_enable;
+    assign fb_store.cmd_write_addr = types::fb_addr_from_mem_write_addr(ctrl_ram_address);
     assign fb_store.cmd_write_data = ctrl_ram_data_out;
+`endif
 `ifdef FB_BRAM
     assign fb_store.prefetch_req_valid = 1'b0;
     assign fb_store.prefetch_row = '0;
@@ -494,6 +535,7 @@ module main #(
         .brightness_enable(brightness_enable),
         .busy(ctrl_busy),
         .ready_for_data(ctrl_ready_for_data),
+        .ram_write_ready(ctrl_ram_write_ready),
         .ram_data_out(ctrl_ram_data_out),
         .ram_address(ctrl_ram_address),
         .ram_write_enable(ctrl_ram_write_enable),

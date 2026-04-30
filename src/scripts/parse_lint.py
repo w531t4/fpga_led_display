@@ -28,18 +28,32 @@ def print_grouping(data: List[str]) -> None:
 
 def parse_lint_title(line: str) -> LintTitle:
     """ parse row into an object"""
-    try:
-        # selects Warning-UNUSEDSIGNAL
-        atype_param = line[1:].split(": ")[0]
-        atype, param = atype_param.split("-")
+    # selects Warning-UNUSEDSIGNAL
+    atype_param = line[1:].split(": ")[0]
+    atype, param = atype_param.split("-", maxsplit=1)
 
-        # selects src/main.v:147:16
-        file_row_col = line[1:].split(": ")[1]
-        file,row,col = file_row_col.split(":") # pylint: disable=unused-variable
-    except ValueError as e:
-        print(f"had problem parsing row={line} e={e}")
-        raise
+    # Most lint items include src/main.sv:147:16, but some command-line
+    # warnings such as REDEFMACRO omit a source location entirely.
+    fields = line[1:].split(": ")
+    if len(fields) < 2:
+        return LintTitle(severity=atype,
+                         category=param,
+                         file="<command line>",
+                         row=0,
+                         col=0,
+                         )
 
+    file_row_col = fields[1]
+    location = file_row_col.split(":")
+    if len(location) < 3:
+        return LintTitle(severity=atype,
+                         category=param,
+                         file="<command line>",
+                         row=0,
+                         col=0,
+                         )
+
+    file, row, col = location[0:3]
 
     return LintTitle(severity=atype,
                      category=param,

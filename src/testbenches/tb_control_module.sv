@@ -89,6 +89,7 @@ module tb_control_module;
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
+        .ram_write_ready(1'b1),
 `ifdef FB_SDRAM
         .cmd_copyframe_start(copyframe_start_unused),
         .cmd_copyframe_done_native(copyframe_done_native),

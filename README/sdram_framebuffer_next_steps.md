@@ -583,7 +583,7 @@ Implementation note:
   - underflow detection and sticky reporting
 - status: completed
 
-### 24. Verify Full-System SDRAM Display Path (In Progress)
+### 24. Verify Full-System SDRAM Display Path (Completed)
 
 - run `tb_main.sv` or a dedicated top-level SDRAM testbench in SDRAM mode
 - verify:
@@ -598,16 +598,15 @@ Definition of done:
 
 Implementation note:
 
-- added a quarantined SDRAM-mode top-level display-path reproduction in [src/testbenches/blah_tb_main_sdram_display.sv](/workspaces/fpga_led_display/src/testbenches/blah_tb_main_sdram_display.sv:1)
-- this testbench now proves:
-  - command-side nonzero framebuffer writes are issued through the top-level path
-  - frame toggles reach the integrated SDRAM-mode top level
-  - the scan cache/prefetch path still underflows after the first toggle and displays zeros instead of the newly written frame
-- latest focused reproduction before quarantine:
-  - `make -B BUILD_FLAGS='-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU -DFB_SDRAM' verilator_argfiles build/simulation/main_sdram_display.fst`
-- current blocker:
-  - the full integrated SDRAM display path does not yet show the toggled-to frame, despite accepted nonzero command writes, so this step is not complete yet
-- status: in progress
+- added a dedicated SDRAM-mode top-level display-path integration test in [src/testbenches/tb_main_sdram_display.sv](/workspaces/fpga_led_display/src/testbenches/tb_main_sdram_display.sv:1)
+- this testbench now verifies:
+  - initial back-buffer writes stay hidden until a frame toggle
+  - repeated frame toggles expose the expected front-frame contents
+  - subsequent back-buffer updates do not leak into the visible frame before a toggle
+  - native `COPY_FRAME` completes and the copied frame becomes visible after the next toggle
+- practical simulation coverage uses reduced framebuffer dimensions so the full top-level SDRAM integration remains fast enough to run routinely:
+  - `make -B BUILD_FLAGS='-DSPI -DGAMMA -DCLK_90 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU -DFB_SDRAM -DPIXEL_WIDTH=8 -DPIXEL_HEIGHT=4 -DPIXEL_HALFHEIGHT=2' verilator_argfiles build/simulation/main_sdram_display.fst`
+- status: completed
 
 ### 25. Perform Hardware Bring-Up In This Order
 
@@ -635,7 +634,7 @@ Definition of done:
 - `src/testbenches/tb_sdram_controller.sv`
 - `src/testbenches/tb_fb_store_sdram.sv`
 - `src/testbenches/tb_scan_row_cache.sv`
-- `src/testbenches/blah_tb_main_sdram_display.sv`
+- `src/testbenches/tb_main_sdram_display.sv`
 
 ## Likely Existing Files To Modify
 

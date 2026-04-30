@@ -70,6 +70,8 @@ module fb_store_sdram (
     types::sdram_byte_addr_t copy_dst_byte_addr_q;
     logic [BURST_WORD_BITS-1:0] burst_data_q;
     logic [BURST_WORD_BITS-1:0] copy_burst_data_q;
+    logic [7:0] cmd_write_data_q;
+    logic copy_start_pending_q;
     logic [calc::safe_clog2(NUM_SUBPANELS)-1:0] prefetch_subpanel_index_q;
     types::col_addr_t prefetch_stream_col_q;
     logic copy_done_q;
@@ -179,6 +181,8 @@ module fb_store_sdram (
             copy_dst_byte_addr_q <= '0;
             burst_data_q <= '0;
             copy_burst_data_q <= '0;
+            cmd_write_data_q <= '0;
+            copy_start_pending_q <= 1'b0;
             prefetch_subpanel_index_q <= '0;
             prefetch_stream_col_q <= '0;
             copy_done_q <= 1'b0;
@@ -190,10 +194,14 @@ module fb_store_sdram (
             end
         end else begin
             copy_done_q <= 1'b0;
+            if (store_if.copy_start) begin
+                copy_start_pending_q <= 1'b1;
+            end
 
             case (state)
                 STORE_IDLE: begin
-                    if (controller_init_done && store_if.copy_start) begin
+                    if (controller_init_done && copy_start_pending_q) begin
+                        copy_start_pending_q <= 1'b0;
                         copy_src_byte_addr_q <= types::sdram_frame_base_bytes(front_frame_index(store_if.frame_select));
                         copy_dst_byte_addr_q <= types::sdram_frame_base_bytes(back_frame_index(store_if.frame_select));
                         state <= STORE_COPY_READ_REQ;
@@ -225,6 +233,7 @@ module fb_store_sdram (
                     end else if (controller_init_done && store_if.cmd_write_valid) begin
                         cmd_target_byte_addr_q <= types::sdram_frame_byte_addr(back_frame_index(store_if.frame_select),
                                                                                store_if.cmd_write_addr);
+                        cmd_write_data_q <= store_if.cmd_write_data;
                         burst_base_byte_addr_q <= align_down_to_burst(
                             types::sdram_frame_byte_addr(back_frame_index(store_if.frame_select), store_if.cmd_write_addr)
                         );
@@ -241,7 +250,7 @@ module fb_store_sdram (
                         burst_data_q <= burst_write_byte(
                             controller_resp_read_data,
                             int'(longint'(cmd_target_byte_addr_q) - longint'(burst_base_byte_addr_q)),
-                            store_if.cmd_write_data
+                            cmd_write_data_q
                         );
                         state <= STORE_CMD_WRITE_REQ;
                     end

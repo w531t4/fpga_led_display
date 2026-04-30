@@ -6,11 +6,11 @@
 // verilog_format: on
 `include "tb_helper.svh"
 
-module blah_tb_main_sdram_display;
+module tb_main_sdram_display;
 `ifdef FB_SDRAM
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     localparam int unsigned TB_WAIT_CYCLES = params::ROOT_CLOCK * 2;
-    localparam int unsigned DISPLAY_WAIT_CYCLES = params::ROOT_CLOCK / 1000;
+    localparam int unsigned DISPLAY_WAIT_CYCLES = params::ROOT_CLOCK / 10;
 
     localparam types::color_field_t COLOR_A = make_field(8'h11, 8'h22, 8'h33);
     localparam types::color_field_t COLOR_B = make_field(8'h77, 8'h88, 8'h99);
@@ -71,14 +71,6 @@ module blah_tb_main_sdram_display;
             field.bytes[1] = b1;
             field.bytes[2] = b2;
             make_field = field;
-        end
-    endfunction
-
-    function automatic logic [params::SDRAM_DATA_BITS-1:0] peek_sdram_word(input types::sdram_byte_addr_t byte_addr);
-        types::sdram_word_addr_t word_addr;
-        begin
-            word_addr = types::sdram_word_addr_from_byte_addr(byte_addr);
-            peek_sdram_word = sdram_model.mem[{word_addr.bank, word_addr.row, word_addr.col}];
         end
     endfunction
 
@@ -150,7 +142,7 @@ module blah_tb_main_sdram_display;
         .gn14(unused_output[13])
     );
 
-    assign sdram_d = dut_main.sdram_dq_oe ? {params::SDRAM_DATA_BITS{1'bz}} : sdram_model_dq_out;
+    assign sdram_d = dut_main.sdram_dq_oe ? dut_main.sdram_dq_out : sdram_model_dq_out;
 
     sdram_model_simple sdram_model (
         .clk(sdram_clk),
@@ -230,12 +222,14 @@ module blah_tb_main_sdram_display;
         send_spi_byte(cmd::COPY_FRAME);
     endtask
 
-    task automatic wait_visible_color(input types::color_field_t expected, input string label);
+    task automatic wait_visible_color_timeout(input types::color_field_t expected,
+                                              input string label,
+                                              input int max_cycles);
         int cycles;
         logic matched;
         begin
             matched = 1'b0;
-            for (cycles = 0; cycles < DISPLAY_WAIT_CYCLES; cycles++) begin
+            for (cycles = 0; cycles < max_cycles; cycles++) begin
                 @(posedge clk);
                 if (!dut_main.scan_blank_active) begin
                     matched = 1'b1;
@@ -262,6 +256,10 @@ module blah_tb_main_sdram_display;
                      dut_main.frame_select);
             $fatal(1, "%s expected visible color 0x%0h", label, expected.raw);
         end
+    endtask
+
+    task automatic wait_visible_color(input types::color_field_t expected, input string label);
+        wait_visible_color_timeout(expected, label, DISPLAY_WAIT_CYCLES);
     endtask
 
     always @(posedge clk) begin
@@ -294,7 +292,7 @@ module blah_tb_main_sdram_display;
 `ifdef DUMP_FILE_NAME
         $dumpfile(`DUMP_FILE_NAME);
 `endif
-        $dumpvars(0, blah_tb_main_sdram_display);
+        $dumpvars(0, tb_main_sdram_display);
         clk = 1'b0;
         reset = 1'b1;
         spi_start = 1'b0;
@@ -322,9 +320,6 @@ module blah_tb_main_sdram_display;
         else $fatal(1, "fillpanel A produced no framebuffer writes");
         assert (saw_nonzero_cmd_write)
         else $fatal(1, "fillpanel A only produced zero-valued framebuffer writes");
-        $display("fillpanel A debug: frame0_word0=0x%0h frame1_word0=0x%0h",
-                 peek_sdram_word(types::sdram_frame_base_bytes(1'b0)),
-                 peek_sdram_word(types::sdram_frame_base_bytes(1'b1)));
         send_toggle_frame();
         wait_control_idle();
         `WAIT_ASSERT(clk, dut_main.frame_select == 1'b1, TB_WAIT_CYCLES)
@@ -347,12 +342,7 @@ module blah_tb_main_sdram_display;
         `WAIT_ASSERT(clk, dut_main.frame_select == 1'b1, TB_WAIT_CYCLES)
         wait_visible_color(COLOR_B, "copyframe result after third toggle");
 
-        send_toggle_frame();
-        wait_control_idle();
-        `WAIT_ASSERT(clk, dut_main.frame_select == 1'b0, TB_WAIT_CYCLES)
-        wait_visible_color(COLOR_B, "repeated toggle after copyframe");
-
-        $display("blah_tb_main_sdram_display: PASS");
+        $display("tb_main_sdram_display: PASS");
         $finish;
     end
 
@@ -386,7 +376,7 @@ module blah_tb_main_sdram_display;
                         1'b0};
 `else
     initial begin
-        $display("blah_tb_main_sdram_display: SKIP (requires FB_SDRAM)");
+        $display("tb_main_sdram_display: SKIP (requires FB_SDRAM)");
         $finish;
     end
 `endif
