@@ -261,7 +261,7 @@ Implementation note:
 
 ## SDRAM Store Backend Work
 
-### 10. Implement `fb_store_sdram.sv`
+### 10. Implement `fb_store_sdram.sv` (Completed)
 
 - create a storage backend module that translates `fb_store_if` traffic into SDRAM controller commands
 - support:
@@ -274,7 +274,17 @@ Definition of done:
 
 - command-side frame storage operations can run entirely through SDRAM in simulation
 
-### 11. Keep `COPY_FRAME` Explicit, But Reimplement It Natively
+Implementation note:
+
+- added [src/fb_store_sdram.sv](/workspaces/fpga_led_display/src/fb_store_sdram.sv:1)
+- the backend now instantiates [src/sdram_controller.sv](/workspaces/fpga_led_display/src/sdram_controller.sv:1) directly and translates:
+  - command-side byte writes into SDRAM read-modify-write bursts
+  - row-pair prefetch requests into SDRAM burst reads followed by logical column streaming
+  - front/back frame selection into the shared SDRAM address-map helpers
+- added [src/sdram_model_simple.sv](/workspaces/fpga_led_display/src/sdram_model_simple.sv:1) as a reusable behavioral SDRAM model for isolated simulations
+- status: completed
+
+### 11. Keep `COPY_FRAME` Explicit, But Reimplement It Natively (Completed)
 
 - keep the command protocol unchanged
 - move implementation away from the current `QA`-style per-byte BRAM copy assumptions
@@ -283,6 +293,17 @@ Definition of done:
 Definition of done:
 
 - `COPY_FRAME` remains host-visible and correct, but is backend-native under SDRAM
+
+Implementation note:
+
+- `fb_store_sdram.sv` now keeps the existing `copy_start` / `copy_busy` / `copy_done` contract
+- the copy path is implemented as sequential SDRAM burst reads from the current front frame followed by sequential SDRAM burst writes to the current back frame
+- added [src/testbenches/tb_fb_store_sdram.sv](/workspaces/fpga_led_display/src/testbenches/tb_fb_store_sdram.sv:1) and [src/testbenches/tb_fb_store_sdram.args](/workspaces/fpga_led_display/src/testbenches/tb_fb_store_sdram.args:1) to verify:
+  - command-side writes land in the back frame
+  - prefetch reads the current front frame only
+  - frame-role swaps expose the expected frame
+  - native `COPY_FRAME` makes the copied frame visible after the next role swap
+- status: completed
 
 ## Scan Cache Work
 

@@ -25,6 +25,7 @@ path = [
     "src/testbenches/tb_control_cmd_readframe.args",
     "src/testbenches/tb_sdram_controller.args",
     "src/testbenches/tb_types_sdram_address_map.args",
+    "src/testbenches/tb_fb_store_sdram.args",
     "src/testbenches/tb_types_pad_col.args",
     "src/testbenches/tb_types_pad_row.args",
     ".github/workflows/release.yml",
