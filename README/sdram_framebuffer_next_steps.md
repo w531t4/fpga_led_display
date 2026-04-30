@@ -505,7 +505,7 @@ Implementation note:
 
 ## Validation Steps
 
-### 20. Verify BRAM Backend Still Passes
+### 20. Verify BRAM Backend Still Passes (Completed)
 
 - run lint
 - run the existing simulation suite
@@ -515,7 +515,15 @@ Definition of done:
 
 - BRAM remains the known-good baseline
 
-### 21. Verify SDRAM Controller In Isolation
+Implementation note:
+
+- reran the default BRAM-mode validation with:
+  - `make lint`
+  - `make simulation`
+- this revalidated the existing BRAM-oriented top-level and command-path simulations while also keeping the new abstraction/cache tests green under the default `FB_BRAM` build
+- status: completed
+
+### 21. Verify SDRAM Controller In Isolation (Completed)
 
 - run dedicated SDRAM tests only
 - confirm clean init, read/write, refresh, and burst behavior
@@ -524,7 +532,14 @@ Definition of done:
 
 - SDRAM backend work is not blocked on scanout integration
 
-### 22. Verify SDRAM Store Without Live Scan
+Implementation note:
+
+- reran the dedicated controller-only test with:
+  - `make -B build/simulation/sdram_controller.fst`
+- confirmed clean controller init, host read/write servicing, refresh progression, and burst behavior in isolation from the scan path
+- status: completed
+
+### 22. Verify SDRAM Store Without Live Scan (Completed)
 
 - test command-side writes and reads against SDRAM
 - test `COPY_FRAME`
@@ -533,6 +548,17 @@ Definition of done:
 Definition of done:
 
 - storage semantics are correct before the row cache is introduced
+
+Implementation note:
+
+- reran the dedicated store-only test with:
+  - `make -B build/simulation/fb_store_sdram.fst`
+- confirmed:
+  - command-side writes land in the back frame
+  - prefetch reads the current front frame only
+  - `COPY_FRAME` completes through the native backend path
+  - frame-toggle bookkeeping exposes the expected frame contents
+- status: completed
 
 ### 23. Verify Row Cache In Simulation
 
