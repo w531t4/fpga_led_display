@@ -1,0 +1,393 @@
+// SPDX-FileCopyrightText: 2026 Aaron White <w531t4@gmail.com>
+// SPDX-License-Identifier: MIT
+// verilog_format: off
+`timescale 1ns / 1ns
+`default_nettype none
+// verilog_format: on
+`include "tb_helper.svh"
+
+module blah_tb_main_sdram_display;
+`ifdef FB_SDRAM
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
+    localparam int unsigned TB_WAIT_CYCLES = params::ROOT_CLOCK * 2;
+    localparam int unsigned DISPLAY_WAIT_CYCLES = params::ROOT_CLOCK / 1000;
+
+    localparam types::color_field_t COLOR_A = make_field(8'h11, 8'h22, 8'h33);
+    localparam types::color_field_t COLOR_B = make_field(8'h77, 8'h88, 8'h99);
+
+    logic clk;
+    logic reset;
+    logic debugger_rxin;
+    logic spi_start;
+    logic spi_clk_en;
+    logic [7:0] spi_byte;
+    wire clk_pixel;
+    wire row_latch;
+    wire output_enable;
+    wire row_addr0;
+    wire row_addr1;
+    wire row_addr2;
+    wire row_addr3;
+    wire types::rgb_signals_t rgb_top;
+    wire types::rgb_signals_t rgb_bottom;
+    wire spi_mosi;
+    wire spi_clk;
+    wire spi_cs;
+    wire fpga_ready;
+    wire ctrl_busy;
+    wire debugger_txout;
+    wire [13:0] unused_output;
+    wire ftdi_rxd_unused;
+    wire wifi_rxd_unused;
+    wire wifi_en_unused;
+    wire wifi_gpio0_unused;
+
+    wire sdram_clk;
+    wire sdram_cke;
+    wire sdram_csn;
+    wire sdram_rasn;
+    wire sdram_casn;
+    wire sdram_wen;
+    wire [params::SDRAM_ADDR_BITS-1:0] sdram_a;
+    wire [params::SDRAM_BANK_BITS-1:0] sdram_ba;
+    wire [params::SDRAM_DQM_BITS-1:0] sdram_dqm;
+    wire [params::SDRAM_DATA_BITS-1:0] sdram_model_dq_out;
+    tri [params::SDRAM_DATA_BITS-1:0] sdram_d;
+    wire spi_done;
+    wire [7:0] spi_rdata_unused;
+
+    logic monitor_front_isolation;
+    logic copyframe_busy_seen;
+    int unsigned cmd_write_count;
+    logic saw_nonzero_cmd_write;
+
+    function automatic types::color_field_t make_field(input logic [7:0] b0,
+                                                       input logic [7:0] b1,
+                                                       input logic [7:0] b2);
+        types::color_field_t field;
+        begin
+            field = '0;
+            field.bytes[0] = b0;
+            field.bytes[1] = b1;
+            field.bytes[2] = b2;
+            make_field = field;
+        end
+    endfunction
+
+    function automatic logic [params::SDRAM_DATA_BITS-1:0] peek_sdram_word(input types::sdram_byte_addr_t byte_addr);
+        types::sdram_word_addr_t word_addr;
+        begin
+            word_addr = types::sdram_word_addr_from_byte_addr(byte_addr);
+            peek_sdram_word = sdram_model.mem[{word_addr.bank, word_addr.row, word_addr.col}];
+        end
+    endfunction
+
+    main #(
+        ._UNUSED('d0)
+    ) dut_main (
+        .gp11(clk_pixel),
+        .gp12(row_latch),
+        .gp13(output_enable),
+        .clk_25mhz(clk),
+        .gp7(row_addr0),
+        .gp8(row_addr1),
+        .gp9(row_addr2),
+        .gp10(row_addr3),
+        .sdram_clk(sdram_clk),
+        .sdram_cke(sdram_cke),
+        .sdram_csn(sdram_csn),
+        .sdram_rasn(sdram_rasn),
+        .sdram_casn(sdram_casn),
+        .sdram_wen(sdram_wen),
+        .sdram_a(sdram_a),
+        .sdram_ba(sdram_ba),
+        .sdram_dqm(sdram_dqm),
+        .sdram_d(sdram_d),
+`ifdef SWAP_BLUE_GREEN_CHAN
+        .gp0(rgb_top.red),
+        .gp1(rgb_top.blue),
+        .gp2(rgb_top.green),
+        .gp3(rgb_bottom.red),
+        .gp4(rgb_bottom.blue),
+        .gp5(rgb_bottom.green),
+`else
+        .gp0(rgb_top.red),
+        .gp1(rgb_top.green),
+        .gp2(rgb_top.blue),
+        .gp3(rgb_bottom.red),
+        .gp4(rgb_bottom.green),
+        .gp5(rgb_bottom.blue),
+`endif
+        .gp14(spi_mosi),
+        .gp16(debugger_txout),
+        .gp15(debugger_rxin),
+        .wifi_gpio14(spi_clk),
+        .wifi_gpio13(spi_mosi),
+        .wifi_gpio21(spi_cs),
+        .wifi_gpio27(fpga_ready),
+        .wifi_gpio35(ctrl_busy),
+        .ftdi_txd(1'b1),
+        .wifi_txd(1'b1),
+        .ftdi_ndtr(1'b1),
+        .ftdi_nrts(1'b1),
+        .ftdi_rxd(ftdi_rxd_unused),
+        .wifi_rxd(wifi_rxd_unused),
+        .wifi_en(wifi_en_unused),
+        .wifi_gpio0(wifi_gpio0_unused),
+        .gn11(unused_output[0]),
+        .gn12(unused_output[1]),
+        .gn13(unused_output[2]),
+        .gn7(unused_output[3]),
+        .gn8(unused_output[4]),
+        .gn9(unused_output[5]),
+        .gn10(unused_output[6]),
+        .gn0(unused_output[7]),
+        .gn1(unused_output[8]),
+        .gn2(unused_output[9]),
+        .gn3(unused_output[10]),
+        .gn4(unused_output[11]),
+        .gn5(unused_output[12]),
+        .gn14(unused_output[13])
+    );
+
+    assign sdram_d = dut_main.sdram_dq_oe ? {params::SDRAM_DATA_BITS{1'bz}} : sdram_model_dq_out;
+
+    sdram_model_simple sdram_model (
+        .clk(sdram_clk),
+        .cke(sdram_cke),
+        .csn(sdram_csn),
+        .rasn(sdram_rasn),
+        .casn(sdram_casn),
+        .wen(sdram_wen),
+        .addr(sdram_a),
+        .bank(sdram_ba),
+        .dq_in(sdram_d),
+        .dq_oe(dut_main.sdram_dq_oe),
+        .dq_out(sdram_model_dq_out)
+    );
+
+    spi_master #(
+        ._UNUSED('d0)
+    ) spi_master_inst (
+        .rstb (~reset),
+        .clk  (clk && spi_clk_en),
+        .mlb  (1'b1),
+        .start(spi_start),
+        .tdat (spi_byte),
+        .cdiv (2'b0),
+        .din  (1'b0),
+        .ss   (spi_cs),
+        .sck  (spi_clk),
+        .dout (spi_mosi),
+        .done (spi_done),
+        .rdata(spi_rdata_unused)
+    );
+
+    task automatic wait_ready_for_data;
+        while (!dut_main.ctrl.ready_for_data) @(posedge clk);
+    endtask
+
+    task automatic wait_control_idle;
+        begin
+            while (dut_main.ctrl.busy) @(posedge clk);
+            wait_ready_for_data();
+        end
+    endtask
+
+    task automatic wait_store_write_idle;
+        while (!dut_main.fb_store.cmd_write_ready) @(posedge clk);
+    endtask
+
+    task automatic send_spi_byte(input logic [7:0] byte_value);
+        begin
+            wait_ready_for_data();
+            spi_byte = byte_value;
+            spi_clk_en = 1'b1;
+            @(posedge clk);
+            spi_start = 1'b1;
+            @(posedge spi_done);
+            @(posedge clk);
+            spi_start = 1'b0;
+            spi_clk_en = 1'b0;
+            repeat (4) @(posedge clk);
+        end
+    endtask
+
+    task automatic send_fillpanel(input types::color_field_t color_value);
+        begin
+            send_spi_byte(cmd::FILLPANEL);
+            send_spi_byte(color_value.bytes[2]);
+            send_spi_byte(color_value.bytes[1]);
+            send_spi_byte(color_value.bytes[0]);
+        end
+    endtask
+
+    task automatic send_toggle_frame;
+        send_spi_byte(cmd::TOGGLE_FRAME);
+    endtask
+
+    task automatic send_copy_frame;
+        send_spi_byte(cmd::COPY_FRAME);
+    endtask
+
+    task automatic wait_visible_color(input types::color_field_t expected, input string label);
+        int cycles;
+        logic matched;
+        begin
+            matched = 1'b0;
+            for (cycles = 0; cycles < DISPLAY_WAIT_CYCLES; cycles++) begin
+                @(posedge clk);
+                if (!dut_main.scan_blank_active) begin
+                    matched = 1'b1;
+                    for (int subpanel_idx = 0; subpanel_idx < NUM_SUBPANELS; subpanel_idx++) begin
+                        matched = matched && (dut_main.pixeldata_subpanels[subpanel_idx].raw == expected.raw);
+                    end
+                    if (matched) begin
+                        return;
+                    end
+                end
+            end
+            $display("%s timeout debug: expected=0x%0h observed0=0x%0h blank=%0b cache_valid=%0b%0b cache_row0=%0d cache_row1=%0d active_cache=%0b prefetch=%0b underflow=%0b frame_select=%0b",
+                     label,
+                     expected.raw,
+                     dut_main.pixeldata_subpanels[0].raw,
+                     dut_main.scan_blank_active,
+                     dut_main.scan_cache_valid[1],
+                     dut_main.scan_cache_valid[0],
+                     dut_main.scan_cache_row[0],
+                     dut_main.scan_cache_row[1],
+                     dut_main.scan_active_cache_select,
+                     dut_main.scan_prefetch_in_progress,
+                     dut_main.scan_underflow_sticky,
+                     dut_main.frame_select);
+            $fatal(1, "%s expected visible color 0x%0h", label, expected.raw);
+        end
+    endtask
+
+    always @(posedge clk) begin
+        if (!reset) begin
+            if (monitor_front_isolation && (dut_main.frame_select == 1'b0)) begin
+                monitor_front_isolation <= 1'b0;
+            end
+
+            if (monitor_front_isolation && !dut_main.scan_blank_active) begin
+                for (int subpanel_idx = 0; subpanel_idx < NUM_SUBPANELS; subpanel_idx++) begin
+                    assert (dut_main.pixeldata_subpanels[subpanel_idx].raw == COLOR_A.raw)
+                    else $fatal(1, "back-buffer writes leaked into active display before toggle");
+                end
+            end
+
+            if (dut_main.fb_store.copy_busy) begin
+                copyframe_busy_seen <= 1'b1;
+            end
+
+            if (dut_main.fb_store.cmd_write_valid && dut_main.fb_store.cmd_write_ready) begin
+                cmd_write_count <= cmd_write_count + 1'd1;
+                if (dut_main.fb_store.cmd_write_data != 8'h00) begin
+                    saw_nonzero_cmd_write <= 1'b1;
+                end
+            end
+        end
+    end
+
+    initial begin
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
+        $dumpvars(0, blah_tb_main_sdram_display);
+        clk = 1'b0;
+        reset = 1'b1;
+        spi_start = 1'b0;
+        spi_clk_en = 1'b0;
+        spi_byte = 8'd0;
+        debugger_rxin = 1'b0;
+        monitor_front_isolation = 1'b0;
+        copyframe_busy_seen = 1'b0;
+        cmd_write_count = 0;
+        saw_nonzero_cmd_write = 1'b0;
+
+        `WAIT_ASSERT(clk, dut_main.global_reset === 1'b1, TB_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, dut_main.global_reset === 1'b0, TB_WAIT_CYCLES)
+        @(posedge clk);
+        reset = 1'b0;
+
+        `WAIT_ASSERT(clk, dut_main.clk_root === 1'b1, TB_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, dut_main.ctrl.ready_for_data === 1'b1, TB_WAIT_CYCLES)
+        `WAIT_ASSERT(clk, fpga_ready === 1'b1, TB_WAIT_CYCLES)
+
+        send_fillpanel(COLOR_A);
+        wait_control_idle();
+        wait_store_write_idle();
+        assert (cmd_write_count != 0)
+        else $fatal(1, "fillpanel A produced no framebuffer writes");
+        assert (saw_nonzero_cmd_write)
+        else $fatal(1, "fillpanel A only produced zero-valued framebuffer writes");
+        $display("fillpanel A debug: frame0_word0=0x%0h frame1_word0=0x%0h",
+                 peek_sdram_word(types::sdram_frame_base_bytes(1'b0)),
+                 peek_sdram_word(types::sdram_frame_base_bytes(1'b1)));
+        send_toggle_frame();
+        wait_control_idle();
+        `WAIT_ASSERT(clk, dut_main.frame_select == 1'b1, TB_WAIT_CYCLES)
+        wait_visible_color(COLOR_A, "static frame after first toggle");
+        monitor_front_isolation = 1'b1;
+
+        send_fillpanel(COLOR_B);
+        wait_control_idle();
+        wait_store_write_idle();
+        send_toggle_frame();
+        wait_control_idle();
+        `WAIT_ASSERT(clk, dut_main.frame_select == 1'b0, TB_WAIT_CYCLES)
+        wait_visible_color(COLOR_B, "new front frame after second toggle");
+
+        send_copy_frame();
+        `WAIT_ASSERT(clk, copyframe_busy_seen == 1'b1, TB_WAIT_CYCLES)
+        wait_control_idle();
+        send_toggle_frame();
+        wait_control_idle();
+        `WAIT_ASSERT(clk, dut_main.frame_select == 1'b1, TB_WAIT_CYCLES)
+        wait_visible_color(COLOR_B, "copyframe result after third toggle");
+
+        send_toggle_frame();
+        wait_control_idle();
+        `WAIT_ASSERT(clk, dut_main.frame_select == 1'b0, TB_WAIT_CYCLES)
+        wait_visible_color(COLOR_B, "repeated toggle after copyframe");
+
+        $display("blah_tb_main_sdram_display: PASS");
+        $finish;
+    end
+
+    always begin
+        #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
+    end
+
+    wire _unused_ok = &{1'b0,
+                        clk_pixel,
+                        row_latch,
+                        output_enable,
+                        row_addr0,
+                        row_addr1,
+                        row_addr2,
+                        row_addr3,
+                        rgb_top,
+                        rgb_bottom,
+                        ctrl_busy,
+                        debugger_txout,
+                        ftdi_rxd_unused,
+                        wifi_rxd_unused,
+                        wifi_en_unused,
+                        wifi_gpio0_unused,
+                        spi_done,
+                        spi_rdata_unused,
+                        spi_start,
+                        spi_clk_en,
+                        spi_byte,
+                        unused_output,
+                        sdram_dqm,
+                        1'b0};
+`else
+    initial begin
+        $display("blah_tb_main_sdram_display: SKIP (requires FB_SDRAM)");
+        $finish;
+    end
+`endif
+endmodule

@@ -560,7 +560,7 @@ Implementation note:
   - frame-toggle bookkeeping exposes the expected frame contents
 - status: completed
 
-### 23. Verify Row Cache In Simulation
+### 23. Verify Row Cache In Simulation (Completed)
 
 - test row 0 prefetch on startup
 - test row N to row N+1 handoff
@@ -571,7 +571,19 @@ Definition of done:
 
 - scan-side cache behavior is correct under controlled conditions
 
-### 24. Verify Full-System SDRAM Display Path
+Implementation note:
+
+- added focused cache/prefetch simulations in:
+  - [src/testbenches/tb_scan_row_cache.sv](/workspaces/fpga_led_display/src/testbenches/tb_scan_row_cache.sv:1)
+  - [src/testbenches/tb_scan_prefetch.sv](/workspaces/fpga_led_display/src/testbenches/tb_scan_prefetch.sv:1)
+- verified:
+  - row-0 startup fill behavior
+  - row-pair handoff as scan advances
+  - cache invalidation on frame toggle
+  - underflow detection and sticky reporting
+- status: completed
+
+### 24. Verify Full-System SDRAM Display Path (In Progress)
 
 - run `tb_main.sv` or a dedicated top-level SDRAM testbench in SDRAM mode
 - verify:
@@ -583,6 +595,19 @@ Definition of done:
 Definition of done:
 
 - the full integrated architecture works in simulation
+
+Implementation note:
+
+- added a quarantined SDRAM-mode top-level display-path reproduction in [src/testbenches/blah_tb_main_sdram_display.sv](/workspaces/fpga_led_display/src/testbenches/blah_tb_main_sdram_display.sv:1)
+- this testbench now proves:
+  - command-side nonzero framebuffer writes are issued through the top-level path
+  - frame toggles reach the integrated SDRAM-mode top level
+  - the scan cache/prefetch path still underflows after the first toggle and displays zeros instead of the newly written frame
+- latest focused reproduction before quarantine:
+  - `make -B BUILD_FLAGS='-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU -DFB_SDRAM' verilator_argfiles build/simulation/main_sdram_display.fst`
+- current blocker:
+  - the full integrated SDRAM display path does not yet show the toggled-to frame, despite accepted nonzero command writes, so this step is not complete yet
+- status: in progress
 
 ### 25. Perform Hardware Bring-Up In This Order
 
@@ -610,6 +635,7 @@ Definition of done:
 - `src/testbenches/tb_sdram_controller.sv`
 - `src/testbenches/tb_fb_store_sdram.sv`
 - `src/testbenches/tb_scan_row_cache.sv`
+- `src/testbenches/blah_tb_main_sdram_display.sv`
 
 ## Likely Existing Files To Modify
 
