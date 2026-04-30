@@ -192,6 +192,27 @@ package params;
     parameter int unsigned PIXEL_HALFHEIGHT = 16;
 `endif
 
+    // SDRAM-derived storage sizing.
+    parameter int unsigned SDRAM_WORD_BYTES = SDRAM_DATA_BITS / 8;
+    parameter int unsigned SDRAM_BURST_BYTES = SDRAM_WORD_BYTES * SDRAM_BURST_LENGTH;
+    parameter int unsigned SDRAM_BANKS = 1 << SDRAM_BANK_BITS;
+    parameter int unsigned SDRAM_COLUMNS = 1 << SDRAM_COLUMN_BITS;
+    parameter int unsigned SDRAM_ROWS = 1 << SDRAM_ROW_BITS;
+    parameter longint unsigned SDRAM_CAPACITY_BYTES = longint'(SDRAM_WORD_BYTES) * longint'(SDRAM_BANKS)
+                                                      * longint'(SDRAM_COLUMNS) * longint'(SDRAM_ROWS);
+
+    // Logical framebuffer storage kept in compact packed-pixel order inside SDRAM.
+    parameter longint unsigned SDRAM_FRAME_BYTES = longint'(PIXEL_WIDTH) * longint'(PIXEL_HEIGHT)
+                                                   * longint'(BYTES_PER_PIXEL);
+    parameter longint unsigned SDRAM_FRAME_STRIDE_BYTES = ((SDRAM_FRAME_BYTES + longint'(SDRAM_BURST_BYTES) - 1)
+                                                           / longint'(SDRAM_BURST_BYTES))
+                                                          * longint'(SDRAM_BURST_BYTES);
+    parameter longint unsigned SDRAM_FRAME0_BASE_BYTES = 'd0;
+    parameter longint unsigned SDRAM_FRAME1_BASE_BYTES = SDRAM_FRAME_STRIDE_BYTES;
+    parameter longint unsigned SDRAM_SCRATCH_BASE_BYTES = SDRAM_FRAME_STRIDE_BYTES * longint'(NUM_FRAMEBUFFERS);
+    parameter longint unsigned SDRAM_SCRATCH_BYTES = SDRAM_FRAME_STRIDE_BYTES;
+    parameter longint unsigned SDRAM_REQUIRED_BYTES = SDRAM_SCRATCH_BASE_BYTES + SDRAM_SCRATCH_BYTES;
+
     parameter integer BRIGHTNESS_BASE_TIMEOUT = 10;
     parameter integer BRIGHTNESS_STATE_TIMEOUT_OVERLAP = 'd67;
 `ifdef DOUBLE_BUFFER
