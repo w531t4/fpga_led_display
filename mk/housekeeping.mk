@@ -17,7 +17,7 @@ $(SIM_OBJ_DIR):
 $(DEPDIR):
 	mkdir -p $(DEPDIR)
 
-clean:
+clean: ## Remove build artifacts
 	rm -rf $(ARTIFACT_DIR)
 ifneq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),)
 	YOSYS_PATH=$(abspath oss-cad-suite) $(MAKE) -C depends/yosys_ecp5_infer_bram_outreg clean

@@ -17,10 +17,13 @@ include mk/verilator.mk
 
 
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build verilator_argfiles memprog gamma_lut
+.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build verilator_argfiles memprog gamma_lut help
 .DELETE_ON_ERROR:
 .SECONDARY: $(SIMBINS)
-all: verilator_argfiles simulation lint
+all: verilator_argfiles simulation lint ## Run simulations and lint
+help: ## Show documented make targets
+	@awk 'BEGIN { FS = ":.*##"; printf "Targets:\n" } /^[A-Za-z0-9_.-]+:.*##/ { printf "  %-20s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+
 #$(warning In a command script $(SIMBINS))
 
 

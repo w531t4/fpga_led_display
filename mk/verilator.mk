@@ -64,7 +64,7 @@ $(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(VSOURCES) $(INCLUDESRCS) $(MAKE_DEPS) | $(
 		-D'DUMP_FILE_NAME="$(SIMULATION_DIR_ABS)/$*.fst"' \
 		$(VERILATOR_SIM_SRC_FILES) $<
 
-verilator_argfiles: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src_args $(ARTIFACT_DIR)/verilator_tbsrc_args
+verilator_argfiles: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src_args $(ARTIFACT_DIR)/verilator_tbsrc_args ## Write Verilator argument files
 
 $(ARTIFACT_DIR)/verilator_args: $(INCLUDESRCS) $(MAKE_DEPS) | $(ARTIFACT_DIR)
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
@@ -75,7 +75,7 @@ $(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(VSOURCES) $(MAKE_DEPS) | $
 $(ARTIFACT_DIR)/verilator_tbsrc_args: $(ARTIFACT_DIR) $(TBSRCS) $(MAKE_DEPS) | $(ARTIFACT_DIR)
 	@printf '%s' '$(abspath $(TBSRCS))' > $@
 
-lint: $(ARTIFACT_DIR) verilator_argfiles
+lint: $(ARTIFACT_DIR) verilator_argfiles ## Run Verilator lint
 	cat $(ARTIFACT_DIR)/verilator_args; printf "\n";
 	set -o pipefail; \
 	{ \
@@ -86,7 +86,7 @@ lint: $(ARTIFACT_DIR) verilator_argfiles
 		done; \
 	} |& python3 $(SRC_DIR)/scripts/parse_lint.py | tee $(ARTIFACT_DIR)/verilator.lint
 
-simulation: $(ARTIFACT_DIR) verilator_argfiles
+simulation: $(ARTIFACT_DIR) verilator_argfiles ## Build and run simulations
 	@# Capture simulation output so errors can be summarized at the end on failure.
 	@set -o pipefail; \
 	log="$(ARTIFACT_DIR)/simulation.log"; \
