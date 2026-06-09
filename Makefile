@@ -4,6 +4,8 @@
 PROJ:=this
 SHELL:=/bin/bash
 
+MAKE_DEPS := Makefile $(wildcard mk/*.mk)
+
 include mk/config.mk
 
 # Ensure depfile includes don't override the default goal.
