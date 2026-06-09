@@ -9,12 +9,9 @@ YOSYS_DEBUG ?= false
 YOSYS_INCLUDE_EXTRA ?= false
 
 YOSYS_TARGETS:=$(ARTIFACT_DIR)/mydesign.json \
-			   $(ARTIFACT_DIR)/mydesign.il \
-			   $(ARTIFACT_DIR)/mydesign_show.dot
+			   $(ARTIFACT_DIR)/mydesign.il
 YOSYS_EXTRA:=hierarchy -check -top main;
 ifeq ($(YOSYS_INCLUDE_EXTRA),true)
-	YOSYS_EXTRA += show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show_pre main;
-	YOSYS_TARGETS += $(ARTIFACT_DIR)/mydesign_show_pre.dot
 	YOSYS_EXTRA += ls;
 	YOSYS_EXTRA += proc -noopt;
 	YOSYS_EXTRA += write_rtlil $(ARTIFACT_DIR)/mydesign_pre.il;
@@ -54,7 +51,6 @@ ifeq ($(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)), -DUSE_INFER_BRAM_PLU
 endif
 # Write JSON after optional BRAM outreg packing so nextpnr sees OUTREG.
 YOSYS_SCRIPT +=write_json $(ARTIFACT_DIR)/mydesign.json;
-YOSYS_SCRIPT +=show -format dot -prefix $(ARTIFACT_DIR)/mydesign_show;
 YOSYS_SCRIPT +=write_rtlil $(ARTIFACT_DIR)/mydesign.il;
 YOSYS_SCRIPT +=write_verilog -selected $(ARTIFACT_DIR)/mydesign_final.sv;
 
@@ -66,6 +62,13 @@ endif
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_CMD_ARGS :=-d -v9 -g $(YOSYS_CMD_ARGS)
 endif
+
+YOSYS_HIER_SCRIPT:=read_slang --best-effort-hierarchy $(YOSYS_READSLANG_ARGS);
+YOSYS_HIER_SCRIPT +=hierarchy -check -top main;
+YOSYS_HIER_SCRIPT +=write_json $(ARTIFACT_DIR)/mydesign_hier.json;
+
+$(ARTIFACT_DIR)/mydesign_hier.json: $(VSOURCES) $(INCLUDESRCS) $(MAKE_DEPS) | $(ARTIFACT_DIR)
+	$(TOOLPATH)/yosys -q -L $(ARTIFACT_DIR)/yosys_hier.log -p "$(YOSYS_HIER_SCRIPT)" -m slang
 
 compile: lint gamma_lut $(ARTIFACT_DIR)/mydesign.json ## Run lint and synthesize the design
 $(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) $(MAKE_DEPS)  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)

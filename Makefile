@@ -17,7 +17,7 @@ include mk/verilator.mk
 
 
 
-.PHONY: all diagram simulation clean compile loopviz route lint loopviz_pre ilang pack restore restore-build verilator_argfiles memprog gamma_lut help
+.PHONY: all diagram diagram_hier simulation clean compile route lint ilang pack restore restore-build verilator_argfiles memprog gamma_lut help
 .DELETE_ON_ERROR:
 .SECONDARY: $(SIMBINS)
 all: verilator_argfiles simulation lint ## Run simulations and lint
