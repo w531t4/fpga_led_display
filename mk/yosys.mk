@@ -67,7 +67,7 @@ ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_CMD_ARGS :=-d -v9 -g $(YOSYS_CMD_ARGS)
 endif
 
-compile: lint gamma_lut $(ARTIFACT_DIR)/mydesign.json
+compile: lint gamma_lut $(ARTIFACT_DIR)/mydesign.json ## Run lint and synthesize the design
 $(YOSYS_TARGETS): ${VSOURCES} $(INCLUDESRCS) $(MAKE_DEPS)  $(if $(findstring -DUSE_INFER_BRAM_PLUGIN,$(BUILD_FLAGS)),depends/yosys_ecp5_infer_bram_outreg/ecp5_infer_bram_outreg.so) | $(ARTIFACT_DIR)
 	echo "$(YOSYS_SCRIPT)" > $(ARTIFACT_DIR)/mydesign.ys
 	$(TOOLPATH)/yosys $(YOSYS_CMD_ARGS)
