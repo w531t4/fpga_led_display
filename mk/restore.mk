@@ -1,0 +1,8 @@
+# SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
+
+restore: restore-build
+	$(TOOLPATH)/fujprog $(ARTIFACT_DIR)/passthru/ulx3s_passthru_wifi.bit
+
+restore-build:
+	$(MAKE) -f $(SRC_DIR)/passthru/Makefile all
