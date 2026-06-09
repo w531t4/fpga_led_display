@@ -57,38 +57,8 @@ loopviz_pre: $(ARTIFACT_DIR)/mydesign_show_pre.svg
 $(ARTIFACT_DIR)/mydesign_show_pre.svg: $(ARTIFACT_DIR)/mydesign_show_pre.dot | $(ARTIFACT_DIR)
 	$(TOOLPATH)/dot -Kdot -o $@ -Tsvg $<
 
-route: $(ARTIFACT_DIR)/ulx3s_out.config
-$(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
-	$(TOOLPATH)/nextpnr-ecp5 --85k --json $< \
-		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
-		--log $(ARTIFACT_DIR)/nextpnr.log \
-		--package CABGA381 \
-		--randomize-seed \
-		--report $(ARTIFACT_DIR)/nextpnr-report.json \
-		--placer-heap-critexp 3 --placer-heap-timingweight 20 \
-		--detailed-timing-report \
-		--textcfg $@
-	python3 -m json.tool $(ARTIFACT_DIR)/nextpnr-report.json > $(ARTIFACT_DIR)/nextpnr-report.pretty.json
-pack: $(ARTIFACT_DIR)/ulx3s.bit | $(ARTIFACT_DIR)
-$(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config | $(ARTIFACT_DIR)
-	$(TOOLPATH)/ecppack $< $@
+include mk/ecp5.mk
 
-memprog: $(ARTIFACT_DIR)/ulx3s.bit
-	@echo ====YOSYS WARNINGS/ERRORS==== | tee $(ARTIFACT_DIR)/look_at_me.txt
-	@-grep -i -e warning -e error $(ARTIFACT_DIR)/yosys.log | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@echo | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@echo ====YOSYS Removed Unused Modules==== | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@-grep "Removing unused module" $(ARTIFACT_DIR)/yosys.log | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@echo | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@echo ====NEXTPNR WARNINGS/ERRORS==== | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@-grep -i -e warning -e error $(ARTIFACT_DIR)/nextpnr.log | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@echo | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@echo ====CLOCKS==== | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@-grep -i "Info: Max frequency for clock" $(ARTIFACT_DIR)/nextpnr.log | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-	@echo | tee -a $(ARTIFACT_DIR)/look_at_me.txt
-
-
-	$(TOOLPATH)/fujprog $<
 
 $(ARTIFACT_DIR)/mydesign_vizclean.json: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
 	jq 'del(.modules.BB, .modules.BBPU, .modules.BBPD, .modules.TRELLIS_IO)' $< > $@
