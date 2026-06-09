@@ -9,11 +9,8 @@ include mk/config.mk
 # Ensure depfile includes don't override the default goal.
 .DEFAULT_GOAL := all
 
-# PKG_SOURCES are listed manually because their compilation order matters
-PKG_SOURCES := $(PKG_DIR)/params.sv $(PKG_DIR)/calc.sv $(PKG_DIR)/cmd.sv $(PKG_DIR)/types.sv $(PKG_DIR)/enums.sv
-INTERFACE_SOURCES := $(sort $(shell find $(INTERFACE_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
-PROJROOT_VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
-VSOURCES := $(PKG_SOURCES) $(INTERFACE_SOURCES) $(PROJROOT_VSOURCES)
+include mk/sources.mk
+
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 VERILATOR_BIN:=$(TOOLPATH)/verilator
 VERILATOR_SIM_OPTSLOW ?=
