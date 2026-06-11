@@ -41,6 +41,7 @@ export CCACHE_DIR
 # SWAP_BLUE_GREEN_CHAN - Swaps the pins for blue/green channels (see Adafruit note about "...green and blue channels are swapped..
 #				         .with the 2.5mm pitch 64x32 display..." https://www.adafruit.com/product/5036)
 # USE_PASSTHRU - Connects passthru pins which allows flashing the ESP32 from the same USB port as the FPGA
+# USE_LITEDRAM - Instantiate generated LiteDRAM SDRAM core at top level; framebuffer traffic is not connected yet
 
 BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)

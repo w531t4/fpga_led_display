@@ -19,7 +19,9 @@ module ulx3s_litedram_wrapper (
     output logic        sdram_cke,
     output logic        sdram_csn,
     output logic  [1:0] sdram_dqm,
-    inout  wire  [15:0] sdram_d,
+    // The generated LiteDRAM core instantiates TRELLIS_IO pads internally and
+    // exposes DQ as an input pad net, so keep this boundary direction matched.
+    input  wire  [15:0] sdram_d,
     output logic        sdram_rasn,
     output logic        sdram_wen,
 

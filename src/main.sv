@@ -52,6 +52,18 @@ module main #(
     input        gp15,
     output       gp16,
     input        clk_25mhz,
+`ifdef USE_LITEDRAM
+    output       sdram_clk,
+    output [12:0] sdram_a,
+    output [1:0] sdram_ba,
+    output       sdram_casn,
+    output       sdram_cke,
+    output       sdram_csn,
+    output [1:0] sdram_dqm,
+    input  [15:0] sdram_d,
+    output       sdram_rasn,
+    output       sdram_wen,
+`endif
     output       gn0,
     output       gn1,
     output       gn2,
@@ -146,6 +158,16 @@ module main #(
 `ifdef USE_WATCHDOG
     wire watchdog_reset;
 `endif
+`ifdef USE_LITEDRAM
+    wire        litedram_init_done;
+    wire        litedram_init_error;
+    wire        litedram_user_clk;
+    wire        litedram_user_rst;
+    wire        litedram_cmd_ready;
+    wire        litedram_wdata_ready;
+    wire        litedram_rdata_valid;
+    wire [15:0] litedram_rdata_data;
+`endif
     // No wires past here
 
     new_pll #(
@@ -221,6 +243,38 @@ module main #(
     always_comb begin
         fpga_ready = pll_locked && !global_reset_sync && !ready_holdoff_running;
     end
+
+`ifdef USE_LITEDRAM
+    ulx3s_litedram_wrapper litedram (
+        .clk(clk_root),
+        .reset(global_reset_sync | ~pll_locked),
+        .init_done(litedram_init_done),
+        .init_error(litedram_init_error),
+        .sdram_clk(sdram_clk),
+        .sdram_a(sdram_a),
+        .sdram_ba(sdram_ba),
+        .sdram_casn(sdram_casn),
+        .sdram_cke(sdram_cke),
+        .sdram_csn(sdram_csn),
+        .sdram_dqm(sdram_dqm),
+        .sdram_d(sdram_d),
+        .sdram_rasn(sdram_rasn),
+        .sdram_wen(sdram_wen),
+        .user_clk(litedram_user_clk),
+        .user_rst(litedram_user_rst),
+        .cmd_valid(1'b0),
+        .cmd_ready(litedram_cmd_ready),
+        .cmd_we(1'b0),
+        .cmd_addr(24'h000000),
+        .wdata_valid(1'b0),
+        .wdata_ready(litedram_wdata_ready),
+        .wdata_we(2'b00),
+        .wdata_data(16'h0000),
+        .rdata_valid(litedram_rdata_valid),
+        .rdata_ready(1'b1),
+        .rdata_data(litedram_rdata_data)
+    );
+`endif
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
     clock_divider #(
@@ -468,6 +522,18 @@ module main #(
 `endif
 `ifdef USE_FM6126A
     wire _unused_ok_fm6126a = &{1'b0, init_reset_strobe, 1'b0};
+`endif
+`ifdef USE_LITEDRAM
+    wire _unused_ok_litedram = &{1'b0,
+                                 litedram_init_done,
+                                 litedram_init_error,
+                                 litedram_user_clk,
+                                 litedram_user_rst,
+                                 litedram_cmd_ready,
+                                 litedram_wdata_ready,
+                                 litedram_rdata_valid,
+                                 litedram_rdata_data,
+                                 1'b0};
 `endif
     wire _unused_ok = &{1'b0, pll_locked, rxdata_ready_level, ctrl_busy, ctrl_ready_for_data, 1'b0};
 endmodule

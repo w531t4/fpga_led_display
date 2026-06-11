@@ -29,7 +29,11 @@ ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 	YOSYS_TARGETS += $(ARTIFACT_DIR)/code_postopt_selected.sv
 endif
 
-YOSYS_READSLANG_ARGS:=$(BUILD_FLAGS) -I$(VINCLUDE_DIR) -I$(VINCLUDE_MEM_DIR) ${VSOURCES}
+YOSYS_READSLANG_SOURCES := $(VSOURCES)
+ifeq ($(findstring -DUSE_LITEDRAM,$(BUILD_FLAGS)),-DUSE_LITEDRAM)
+	YOSYS_READSLANG_SOURCES := $(filter-out $(LITEDRAM_GATEWARE),$(YOSYS_READSLANG_SOURCES))
+endif
+YOSYS_READSLANG_ARGS := $(BUILD_FLAGS) -I$(VINCLUDE_DIR) -I$(VINCLUDE_MEM_DIR) $(YOSYS_READSLANG_SOURCES)
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_READSLANG_ARGS:=--diag-source --diag-location --diag-include-stack $(YOSYS_READSLANG_ARGS)
 endif
@@ -40,6 +44,10 @@ YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top main
 YOSYS_SCRIPT:=
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_SCRIPT +=echo on;
+endif
+ifeq ($(findstring -DUSE_LITEDRAM,$(BUILD_FLAGS)),-DUSE_LITEDRAM)
+	YOSYS_SCRIPT +=read_verilog -lib +/ecp5/cells_sim.v;
+	YOSYS_SCRIPT +=read_verilog -sv $(LITEDRAM_GATEWARE);
 endif
 YOSYS_SCRIPT +=$(YOSYS_READSLANG_CMD);
 YOSYS_SCRIPT +=$(YOSYS_EXTRA);
@@ -63,7 +71,12 @@ ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_CMD_ARGS :=-d -v9 -g $(YOSYS_CMD_ARGS)
 endif
 
-YOSYS_HIER_SCRIPT:=read_slang --best-effort-hierarchy $(YOSYS_READSLANG_ARGS);
+YOSYS_HIER_SCRIPT:=
+ifeq ($(findstring -DUSE_LITEDRAM,$(BUILD_FLAGS)),-DUSE_LITEDRAM)
+	YOSYS_HIER_SCRIPT +=read_verilog -lib +/ecp5/cells_sim.v;
+	YOSYS_HIER_SCRIPT +=read_verilog -sv $(LITEDRAM_GATEWARE);
+endif
+YOSYS_HIER_SCRIPT +=read_slang --best-effort-hierarchy $(YOSYS_READSLANG_ARGS);
 YOSYS_HIER_SCRIPT +=hierarchy -check -top main;
 YOSYS_HIER_SCRIPT +=write_json $(ARTIFACT_DIR)/mydesign_hier.json;
 
