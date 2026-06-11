@@ -6,7 +6,8 @@ PKG_SOURCES := $(PKG_DIR)/params.sv $(PKG_DIR)/calc.sv $(PKG_DIR)/cmd.sv $(PKG_D
 INTERFACE_SOURCES := $(sort $(shell find $(INTERFACE_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 PROJROOT_VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 VSOURCES := $(PKG_SOURCES) $(INTERFACE_SOURCES) $(PROJROOT_VSOURCES)
-LITEDRAM_CORE_SOURCES := $(SRC_DIR)/litedram/litedram_init.sv
+LITEDRAM_CORE_SOURCES := $(SRC_DIR)/litedram/litedram_init.sv \
+                         $(SRC_DIR)/litedram/litedram_bist.sv
 VSOURCES += $(LITEDRAM_CORE_SOURCES)
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 GAMMA_MEMS := $(sort $(shell find $(VINCLUDE_MEM_DIR) -maxdepth 1 -name '*.mem'))

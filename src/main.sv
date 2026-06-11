@@ -163,10 +163,20 @@ module main #(
     wire        litedram_init_error;
     wire        litedram_user_clk;
     wire        litedram_user_rst;
+    wire        litedram_cmd_valid;
     wire        litedram_cmd_ready;
+    wire        litedram_cmd_we;
+    wire [23:0] litedram_cmd_addr;
+    wire        litedram_wdata_valid;
     wire        litedram_wdata_ready;
+    wire  [1:0] litedram_wdata_we;
+    wire [15:0] litedram_wdata_data;
     wire        litedram_rdata_valid;
+    wire        litedram_rdata_ready;
     wire [15:0] litedram_rdata_data;
+    wire        litedram_bist_busy;
+    wire        litedram_bist_done;
+    wire        litedram_bist_error;
 `endif
     // No wires past here
 
@@ -262,18 +272,52 @@ module main #(
         .sdram_wen(sdram_wen),
         .user_clk(litedram_user_clk),
         .user_rst(litedram_user_rst),
-        .cmd_valid(1'b0),
+        .cmd_valid(litedram_cmd_valid),
         .cmd_ready(litedram_cmd_ready),
-        .cmd_we(1'b0),
-        .cmd_addr(24'h000000),
-        .wdata_valid(1'b0),
+        .cmd_we(litedram_cmd_we),
+        .cmd_addr(litedram_cmd_addr),
+        .wdata_valid(litedram_wdata_valid),
         .wdata_ready(litedram_wdata_ready),
-        .wdata_we(2'b00),
-        .wdata_data(16'h0000),
+        .wdata_we(litedram_wdata_we),
+        .wdata_data(litedram_wdata_data),
         .rdata_valid(litedram_rdata_valid),
-        .rdata_ready(1'b1),
+        .rdata_ready(litedram_rdata_ready),
         .rdata_data(litedram_rdata_data)
     );
+
+`ifdef USE_LITEDRAM_BIST
+    litedram_bist litedram_probe (
+        .clk(litedram_user_clk),
+        .reset(global_reset_sync | ~pll_locked | litedram_user_rst),
+        .init_done(litedram_init_done),
+        .init_error(litedram_init_error),
+        .busy(litedram_bist_busy),
+        .done(litedram_bist_done),
+        .error(litedram_bist_error),
+        .cmd_valid(litedram_cmd_valid),
+        .cmd_ready(litedram_cmd_ready),
+        .cmd_we(litedram_cmd_we),
+        .cmd_addr(litedram_cmd_addr),
+        .wdata_valid(litedram_wdata_valid),
+        .wdata_ready(litedram_wdata_ready),
+        .wdata_we(litedram_wdata_we),
+        .wdata_data(litedram_wdata_data),
+        .rdata_valid(litedram_rdata_valid),
+        .rdata_ready(litedram_rdata_ready),
+        .rdata_data(litedram_rdata_data)
+    );
+`else
+    assign litedram_cmd_valid = 1'b0;
+    assign litedram_cmd_we = 1'b0;
+    assign litedram_cmd_addr = 24'h000000;
+    assign litedram_wdata_valid = 1'b0;
+    assign litedram_wdata_we = 2'b00;
+    assign litedram_wdata_data = 16'h0000;
+    assign litedram_rdata_ready = 1'b1;
+    assign litedram_bist_busy = 1'b0;
+    assign litedram_bist_done = 1'b0;
+    assign litedram_bist_error = 1'b0;
+`endif
 `endif
 
     /* produce signals to scan a 64x32 LED matrix, with 6-bit color */
@@ -533,6 +577,9 @@ module main #(
                                  litedram_wdata_ready,
                                  litedram_rdata_valid,
                                  litedram_rdata_data,
+                                 litedram_bist_busy,
+                                 litedram_bist_done,
+                                 litedram_bist_error,
                                  1'b0};
 `endif
     wire _unused_ok = &{1'b0, pll_locked, rxdata_ready_level, ctrl_busy, ctrl_ready_for_data, 1'b0};

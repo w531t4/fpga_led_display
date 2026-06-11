@@ -52,6 +52,6 @@ litedram-main-smoke: $(LITEDRAM_MAIN_SMOKE_STAMP) ## Check main elaborates with 
 
 $(LITEDRAM_MAIN_SMOKE_STAMP): $(LITEDRAM_MAIN_SOURCES) $(INCLUDESRCS) $(MAKE_DEPS) | $(LITEDRAM_DIR)
 	timeout 30s $(TOOLPATH)/yosys -q -L $(LITEDRAM_DIR)/yosys_main_litedram.log \
-		-p "read_verilog -lib +/ecp5/cells_sim.v; read_verilog -sv $(LITEDRAM_GATEWARE); read_slang $(BUILD_FLAGS) -DUSE_LITEDRAM -I$(VINCLUDE_DIR) -I$(VINCLUDE_MEM_DIR) $(LITEDRAM_MAIN_READSLANG_SOURCES); hierarchy -check -top main" \
+		-p "read_verilog -lib +/ecp5/cells_sim.v; read_verilog -sv $(LITEDRAM_GATEWARE); read_slang $(BUILD_FLAGS) -DUSE_LITEDRAM -DUSE_LITEDRAM_BIST -I$(VINCLUDE_DIR) -I$(VINCLUDE_MEM_DIR) $(LITEDRAM_MAIN_READSLANG_SOURCES); hierarchy -check -top main" \
 		-m slang
 	touch $@
