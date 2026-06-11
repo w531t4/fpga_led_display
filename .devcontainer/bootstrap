@@ -14,6 +14,16 @@ uv pip install \
   --upgrade \
   --config-settings editable_mode=compat
 
+LITEDRAM_CONFIG=src/litedram/ulx3s_sdram.yml
+LITEDRAM_OUTPUT=build/litedram/gateware/ulx3s_litedram.v
+if [ -f "$LITEDRAM_CONFIG" ] && { [ ! -f "$LITEDRAM_OUTPUT" ] || [ "$LITEDRAM_CONFIG" -nt "$LITEDRAM_OUTPUT" ]; }; then
+  echo "Generating LiteDRAM gateware..."
+  litedram_gen --no-compile \
+    --name ulx3s_litedram \
+    --output-dir build/litedram \
+    "$LITEDRAM_CONFIG"
+fi
+
 DEFAULT_TOOLCHAIN_TAG=2025-12-18
 TOOLCHAIN_TAG=$DEFAULT_TOOLCHAIN_TAG
 if [ -f ".toolchain-version" ]; then

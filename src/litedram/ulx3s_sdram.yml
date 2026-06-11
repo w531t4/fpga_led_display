@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2026 Aaron White <w531t4@gmail.com>
+# SPDX-License-Identifier: MIT
+# LiteDRAM generator config for the ULX3S SDR SDRAM.
+{
+    "device": "LFE5U-85F-6BG381C",
+    "cpu": "None",
+    "memtype": "SDR",
+
+    "sdram_module": "MT48LC16M16",
+    "sdram_module_nb": 2,
+    "sdram_phy": "GENSDRPHY",
+
+    "sys_clk_freq": 90e6,
+    "cmd_buffer_depth": 16,
+
+    "user_ports": { "native_0": { "type": "native" } },
+}
