@@ -43,6 +43,7 @@ export CCACHE_DIR
 # USE_PASSTHRU - Connects passthru pins which allows flashing the ESP32 from the same USB port as the FPGA
 # USE_LITEDRAM - Instantiate generated LiteDRAM SDRAM core at top level; framebuffer traffic is not connected yet
 # USE_LITEDRAM_BIST - With USE_LITEDRAM, run a tiny write/read hardware probe and show its status on led[4:0]
+# USE_LITEDRAM_WRITE_MIRROR - With USE_LITEDRAM, mirror controller framebuffer writes into LiteDRAM
 
 BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)

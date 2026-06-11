@@ -9,6 +9,8 @@ module main #(
 ) (
 `ifdef USE_LITEDRAM_BIST
     output [7:0] led,
+`elsif USE_LITEDRAM_WRITE_MIRROR
+    output [7:0] led,
 `elsif USE_BOARDLEDS_BRIGHTNESS
     output [7:0] led,
 `endif
@@ -176,6 +178,10 @@ module main #(
     wire        litedram_bist_busy;
     wire        litedram_bist_done;
     wire        litedram_bist_error;
+    wire        litedram_mirror_busy;
+    wire        litedram_mirror_seen_write;
+    wire        litedram_mirror_dropped;
+    wire        litedram_mirror_error;
 `endif
 `ifdef USE_LITEDRAM_BIST
     // BIST bring-up LEDs: [0]=init_done, [1]=init_error, [2]=busy,
@@ -184,6 +190,13 @@ module main #(
     // for later probes.
     assign led = {3'b000, litedram_bist_error, litedram_bist_done, litedram_bist_busy, litedram_init_error,
                   litedram_init_done};
+`elsif USE_LITEDRAM_WRITE_MIRROR
+    // Write-mirror LEDs: [0]=init_done, [1]=init_error, [2]=busy,
+    // [3]=saw at least one mirrored write, [4]=dropped a write,
+    // [5]=mirror error. A clean active mirror is led[0] and led[3] on,
+    // with led[1], led[4], and led[5] off.
+    assign led = {2'b00, litedram_mirror_error, litedram_mirror_dropped, litedram_mirror_seen_write,
+                  litedram_mirror_busy, litedram_init_error, litedram_init_done};
 `elsif USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -315,6 +328,44 @@ module main #(
         .rdata_ready(litedram_rdata_ready),
         .rdata_data(litedram_rdata_data)
     );
+    assign litedram_mirror_busy = 1'b0;
+    assign litedram_mirror_seen_write = 1'b0;
+    assign litedram_mirror_dropped = 1'b0;
+    assign litedram_mirror_error = 1'b0;
+`elsif USE_LITEDRAM_WRITE_MIRROR
+`ifdef DOUBLE_BUFFER
+    wire litedram_mirror_source_frame = ~frame_select;
+`else
+    wire litedram_mirror_source_frame = 1'b0;
+`endif
+    litedram_write_mirror litedram_mirror (
+        .clk(litedram_user_clk),
+        .reset(global_reset_sync | ~pll_locked | litedram_user_rst),
+        .init_done(litedram_init_done),
+        .init_error(litedram_init_error),
+        .source_addr(ctrl_ram_address),
+        .source_data(ctrl_ram_data_out),
+        .source_write_valid(ctrl_ram_clk_enable & ctrl_ram_write_enable),
+        .source_frame(litedram_mirror_source_frame),
+        .busy(litedram_mirror_busy),
+        .seen_write(litedram_mirror_seen_write),
+        .dropped(litedram_mirror_dropped),
+        .error(litedram_mirror_error),
+        .cmd_valid(litedram_cmd_valid),
+        .cmd_ready(litedram_cmd_ready),
+        .cmd_we(litedram_cmd_we),
+        .cmd_addr(litedram_cmd_addr),
+        .wdata_valid(litedram_wdata_valid),
+        .wdata_ready(litedram_wdata_ready),
+        .wdata_we(litedram_wdata_we),
+        .wdata_data(litedram_wdata_data),
+        .rdata_valid(litedram_rdata_valid),
+        .rdata_ready(litedram_rdata_ready),
+        .rdata_data(litedram_rdata_data)
+    );
+    assign litedram_bist_busy = 1'b0;
+    assign litedram_bist_done = 1'b0;
+    assign litedram_bist_error = 1'b0;
 `else
     assign litedram_cmd_valid = 1'b0;
     assign litedram_cmd_we = 1'b0;
@@ -326,6 +377,10 @@ module main #(
     assign litedram_bist_busy = 1'b0;
     assign litedram_bist_done = 1'b0;
     assign litedram_bist_error = 1'b0;
+    assign litedram_mirror_busy = 1'b0;
+    assign litedram_mirror_seen_write = 1'b0;
+    assign litedram_mirror_dropped = 1'b0;
+    assign litedram_mirror_error = 1'b0;
 `endif
 `endif
 
@@ -589,6 +644,10 @@ module main #(
                                  litedram_bist_busy,
                                  litedram_bist_done,
                                  litedram_bist_error,
+                                 litedram_mirror_busy,
+                                 litedram_mirror_seen_write,
+                                 litedram_mirror_dropped,
+                                 litedram_mirror_error,
                                  1'b0};
 `endif
     wire _unused_ok = &{1'b0, pll_locked, rxdata_ready_level, ctrl_busy, ctrl_ready_for_data, 1'b0};
