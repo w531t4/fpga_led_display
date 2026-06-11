@@ -13,6 +13,8 @@ include mk/config.mk
 
 include mk/sources.mk
 
+include mk/litedram.mk
+
 include mk/verilator.mk
 
 
