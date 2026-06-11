@@ -6,9 +6,12 @@ LITEDRAM_CONFIG := $(SRC_DIR)/litedram/ulx3s_sdram.yml
 LITEDRAM_NAME := ulx3s_litedram
 LITEDRAM_GATEWARE := $(LITEDRAM_DIR)/gateware/$(LITEDRAM_NAME).v
 LITEDRAM_SMOKE_JSON := $(LITEDRAM_DIR)/$(LITEDRAM_NAME).json
+LITEDRAM_WRAPPER_JSON := $(LITEDRAM_DIR)/ulx3s_litedram_wrapper.json
+LITEDRAM_WRAPPER_SOURCES := $(SRC_DIR)/litedram/litedram_init.sv \
+                           $(SRC_DIR)/litedram/ulx3s_litedram_wrapper.sv
 LITEDRAM_DEPS := $(LITEDRAM_CONFIG) .python-requirements .python-version $(MAKE_DEPS)
 
-.PHONY: litedram litedram-smoke
+.PHONY: litedram litedram-smoke litedram-wrapper-smoke
 litedram: $(LITEDRAM_GATEWARE) ## Generate LiteDRAM standalone gateware
 
 $(LITEDRAM_DIR):
@@ -27,3 +30,9 @@ litedram-smoke: $(LITEDRAM_SMOKE_JSON) ## Check generated LiteDRAM gateware with
 $(LITEDRAM_SMOKE_JSON): $(LITEDRAM_GATEWARE) $(MAKE_DEPS) | $(LITEDRAM_DIR)
 	timeout 30s $(TOOLPATH)/yosys -q -L $(LITEDRAM_DIR)/yosys_litedram.log \
 		-p "read_verilog -lib +/ecp5/cells_sim.v; read_verilog -sv $<; hierarchy -check -top $(LITEDRAM_NAME); synth_ecp5 -top $(LITEDRAM_NAME); write_json $@"
+
+litedram-wrapper-smoke: $(LITEDRAM_WRAPPER_JSON) ## Check project LiteDRAM wrapper with Yosys
+
+$(LITEDRAM_WRAPPER_JSON): $(LITEDRAM_GATEWARE) $(LITEDRAM_WRAPPER_SOURCES) $(MAKE_DEPS) | $(LITEDRAM_DIR)
+	timeout 30s $(TOOLPATH)/yosys -q -L $(LITEDRAM_DIR)/yosys_litedram_wrapper.log \
+		-p "read_verilog -lib +/ecp5/cells_sim.v; read_verilog -sv $(LITEDRAM_GATEWARE) $(LITEDRAM_WRAPPER_SOURCES); hierarchy -check -top ulx3s_litedram_wrapper; synth_ecp5 -top ulx3s_litedram_wrapper; write_json $@"
