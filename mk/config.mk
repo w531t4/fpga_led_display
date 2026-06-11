@@ -42,7 +42,7 @@ export CCACHE_DIR
 #				         .with the 2.5mm pitch 64x32 display..." https://www.adafruit.com/product/5036)
 # USE_PASSTHRU - Connects passthru pins which allows flashing the ESP32 from the same USB port as the FPGA
 # USE_LITEDRAM - Instantiate generated LiteDRAM SDRAM core at top level; framebuffer traffic is not connected yet
-# USE_LITEDRAM_BIST - With USE_LITEDRAM, run a tiny write/read hardware probe on the native LiteDRAM port
+# USE_LITEDRAM_BIST - With USE_LITEDRAM, run a tiny write/read hardware probe and show its status on led[4:0]
 
 BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)

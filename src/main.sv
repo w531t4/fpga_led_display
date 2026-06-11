@@ -7,7 +7,9 @@ module main #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-`ifdef USE_BOARDLEDS_BRIGHTNESS
+`ifdef USE_LITEDRAM_BIST
+    output [7:0] led,
+`elsif USE_BOARDLEDS_BRIGHTNESS
     output [7:0] led,
 `endif
 `ifdef SPI
@@ -135,9 +137,6 @@ module main #(
 
     wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
-`ifdef USE_BOARDLEDS_BRIGHTNESS
-    assign led = brightness_enable;
-`endif
     wire types::rgb_signals_t rgb[NUM_SUBPANELS];  // 0=top, 1=bottom
     wire output_enable;
     wire alt_reset;
@@ -177,6 +176,16 @@ module main #(
     wire        litedram_bist_busy;
     wire        litedram_bist_done;
     wire        litedram_bist_error;
+`endif
+`ifdef USE_LITEDRAM_BIST
+    // BIST bring-up LEDs: [0]=init_done, [1]=init_error, [2]=busy,
+    // [3]=done, [4]=error. Desired pass result is led[0] and led[3]
+    // on, with led[1], led[2], and led[4] off. Upper LEDs are reserved
+    // for later probes.
+    assign led = {3'b000, litedram_bist_error, litedram_bist_done, litedram_bist_busy, litedram_init_error,
+                  litedram_init_done};
+`elsif USE_BOARDLEDS_BRIGHTNESS
+    assign led = brightness_enable;
 `endif
     // No wires past here
 
