@@ -51,7 +51,7 @@ endif
 $(SIMULATION_DIR)/%.fst: $(SIM_BIN_DIR)/% $(MAKE_DEPS) | $(SIMULATION_DIR)
 	@set -o pipefail; stdbuf -oL -eL $< $(SIM_RUN_ARGS) 2>&1 | sed -u 's/^/[$*] /'
 
-$(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(VSOURCES) $(INCLUDESRCS) $(MAKE_DEPS) | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
+$(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(VSOURCES) $(INCLUDESRCS) $(MAKE_DEPS) verilator_argfiles | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
 	tb_args=""; \
 	if [ -f $$tb_args_file ]; then \
