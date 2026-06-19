@@ -46,6 +46,10 @@ export CCACHE_DIR
 # USE_LITEDRAM_WRITE_MIRROR - With USE_LITEDRAM, mirror controller framebuffer writes into LiteDRAM
 
 BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
+# EXTRA_BUILD_FLAGS - append flags for one-off builds without editing the BUILD_FLAGS default,
+#                     e.g. `make EXTRA_BUILD_FLAGS="-DUSE_LITEDRAM -DUSE_LITEDRAM_WRITE_MIRROR"`
+EXTRA_BUILD_FLAGS ?=
+BUILD_FLAGS += $(EXTRA_BUILD_FLAGS)
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
