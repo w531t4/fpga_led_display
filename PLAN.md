@@ -45,20 +45,27 @@ Decouple the BAM engine from the main framebuffer backing store. After this phas
 pipeline reads from a row buffer instead of directly from `multimem`, but `multimem` is still
 the source of truth. No visible change to output.
 
-- [ ] **1.1** `row_prefetch.sv` — contains the ping-pong row buffer BRAM banks internally and the
+- [x] **1.1** `row_prefetch.sv` — contains the ping-pong row buffer BRAM banks internally and the
   prefetch state machine. When triggered, iterates `col = 0..PIXEL_WIDTH-1`, reads `multimem`
   via port-B, and writes `mem_read_data_t` into the inactive bank. Drives `bank_sel` (swaps
   registered when `fill_done` and `brightness_mask == 1` at `row_latch`). Read port accepts
   `mem_read_addr_t` and ignores the row field, so `framebuffer_fetch.sv` needs no changes.
   Trigger: `brightness_mask == 1` at `row_latch` (8× display-time slack before next row needed).
+  Added `tb_row_prefetch.sv` (standalone, behavioral 2-cycle memory model) covering boot state,
+  three consecutive bank swaps, and that the read port ignores `.row`. Passes in simulation.
 
-- [ ] **1.2** Wire in `main.sv` only — instantiate `row_prefetch`; reroute port B of
+- [x] **1.2** Wire in `main.sv` only — instantiate `row_prefetch`; reroute port B of
   `framebuffer_fabric` to `row_prefetch` (was `framebuffer_fetch`); connect `framebuffer_fetch`
   data/address ports to `row_prefetch` read port instead. Feed `row_latch` and `brightness_mask`
-  from `matrix_scan`. `framebuffer_fetch.sv` and `framebuffer_fabric.sv` unchanged.
+  from `matrix_scan`. `framebuffer_fetch.sv` and `framebuffer_fabric.sv` unchanged. (Added one
+  `matrix_row_latch` alias wire so the FM6126A-blended top-level `row_latch` doesn't leak into
+  row_prefetch's trigger; under `-DUSE_FM6126A` it points at `row_latch_intermediary` instead.)
 
-- [ ] **1.3** Verify — run `tb_main` and compare waveforms against pre-patch baseline. Verify on
-  hardware: solid-color fill, then column-ramp pattern.
+- [x] **1.3 (sim)** `tb_row_prefetch` passes; `make simulation` (full suite, including `tb_main`)
+  and `make build/mydesign.json` (yosys synthesis) both pass/complete cleanly with row_prefetch
+  wired in. `make lint` clean.
+- [ ] **1.3 (hw)** Still needed from Aaron: flash and verify on hardware — solid-color fill, then
+  column-ramp pattern.
 
 ## Phase 2 — SDRAM standalone verification
 

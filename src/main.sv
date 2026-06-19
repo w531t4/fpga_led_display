@@ -119,6 +119,15 @@ module main #(
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
 
+    // Display-side read port between framebuffer_fetch and row_prefetch
+    // (row_prefetch then talks to framebuffer_fabric over ram_b_*).
+    types::mem_read_data_t rowbuf_data_out;
+    wire types::mem_read_addr_t rowbuf_address;
+    wire rowbuf_clk_enable;
+    // The matrix_scan-internal row_latch event (pre FM6126A-init blending),
+    // used to trigger row_prefetch's bank swap/fill in sync with row_address.
+    wire matrix_row_latch;
+
     // Per-subpanel pixeldata fetched from framebuffer.
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     wire types::color_field_t pixeldata_subpanels[NUM_SUBPANELS];
@@ -233,6 +242,11 @@ module main #(
     assign output_enable = output_enable_intermediary & fm6126mask_en;
     assign row_latch = (row_latch_intermediary & fm6126mask_en) | (row_latch_fm6126init & ~fm6126mask_en);
     assign clk_pixel = (clk_pixel_intermediary & fm6126mask_en) | (pixclock_fm6126init & ~fm6126mask_en);
+`endif
+`ifdef USE_FM6126A
+    assign matrix_row_latch = row_latch_intermediary;
+`else
+    assign matrix_row_latch = row_latch;
 `endif
 
 `ifdef DEBUGGER
@@ -433,11 +447,34 @@ module main #(
         .row_address(row_address),
         .pixel_load_start(clk_pixel_load),
 
-        .ram_data_in(ram_b_data_out),
-        .ram_address(ram_b_address),
-        .ram_clk_enable(ram_b_clk_enable),
+        .ram_data_in(rowbuf_data_out),
+        .ram_address(rowbuf_address),
+        .ram_clk_enable(rowbuf_clk_enable),
 
         .pixeldata_subpanels(pixeldata_subpanels)
+    );
+
+    // Ping-pong row buffer: decouples framebuffer_fetch's per-pixel reads from
+    // the framebuffer_fabric/multimem backing store. framebuffer_fabric is
+    // unchanged; it still just serves ram_b_* reads, now issued by row_prefetch
+    // instead of framebuffer_fetch directly.
+    row_prefetch #(
+        ._UNUSED('d0)
+    ) row_buf (
+        .reset (global_reset_sync),
+        .clk_in(clk_root),
+
+        .read_address(rowbuf_address),
+        .read_clk_enable(rowbuf_clk_enable),
+        .read_data_out(rowbuf_data_out),
+
+        .row_address(row_address),
+        .brightness_mask(brightness_mask),
+        .row_latch(matrix_row_latch),
+
+        .fill_address(ram_b_address),
+        .fill_clk_enable(ram_b_clk_enable),
+        .fill_data_in(ram_b_data_out)
     );
 
     // for controller
