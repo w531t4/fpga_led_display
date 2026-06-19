@@ -4,8 +4,8 @@
 
 // Opportunistically mirrors controller framebuffer writes into LiteDRAM while
 // the BRAM framebuffer remains the source of truth. This deliberately never
-// backpressures the existing write path: missed writes are reported with a
-// sticky dropped flag so bring-up can measure whether this simple client keeps up.
+// backpressures the existing write path: missed writes are reported with sticky
+// flags so bring-up can distinguish boot-time writes from write pressure.
 module litedram_write_mirror #(
     parameter int unsigned MAX_WAIT_TICKS = 1024
 ) (
@@ -23,6 +23,7 @@ module litedram_write_mirror #(
     output logic busy,
     output logic seen_write,
     output logic dropped,
+    output logic dropped_before_init,
     output logic error,
 
     output logic        cmd_valid,
@@ -92,6 +93,7 @@ module litedram_write_mirror #(
             wait_count_q <= '0;
             seen_write <= 1'b0;
             dropped <= 1'b0;
+            dropped_before_init <= 1'b0;
             error <= 1'b0;
         end else begin
             if (init_error) begin
@@ -111,7 +113,7 @@ module litedram_write_mirror #(
                             frame_q <= source_frame;
                             state_q <= STATE_WRITE;
                         end else begin
-                            dropped <= 1'b1;
+                            dropped_before_init <= 1'b1;
                         end
                     end
                 end

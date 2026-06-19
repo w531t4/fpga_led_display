@@ -181,6 +181,7 @@ module main #(
     wire        litedram_mirror_busy;
     wire        litedram_mirror_seen_write;
     wire        litedram_mirror_dropped;
+    wire        litedram_mirror_dropped_before_init;
     wire        litedram_mirror_error;
 `endif
 `ifdef USE_LITEDRAM_BIST
@@ -192,11 +193,11 @@ module main #(
                   litedram_init_done};
 `elsif USE_LITEDRAM_WRITE_MIRROR
     // Write-mirror LEDs: [0]=init_done, [1]=init_error, [2]=busy,
-    // [3]=saw at least one mirrored write, [4]=dropped a write,
-    // [5]=mirror error. A clean active mirror is led[0] and led[3] on,
-    // with led[1], led[4], and led[5] off.
-    assign led = {2'b00, litedram_mirror_error, litedram_mirror_dropped, litedram_mirror_seen_write,
-                  litedram_mirror_busy, litedram_init_error, litedram_init_done};
+    // [3]=saw at least one mirrored write, [4]=dropped while busy,
+    // [5]=mirror error, [6]=dropped before init. A clean active mirror is
+    // led[0] and led[3] on, with led[1], led[4], led[5], and led[6] off.
+    assign led = {1'b0, litedram_mirror_dropped_before_init, litedram_mirror_error, litedram_mirror_dropped,
+                  litedram_mirror_seen_write, litedram_mirror_busy, litedram_init_error, litedram_init_done};
 `elsif USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -331,6 +332,7 @@ module main #(
     assign litedram_mirror_busy = 1'b0;
     assign litedram_mirror_seen_write = 1'b0;
     assign litedram_mirror_dropped = 1'b0;
+    assign litedram_mirror_dropped_before_init = 1'b0;
     assign litedram_mirror_error = 1'b0;
 `elsif USE_LITEDRAM_WRITE_MIRROR
 `ifdef DOUBLE_BUFFER
@@ -350,6 +352,7 @@ module main #(
         .busy(litedram_mirror_busy),
         .seen_write(litedram_mirror_seen_write),
         .dropped(litedram_mirror_dropped),
+        .dropped_before_init(litedram_mirror_dropped_before_init),
         .error(litedram_mirror_error),
         .cmd_valid(litedram_cmd_valid),
         .cmd_ready(litedram_cmd_ready),
@@ -380,6 +383,7 @@ module main #(
     assign litedram_mirror_busy = 1'b0;
     assign litedram_mirror_seen_write = 1'b0;
     assign litedram_mirror_dropped = 1'b0;
+    assign litedram_mirror_dropped_before_init = 1'b0;
     assign litedram_mirror_error = 1'b0;
 `endif
 `endif

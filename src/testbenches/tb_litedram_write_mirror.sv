@@ -23,6 +23,7 @@ module tb_litedram_write_mirror #(
     wire busy;
     wire seen_write;
     wire dropped;
+    wire dropped_before_init;
     wire error;
     wire cmd_valid;
     logic cmd_ready;
@@ -55,6 +56,7 @@ module tb_litedram_write_mirror #(
         .busy(busy),
         .seen_write(seen_write),
         .dropped(dropped),
+        .dropped_before_init(dropped_before_init),
         .error(error),
         .cmd_valid(cmd_valid),
         .cmd_ready(cmd_ready),
@@ -102,8 +104,9 @@ module tb_litedram_write_mirror #(
         source_write_valid = 1'b1;
         @(posedge clk);
         source_write_valid = 1'b0;
-        if (!dropped) begin
-            $fatal(1, "write before init was not reported as dropped");
+        if (!dropped_before_init || dropped) begin
+            $fatal(1, "write before init was not reported separately dropped=%0b before_init=%0b", dropped,
+                   dropped_before_init);
         end
 
         repeat (2) @(posedge clk);
@@ -114,6 +117,15 @@ module tb_litedram_write_mirror #(
         source_write_valid = 1'b1;
         @(posedge clk);
         source_write_valid = 1'b0;
+
+        source_addr = '{subpanel: types::subpanel_addr_t'(1'b0), row: types::row_subpanel_addr_t'(4'h1), col: types::col_addr_t'(10'h001), pixel: types::pixel_addr_t'(2'h0)};
+        source_data = 8'h55;
+        source_write_valid = 1'b1;
+        @(posedge clk);
+        source_write_valid = 1'b0;
+        if (!dropped) begin
+            $fatal(1, "write while busy was not reported as dropped");
+        end
 
         for (int unsigned cycle = 0; cycle < MAX_TEST_CYCLES && !seen_write; cycle++) begin
             @(posedge clk);
