@@ -18,6 +18,13 @@ pack: $(ARTIFACT_DIR)/ulx3s.bit | $(ARTIFACT_DIR) ## Pack routed design into bit
 $(ARTIFACT_DIR)/ulx3s.bit: $(ARTIFACT_DIR)/ulx3s_out.config | $(ARTIFACT_DIR)
 	$(TOOLPATH)/ecppack $< $@
 
+pack-until-success: ## Rerun nextpnr (new random seed each time) until timing passes, then pack
+	@attempt=0; \
+	until $(MAKE) pack; do \
+		attempt=$$((attempt+1)); \
+		echo "==> nextpnr failed to meet timing (attempt $$attempt), retrying..."; \
+	done
+
 memprog: $(ARTIFACT_DIR)/ulx3s.bit ## Program bitstream to FPGA SRAM
 	@echo ====YOSYS WARNINGS/ERRORS==== | tee $(ARTIFACT_DIR)/look_at_me.txt
 	@-grep -i -e warning -e error $(ARTIFACT_DIR)/yosys.log | tee -a $(ARTIFACT_DIR)/look_at_me.txt
