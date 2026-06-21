@@ -161,6 +161,18 @@ Confirm the controller is reliable before swapping the backend.
   for the arbiter+row_prefetch combination now, before 3.4 stacks the write path and copy engine
   on top of it — isolating any timing problem here is cheaper than finding it at 3.5.
 
+  First hardware attempt (`make pack EXTRA_BUILD_FLAGS="-DUSE_LITEDRAM -DUSE_SDRAM_FB"`, flashed):
+  built/routed, but the panel showed unstructured noise that shifted when the ESP32 test-pattern
+  button toggled `frame_select`. Root cause: `sdram_arbiter.sv` never gated on `init_done` —
+  unlike `litedram_bist.sv`/`litedram_write_mirror.sv`, which both explicitly refuse to issue
+  commands before the controller finishes init/calibration. `row_prefetch` starts requesting
+  words almost immediately at boot (it primes bank1 with row 1 before any real trigger), so the
+  arbiter was very likely driving the native port before LiteDRAM was ready — undefined behavior,
+  not "DRAM powers up with random bits." Fixed: the arbiter now takes an `init_done` input and
+  won't leave `STATE_IDLE` (grant anyone) until it's high. `tb_sdram_arbiter.sv` got a new
+  scenario asserting no grant occurs while `init_done` is low, and that a pending request is
+  served the moment it goes high. Re-flash needed to confirm the fix on hardware.
+
 - [ ] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
   `framebuffer_fabric`, `mem_lane` from the build. `litedram_write_mirror` becomes dead code
   (write path now goes directly through the arbiter at priority 2).

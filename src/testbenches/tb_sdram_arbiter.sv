@@ -13,6 +13,8 @@
 // - Confirms a lower-priority client gets served once a higher-priority
 //   client's single-word request is withdrawn, demonstrating the
 //   word-granular interleaving the arbiter provides for free.
+// - Confirms no client is granted while init_done is low, and that a
+//   pending request is served as soon as init_done goes high.
 module tb_sdram_arbiter;
     localparam int unsigned NUM_CLIENTS = 3;
     localparam int unsigned MAX_WAIT_CYCLES = 64;
@@ -20,6 +22,7 @@ module tb_sdram_arbiter;
 
     logic clk;
     logic reset;
+    logic init_done;
 
     logic [NUM_CLIENTS-1:0] client_req;
     logic [NUM_CLIENTS-1:0] client_we;
@@ -61,6 +64,7 @@ module tb_sdram_arbiter;
     ) dut (
         .clk(clk),
         .reset(reset),
+        .init_done(init_done),
         .client_req(client_req),
         .client_we(client_we),
         .client_addr(client_addr),
@@ -154,6 +158,7 @@ module tb_sdram_arbiter;
         $dumpvars(0, tb_sdram_arbiter);
         clk = 1'b0;
         reset = 1'b1;
+        init_done = 1'b0;
         client_req = '0;
         client_we = '0;
         client_addr = '0;
@@ -162,6 +167,21 @@ module tb_sdram_arbiter;
         rdata_data = '0;
         repeat (4) @(posedge clk);
         reset = 1'b0;
+
+        // A pending request must not be granted before init_done -- the
+        // native port's behavior is undefined until LiteDRAM finishes
+        // init/calibration.
+        client_addr[0] = types::sdram_word_addr_t'(24'h00_0005);
+        client_req[0] = 1'b1;
+        repeat (MAX_WAIT_CYCLES) begin
+            @(posedge clk);
+            if (client_grant != '0) $fatal(1, "client granted before init_done");
+        end
+        init_done = 1'b1;
+        wait_grant(0, MAX_WAIT_CYCLES);
+        wait_done(0, MAX_WAIT_CYCLES);
+        client_req[0] = 1'b0;
+        @(posedge clk);
 
         // All three request at once: confirm strict priority order 0 > 1 > 2,
         // and that each client's own fields reach the native port while

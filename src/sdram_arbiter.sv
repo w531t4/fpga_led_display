@@ -11,6 +11,7 @@ module sdram_arbiter #(
 ) (
     input logic clk,
     input logic reset,
+    input logic init_done,
 
     input  logic                    [NUM_CLIENTS-1:0] client_req,
     input  logic                    [NUM_CLIENTS-1:0] client_we,
@@ -96,7 +97,9 @@ module sdram_arbiter #(
         end else begin
             case (state_q)
                 STATE_IDLE: begin
-                    if (winner_valid) begin
+                    // Native port behavior is undefined before the LiteDRAM controller
+                    // finishes init/calibration; hold every client off until then.
+                    if (winner_valid && init_done) begin
                         active_q <= winner;
                         active_we_q <= client_we[winner];
                         state_q <= STATE_CMD;

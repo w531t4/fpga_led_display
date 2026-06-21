@@ -422,6 +422,7 @@ module main #(
     ) sdram_arb (
         .clk(litedram_user_clk),
         .reset(global_reset_sync | ~pll_locked | litedram_user_rst),
+        .init_done(litedram_init_done),
         .client_req(sdram_client_req),
         .client_we('0),
         .client_addr(sdram_client_addr),
