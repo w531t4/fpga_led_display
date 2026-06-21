@@ -45,11 +45,22 @@ export CCACHE_DIR
 # USE_LITEDRAM_BIST - With USE_LITEDRAM, run a tiny write/read hardware probe and show its status on led[4:0]
 # USE_LITEDRAM_WRITE_MIRROR - With USE_LITEDRAM, mirror controller framebuffer writes into LiteDRAM
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_80 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
 # EXTRA_BUILD_FLAGS - append flags for one-off builds without editing the BUILD_FLAGS default,
 #                     e.g. `make EXTRA_BUILD_FLAGS="-DUSE_LITEDRAM -DUSE_LITEDRAM_WRITE_MIRROR"`
 EXTRA_BUILD_FLAGS ?=
 BUILD_FLAGS += $(EXTRA_BUILD_FLAGS)
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
+
+# Make only tracks file mtimes, not variable values, so changing BUILD_FLAGS/
+# EXTRA_BUILD_FLAGS on the command line wouldn't otherwise trigger a rebuild.
+# This stamp file's content is the current flags; it's only touched (and so
+# only forces dependents to rebuild) when the flags actually change.
+BUILD_FLAGS_STAMP:=$(ARTIFACT_DIR)/build_flags.stamp
+.PHONY: FORCE
+FORCE:
+$(BUILD_FLAGS_STAMP): FORCE | $(ARTIFACT_DIR)
+	@echo '$(BUILD_FLAGS)' | cmp -s - $@ 2>/dev/null || echo '$(BUILD_FLAGS)' > $@
+MAKE_DEPS += $(BUILD_FLAGS_STAMP)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
