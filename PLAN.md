@@ -221,7 +221,24 @@ Confirm the controller is reliable before swapping the backend.
   simulation` (default flags) clean; `make litedram-main-smoke` clean for all LiteDRAM flag combos;
   targeted `USE_SDRAM_FB` testbenches (`control_module`, `control_module_copyframe_readframe`,
   `control_module_readrect`, `row_prefetch`, `sdram_arbiter`, `sdram_write_client`) all pass.
-  Awaiting real-hardware re-flash to confirm the displayed image is now correct.
+
+  Re-flash after the `busy`/done fix: corruption was visually identical to before — confirming the
+  race wasn't the (sole) cause. Re-examined from scratch and found the real root cause: the
+  `-DCLK_90` -> `-DCLK_80` default change (made earlier in this same phase, to close FPGA-internal
+  place&route timing) was never propagated to `src/litedram/ulx3s_sdram.yml`'s `sys_clk_freq`,
+  which stayed at `90e6`. LiteDRAM's generator bakes all internal SDR SDRAM AC-timing counters
+  (refresh interval, RAS/CAS/precharge delays) into the gateware as raw cycle counts computed from
+  that configured frequency — running the 90MHz-generated core at an actual 80MHz clock stretches
+  every one of those counters by ~12.5% in real time. Minimum-time constraints tolerate that, but
+  the refresh interval is a *maximum* — exceeding it causes silent DRAM bit-rot. This is invisible
+  to simulation (mocks don't model retention physics) and invisible to STA (which only checks
+  FPGA-internal logic paths, not the DRAM chip's AC timing), and explains why the corruption was
+  unaffected by every logic-level fix above: it's a physical retention fault, not a logic bug.
+  Fixed by setting `sys_clk_freq` to `80e6` and regenerating (`make litedram`). Regeneration shifted
+  the core's internal datapath enough to reopen a timing near-miss (76.38MHz); `make
+  pack-until-success` closed it again at 81.80MHz. `make litedram-main-smoke` and `make pack` both
+  clean; `build/ulx3s.bit` rebuilt. Awaiting real-hardware re-flash to confirm the displayed image
+  is now correct.
 
 - [x] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
   `framebuffer_fabric`, `mem_lane` from the build. `litedram_write_mirror` becomes dead code

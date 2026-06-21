@@ -10,7 +10,7 @@
     "sdram_module_nb": 2,
     "sdram_phy": "GENSDRPHY",
 
-    "sys_clk_freq": 90e6,
+    "sys_clk_freq": 80e6,
     "cmd_buffer_depth": 16,
 
     "user_ports": { "native_0": { "type": "native" } },
