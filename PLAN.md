@@ -171,11 +171,41 @@ Confirm the controller is reliable before swapping the backend.
   not "DRAM powers up with random bits." Fixed: the arbiter now takes an `init_done` input and
   won't leave `STATE_IDLE` (grant anyone) until it's high. `tb_sdram_arbiter.sv` got a new
   scenario asserting no grant occurs while `init_done` is low, and that a pending request is
-  served the moment it goes high. Re-flash needed to confirm the fix on hardware.
+  served the moment it goes high.
+
+  Re-flash after the `init_done` fix: noise persisted, but LED0/LED1 confirmed `init_done` was
+  healthy. Not a new bug — root cause is that the write path still isn't connected to SDRAM (that
+  lands in 3.4), so SDRAM genuinely holds uninitialized garbage and `row_prefetch` is correctly
+  displaying it. Expected at this stage; no further action needed until 3.4's write path lands.
 
 - [ ] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
   `framebuffer_fabric`, `mem_lane` from the build. `litedram_write_mirror` becomes dead code
   (write path now goes directly through the arbiter at priority 2).
+
+  Per-step progress (write path + copy engine wired into the arbiter as clients 1/2, then the
+  BRAM removal):
+  - [x] `calc.sv` — added `sdram_pixel_word_select`/`sdram_byte_in_word_select`, decomposing a
+    byte index within a (possibly multi-word) pixel into which SDRAM word holds it and which byte
+    within that word. Verified exhaustively via `tb_calc_sdram_pixel_word.sv`.
+  - [x] `sdram_write_client.sv` (new) — converts `control_module`'s existing per-byte write output
+    into a priority-2 arbiter client; `ready` gates `control_module`'s `ready_for_data` so the host
+    can't outrun a single in-flight SDRAM write. Verified standalone via
+    `tb_sdram_write_client.sv` (every pixel-byte index, plus a `frame_select` flip targeting the
+    opposite/back buffer).
+  - [x] `control_module.sv` — added `sdram_write_ready` input (AND'd into `ready_for_data` under
+    `USE_SDRAM_FB`) and the `sdram_copyframe_*` port group for driving `control_cmd_copyframe` as
+    an arbiter client (dual-mode with the original `mem_copy_if` under `\`else`).
+  - [x] `control_cmd_copyframe.sv` — rewritten dual-mode: the `\`else` branch is the original
+    byte-at-a-time `mem_copy_if` engine, unchanged. Under `USE_SDRAM_FB`, the engine is a flat
+    word-for-word copy (`calc::sdram_word_addr` already visits every word in `[0, BUFFER_WORDS)`
+    exactly once for a fixed frame, so no per-pixel decomposition is needed) with a frame-based
+    base offset for front/back. Verified via a rewritten `tb_control_cmd_copyframe.sv` (behavioral
+    one-client SDRAM mock under the flag, original `multimem`-based testbench unchanged under
+    `\`else`) — passes for the full 24576-word buffer.
+  - [ ] Wire all three real clients (`row_prefetch`, `sdram_write_client`, `control_cmd_copyframe`)
+    into `sdram_arbiter` in `main.sv` — clients 1/2 are currently tied off.
+  - [ ] Remove `multimem`/`framebuffer_fabric`/`mem_lane` from the build under `USE_SDRAM_FB`.
+  - [ ] Re-verify `make lint`/`make simulation`/elaboration after the 3.4 wiring lands.
 
 - [ ] **3.5** Verification sequence — in order:
   1. Solid fill (white) — confirms no address aliasing

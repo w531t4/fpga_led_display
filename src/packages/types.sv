@@ -159,11 +159,22 @@ package types;
     // One LiteDRAM native-port data word, and its per-byte write enable.
     typedef logic [params::SDRAM_WORD_BYTES*8-1:0] sdram_word_data_t;
     typedef logic [params::SDRAM_WORD_BYTES-1:0] sdram_byte_en_t;
+    // Byte index *within* one SDRAM word (see calc::sdram_byte_in_word_select).
+    typedef logic [calc::safe_clog2(params::SDRAM_WORD_BYTES)-1:0] sdram_byte_in_word_t;
     // sdram_arbiter client vectors, sized for this project's fixed client count.
     typedef logic [params::SDRAM_ARBITER_NUM_CLIENTS-1:0] sdram_client_mask_t;
     typedef sdram_word_addr_t [params::SDRAM_ARBITER_NUM_CLIENTS-1:0] sdram_client_addr_vec_t;
     // Wait counter for tb_row_prefetch's behavioral SDRAM mock (see params::SDRAM_MOCK_READ_LATENCY).
     typedef logic [$clog2(params::SDRAM_MOCK_READ_LATENCY + 1)-1:0] sdram_mock_wait_count_t;
+    // Index across every word currently in use across all framebuffers (see
+    // calc::num_sdram_buffer_words); sized for tb_control_cmd_copyframe's behavioral
+    // memory model, which only needs to address the in-use range, not the full
+    // sdram_word_addr_t bus.
+    typedef logic [calc::safe_clog2(params::NUM_FRAMEBUFFERS * calc::num_sdram_buffer_words(
+        params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
+        calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT),
+        calc::num_pixeldata_bits(params::BYTES_PER_PIXEL) / 8,
+        params::SDRAM_WORD_BYTES))-1:0] sdram_buffer_word_idx_t;
     // ==== /SDRAM ====
 
     // ==== BRIGHTNESS ====

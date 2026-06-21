@@ -172,4 +172,17 @@ package calc;
         sdram_word_addr = params::SDRAM_NATIVE_ADDR_BITS'(frame_words + scan_pos * words_per_row +
                               col * words_per_col + half * words_per_pixel + pixel_word);
     endfunction
+
+    // Decompose a byte index within a (possibly multi-word) pixel into which
+    // SDRAM word holds it, and which byte within that word. Used by the
+    // write path to turn a per-byte control_module write into a word write
+    // with the right byte enable.
+    function automatic logic sdram_pixel_word_select(input int unsigned byte_index, input int unsigned sdram_word_bytes);
+        sdram_pixel_word_select = logic'(byte_index / sdram_word_bytes);
+    endfunction
+
+    function automatic int unsigned sdram_byte_in_word_select(input int unsigned byte_index,
+                                                              input int unsigned sdram_word_bytes);
+        sdram_byte_in_word_select = byte_index % sdram_word_bytes;
+    endfunction
 endpackage

@@ -7,6 +7,150 @@
 `include "tb_helper.svh"
 
 // Verifies the copy engine clones the front buffer into the back buffer.
+`ifdef USE_SDRAM_FB
+// Under USE_SDRAM_FB, copyframe is a flat word-for-word copy over the SDRAM
+// arbiter's client port, so this drives that port with a behavioral one-client
+// memory mock (no arbitration needed standalone) instead of real multimem instances.
+module tb_control_cmd_copyframe;
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
+    localparam int unsigned PIXEL_BYTES = calc::num_pixeldata_bits(params::BYTES_PER_PIXEL) / 8;
+    localparam int unsigned BUFFER_WORDS =
+        calc::num_sdram_buffer_words(params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
+                                      params::SDRAM_WORD_BYTES);
+    localparam int unsigned CYCLES_PER_WORD_PHASE = params::SDRAM_MOCK_READ_LATENCY + 3;
+    localparam int unsigned MAX_WAIT_CYCLES = BUFFER_WORDS * 2 * CYCLES_PER_WORD_PHASE + 32;
+
+    logic clk;
+    logic reset;
+    logic enable;
+    logic frame_select;
+    wire sdram_req;
+    wire sdram_we;
+    wire types::sdram_word_addr_t sdram_addr;
+    wire types::sdram_byte_en_t sdram_wdata_we;
+    wire types::sdram_word_data_t sdram_wdata;
+    logic sdram_done;
+    types::sdram_word_data_t sdram_rdata;
+    wire done;
+
+    types::sdram_word_data_t model_words[params::NUM_FRAMEBUFFERS*BUFFER_WORDS];
+
+    control_cmd_copyframe #(
+        ._UNUSED('d0)
+    ) dut (
+        .reset(reset),
+        .enable(enable),
+        .clk(clk),
+        .frame_select(frame_select),
+        .sdram_req(sdram_req),
+        .sdram_we(sdram_we),
+        .sdram_addr(sdram_addr),
+        .sdram_wdata_we(sdram_wdata_we),
+        .sdram_wdata(sdram_wdata),
+        .sdram_done(sdram_done),
+        .sdram_rdata(sdram_rdata),
+        .done(done)
+    );
+
+    always #(params::SIM_HALF_PERIOD_NS) clk = ~clk;
+
+    // Single-outstanding-transaction memory mock (same shape as tb_row_prefetch's,
+    // extended to also service writes since copyframe issues both per word).
+    enums::sdram_mock_state_e mock_state_q;
+    types::sdram_mock_wait_count_t mock_wait_q;
+    types::sdram_word_addr_t mock_addr_q;
+    logic mock_we_q;
+    types::sdram_word_data_t mock_wdata_q;
+
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            mock_state_q <= enums::SDRAM_MOCK_IDLE;
+            mock_wait_q <= '0;
+            sdram_done <= 1'b0;
+        end else begin
+            sdram_done <= 1'b0;
+            case (mock_state_q)
+                enums::SDRAM_MOCK_IDLE: begin
+                    if (sdram_req) begin
+                        // copyframe always moves a full word, so wdata_we should
+                        // never gate out any byte while a write is in flight.
+                        if (sdram_we && sdram_wdata_we !== '1)
+                            $fatal(1, "expected a full-word byte enable, got %0b", sdram_wdata_we);
+                        mock_addr_q <= sdram_addr;
+                        mock_we_q <= sdram_we;
+                        mock_wdata_q <= sdram_wdata;
+                        mock_wait_q <= types::sdram_mock_wait_count_t'(params::SDRAM_MOCK_READ_LATENCY);
+                        mock_state_q <= enums::SDRAM_MOCK_WAIT;
+                    end
+                end
+                enums::SDRAM_MOCK_WAIT: begin
+                    if (mock_wait_q == 0) begin
+                        sdram_done <= 1'b1;
+                        if (mock_we_q) begin
+                            model_words[types::sdram_buffer_word_idx_t'(mock_addr_q)] <= mock_wdata_q;
+                        end else begin
+                            sdram_rdata <= model_words[types::sdram_buffer_word_idx_t'(mock_addr_q)];
+                        end
+                        mock_state_q <= enums::SDRAM_MOCK_SETTLE;
+                    end else begin
+                        mock_wait_q <= mock_wait_q - 1'b1;
+                    end
+                end
+                enums::SDRAM_MOCK_SETTLE: mock_state_q <= enums::SDRAM_MOCK_IDLE;
+                default: mock_state_q <= enums::SDRAM_MOCK_IDLE;
+            endcase
+        end
+    end
+
+    function automatic types::sdram_word_data_t pattern(input int unsigned base, input int unsigned word);
+        pattern = types::sdram_word_data_t'(base + word);
+    endfunction
+
+    initial begin
+`ifdef DUMP_FILE_NAME
+        $dumpfile(`DUMP_FILE_NAME);
+`endif
+        $dumpvars(0, tb_control_cmd_copyframe);
+        clk = 1'b0;
+        reset = 1'b1;
+        enable = 1'b0;
+        frame_select = 1'b1;  // front = frame1 (BUFFER_WORDS..2*BUFFER_WORDS-1), back = frame0
+        repeat (4) @(posedge clk);
+        reset = 1'b0;
+
+        // Seed distinct patterns into both frames so the copy can be proven.
+        for (int unsigned w = 0; w < BUFFER_WORDS; w++) begin
+            model_words[types::sdram_buffer_word_idx_t'(w)] = pattern('hA500, w);
+            model_words[types::sdram_buffer_word_idx_t'(BUFFER_WORDS + w)] = pattern('h3C00, w);
+        end
+
+        @(posedge clk);
+        enable = 1'b1;
+        `WAIT_ASSERT(clk, done == 1'b1, MAX_WAIT_CYCLES)
+        @(posedge clk);
+        if (done) $fatal(1, "done did not deassert on the cycle after asserting");
+        enable = 1'b0;
+
+        // Back buffer (frame0) must now match what front (frame1) held; front unchanged.
+        for (int unsigned w = 0; w < BUFFER_WORDS; w++) begin
+            if (model_words[types::sdram_buffer_word_idx_t'(w)] !== pattern('h3C00, w))
+                $fatal(1, "back buffer mismatch at word=%0d got=%0h", w,
+                       model_words[types::sdram_buffer_word_idx_t'(w)]);
+            if (model_words[types::sdram_buffer_word_idx_t'(BUFFER_WORDS + w)] !== pattern('h3C00, w))
+                $fatal(1, "front buffer changed at word=%0d", w);
+        end
+
+        $display("tb_control_cmd_copyframe: PASS (%0d words)", BUFFER_WORDS);
+        $finish;
+    end
+
+    // This mock only ever exercises the in-use word range, so mock_addr_q's upper
+    // bits (above what sdram_buffer_word_idx_t can index) are always zero by
+    // construction; reference them explicitly rather than leaving them unused.
+    wire _unused_ok = &{1'b0, mock_addr_q[$bits(types::sdram_word_addr_t)-1:$bits(types::sdram_buffer_word_idx_t)],
+                        1'b0};
+endmodule
+`else
 module tb_control_cmd_copyframe;
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     localparam int unsigned TOTAL_BYTES = params::PIXEL_WIDTH * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
@@ -431,3 +575,4 @@ module tb_control_cmd_copyframe;
                         1'b0};
     // verilog_format: on
 endmodule
+`endif

@@ -9,6 +9,19 @@ module control_cmd_copyframe #(
     input reset,
     input enable,
     input clk,
+`ifdef USE_SDRAM_FB
+    input logic frame_select,
+
+    output logic                    sdram_req,
+    output logic                    sdram_we,
+    output types::sdram_word_addr_t sdram_addr,
+    output types::sdram_byte_en_t   sdram_wdata_we,
+    output types::sdram_word_data_t sdram_wdata,
+    input  logic                    sdram_done,
+    input  types::sdram_word_data_t sdram_rdata,
+
+    output logic done
+`else
     input types::mem_write_data_t data_in,
 
     output types::fb_addr_t read_addr,
@@ -17,7 +30,76 @@ module control_cmd_copyframe #(
     output logic ram_access_start,
     output types::mem_write_data_t data_out,
     output logic done
+`endif
 );
+`ifdef USE_SDRAM_FB
+    // Front buffer -> back buffer is a flat word-for-word copy: calc::sdram_word_addr
+    // already visits every word in [0, BUFFER_WORDS) exactly once for a fixed frame,
+    // so this engine doesn't need per-pixel addressing at all, just a linear offset
+    // added to whichever frame's base is currently the front/back buffer.
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
+    localparam int unsigned PIXEL_BYTES = calc::num_pixeldata_bits(params::BYTES_PER_PIXEL) / 8;
+    localparam int unsigned BUFFER_WORDS =
+        calc::num_sdram_buffer_words(params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
+                                      params::SDRAM_WORD_BYTES);
+    localparam types::sdram_word_addr_t BUFFER_WORDS_LAST = types::sdram_word_addr_t'(BUFFER_WORDS - 1);
+
+    typedef enum logic [1:0] {
+        STATE_IDLE,
+        STATE_READ,
+        STATE_WRITE
+    } copy_state_t;
+    copy_state_t state_q;
+
+    types::sdram_word_addr_t word_q;
+    types::sdram_word_data_t data_q;
+
+    wire types::sdram_word_addr_t front_base = frame_select ? types::sdram_word_addr_t'(BUFFER_WORDS) : '0;
+    wire types::sdram_word_addr_t back_base = frame_select ? '0 : types::sdram_word_addr_t'(BUFFER_WORDS);
+
+    assign sdram_req = state_q == STATE_READ || state_q == STATE_WRITE;
+    assign sdram_we = state_q == STATE_WRITE;
+    assign sdram_addr = (state_q == STATE_WRITE) ? back_base + word_q : front_base + word_q;
+    assign sdram_wdata_we = '1;
+    assign sdram_wdata = data_q;
+
+    always @(posedge clk) begin
+        if (reset) begin
+            state_q <= STATE_IDLE;
+            word_q <= '0;
+            data_q <= '0;
+            done <= 1'b0;
+        end else begin
+            done <= 1'b0;
+            case (state_q)
+                STATE_IDLE: begin
+                    if (enable) begin
+                        word_q <= '0;
+                        state_q <= STATE_READ;
+                    end
+                end
+                STATE_READ: begin
+                    if (sdram_done) begin
+                        data_q <= sdram_rdata;
+                        state_q <= STATE_WRITE;
+                    end
+                end
+                STATE_WRITE: begin
+                    if (sdram_done) begin
+                        if (word_q == BUFFER_WORDS_LAST) begin
+                            done <= 1'b1;
+                            state_q <= STATE_IDLE;
+                        end else begin
+                            word_q <= word_q + 1'b1;
+                            state_q <= STATE_READ;
+                        end
+                    end
+                end
+                default: state_q <= STATE_IDLE;
+            endcase
+        end
+    end
+`else
     // 1‑byte/clk copy pipeline:
     //  - issue a read every cycle (front buffer)
     //  - QA output is valid READ_LATENCY cycles later
@@ -138,4 +220,5 @@ module control_cmd_copyframe #(
             endcase
         end
     end
+`endif
 endmodule

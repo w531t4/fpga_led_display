@@ -20,7 +20,17 @@ module control_module #(
     output busy,
     output ready_for_data,
 `ifdef DOUBLE_BUFFER
+`ifdef USE_SDRAM_FB
+    output logic                    sdram_copyframe_req,
+    output logic                    sdram_copyframe_we,
+    output types::sdram_word_addr_t sdram_copyframe_addr,
+    output types::sdram_byte_en_t   sdram_copyframe_wdata_we,
+    output types::sdram_word_data_t sdram_copyframe_wdata,
+    input  logic                    sdram_copyframe_done,
+    input  types::sdram_word_data_t sdram_copyframe_rdata,
+`else
     mem_copy_if.engine cmd_copyframe_if,
+`endif
     output logic frame_select,
 `endif
 `ifdef USE_WATCHDOG
@@ -28,6 +38,9 @@ module control_module #(
 `endif
 `ifdef DEBUGGER
     debugger_if.control_module debug_if,
+`endif
+`ifdef USE_SDRAM_FB
+    input logic sdram_write_ready,
 `endif
     output logic ram_clk_enable
 
@@ -264,6 +277,25 @@ module control_module #(
     );
 
 `ifdef DOUBLE_BUFFER
+`ifdef USE_SDRAM_FB
+    // Copy engine: linear word-for-word copy front -> back over the SDRAM arbiter.
+    control_cmd_copyframe #(
+        ._UNUSED('d0)
+    ) cmd_copyframe (
+        .reset(reset),
+        .enable(cmd_line_state == enums::STATE_CMD_COPYFRAME),
+        .clk(clk_in),
+        .frame_select(frame_select),
+        .sdram_req(sdram_copyframe_req),
+        .sdram_we(sdram_copyframe_we),
+        .sdram_addr(sdram_copyframe_addr),
+        .sdram_wdata_we(sdram_copyframe_wdata_we),
+        .sdram_wdata(sdram_copyframe_wdata),
+        .sdram_done(sdram_copyframe_done),
+        .sdram_rdata(sdram_copyframe_rdata),
+        .done(cmd_copyframe_done)
+    );
+`else
     // Copy engine: read the front buffer QA and write to the back buffer.
     assign cmd_copyframe_if.active = (cmd_line_state == enums::STATE_CMD_COPYFRAME);
     control_cmd_copyframe #(
@@ -280,6 +312,7 @@ module control_module #(
         .ram_access_start(cmd_copyframe_if.access_start),
         .done            (cmd_copyframe_done)
     );
+`endif
 `endif
 
 `ifdef USE_WATCHDOG
@@ -390,7 +423,14 @@ module control_module #(
         endcase
     end
     assign busy = ~(cmd_line_state == enums::STATE_IDLE || state_done);
+`ifdef USE_SDRAM_FB
+    // Uniformly backpressures every command's byte stream while the SDRAM write
+    // client still has a write in flight, instead of adding arbiter-aware branches
+    // to the case statement above.
+    assign ready_for_data = (ready_for_data_logic || ~busy) && sdram_write_ready;
+`else
     assign ready_for_data = ready_for_data_logic || ~busy;
+`endif
 `ifdef DOUBLE_BUFFER
     logic frame_select_temp;
 `endif
