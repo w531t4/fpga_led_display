@@ -156,6 +156,9 @@ package types;
     // ==== SDRAM ====
     // Word address on the LiteDRAM native port (see calc::sdram_word_addr).
     typedef logic [params::SDRAM_NATIVE_ADDR_BITS-1:0] sdram_word_addr_t;
+    // One LiteDRAM native-port data word, and its per-byte write enable.
+    typedef logic [params::SDRAM_WORD_BYTES*8-1:0] sdram_word_data_t;
+    typedef logic [params::SDRAM_WORD_BYTES-1:0] sdram_byte_en_t;
     // ==== /SDRAM ====
 
     // ==== BRIGHTNESS ====

@@ -113,19 +113,27 @@ Confirm the controller is reliable before swapping the backend.
   capacity numbers changed, only the literal formula. Verified with `tb_calc_sdram_addr.sv`
   (exhaustive collision check over every `(frame, scan_pos, col, half, pixel_word)` combination).
 
-- [ ] **3.2** SDRAM arbiter — new module; generic three-client fixed-priority req/grant mux on
-  the single LiteDRAM native port. Each client (including the copy engine) is its own requester;
-  the arbiter contains no client-specific logic:
-  - Priority 1 (highest): row prefetch — interleaved grants, not one monolithic burst, so
-    priority-2 stalls stay within a few SPI byte periods (~9 FPGA cycles each)
-  - Priority 2: upstream delta writes — backpressure reuses the existing per-command
-    `ready_for_data` gate (same pattern as `cmd_fillpanel_rfd`/`cmd_fillrect_rfd`), driven by
-    arbiter-busy, instead of new logic in `control_module.sv`'s core FSM
-  - Priority 3 (lowest): buffer copy — `control_cmd_copyframe.sv` stays the same standalone
-    state machine it is today (front-buffer read / back-buffer write over `mem_copy_if`), just
-    requesting grants from the arbiter instead of driving `multimem` ports directly.
-    Burst-capped at 256 words/grant (~2.8 µs max block). Full copy ~6144 words → ~24 grants per
-    frame.
+- [x] **3.2** SDRAM arbiter — `sdram_arbiter.sv`: generic fixed-priority req/grant mux on the
+  single LiteDRAM native port, parameterized by `NUM_CLIENTS` (client 0 = highest priority).
+  Arbitrates at single-word granularity — one transaction in flight at a time, no pipelining —
+  and re-arbitrates from scratch after every word. This makes the arbiter genuinely
+  client-agnostic (it has no notion of "a row fill" or "a copy"), and gives the originally
+  planned behavior for free instead of needing special-cased logic:
+  - Priority-1 (row prefetch) bursts are not monolithic: a client that wants many words just
+    re-requests one word at a time, so priority-2 never waits longer than a single native-port
+    transaction — better than the original "few SPI byte periods" target, with zero interleaving
+    logic in the arbiter itself.
+  - Priority-2 (upstream writes) backpressure becomes a plain req/done wait inside the write
+    client (same toggle-and-wait idiom already used elsewhere in `control_module.sv`), not new
+    arbiter-aware branches in the core FSM. Not yet wired in — that lands with the write path in
+    a later step.
+  - Priority-3 (copy engine) burst-capping is the client's own pacing choice, not the arbiter's;
+    nothing in `sdram_arbiter.sv` knows about "256 words."
+  Verified standalone via `tb_sdram_arbiter.sv` (priority ordering across simultaneous requests,
+  write and read round-trips against a mocked native port, and an explicit interleaving check
+  that a lower-priority client gets served as soon as a higher-priority one withdraws its
+  request). Not yet wired into `main.sv` — `row_prefetch.sv` becomes its first real client in
+  3.3.
 
 - [ ] **3.3** Rewrite `row_prefetch.sv` — same module name and ports as 1.1; replace the
   `multimem` burst with a linear burst read of `PIXEL_WIDTH × 4` words from the SDRAM arbiter
