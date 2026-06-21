@@ -2,4 +2,5 @@ requests
 pre-commit
 migen @ git+https://github.com/m-labs/migen.git@4c2ae8dfeea37f235b52acb8166f12acaaae4f7c
 litex @ git+https://github.com/enjoy-digital/litex.git@2025.12
+liteeth @ git+https://github.com/enjoy-digital/liteeth.git@2025.12
 litedram @ git+https://github.com/enjoy-digital/litedram.git@2025.12

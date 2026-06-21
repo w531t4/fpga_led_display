@@ -5,6 +5,11 @@ LITEDRAM_DIR := $(ARTIFACT_DIR)/litedram
 LITEDRAM_CONFIG := $(SRC_DIR)/litedram/ulx3s_sdram.yml
 LITEDRAM_NAME := ulx3s_litedram
 LITEDRAM_GATEWARE := $(LITEDRAM_DIR)/gateware/$(LITEDRAM_NAME).v
+# Simulation variant of the core (`litedram_gen --sim`): the real ECP5 PHY is
+# swapped for a behavioral SDRAMPHYModel, so this RTL has no vendor primitives
+# and is what Verilator compiles. Same wb_ctrl + native port as the real core.
+LITEDRAM_SIM_NAME := ulx3s_litedram_sim
+LITEDRAM_SIM_GATEWARE := $(LITEDRAM_DIR)/gateware/$(LITEDRAM_SIM_NAME).v
 LITEDRAM_SMOKE_JSON := $(LITEDRAM_DIR)/$(LITEDRAM_NAME).json
 LITEDRAM_WRAPPER_JSON := $(LITEDRAM_DIR)/ulx3s_litedram_wrapper.json
 LITEDRAM_MAIN_SMOKE_STAMP := $(LITEDRAM_DIR)/main_litedram.ok
@@ -19,7 +24,19 @@ LITEDRAM_DEPS := $(LITEDRAM_CONFIG) .python-requirements .python-version $(MAKE_
 LITEDRAM_MAIN_SMOKE_FLAGS ?= -DUSE_LITEDRAM_BIST
 
 ifeq ($(findstring -DUSE_LITEDRAM,$(BUILD_FLAGS)),-DUSE_LITEDRAM)
+# Synthesis (yosys/nextpnr, no -DSIM) sees the wrapper + REAL core.
 VSOURCES += $(SRC_DIR)/litedram/ulx3s_litedram_wrapper.sv $(LITEDRAM_GATEWARE)
+# Verilator (lint/simulation, -DSIM) can't model the real core's ECP5
+# primitives, so swap it for the SIM core there. The wrapper's `ifdef SIM`
+# already selects ulx3s_litedram_sim, so this just makes the right .v available
+# to Verilator and keeps the vendor RTL out of its reach (no MODMISSING).
+VERILATOR_EXCLUDE_SOURCES += $(LITEDRAM_GATEWARE)
+VERILATOR_EXTRA_SOURCES   += $(LITEDRAM_SIM_GATEWARE)
+else
+# The sim-core bring-up tb only makes sense when the wrapper is in the build.
+TBSRCS  := $(filter-out $(TB_DIR)/tb_litedram_wrapper_sim.sv, $(TBSRCS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/litedram_wrapper_sim, $(SIMBINS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/litedram_wrapper_sim.fst, $(FSTOBJS))
 endif
 
 .PHONY: litedram litedram-smoke litedram-wrapper-smoke litedram-main-smoke
@@ -35,6 +52,19 @@ $(LITEDRAM_GATEWARE): $(LITEDRAM_DEPS) | $(LITEDRAM_DIR)
 		--name $(LITEDRAM_NAME) \
 		--output-dir $(LITEDRAM_DIR) \
 		$(LITEDRAM_CONFIG)
+
+# `litedram_gen --sim` pulls in litex_sim (liteeth/tapcfg) and trips on a
+# software-side import *after* the gateware Verilog is already written -- with
+# --no-compile that step is irrelevant, so tolerate the non-zero exit and fail
+# only if the .v didn't appear. rm-first so a real early failure can't leave a
+# stale core looking valid.
+$(LITEDRAM_SIM_GATEWARE): $(LITEDRAM_DEPS) | $(LITEDRAM_DIR)
+	rm -f $@
+	-timeout 60s litedram_gen --no-compile --sim \
+		--name $(LITEDRAM_SIM_NAME) \
+		--output-dir $(LITEDRAM_DIR) \
+		$(LITEDRAM_CONFIG)
+	@test -s $@ || { echo "litedram_gen --sim did not produce $@ (is liteeth installed?)"; exit 1; }
 
 litedram-smoke: $(LITEDRAM_SMOKE_JSON) ## Check generated LiteDRAM gateware with Yosys
 

@@ -51,7 +51,7 @@ endif
 $(SIMULATION_DIR)/%.fst: $(SIM_BIN_DIR)/% $(MAKE_DEPS) | $(SIMULATION_DIR)
 	@set -o pipefail; stdbuf -oL -eL $< $(SIM_RUN_ARGS) 2>&1 | sed -u 's/^/[$*] /'
 
-$(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(VSOURCES) $(INCLUDESRCS) $(MAKE_DEPS) verilator_argfiles | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
+$(SIM_BIN_DIR)/%: $(TB_DIR)/tb_%.sv $(VSOURCES) $(VERILATOR_EXTRA_SOURCES) $(INCLUDESRCS) $(MAKE_DEPS) verilator_argfiles | $(SIM_BIN_DIR) $(SIM_OBJ_DIR)
 	@tb_args_file=$(TB_DIR)/tb_$*.args; \
 	tb_args=""; \
 	if [ -f $$tb_args_file ]; then \
@@ -69,8 +69,11 @@ verilator_argfiles: $(ARTIFACT_DIR)/verilator_args $(ARTIFACT_DIR)/verilator_src
 $(ARTIFACT_DIR)/verilator_args: $(INCLUDESRCS) $(MAKE_DEPS) | $(ARTIFACT_DIR)
 	@printf '%s' '$(VERILATOR_FILEPARAM_ARGS)' > $@
 
-$(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(VSOURCES) $(MAKE_DEPS) | $(ARTIFACT_DIR)
-	@printf '%s' '$(abspath $(VSOURCES))' > $@
+# VERILATOR_EXCLUDE_SOURCES are dropped from the Verilator source set and
+# VERILATOR_EXTRA_SOURCES added (see mk/litedram.mk: real LiteDRAM core out for
+# Verilator, sim core in). Both are empty unless USE_LITEDRAM is set.
+$(ARTIFACT_DIR)/verilator_src_args: $(ARTIFACT_DIR) $(VSOURCES) $(VERILATOR_EXTRA_SOURCES) $(MAKE_DEPS) | $(ARTIFACT_DIR)
+	@printf '%s' '$(abspath $(filter-out $(VERILATOR_EXCLUDE_SOURCES),$(VSOURCES)) $(VERILATOR_EXTRA_SOURCES))' > $@
 
 $(ARTIFACT_DIR)/verilator_tbsrc_args: $(ARTIFACT_DIR) $(TBSRCS) $(MAKE_DEPS) | $(ARTIFACT_DIR)
 	@printf '%s' '$(abspath $(TBSRCS))' > $@

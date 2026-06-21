@@ -75,6 +75,56 @@ module ulx3s_litedram_wrapper (
         .done(init_fsm_done)
     );
 
+`ifdef SIM
+    // Simulation core generated with `litedram_gen --sim`: the real ECP5 PHY
+    // (TRELLIS_IO/OFS1P3BX/... primitives Verilator can't model) is replaced by
+    // a behavioral SDRAMPHYModel that lives inside the core, so there are no
+    // sdram_* pads and no external reset (it self-resets via an internal POR).
+    // The wb_ctrl bus and native port are identical to the real core, so
+    // litedram_init drives bring-up the same way. This lets main (and every
+    // testbench that reaches it) simulate the full SDRAM datapath in Verilator.
+    ulx3s_litedram_sim core (
+        .clk(clk),
+        .init_done(init_done),
+        .init_error(init_error),
+        .sim_trace(1'b0),
+        .user_clk(user_clk),
+        .user_rst(user_rst),
+        .user_port_native_0_cmd_addr(cmd_addr),
+        .user_port_native_0_cmd_ready(cmd_ready),
+        .user_port_native_0_cmd_valid(cmd_valid),
+        .user_port_native_0_cmd_we(cmd_we),
+        .user_port_native_0_wdata_data(wdata_data),
+        .user_port_native_0_wdata_ready(wdata_ready),
+        .user_port_native_0_wdata_valid(wdata_valid),
+        .user_port_native_0_wdata_we(wdata_we),
+        .user_port_native_0_rdata_data(rdata_data),
+        .user_port_native_0_rdata_ready(rdata_ready),
+        .user_port_native_0_rdata_valid(rdata_valid),
+        .wb_ctrl_ack(wb_ctrl_ack),
+        .wb_ctrl_adr(wb_ctrl_adr),
+        .wb_ctrl_bte(wb_ctrl_bte),
+        .wb_ctrl_cti(wb_ctrl_cti),
+        .wb_ctrl_cyc(wb_ctrl_cyc),
+        .wb_ctrl_dat_r(wb_ctrl_dat_r),
+        .wb_ctrl_dat_w(wb_ctrl_dat_w),
+        .wb_ctrl_err(wb_ctrl_err),
+        .wb_ctrl_sel(wb_ctrl_sel),
+        .wb_ctrl_stb(wb_ctrl_stb),
+        .wb_ctrl_we(wb_ctrl_we)
+    );
+    // No SDRAM pads in the sim core: hold the board-level outputs in a benign
+    // idle state and absorb the (unused) DQ input.
+    assign sdram_a    = '0;
+    assign sdram_ba   = '0;
+    assign sdram_casn = 1'b1;
+    assign sdram_cke  = 1'b0;
+    assign sdram_csn  = 1'b1;
+    assign sdram_dqm  = '0;
+    assign sdram_rasn = 1'b1;
+    assign sdram_wen  = 1'b1;
+    wire _unused_ok_sim_pads = &{1'b0, sdram_d, 1'b0};
+`else
     ulx3s_litedram core (
         .clk(clk),
         .rst(reset),
@@ -114,6 +164,7 @@ module ulx3s_litedram_wrapper (
         .wb_ctrl_stb(wb_ctrl_stb),
         .wb_ctrl_we(wb_ctrl_we)
     );
+`endif
 
     wire _unused_ok_init_fsm_done = &{1'b0, init_fsm_done, 1'b0};
     wire _unused_ok_wb_ctrl_err = &{1'b0, wb_ctrl_err, 1'b0};
