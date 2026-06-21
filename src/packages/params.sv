@@ -65,6 +65,11 @@ package params;
     parameter real SIM_HALF_PERIOD_NS = ((1.0 / ROOT_CLOCK) * 1000000000) / 2.0;
 `endif
 
+    // SIM: round-trip latency tb_row_prefetch's SDRAM mock takes to answer a
+    // word request, exercising row_prefetch's req/done wait rather than
+    // assuming a fixed latency the way the old multimem mock could.
+    parameter int unsigned SDRAM_MOCK_READ_LATENCY = 3;
+
     // SIM !SPI
     // Use smaller value in testbench so we don't infinitely sim.
     parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS_SIM = 'd15;
@@ -86,6 +91,8 @@ package params;
     // SDRAM (LiteDRAM native port / IS42S16160J)
     parameter int unsigned SDRAM_WORD_BYTES = 2;  // 16-bit-wide SDR SDRAM data bus
     parameter int unsigned SDRAM_NATIVE_ADDR_BITS = 24;  // matches cmd_addr width on the native port
+    // sdram_arbiter clients: row prefetch, upstream writes, copy engine.
+    parameter int unsigned SDRAM_ARBITER_NUM_CLIENTS = 3;
 
 `ifdef BRIGHTNESS_LEVELS
     parameter int unsigned BRIGHTNESS_LEVELS = `BRIGHTNESS_LEVELS;

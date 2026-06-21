@@ -19,4 +19,11 @@ package enums;
         STATE_CMD_COPYFRAME
 `endif
     } control_module_fsm_e;
+
+    // tb_row_prefetch's behavioral SDRAM mock (see params::SDRAM_MOCK_READ_LATENCY).
+    typedef enum {
+        SDRAM_MOCK_IDLE,
+        SDRAM_MOCK_WAIT,
+        SDRAM_MOCK_SETTLE
+    } sdram_mock_state_e;
 endpackage

@@ -4,7 +4,8 @@
 
 // tb_row_prefetch:
 // - Drives row_prefetch's backing-store fill port with a behavioral memory model
-//   (2-cycle latency, matching mem_lane's real AddressB -> QB pipeline).
+//   (multimem-shaped 2-cycle latency by default; word-at-a-time SDRAM arbiter
+//   shape under USE_SDRAM_FB).
 // - Pulses row_latch/brightness_mask the way matrix_scan would at the end of a
 //   row's bitplane sequence, and checks the display-side read port returns the
 //   correct row's data after each ping-pong swap.
@@ -13,7 +14,22 @@ module tb_row_prefetch;
     localparam time CLK_PERIOD = 10ns;
     localparam int unsigned RESET_CYCLES = 4;
     localparam int unsigned FILL_MARGIN_CYCLES = 8;
+`ifdef USE_SDRAM_FB
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
+    localparam int unsigned PIXEL_BYTES = calc::num_pixeldata_bits(params::BYTES_PER_PIXEL) / 8;
+    localparam int unsigned WORD_BITS = $bits(types::sdram_word_data_t);
+    localparam int unsigned WORDS_PER_COL = $bits(types::mem_read_data_t) / WORD_BITS;
+    // Per word, the mock spends one cycle detecting sdram_req (IDLE), one
+    // cycle settling after done (SETTLE), and SDRAM_MOCK_READ_LATENCY+1
+    // cycles counting down to (and including) zero (WAIT).
+    localparam int unsigned SDRAM_MOCK_FSM_OVERHEAD_CYCLES = 2;
+    localparam int unsigned SDRAM_MOCK_CYCLES_PER_WORD =
+        params::SDRAM_MOCK_READ_LATENCY + 1 + SDRAM_MOCK_FSM_OVERHEAD_CYCLES;
+    localparam int unsigned FILL_WAIT_CYCLES =
+        params::PIXEL_WIDTH * WORDS_PER_COL * SDRAM_MOCK_CYCLES_PER_WORD + FILL_MARGIN_CYCLES;
+`else
     localparam int unsigned FILL_WAIT_CYCLES = params::PIXEL_WIDTH + FILL_MARGIN_CYCLES;
+`endif
 
     logic clk_in;
     logic reset;
@@ -26,9 +42,17 @@ module tb_row_prefetch;
     types::brightness_level_t  brightness_mask;
     logic                       row_latch;
 
+`ifdef USE_SDRAM_FB
+    logic                    frame_select;
+    logic                    sdram_req;
+    logic                    sdram_done;
+    types::sdram_word_addr_t sdram_addr;
+    types::sdram_word_data_t sdram_rdata;
+`else
     types::mem_read_addr_t fill_address;
     logic                  fill_clk_enable;
     types::mem_read_data_t fill_data_in;
+`endif
 
     row_prefetch #(
         ._UNUSED('d0)
@@ -41,22 +65,20 @@ module tb_row_prefetch;
         .row_address(row_address),
         .brightness_mask(brightness_mask),
         .row_latch(row_latch),
+`ifdef USE_SDRAM_FB
+        .frame_select(frame_select),
+        .sdram_req(sdram_req),
+        .sdram_done(sdram_done),
+        .sdram_addr(sdram_addr),
+        .sdram_rdata(sdram_rdata)
+`else
         .fill_address(fill_address),
         .fill_clk_enable(fill_clk_enable),
         .fill_data_in(fill_data_in)
+`endif
     );
 
     always #(CLK_PERIOD / 2) clk_in = ~clk_in;
-
-    // ----- Behavioral backing-store model: 2-cycle read latency, like mem_lane. -----
-    types::mem_read_data_t model_mem[params::PIXEL_HALFHEIGHT][params::PIXEL_WIDTH];
-    types::mem_read_data_t mock_pipe0, mock_pipe1;
-
-    always @(posedge clk_in) begin
-        mock_pipe0 <= model_mem[fill_address.row][fill_address.col];
-        mock_pipe1 <= mock_pipe0;
-    end
-    assign fill_data_in = mock_pipe1;
 
     function automatic types::mem_read_data_t make_pattern(input int unsigned row, input types::col_addr_t col);
         types::mem_read_data_t v;
@@ -66,6 +88,62 @@ module tb_row_prefetch;
         v.raw = ($bits(v.raw))'(longint'(row) * 1000 + longint'(col) + 1);
         make_pattern = v;
     endfunction
+
+`ifdef USE_SDRAM_FB
+    // ----- Behavioral SDRAM arbiter model: one word per req/done round trip. -----
+    types::sdram_word_data_t model_words[types::sdram_word_addr_t];
+    enums::sdram_mock_state_e mock_state_q;
+    types::sdram_mock_wait_count_t read_wait_q;
+    types::sdram_word_addr_t read_addr_q;
+
+    // MOCK_SETTLE exists because row_prefetch reacts to `done` one cycle
+    // later (it's also a registered FSM), advancing word_idx_q/sdram_addr
+    // only after that edge. Without this extra idle cycle, this model would
+    // see "no transaction pending" and latch a new request against the
+    // *previous* word's still-unchanged sdram_addr -- duplicating it instead
+    // of fetching the next word.
+    always_ff @(posedge clk_in) begin
+        if (reset) begin
+            mock_state_q <= enums::SDRAM_MOCK_IDLE;
+            read_wait_q <= '0;
+            sdram_done <= 1'b0;
+        end else begin
+            sdram_done <= 1'b0;
+            case (mock_state_q)
+                enums::SDRAM_MOCK_IDLE: begin
+                    if (sdram_req) begin
+                        read_addr_q <= sdram_addr;
+                        read_wait_q <= types::sdram_mock_wait_count_t'(params::SDRAM_MOCK_READ_LATENCY);
+                        mock_state_q <= enums::SDRAM_MOCK_WAIT;
+                    end
+                end
+                enums::SDRAM_MOCK_WAIT: begin
+                    if (read_wait_q == 0) begin
+                        sdram_done <= 1'b1;
+                        sdram_rdata <= model_words[read_addr_q];
+                        mock_state_q <= enums::SDRAM_MOCK_SETTLE;
+                    end else begin
+                        read_wait_q <= read_wait_q - 1'b1;
+                    end
+                end
+                enums::SDRAM_MOCK_SETTLE: begin
+                    mock_state_q <= enums::SDRAM_MOCK_IDLE;
+                end
+                default: mock_state_q <= enums::SDRAM_MOCK_IDLE;
+            endcase
+        end
+    end
+`else
+    // ----- Behavioral backing-store model: 2-cycle read latency, like mem_lane. -----
+    types::mem_read_data_t model_mem[params::PIXEL_HALFHEIGHT][params::PIXEL_WIDTH];
+    types::mem_read_data_t mock_pipe0, mock_pipe1;
+
+    always @(posedge clk_in) begin
+        mock_pipe0 <= model_mem[fill_address.row][fill_address.col];
+        mock_pipe1 <= mock_pipe0;
+    end
+    assign fill_data_in = mock_pipe1;
+`endif
 
     // ----- Helpers -----
     task automatic pulse_trigger(input types::row_subpanel_addr_t current_row);
@@ -109,12 +187,29 @@ module tb_row_prefetch;
         row_address = '0;
         brightness_mask = '0;
         row_latch = 1'b0;
+`ifdef USE_SDRAM_FB
+        frame_select = 1'b0;
 
+        for (int r = 0; r < params::PIXEL_HALFHEIGHT; r++) begin
+            for (int c = 0; c < params::PIXEL_WIDTH; c++) begin
+                types::mem_read_data_t pattern;
+                pattern = make_pattern(r, types::col_addr_t'(c));
+                for (int w = 0; w < WORDS_PER_COL; w++) begin
+                    types::sdram_word_addr_t addr;
+                    addr = calc::sdram_word_addr(1'b0, r, c, logic'(w[1]), logic'(w[0]), params::PIXEL_WIDTH,
+                                                  params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
+                                                  params::SDRAM_WORD_BYTES);
+                    model_words[addr] = pattern.raw[w*WORD_BITS+:WORD_BITS];
+                end
+            end
+        end
+`else
         for (int r = 0; r < params::PIXEL_HALFHEIGHT; r++) begin
             for (int c = 0; c < params::PIXEL_WIDTH; c++) begin
                 model_mem[r][c] = make_pattern(r, types::col_addr_t'(c));
             end
         end
+`endif
 
         repeat (RESET_CYCLES) @(posedge clk_in);
         reset = 1'b0;
@@ -154,5 +249,7 @@ module tb_row_prefetch;
         $finish;
     end
 
+`ifndef USE_SDRAM_FB
     wire _unused_ok = &{1'b0, fill_clk_enable, 1'b0};
+`endif
 endmodule

@@ -11,6 +11,8 @@ module main #(
     output [7:0] led,
 `elsif USE_LITEDRAM_WRITE_MIRROR
     output [7:0] led,
+`elsif USE_SDRAM_FB
+    output [7:0] led,
 `elsif USE_BOARDLEDS_BRIGHTNESS
     output [7:0] led,
 `endif
@@ -118,6 +120,13 @@ module main #(
     types::mem_read_data_t ram_b_data_out;
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
+`ifdef USE_SDRAM_FB
+    // row_prefetch reads through the SDRAM arbiter instead; framebuffer_fabric's
+    // RAM-B port (still needed for the write/copy paths until 3.4) goes idle.
+    assign ram_b_address = '0;
+    assign ram_b_clk_enable = 1'b0;
+    wire _unused_ok_ram_b_data_out = &{1'b0, ram_b_data_out, 1'b0};
+`endif
 
     // Display-side read port between framebuffer_fetch and row_prefetch
     // (row_prefetch then talks to framebuffer_fabric over ram_b_*).
@@ -193,6 +202,27 @@ module main #(
     wire        litedram_mirror_dropped_before_init;
     wire        litedram_mirror_error;
 `endif
+`ifdef USE_SDRAM_FB
+    // Client 0 is row_prefetch; clients 1 (writes) and 2 (copy engine) join
+    // the arbiter in 3.4. Casting a single client's value up to the full
+    // client-vector type zero-extends it into client 0's slot, with every
+    // other (not-yet-wired) client's slot landing at zero for free.
+    wire                      row_prefetch_sdram_req;
+    wire types::sdram_word_addr_t row_prefetch_sdram_addr;
+    wire types::sdram_client_mask_t sdram_client_req = types::sdram_client_mask_t'(row_prefetch_sdram_req);
+    wire types::sdram_client_addr_vec_t sdram_client_addr =
+        types::sdram_client_addr_vec_t'(row_prefetch_sdram_addr);
+    wire types::sdram_client_mask_t sdram_client_grant;
+    wire types::sdram_client_mask_t sdram_client_done;
+    wire types::sdram_word_data_t sdram_client_rdata;
+
+    wire row_prefetch_frame_select;
+`ifdef DOUBLE_BUFFER
+    assign row_prefetch_frame_select = frame_select;
+`else
+    assign row_prefetch_frame_select = 1'b0;
+`endif
+`endif
 `ifdef USE_LITEDRAM_BIST
     // BIST bring-up LEDs: [0]=init_done, [1]=init_error, [2]=busy,
     // [3]=done, [4]=error. Desired pass result is led[0] and led[3]
@@ -207,6 +237,9 @@ module main #(
     // led[0] and led[3] on, with led[1], led[4], led[5], and led[6] off.
     assign led = {1'b0, litedram_mirror_dropped_before_init, litedram_mirror_error, litedram_mirror_dropped,
                   litedram_mirror_seen_write, litedram_mirror_busy, litedram_init_error, litedram_init_done};
+`elsif USE_SDRAM_FB
+    // SDRAM framebuffer bring-up LEDs: [0]=init_done, [1]=init_error.
+    assign led = {6'b000000, litedram_init_error, litedram_init_done};
 `elsif USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -383,6 +416,40 @@ module main #(
     assign litedram_bist_busy = 1'b0;
     assign litedram_bist_done = 1'b0;
     assign litedram_bist_error = 1'b0;
+`elsif USE_SDRAM_FB
+    sdram_arbiter #(
+        .NUM_CLIENTS(params::SDRAM_ARBITER_NUM_CLIENTS)
+    ) sdram_arb (
+        .clk(litedram_user_clk),
+        .reset(global_reset_sync | ~pll_locked | litedram_user_rst),
+        .client_req(sdram_client_req),
+        .client_we('0),
+        .client_addr(sdram_client_addr),
+        .client_wdata_we('0),
+        .client_wdata('0),
+        .client_grant(sdram_client_grant),
+        .client_done(sdram_client_done),
+        .client_rdata(sdram_client_rdata),
+        .cmd_valid(litedram_cmd_valid),
+        .cmd_ready(litedram_cmd_ready),
+        .cmd_we(litedram_cmd_we),
+        .cmd_addr(litedram_cmd_addr),
+        .wdata_valid(litedram_wdata_valid),
+        .wdata_ready(litedram_wdata_ready),
+        .wdata_we(litedram_wdata_we),
+        .wdata_data(litedram_wdata_data),
+        .rdata_valid(litedram_rdata_valid),
+        .rdata_ready(litedram_rdata_ready),
+        .rdata_data(litedram_rdata_data)
+    );
+    assign litedram_bist_busy = 1'b0;
+    assign litedram_bist_done = 1'b0;
+    assign litedram_bist_error = 1'b0;
+    assign litedram_mirror_busy = 1'b0;
+    assign litedram_mirror_seen_write = 1'b0;
+    assign litedram_mirror_dropped = 1'b0;
+    assign litedram_mirror_dropped_before_init = 1'b0;
+    assign litedram_mirror_error = 1'b0;
 `else
     assign litedram_cmd_valid = 1'b0;
     assign litedram_cmd_we = 1'b0;
@@ -472,9 +539,17 @@ module main #(
         .brightness_mask(brightness_mask),
         .row_latch(matrix_row_latch),
 
+`ifdef USE_SDRAM_FB
+        .frame_select(row_prefetch_frame_select),
+        .sdram_req(row_prefetch_sdram_req),
+        .sdram_done(sdram_client_done[0]),
+        .sdram_addr(row_prefetch_sdram_addr),
+        .sdram_rdata(sdram_client_rdata)
+`else
         .fill_address(ram_b_address),
         .fill_clk_enable(ram_b_clk_enable),
         .fill_data_in(ram_b_data_out)
+`endif
     );
 
     // for controller

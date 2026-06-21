@@ -135,10 +135,31 @@ Confirm the controller is reliable before swapping the backend.
   request). Not yet wired into `main.sv` — `row_prefetch.sv` becomes its first real client in
   3.3.
 
-- [ ] **3.3** Rewrite `row_prefetch.sv` — same module name and ports as 1.1; replace the
-  `multimem` burst with a linear burst read of `PIXEL_WIDTH × 4` words from the SDRAM arbiter
-  (corrected from `× 2` to match 3.1's fixed addressing — matches the ~3072-word burst already
-  cited in the Notes section). No change to `main.sv`.
+- [x] **3.3** Rewrite `row_prefetch.sv` — gated behind a new `USE_SDRAM_FB` flag (requires
+  `USE_LITEDRAM`, same convention as `USE_LITEDRAM_BIST`/`USE_LITEDRAM_WRITE_MIRROR`); the default
+  build is untouched. The original plan assumed identical ports and no `main.sv` change, but that
+  didn't survive contact with 3.2's actual arbiter shape: SDRAM latency isn't fixed the way
+  multimem's was, so the fill port had to become a real req/done handshake (`sdram_req`,
+  `sdram_done`, `sdram_addr`, `sdram_rdata`, `frame_select`) instead of a free-running strobe.
+  Under the flag, each column is fetched one SDRAM word at a time (`WORDS_PER_COL` round trips,
+  generically derived as `$bits(mem_read_data_t)/$bits(sdram_word_data_t)` — 4 for the current
+  RGB24/2-subpanel config) and assembled into the same bank arrays the display read port already
+  used; the old fixed-2-cycle multimem burst path is preserved verbatim under `\`else`. `main.sv`
+  now instantiates `sdram_arbiter` (3 clients; row_prefetch is client 0, clients 1/2 idle until
+  3.4) and ties off `framebuffer_fabric`'s now-unused RAM-B port, all behind the same flag.
+  `tb_row_prefetch.sv` got a matching `\`ifdef` split — shared trigger/swap/read-port assertions,
+  a new word-at-a-time behavioral SDRAM mock for the flagged path. Verified: both module variants
+  pass standalone simulation (`tb_row_prefetch`, `tb_sdram_arbiter`); default-flag `make lint`/
+  `make simulation` unaffected; `make litedram-main-smoke LITEDRAM_MAIN_SMOKE_FLAGS=-DUSE_SDRAM_FB`
+  elaborates `main` cleanly (0 errors) the same way BIST/WRITE_MIRROR bring-up was checked.
+
+- [ ] **3.3 (build)** Build/route/timing checkpoint for `USE_LITEDRAM`+`USE_SDRAM_FB` — Phase 1
+  and 2 each had an explicit sim *and* hardware checkpoint per item; Phase 3 didn't, which is a
+  real gap given this exact spot (LiteDRAM + new logic on top of it) is where timing closure has
+  bitten this project before (`write_mirror` only closed at `-DCLK_80`; `row_prefetch` alone cost
+  ~6x nextpnr runtime). Confirm `make pack` actually synthesizes, places, routes, and meets timing
+  for the arbiter+row_prefetch combination now, before 3.4 stacks the write path and copy engine
+  on top of it — isolating any timing problem here is cheaper than finding it at 3.5.
 
 - [ ] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
   `framebuffer_fabric`, `mem_lane` from the build. `litedram_write_mirror` becomes dead code
