@@ -41,7 +41,8 @@ module sdram_arbiter #(
     typedef enum logic [1:0] {
         STATE_IDLE,
         STATE_CMD,
-        STATE_READ_WAIT
+        STATE_READ_WAIT,
+        STATE_DONE
     } state_t;
 
     state_t state_q;
@@ -49,6 +50,12 @@ module sdram_arbiter #(
     logic active_we_q;
     logic cmd_done_q;
     logic data_done_q;
+    // Registered so client_done/client_rdata are pure flop outputs, not a
+    // same-cycle combinational function of cmd_ready/wdata_ready/rdata_valid --
+    // those can depend combinationally on cmd_addr deep inside LiteDRAM's own
+    // bank-machine logic, and chaining that straight into client_done blew
+    // timing at 80MHz (see PLAN.md 3.3 (build) hardware note).
+    types::sdram_word_data_t rdata_q;
 
     logic [CLIENT_IDX_BITS-1:0] winner;
     logic winner_valid;
@@ -78,13 +85,14 @@ module sdram_arbiter #(
         wdata_we = client_wdata_we[active_q];
         wdata_data = client_wdata[active_q];
         rdata_ready = 1'b1;
-        client_rdata = rdata_data;
+        client_rdata = rdata_q;
 
         client_grant = '0;
-        if (state_q == STATE_CMD || state_q == STATE_READ_WAIT) client_grant[active_q] = 1'b1;
+        if (state_q == STATE_CMD || state_q == STATE_READ_WAIT || state_q == STATE_DONE)
+            client_grant[active_q] = 1'b1;
 
         client_done = '0;
-        if (write_done || read_done) client_done[active_q] = 1'b1;
+        if (state_q == STATE_DONE) client_done[active_q] = 1'b1;
     end
 
     always_ff @(posedge clk) begin
@@ -109,7 +117,7 @@ module sdram_arbiter #(
                     if (!cmd_done_q && cmd_ready) cmd_done_q <= 1'b1;
                     if (active_we_q && !data_done_q && wdata_ready) data_done_q <= 1'b1;
                     if (write_done) begin
-                        state_q <= STATE_IDLE;
+                        state_q <= STATE_DONE;
                         cmd_done_q <= 1'b0;
                         data_done_q <= 1'b0;
                     end else if (read_cmd_accepted) begin
@@ -118,8 +126,12 @@ module sdram_arbiter #(
                     end
                 end
                 STATE_READ_WAIT: begin
-                    if (read_done) state_q <= STATE_IDLE;
+                    if (read_done) begin
+                        rdata_q <= rdata_data;
+                        state_q <= STATE_DONE;
+                    end
                 end
+                STATE_DONE: state_q <= STATE_IDLE;
                 default: state_q <= STATE_IDLE;
             endcase
         end

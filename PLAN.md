@@ -178,7 +178,7 @@ Confirm the controller is reliable before swapping the backend.
   lands in 3.4), so SDRAM genuinely holds uninitialized garbage and `row_prefetch` is correctly
   displaying it. Expected at this stage; no further action needed until 3.4's write path lands.
 
-- [ ] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
+- [x] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
   `framebuffer_fabric`, `mem_lane` from the build. `litedram_write_mirror` becomes dead code
   (write path now goes directly through the arbiter at priority 2).
 
@@ -202,10 +202,48 @@ Confirm the controller is reliable before swapping the backend.
     base offset for front/back. Verified via a rewritten `tb_control_cmd_copyframe.sv` (behavioral
     one-client SDRAM mock under the flag, original `multimem`-based testbench unchanged under
     `\`else`) — passes for the full 24576-word buffer.
-  - [ ] Wire all three real clients (`row_prefetch`, `sdram_write_client`, `control_cmd_copyframe`)
-    into `sdram_arbiter` in `main.sv` — clients 1/2 are currently tied off.
-  - [ ] Remove `multimem`/`framebuffer_fabric`/`mem_lane` from the build under `USE_SDRAM_FB`.
-  - [ ] Re-verify `make lint`/`make simulation`/elaboration after the 3.4 wiring lands.
+  - [x] Wired all three real clients (`row_prefetch`=0, `sdram_write_client`=1,
+    `control_cmd_copyframe`=2) into `sdram_arbiter` in `main.sv`. Added the missing
+    `sdram_client_wdata_we_vec_t`/`sdram_client_wdata_vec_t` typedefs to `types.sv` to match the
+    existing `sdram_client_addr_vec_t` pattern (parallel per-port vectors, mirroring
+    `sdram_arbiter.sv`'s own parallel-port shape — not a struct, by design discussion). Client 2
+    ties off cleanly without `DOUBLE_BUFFER` (copyframe command doesn't exist in that build).
+  - [x] Removed `framebuffer_fabric` from `main.sv` under `USE_SDRAM_FB` (replaced by
+    `sdram_write_client`); `multimem`/`mem_lane` become orphaned-but-harmless in the source list
+    (still compiled, never instantiated under the flag). `mem_copy_if copy_int` is now only
+    declared under `\`ifndef USE_SDRAM_FB`, since nothing drives or consumes it once
+    `control_cmd_copyframe`'s copy traffic goes through the arbiter instead.
+  - [x] Re-verified: `make lint` clean (default flags) and clean of any code-introduced
+    issues under `-DUSE_LITEDRAM -DUSE_SDRAM_FB` (only the pre-existing, already-documented ECP5
+    primitive-cell gaps remain, identical to the BIST/WRITE_MIRROR combos). `make litedram-main-smoke`
+    now passes 0-errors for all three LiteDRAM flag combos (`USE_LITEDRAM_BIST`,
+    `USE_LITEDRAM_WRITE_MIRROR`, `USE_SDRAM_FB`) — fixed by adding `--top main` to the `read_slang`
+    invocation in `mk/litedram.mk`, since removing `framebuffer_fabric`'s instantiation left it as
+    an orphaned module with an unconnected interface port, which `read_slang` was elaborating as
+    an implicit second top before `hierarchy -top main` could prune it. `make simulation`
+    (full suite) and `make build/mydesign.json` (yosys synthesis, default flags) both pass.
+    Fixed three control_module-level testbenches that referenced the now-gone `cmd_copyframe_if`
+    port under `USE_SDRAM_FB` (`tb_control_module.sv`, `tb_control_module_readrect.sv` — neither
+    exercises COPYFRAME, so just tie off the new ports; `tb_control_module_copyframe_readframe.sv`
+    — does exercise COPYFRAME, so got its own dual-mode behavioral SDRAM mock, mirroring
+    `tb_control_cmd_copyframe.sv`'s).
+
+  **Open performance question for 3.5:** `tb_control_module_copyframe_readframe.sv` used to assert
+  copyframe completes within 20% of readframe's cycle count, using the old engine's real ~1-byte/clk
+  multimem throughput. Under `USE_SDRAM_FB` that assertion is dropped (cycle counts are still
+  measured and reported) because the standalone testbench has no real arbiter/LiteDRAM — it can only
+  measure against a mocked, invented latency constant (`params::SDRAM_MOCK_READ_LATENCY = 3`),
+  which produced a copyframe time statistically indistinguishable from readframe's. That number
+  reflects the mock, not real hardware. A back-of-envelope estimate using the project's own
+  documented SDRAM timing figure (PLAN.md 3.2/Command-Viability: ~22.8ns/word, from the "1,536-word
+  burst (~35µs)" figure) puts real copyframe at one read + one write per word ≈ 45.6ns/word ×
+  24576 words ≈ 1.12ms, against readframe's ≈3.69ms at the modeled 80Mbit SPI rate — roughly 30% of
+  readframe time, worse than the old engine's comfortable <20% margin but not in the same league as
+  the mock's ~100%. This needs a real hardware measurement (e.g. instrumenting
+  `control_cmd_copyframe` with a cycle counter exposed the way `litedram_bist` exposes `busy`/`done`
+  on LEDs) — not resolved by simulation alone. If it comes back too slow, the current engine reads
+  then writes each word strictly sequentially (no overlap between word N's write and word N+1's
+  read), which is a real, available optimization lever, not a dead end.
 
 - [ ] **3.5** Verification sequence — in order:
   1. Solid fill (white) — confirms no address aliasing

@@ -83,6 +83,13 @@ module row_prefetch #(
 `ifdef USE_SDRAM_FB
     logic [WORD_IDX_BITS-1:0] word_idx_q;
     logic [$bits(types::mem_read_data_t)-1:0] accum_q;
+    // Registered so sdram_addr is a pure flop output: computing it live from
+    // fill_row_q/issue_col_q/word_idx_q on every cycle chained the address
+    // arithmetic straight into the arbiter/LiteDRAM round trip with no
+    // register in between, which blew timing at 80MHz (see PLAN.md 3.3
+    // (build) hardware note). Computed alongside those counters below instead,
+    // using whatever values they're about to take.
+    types::sdram_word_addr_t sdram_addr_q;
 `else
     types::col_addr_t col_pipe[READ_LATENCY];
     logic             valid_pipe[READ_LATENCY];
@@ -98,12 +105,10 @@ module row_prefetch #(
     wire [$bits(types::mem_read_data_t)-1:0] shifted_word =
         ($bits(types::mem_read_data_t))'(sdram_rdata) << (int'(word_idx_q) * WORD_BITS);
     wire [$bits(types::mem_read_data_t)-1:0] merged_word = accum_q | shifted_word;
+    wire [WORD_IDX_BITS-1:0] next_word_idx = word_idx_q + 1'b1;
 
     assign sdram_req = (state_q == STATE_FILL);
-    assign sdram_addr = calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q), $bits(int)'(issue_col_q),
-                                               word_idx_q[1], word_idx_q[0], params::PIXEL_WIDTH,
-                                               params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
-                                               params::SDRAM_WORD_BYTES);
+    assign sdram_addr = sdram_addr_q;
 `else
     assign fill_address    = {fill_row_q, issue_col_q};
     assign fill_clk_enable = (state_q == STATE_FILL);
@@ -122,6 +127,9 @@ module row_prefetch #(
 `ifdef USE_SDRAM_FB
             word_idx_q <= '0;
             accum_q <= '0;
+            sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(types::row_subpanel_addr_t'(1)), 0,
+                                                   1'b0, 1'b0, params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
+                                                   NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
 `else
             for (int i = 0; i < READ_LATENCY; i++) begin
                 col_pipe[i] <= '0;
@@ -145,6 +153,10 @@ module row_prefetch #(
 `ifdef USE_SDRAM_FB
                 word_idx_q <= '0;
                 accum_q <= '0;
+                sdram_addr_q <= calc::sdram_word_addr(frame_select,
+                                                       $bits(int)'(row_address + types::row_subpanel_addr_t'(2)), 0,
+                                                       1'b0, 1'b0, params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
+                                                       NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
 `else
                 col_pipe[0] <= '0;
                 valid_pipe[0] <= 1'b0;
@@ -167,10 +179,20 @@ module row_prefetch #(
                                     fill_done_q <= 1'b1;
                                 end else begin
                                     issue_col_q <= issue_col_q + 1'b1;
+                                    sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q),
+                                                                           $bits(int)'(issue_col_q + 1'b1), 1'b0,
+                                                                           1'b0, params::PIXEL_WIDTH,
+                                                                           params::PIXEL_HALFHEIGHT, NUM_SUBPANELS,
+                                                                           PIXEL_BYTES, params::SDRAM_WORD_BYTES);
                                 end
                             end else begin
                                 accum_q <= merged_word;
                                 word_idx_q <= word_idx_q + 1'b1;
+                                sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q),
+                                                                       $bits(int)'(issue_col_q), next_word_idx[1],
+                                                                       next_word_idx[0], params::PIXEL_WIDTH,
+                                                                       params::PIXEL_HALFHEIGHT, NUM_SUBPANELS,
+                                                                       PIXEL_BYTES, params::SDRAM_WORD_BYTES);
                             end
                         end
 `else

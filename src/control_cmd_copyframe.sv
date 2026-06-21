@@ -53,13 +53,20 @@ module control_cmd_copyframe #(
 
     types::sdram_word_addr_t word_q;
     types::sdram_word_data_t data_q;
+    // Registered so sdram_addr/sdram_we are pure flop outputs instead of a live
+    // combinational function of state_q/word_q: chaining that arithmetic
+    // straight into the arbiter/LiteDRAM round trip with no register in
+    // between blew timing at 80MHz (see PLAN.md 3.3 (build) hardware note).
+    types::sdram_word_addr_t sdram_addr_q;
+    logic sdram_we_q;
 
     wire types::sdram_word_addr_t front_base = frame_select ? types::sdram_word_addr_t'(BUFFER_WORDS) : '0;
     wire types::sdram_word_addr_t back_base = frame_select ? '0 : types::sdram_word_addr_t'(BUFFER_WORDS);
+    wire types::sdram_word_addr_t next_word = word_q + 1'b1;
 
     assign sdram_req = state_q == STATE_READ || state_q == STATE_WRITE;
-    assign sdram_we = state_q == STATE_WRITE;
-    assign sdram_addr = (state_q == STATE_WRITE) ? back_base + word_q : front_base + word_q;
+    assign sdram_we = sdram_we_q;
+    assign sdram_addr = sdram_addr_q;
     assign sdram_wdata_we = '1;
     assign sdram_wdata = data_q;
 
@@ -69,6 +76,8 @@ module control_cmd_copyframe #(
             word_q <= '0;
             data_q <= '0;
             done <= 1'b0;
+            sdram_addr_q <= '0;
+            sdram_we_q <= 1'b0;
         end else begin
             done <= 1'b0;
             case (state_q)
@@ -76,12 +85,16 @@ module control_cmd_copyframe #(
                     if (enable) begin
                         word_q <= '0;
                         state_q <= STATE_READ;
+                        sdram_addr_q <= front_base;
+                        sdram_we_q <= 1'b0;
                     end
                 end
                 STATE_READ: begin
                     if (sdram_done) begin
                         data_q <= sdram_rdata;
                         state_q <= STATE_WRITE;
+                        sdram_addr_q <= back_base + word_q;
+                        sdram_we_q <= 1'b1;
                     end
                 end
                 STATE_WRITE: begin
@@ -90,8 +103,10 @@ module control_cmd_copyframe #(
                             done <= 1'b1;
                             state_q <= STATE_IDLE;
                         end else begin
-                            word_q <= word_q + 1'b1;
+                            word_q <= next_word;
                             state_q <= STATE_READ;
+                            sdram_addr_q <= front_base + next_word;
+                            sdram_we_q <= 1'b0;
                         end
                     end
                 end

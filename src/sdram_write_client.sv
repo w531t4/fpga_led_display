@@ -38,35 +38,46 @@ module sdram_write_client #(
     } write_state_t;
     write_state_t state_q;
 
-    types::mem_write_addr_t addr_q;
-    types::mem_write_data_t data_q;
+    // Registered so sdram_addr/sdram_wdata_we/sdram_wdata are pure flop outputs
+    // instead of a live combinational function of addr_q/data_q: computing
+    // them on the fly chained the decomposition arithmetic straight into the
+    // arbiter/LiteDRAM round trip with no register in between, which blew
+    // timing at 80MHz (see PLAN.md 3.3 (build) hardware note). Computed once
+    // from source_addr/source_data at capture time instead, replacing the
+    // need to keep the raw mem_write_addr_t/mem_write_data_t around.
+    types::sdram_word_addr_t sdram_addr_q;
+    types::sdram_byte_en_t   sdram_wdata_we_q;
+    types::sdram_word_data_t sdram_wdata_q;
 
-    wire word_select = calc::sdram_pixel_word_select($bits(int)'(addr_q.pixel), params::SDRAM_WORD_BYTES);
-    wire types::sdram_byte_in_word_t byte_in_word =
-        types::sdram_byte_in_word_t'(calc::sdram_byte_in_word_select($bits(int)'(addr_q.pixel),
+    wire word_select_in = calc::sdram_pixel_word_select($bits(int)'(source_addr.pixel), params::SDRAM_WORD_BYTES);
+    wire types::sdram_byte_in_word_t byte_in_word_in =
+        types::sdram_byte_in_word_t'(calc::sdram_byte_in_word_select($bits(int)'(source_addr.pixel),
                                                                       params::SDRAM_WORD_BYTES));
 
     assign ready = state_q == STATE_IDLE;
     assign sdram_req = state_q == STATE_WRITE;
-    assign sdram_addr = calc::sdram_word_addr(~frame_select, $bits(int)'(addr_q.row), $bits(int)'(addr_q.col),
-                                               addr_q.subpanel, word_select, params::PIXEL_WIDTH,
-                                               params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
-                                               params::SDRAM_WORD_BYTES);
-    assign sdram_wdata_we = types::sdram_byte_en_t'(1 << byte_in_word);
-    assign sdram_wdata = types::sdram_word_data_t'($bits(int)'(data_q) << (byte_in_word * 8));
+    assign sdram_addr = sdram_addr_q;
+    assign sdram_wdata_we = sdram_wdata_we_q;
+    assign sdram_wdata = sdram_wdata_q;
 
     always @(posedge clk_in) begin
         if (reset) begin
             state_q <= STATE_IDLE;
-            addr_q <= '0;
-            data_q <= '0;
+            sdram_addr_q <= '0;
+            sdram_wdata_we_q <= '0;
+            sdram_wdata_q <= '0;
         end else begin
             case (state_q)
                 STATE_IDLE: begin
                     if (source_write_valid) begin
-                        addr_q <= source_addr;
-                        data_q <= source_data;
                         state_q <= STATE_WRITE;
+                        sdram_addr_q <= calc::sdram_word_addr(~frame_select, $bits(int)'(source_addr.row),
+                                                               $bits(int)'(source_addr.col), source_addr.subpanel,
+                                                               word_select_in, params::PIXEL_WIDTH,
+                                                               params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
+                                                               params::SDRAM_WORD_BYTES);
+                        sdram_wdata_we_q <= types::sdram_byte_en_t'(1 << byte_in_word_in);
+                        sdram_wdata_q <= types::sdram_word_data_t'($bits(int)'(source_data) << (byte_in_word_in * 8));
                     end
                 end
                 STATE_WRITE: begin
