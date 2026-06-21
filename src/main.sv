@@ -114,18 +114,18 @@ module main #(
     wire                         ctrl_ram_write_enable;
     wire                         ctrl_ram_clk_enable;
 `ifdef DOUBLE_BUFFER
+    wire frame_select;
+`ifndef USE_SDRAM_FB
     mem_copy_if copy_int ();
-    wire  frame_select;
 `endif
+`endif
+`ifndef USE_SDRAM_FB
+    // Only the legacy multimem-backed row_prefetch path uses RAM-B directly;
+    // under USE_SDRAM_FB, row_prefetch and the write/copy clients all go
+    // through the SDRAM arbiter instead, and framebuffer_fabric is removed.
     types::mem_read_data_t ram_b_data_out;
     wire types::mem_read_addr_t ram_b_address;
     wire ram_b_clk_enable;
-`ifdef USE_SDRAM_FB
-    // row_prefetch reads through the SDRAM arbiter instead; framebuffer_fabric's
-    // RAM-B port (still needed for the write/copy paths until 3.4) goes idle.
-    assign ram_b_address = '0;
-    assign ram_b_clk_enable = 1'b0;
-    wire _unused_ok_ram_b_data_out = &{1'b0, ram_b_data_out, 1'b0};
 `endif
 
     // Display-side read port between framebuffer_fetch and row_prefetch
@@ -203,24 +203,51 @@ module main #(
     wire        litedram_mirror_error;
 `endif
 `ifdef USE_SDRAM_FB
-    // Client 0 is row_prefetch; clients 1 (writes) and 2 (copy engine) join
-    // the arbiter in 3.4. Casting a single client's value up to the full
-    // client-vector type zero-extends it into client 0's slot, with every
-    // other (not-yet-wired) client's slot landing at zero for free.
-    wire                      row_prefetch_sdram_req;
+    // Client 0 = row_prefetch (read-only). Client 1 = the write path
+    // (always-write, so its `we` slot below is a fixed 1'b1). Client 2 = the
+    // copy engine (read+write); it stays tied off without DOUBLE_BUFFER, since
+    // the copyframe command doesn't exist in that build.
+    wire row_prefetch_sdram_req;
     wire types::sdram_word_addr_t row_prefetch_sdram_addr;
-    wire types::sdram_client_mask_t sdram_client_req = types::sdram_client_mask_t'(row_prefetch_sdram_req);
+
+    wire write_client_ready;
+    wire write_client_sdram_req;
+    wire types::sdram_word_addr_t write_client_sdram_addr;
+    wire types::sdram_byte_en_t write_client_sdram_wdata_we;
+    wire types::sdram_word_data_t write_client_sdram_wdata;
+
+`ifdef DOUBLE_BUFFER
+    wire copyframe_sdram_req;
+    wire copyframe_sdram_we;
+    wire types::sdram_word_addr_t copyframe_sdram_addr;
+    wire types::sdram_byte_en_t copyframe_sdram_wdata_we;
+    wire types::sdram_word_data_t copyframe_sdram_wdata;
+`else
+    wire copyframe_sdram_req = 1'b0;
+    wire copyframe_sdram_we = 1'b0;
+    wire types::sdram_word_addr_t copyframe_sdram_addr = '0;
+    wire types::sdram_byte_en_t copyframe_sdram_wdata_we = '0;
+    wire types::sdram_word_data_t copyframe_sdram_wdata = '0;
+`endif
+
+    wire types::sdram_client_mask_t sdram_client_req =
+        {copyframe_sdram_req, write_client_sdram_req, row_prefetch_sdram_req};
+    wire types::sdram_client_mask_t sdram_client_we = {copyframe_sdram_we, 1'b1, 1'b0};
     wire types::sdram_client_addr_vec_t sdram_client_addr =
-        types::sdram_client_addr_vec_t'(row_prefetch_sdram_addr);
+        {copyframe_sdram_addr, write_client_sdram_addr, row_prefetch_sdram_addr};
+    wire types::sdram_client_wdata_we_vec_t sdram_client_wdata_we =
+        {copyframe_sdram_wdata_we, write_client_sdram_wdata_we, types::sdram_byte_en_t'('0)};
+    wire types::sdram_client_wdata_vec_t sdram_client_wdata =
+        {copyframe_sdram_wdata, write_client_sdram_wdata, types::sdram_word_data_t'('0)};
     wire types::sdram_client_mask_t sdram_client_grant;
     wire types::sdram_client_mask_t sdram_client_done;
     wire types::sdram_word_data_t sdram_client_rdata;
 
-    wire row_prefetch_frame_select;
+    wire sdram_frame_select;
 `ifdef DOUBLE_BUFFER
-    assign row_prefetch_frame_select = frame_select;
+    assign sdram_frame_select = frame_select;
 `else
-    assign row_prefetch_frame_select = 1'b0;
+    assign sdram_frame_select = 1'b0;
 `endif
 `endif
 `ifdef USE_LITEDRAM_BIST
@@ -424,10 +451,10 @@ module main #(
         .reset(global_reset_sync | ~pll_locked | litedram_user_rst),
         .init_done(litedram_init_done),
         .client_req(sdram_client_req),
-        .client_we('0),
+        .client_we(sdram_client_we),
         .client_addr(sdram_client_addr),
-        .client_wdata_we('0),
-        .client_wdata('0),
+        .client_wdata_we(sdram_client_wdata_we),
+        .client_wdata(sdram_client_wdata),
         .client_grant(sdram_client_grant),
         .client_done(sdram_client_done),
         .client_rdata(sdram_client_rdata),
@@ -541,7 +568,7 @@ module main #(
         .row_latch(matrix_row_latch),
 
 `ifdef USE_SDRAM_FB
-        .frame_select(row_prefetch_frame_select),
+        .frame_select(sdram_frame_select),
         .sdram_req(row_prefetch_sdram_req),
         .sdram_done(sdram_client_done[0]),
         .sdram_addr(row_prefetch_sdram_addr),
@@ -611,7 +638,17 @@ module main #(
         .ram_address(ctrl_ram_address),
         .ram_write_enable(ctrl_ram_write_enable),
 `ifdef DOUBLE_BUFFER
+`ifdef USE_SDRAM_FB
+        .sdram_copyframe_req(copyframe_sdram_req),
+        .sdram_copyframe_we(copyframe_sdram_we),
+        .sdram_copyframe_addr(copyframe_sdram_addr),
+        .sdram_copyframe_wdata_we(copyframe_sdram_wdata_we),
+        .sdram_copyframe_wdata(copyframe_sdram_wdata),
+        .sdram_copyframe_done(sdram_client_done[2]),
+        .sdram_copyframe_rdata(sdram_client_rdata),
+`else
         .cmd_copyframe_if(copy_int),
+`endif
         .frame_select(frame_select),
 `endif
 `ifdef USE_WATCHDOG
@@ -620,9 +657,33 @@ module main #(
 `ifdef DEBUGGER
         .debug_if(debug_if),
 `endif
+`ifdef USE_SDRAM_FB
+        .sdram_write_ready(write_client_ready),
+`endif
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
 
+`ifdef USE_SDRAM_FB
+    // Write path: control_module's existing per-byte write output becomes a
+    // priority-1 (after row_prefetch) arbiter client instead of driving
+    // framebuffer_fabric/multimem.
+    sdram_write_client #(
+        ._UNUSED('d0)
+    ) sdram_write (
+        .reset(global_reset_sync),
+        .clk_in(clk_root),
+        .frame_select(sdram_frame_select),
+        .source_addr(ctrl_ram_address),
+        .source_data(ctrl_ram_data_out),
+        .source_write_valid(ctrl_ram_clk_enable & ctrl_ram_write_enable),
+        .ready(write_client_ready),
+        .sdram_req(write_client_sdram_req),
+        .sdram_done(sdram_client_done[1]),
+        .sdram_addr(write_client_sdram_addr),
+        .sdram_wdata_we(write_client_sdram_wdata_we),
+        .sdram_wdata(write_client_sdram_wdata)
+    );
+`else
     // Framebuffer fabric (mux + multimem instances).
     framebuffer_fabric fb_fabric (
         .clk_root(clk_root),
@@ -639,6 +700,7 @@ module main #(
         .copy_if(copy_int)
 `endif
     );
+`endif
 
     genvar subpanel_idx;
     generate

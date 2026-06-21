@@ -37,7 +37,7 @@ YOSYS_READSLANG_ARGS := $(BUILD_FLAGS) -I$(VINCLUDE_DIR) -I$(VINCLUDE_MEM_DIR) $
 ifeq ($(YOSYS_DEBUG), true)
 	YOSYS_READSLANG_ARGS:=--diag-source --diag-location --diag-include-stack $(YOSYS_READSLANG_ARGS)
 endif
-YOSYS_READSLANG_CMD:=read_slang $(YOSYS_READSLANG_ARGS)
+YOSYS_READSLANG_CMD:=read_slang --top main $(YOSYS_READSLANG_ARGS)
 
 YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top main
 

@@ -164,6 +164,8 @@ package types;
     // sdram_arbiter client vectors, sized for this project's fixed client count.
     typedef logic [params::SDRAM_ARBITER_NUM_CLIENTS-1:0] sdram_client_mask_t;
     typedef sdram_word_addr_t [params::SDRAM_ARBITER_NUM_CLIENTS-1:0] sdram_client_addr_vec_t;
+    typedef sdram_byte_en_t [params::SDRAM_ARBITER_NUM_CLIENTS-1:0] sdram_client_wdata_we_vec_t;
+    typedef sdram_word_data_t [params::SDRAM_ARBITER_NUM_CLIENTS-1:0] sdram_client_wdata_vec_t;
     // Wait counter for tb_row_prefetch's behavioral SDRAM mock (see params::SDRAM_MOCK_READ_LATENCY).
     typedef logic [$clog2(params::SDRAM_MOCK_READ_LATENCY + 1)-1:0] sdram_mock_wait_count_t;
     // Index across every word currently in use across all framebuffers (see

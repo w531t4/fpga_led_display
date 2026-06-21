@@ -27,6 +27,24 @@ module tb_control_module_copyframe_readframe;
     localparam longint unsigned READFRAME_WAIT_CYCLES =
         (longint'(TOTAL_BYTES) + longint'(READFRAME_WAIT_EXTRA_BYTES)) * SPI_BYTE_CYCLES;
 
+`ifdef USE_SDRAM_FB
+    // The copy engine moves one SDRAM word at a time; this standalone testbench
+    // has no real arbiter/LiteDRAM, so a behavioral mock answers each word's
+    // req/done round trip after a fixed latency. That latency is an invented
+    // unit-test constant (see params::SDRAM_MOCK_READ_LATENCY), not real SDRAM
+    // timing, so copyframe_cycles measured here can't be compared against
+    // readframe_cycles the way the old engine's real 1-byte/clk throughput
+    // could -- see the PLAN.md 3.4 note on this. Size the timeout generously
+    // in words instead of bytes.
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
+    localparam int unsigned PIXEL_BYTES = calc::num_pixeldata_bits(params::BYTES_PER_PIXEL) / 8;
+    localparam int unsigned BUFFER_WORDS =
+        calc::num_sdram_buffer_words(params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
+                                      params::SDRAM_WORD_BYTES);
+    localparam int unsigned CYCLES_PER_WORD_PHASE = params::SDRAM_MOCK_READ_LATENCY + 3;
+    localparam longint unsigned COPYFRAME_WAIT_CYCLES =
+        longint'(BUFFER_WORDS) * 2 * longint'(CYCLES_PER_WORD_PHASE) + 32;
+`else
     // Keep in sync with control_cmd_copyframe READ_LATENCY.
     localparam int unsigned COPY_READ_LATENCY = 5;
     localparam int unsigned COPY_PIPE_FLUSH_CYCLES = COPY_READ_LATENCY + 4;
@@ -34,6 +52,7 @@ module tb_control_module_copyframe_readframe;
 
     // Require copyframe to complete within 20% of readframe cycles.
     localparam int unsigned COPYFRAME_RATIO_DENOM = 5;
+`endif
 
     // === Testbench scaffolding ===
     logic                                clk;
@@ -58,9 +77,64 @@ module tb_control_module_copyframe_readframe;
 `endif
 
     // === Copy engine wiring ===
+`ifdef USE_SDRAM_FB
+    // Single-client behavioral SDRAM mock (no real arbiter in this standalone
+    // testbench): answers each req with sdram_done after a fixed latency, same
+    // shape as tb_control_cmd_copyframe's mock. Data values don't matter here
+    // (timing is the focus of this test), so reads return a fixed pattern.
+    wire copyframe_sdram_req;
+    wire copyframe_sdram_we;
+    wire types::sdram_word_addr_t copyframe_sdram_addr;
+    wire types::sdram_byte_en_t copyframe_sdram_wdata_we;
+    wire types::sdram_word_data_t copyframe_sdram_wdata;
+    logic copyframe_sdram_done;
+    types::sdram_word_data_t copyframe_sdram_rdata;
+
+    enums::sdram_mock_state_e mock_state_q;
+    types::sdram_mock_wait_count_t mock_wait_q;
+    logic mock_we_q;
+    logic mock_write_done_pulse;
+
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            mock_state_q <= enums::SDRAM_MOCK_IDLE;
+            mock_wait_q <= '0;
+            copyframe_sdram_done <= 1'b0;
+            mock_write_done_pulse <= 1'b0;
+        end else begin
+            copyframe_sdram_done <= 1'b0;
+            mock_write_done_pulse <= 1'b0;
+            case (mock_state_q)
+                enums::SDRAM_MOCK_IDLE: begin
+                    if (copyframe_sdram_req) begin
+                        mock_we_q <= copyframe_sdram_we;
+                        mock_wait_q <= types::sdram_mock_wait_count_t'(params::SDRAM_MOCK_READ_LATENCY);
+                        mock_state_q <= enums::SDRAM_MOCK_WAIT;
+                    end
+                end
+                enums::SDRAM_MOCK_WAIT: begin
+                    if (mock_wait_q == 0) begin
+                        copyframe_sdram_done <= 1'b1;
+                        if (mock_we_q) begin
+                            mock_write_done_pulse <= 1'b1;
+                        end else begin
+                            copyframe_sdram_rdata <= types::sdram_word_data_t'('0);
+                        end
+                        mock_state_q <= enums::SDRAM_MOCK_SETTLE;
+                    end else begin
+                        mock_wait_q <= mock_wait_q - 1'b1;
+                    end
+                end
+                enums::SDRAM_MOCK_SETTLE: mock_state_q <= enums::SDRAM_MOCK_IDLE;
+                default: mock_state_q <= enums::SDRAM_MOCK_IDLE;
+            endcase
+        end
+    end
+`else
     mem_copy_if copy_int();
     // Stub the front-buffer data; timing is the focus of this test.
     localparam types::mem_write_data_t COPY_DATA_STUB = '0;
+`endif
 
     // WAIT_ASSERT uses 32-bit loop counters; keep timeouts within int range.
     localparam int unsigned READFRAME_WAIT_CYCLES_INT = int'(READFRAME_WAIT_CYCLES);
@@ -97,7 +171,17 @@ module tb_control_module_copyframe_readframe;
         .ram_data_out(ram_data_out),
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
+`ifdef USE_SDRAM_FB
+        .sdram_copyframe_req(copyframe_sdram_req),
+        .sdram_copyframe_we(copyframe_sdram_we),
+        .sdram_copyframe_addr(copyframe_sdram_addr),
+        .sdram_copyframe_wdata_we(copyframe_sdram_wdata_we),
+        .sdram_copyframe_wdata(copyframe_sdram_wdata),
+        .sdram_copyframe_done(copyframe_sdram_done),
+        .sdram_copyframe_rdata(copyframe_sdram_rdata),
+`else
         .cmd_copyframe_if(copy_int),
+`endif
         .busy(busy),
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
@@ -107,9 +191,14 @@ module tb_control_module_copyframe_readframe;
 `ifdef USE_WATCHDOG
         .watchdog_reset(watchdog_reset),
 `endif
+`ifdef USE_SDRAM_FB
+        .sdram_write_ready(1'b1),
+`endif
         .frame_select(frame_select)
     );
+`ifndef USE_SDRAM_FB
     assign copy_int.read_data_in = COPY_DATA_STUB;
+`endif
 
     // === Byte-stream helpers (SPI cadence model) ===
     task automatic wait_ready_for_data;
@@ -201,6 +290,19 @@ module tb_control_module_copyframe_readframe;
                 end
                 readframe_write_count <= readframe_write_count + 1'b1;
             end
+`ifdef USE_SDRAM_FB
+            if (measure_copyframe && mock_write_done_pulse) begin
+                if (copyframe_write_count == '0) begin
+                    copyframe_start_cycle <= cycle_count;
+                end
+                if (copyframe_write_count == byte_count_t'(BUFFER_WORDS - 1)) begin
+                    copyframe_end_cycle <= cycle_count;
+                    copyframe_done <= 1'b1;
+                    measure_copyframe <= 1'b0;
+                end
+                copyframe_write_count <= copyframe_write_count + 1'b1;
+            end
+`else
             if (measure_copyframe && copy_int.write_enable) begin
                 if (copyframe_write_count == '0) begin
                     copyframe_start_cycle <= cycle_count;
@@ -212,6 +314,7 @@ module tb_control_module_copyframe_readframe;
                 end
                 copyframe_write_count <= copyframe_write_count + 1'b1;
             end
+`endif
         end
     end
 
@@ -254,10 +357,16 @@ module tb_control_module_copyframe_readframe;
         // 3) copyframe (internal copy engine).
         run_copyframe(copyframe_cycles);
 
-        // Report and assert the timing relationship.
+        // Report cycle counts either way.
         $display("readframe_cycles=%0d copyframe_cycles=%0d", readframe_cycles, copyframe_cycles);
         assert (copyframe_cycles > 0 && readframe_cycles > 0)
         else $fatal(1, "Measured cycle counts are invalid");
+`ifndef USE_SDRAM_FB
+        // Require copyframe to complete within 20% of readframe cycles. Only
+        // meaningful for the real (non-mocked) byte-pipelined engine -- see
+        // the USE_SDRAM_FB localparam block above for why this doesn't carry
+        // over to the SDRAM-arbiter engine, whose measured speed here is an
+        // artifact of a mock timing constant, not real SDRAM/arbiter timing.
         assert ((copyframe_cycles * COPYFRAME_RATIO_DENOM) <= readframe_cycles)
         else
             $fatal(
@@ -267,6 +376,7 @@ module tb_control_module_copyframe_readframe;
                 100 / COPYFRAME_RATIO_DENOM,
                 readframe_cycles
             );
+`endif
 
         repeat (5) @(posedge clk);
         $finish;
@@ -286,6 +396,13 @@ module tb_control_module_copyframe_readframe;
     wire _unused_ok_watchdog = &{1'b0,
                                  watchdog_reset,
                                  1'b0};
+`endif
+`ifdef USE_SDRAM_FB
+    wire _unused_ok_sdram_copyframe = &{1'b0,
+                                        copyframe_sdram_addr,
+                                        copyframe_sdram_wdata_we,
+                                        copyframe_sdram_wdata,
+                                        1'b0};
 `endif
     // verilog_format: on
 endmodule

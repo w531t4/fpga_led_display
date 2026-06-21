@@ -50,8 +50,20 @@ module tb_control_module_readrect;
     wire types::mem_write_addr_t         ram_address;
     wire                                 ram_write_enable;
 `ifdef DOUBLE_BUFFER
+`ifdef USE_SDRAM_FB
+    // This testbench never issues COPYFRAME, so the copy-engine arbiter port
+    // is left dangling (no consumer) and the write path is always told it's
+    // ready, matching this testbench's pre-USE_SDRAM_FB backpressure-free
+    // behavior.
+    wire                           copyframe_sdram_req;
+    wire                           copyframe_sdram_we;
+    wire types::sdram_word_addr_t copyframe_sdram_addr;
+    wire types::sdram_byte_en_t   copyframe_sdram_wdata_we;
+    wire types::sdram_word_data_t copyframe_sdram_wdata;
+`else
     localparam types::mem_write_data_t   RAM_DATA_STUB = '0;
     mem_copy_if                         copy_int();
+`endif
 `endif
     wire                                 busy;
     wire                                 ready_for_data;
@@ -85,7 +97,17 @@ module tb_control_module_readrect;
         .ram_address(ram_address),
         .ram_write_enable(ram_write_enable),
 `ifdef DOUBLE_BUFFER
+`ifdef USE_SDRAM_FB
+        .sdram_copyframe_req(copyframe_sdram_req),
+        .sdram_copyframe_we(copyframe_sdram_we),
+        .sdram_copyframe_addr(copyframe_sdram_addr),
+        .sdram_copyframe_wdata_we(copyframe_sdram_wdata_we),
+        .sdram_copyframe_wdata(copyframe_sdram_wdata),
+        .sdram_copyframe_done(1'b0),
+        .sdram_copyframe_rdata('0),
+`else
         .cmd_copyframe_if(copy_int),
+`endif
 `endif
         .busy(busy),
         .ready_for_data(ready_for_data),
@@ -96,10 +118,15 @@ module tb_control_module_readrect;
 `ifdef DOUBLE_BUFFER
         .frame_select(frame_select),
 `endif
+`ifdef USE_SDRAM_FB
+        .sdram_write_ready(1'b1),
+`endif
         .watchdog_reset(watchdog_reset)
     );
 `ifdef DOUBLE_BUFFER
+`ifndef USE_SDRAM_FB
     assign copy_int.read_data_in = RAM_DATA_STUB;
+`endif
 `endif
 
     // === Address helpers ===
@@ -341,4 +368,13 @@ module tb_control_module_readrect;
                         ram_clk_enable,
                         1'b0};
     // verilog_format: on
+`ifdef USE_SDRAM_FB
+    wire _unused_ok_sdram_copyframe = &{1'b0,
+                                        copyframe_sdram_req,
+                                        copyframe_sdram_we,
+                                        copyframe_sdram_addr,
+                                        copyframe_sdram_wdata_we,
+                                        copyframe_sdram_wdata,
+                                        1'b0};
+`endif
 endmodule
