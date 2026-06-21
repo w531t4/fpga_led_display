@@ -96,7 +96,15 @@ module row_prefetch #(
 `endif
 
     // Two row-deep banks; bank_sel_q selects which one is the active (display) bank.
+    // Force block RAM (matches mem_lane.sv's precedent): without ram_style,
+    // and with the bank_sel_q mux previously living *inside* the read index
+    // expression, yosys's BRAM-transparency heuristic declined to map these
+    // to DP16KD and fell back to ~12KB of flip-flops instead -- the real
+    // driver of the nextpnr place&route blowup, not BRAM "congestion" with
+    // multimem (which removing multimem under USE_SDRAM_FB didn't fix).
+    (* ram_style = "block", no_rw_check *)
     types::mem_read_data_t bank0[params::PIXEL_WIDTH];
+    (* ram_style = "block", no_rw_check *)
     types::mem_read_data_t bank1[params::PIXEL_WIDTH];
 
     wire trigger = row_latch && (brightness_mask == types::brightness_level_t'(1)) && fill_done_q;
@@ -242,13 +250,22 @@ module row_prefetch #(
 
     // Display-side read: synchronous, mirrors multimem's QB shape. framebuffer_fetch
     // already applies its own sample-tick delay, so no extra pipeline stage is added.
+    // Each bank is read unconditionally into its own register (matching
+    // mem_lane.sv's pattern) and bank_sel_q muxes the two registered outputs,
+    // rather than muxing inside the read index -- same one-cycle latency as
+    // before, but in a shape yosys's BRAM mapper actually recognizes.
+    types::mem_read_data_t bank0_dout_q;
+    types::mem_read_data_t bank1_dout_q;
     always @(posedge clk_in) begin
         if (reset) begin
-            read_data_out <= '0;
+            bank0_dout_q <= '0;
+            bank1_dout_q <= '0;
         end else if (read_clk_enable) begin
-            read_data_out <= bank_sel_q ? bank1[read_address.col] : bank0[read_address.col];
+            bank0_dout_q <= bank0[read_address.col];
+            bank1_dout_q <= bank1[read_address.col];
         end
     end
+    assign read_data_out = bank_sel_q ? bank1_dout_q : bank0_dout_q;
 
     wire _unused_ok = &{1'b0, read_address.row, 1'b0};
 endmodule
