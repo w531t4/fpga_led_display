@@ -64,6 +64,15 @@ module control_module #(
 `ifdef DOUBLE_BUFFER
     logic cmd_copyframe_done;
 `endif
+`ifdef USE_SDRAM_FB
+    // Tracks a write byte accepted into the SDRAM write pipeline (one ram_clk_enable
+    // pulse) that hasn't landed yet. Without this, busy/state_done go low the instant
+    // the LAST byte of a write command is accepted -- not once its SDRAM round trip
+    // through sdram_write_client actually completes -- letting a host that polls busy
+    // (the only off-chip flow-control signal; ready_for_data isn't wired off-chip)
+    // send TOGGLE_FRAME while the tail of an upload is still in flight to SDRAM.
+    logic sdram_write_pending_q;
+`endif
 
 `ifdef DEBUGGER
     assign debug_if.cmd_line_state2 = cmd_line_state;
@@ -83,6 +92,18 @@ module control_module #(
             end
         end
     end
+
+`ifdef USE_SDRAM_FB
+    always @(posedge clk_in) begin
+        if (reset) begin
+            sdram_write_pending_q <= 1'b0;
+        end else if (ram_clk_enable && ram_write_enable) begin
+            sdram_write_pending_q <= 1'b1;
+        end else if (sdram_write_ready) begin
+            sdram_write_pending_q <= 1'b0;
+        end
+    end
+`endif
 
     // this prevents testbench from continuing to send data (even though we're not ready to accept)
     always_ff @(posedge clk_in) begin
@@ -422,7 +443,11 @@ module control_module #(
             end
         endcase
     end
+`ifdef USE_SDRAM_FB
+    assign busy = ~(cmd_line_state == enums::STATE_IDLE || state_done) || sdram_write_pending_q;
+`else
     assign busy = ~(cmd_line_state == enums::STATE_IDLE || state_done);
+`endif
 `ifdef USE_SDRAM_FB
     // Uniformly backpressures every command's byte stream while the SDRAM write
     // client still has a write in flight, instead of adding arbiter-aware branches

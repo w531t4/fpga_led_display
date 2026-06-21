@@ -178,6 +178,51 @@ Confirm the controller is reliable before swapping the backend.
   lands in 3.4), so SDRAM genuinely holds uninitialized garbage and `row_prefetch` is correctly
   displaying it. Expected at this stage; no further action needed until 3.4's write path lands.
 
+  After 3.4's write path landed, `make pack` only achieved ~38.97MHz (target 80MHz) on
+  `sdram_clk`/`clk_root`. Root cause: an entirely combinational round trip from each client's
+  address computation through the arbiter, through LiteDRAM's bank-machine logic, back through the
+  arbiter's done-detection, into the client's own write-enable — all within one cycle, no register
+  breaking the loop. Fixed by registering `sdram_addr`/`sdram_we`/`sdram_wdata_*` in each of the 3
+  clients (`row_prefetch.sv`, `sdram_write_client.sv`, `control_cmd_copyframe.sv`) and adding a
+  `STATE_DONE` pipeline stage in `sdram_arbiter.sv` so `client_done`/`client_rdata` are pure flop
+  outputs. Raised Fmax to ~79.85-81.37MHz (near-miss, varying by seed) — hard failure to placement
+  variance.
+
+  That near-miss masked a separate, larger problem: nextpnr place&route runtime had grown to
+  ~167-179s (vs ~30s pre-migration). Root cause wasn't BRAM congestion with `multimem` (ruled out —
+  removing `multimem` under `USE_SDRAM_FB` didn't help) but `row_prefetch.sv`'s `bank0`/`bank1` row
+  buffers (~12KB combined) failing BRAM inference entirely (0 `DP16KD` cells), falling back to
+  thousands of flip-flops — caused by missing `(* ram_style="block", no_rw_check *)` and by muxing
+  `bank_sel_q ? bank1[addr] : bank0[addr]` *inside* the read-index expression, which defeats yosys's
+  BRAM-transparency heuristic. Fixed by adding the attribute and restructuring the read to register
+  each bank's output unconditionally before muxing (mirroring `mem_lane.sv`'s established pattern,
+  though without instantiating `mem_lane` itself — its port B has a 2-cycle latency, while this read
+  port is deliberately 1-cycle to match `framebuffer_fetch.sv`'s existing expectations unchanged).
+  Verified 8 `DP16KD` cells now present; place&route dropped to ~33s.
+
+  With timing closed and `make pack` flashed, the panel rendered but showed corrupted/garbage
+  image content (not noise — `init_done` was healthy and timing met). Bit-layout of
+  `mem_read_data_t` between the write path and `row_prefetch`'s read-side reassembly was traced and
+  confirmed correct (no inversion/reversal). Root cause: `control_module.sv`'s `busy` output — the
+  only off-chip flow-control signal for the SPI/ESP32 host path (`ready_for_data` is computed but
+  never wired off-chip) — went low the instant the *last byte* of a write command (`READFRAME`,
+  `FILLRECT`, `FILLPANEL`) was merely *accepted* into the BRAM-style write port, not once that
+  byte's SDRAM round trip through `sdram_write_client` actually completed. A host polling `busy`
+  before sending `TOGGLE_FRAME` could flip `frame_select` while the tail of an upload was still in
+  flight to SDRAM — latent-but-harmless under the old BRAM path (write-accept and write-commit were
+  the same cycle there), only a real bug once writes gained multi-cycle SDRAM latency. Fixed by
+  adding an `sdram_write_pending_q` tracking flop in `control_module.sv` (set on the write-pulse
+  edge, cleared once `sdram_write_ready` is observed high — ordered so the set wins the same cycle
+  `sdram_write_ready` hasn't dropped yet) and ORing it into `busy` under `USE_SDRAM_FB`. Note:
+  `tb_control_module_copyframe_readframe.sv` ties `sdram_write_ready` to a constant `1'b1` (its
+  docstring says it's scoped to command-duration timing, not data correctness), so this exact race
+  was structurally invisible to the existing test suite — an integration test wiring the real
+  `sdram_write_client` in is still worth adding. `make lint` (default flags) and full `make
+  simulation` (default flags) clean; `make litedram-main-smoke` clean for all LiteDRAM flag combos;
+  targeted `USE_SDRAM_FB` testbenches (`control_module`, `control_module_copyframe_readframe`,
+  `control_module_readrect`, `row_prefetch`, `sdram_arbiter`, `sdram_write_client`) all pass.
+  Awaiting real-hardware re-flash to confirm the displayed image is now correct.
+
 - [x] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
   `framebuffer_fabric`, `mem_lane` from the build. `litedram_write_mirror` becomes dead code
   (write path now goes directly through the arbiter at priority 2).
