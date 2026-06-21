@@ -100,11 +100,18 @@ Confirm the controller is reliable before swapping the backend.
 
 ## Phase 3 — SDRAM backend swap
 
-- [ ] **3.1** SDRAM address mapping — add function to `calc.sv`:
+- [x] **3.1** SDRAM address mapping — added `calc::sdram_word_addr` / `calc::num_sdram_buffer_words`
+  to `calc.sv`:
   ```
-  sdram_word_addr = (frame × buffer_words) + (scan_pos × PIXEL_WIDTH × 2) + (col × 2) + half
+  sdram_word_addr = (frame × buffer_words) + (scan_pos × PIXEL_WIDTH × 4) + (col × 4) + (half × 2) + pixel_word
   ```
-  where `scan_pos = y[3:0]`, `half = y[4]`. Mapping is pure bit-slicing; verify by inspection.
+  where `scan_pos = y[3:0]`, `half = y[4]`, `pixel_word` selects which of a pixel's 2 SDRAM words
+  (4 bytes/pixel = 2 words). Corrected from the original 1-bit `half`-only formula, which only
+  budgeted one word per pixel instead of two (would have aliased two pixels' data onto the same
+  address). `buffer_words = PIXEL_HALFHEIGHT × PIXEL_WIDTH × num_subpanels × 2`, matching the
+  96KB/buffer and 3072-word-burst figures already in the Notes section below — no bandwidth/
+  capacity numbers changed, only the literal formula. Verified with `tb_calc_sdram_addr.sv`
+  (exhaustive collision check over every `(frame, scan_pos, col, half, pixel_word)` combination).
 
 - [ ] **3.2** SDRAM arbiter — new module; generic three-client fixed-priority req/grant mux on
   the single LiteDRAM native port. Each client (including the copy engine) is its own requester;
@@ -121,8 +128,9 @@ Confirm the controller is reliable before swapping the backend.
     frame.
 
 - [ ] **3.3** Rewrite `row_prefetch.sv` — same module name and ports as 1.1; replace the
-  `multimem` burst with a linear burst read of `PIXEL_WIDTH × 2` words from the SDRAM arbiter.
-  No change to `main.sv`.
+  `multimem` burst with a linear burst read of `PIXEL_WIDTH × 4` words from the SDRAM arbiter
+  (corrected from `× 2` to match 3.1's fixed addressing — matches the ~3072-word burst already
+  cited in the Notes section). No change to `main.sv`.
 
 - [ ] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
   `framebuffer_fabric`, `mem_lane` from the build. `litedram_write_mirror` becomes dead code

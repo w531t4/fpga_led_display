@@ -132,4 +132,44 @@ package calc;
             clamp_remaining_dimension = span;
         end
     endfunction
+
+    // Words needed for one SDRAM framebuffer: one scan-position block per row of
+    // pixel_halfheight, each holding pixel_width columns, each column holding
+    // subpanel_count independent pixels (top/bottom), each pixel (pixel_bytes/sdram_word_bytes)
+    // SDRAM words. pixel_bytes is the already-padded per-pixel byte count (see
+    // calc::num_pixeldata_bits), not the raw color depth.
+    function automatic int unsigned num_sdram_buffer_words(input int unsigned pixel_width,
+                                                           input int unsigned pixel_halfheight,
+                                                           input int unsigned subpanel_count,
+                                                           input int unsigned pixel_bytes,
+                                                           input int unsigned sdram_word_bytes);
+        num_sdram_buffer_words =
+            pixel_halfheight * pixel_width * subpanel_count * (pixel_bytes / sdram_word_bytes);
+    endfunction
+
+    // SDRAM word address for the post-migration framebuffer layout:
+    //  - frame       selects front/back buffer
+    //  - scan_pos    = y[3:0], the BAM scan row within a subpanel
+    //  - col         = x
+    //  - half        = y[4], top (0) vs bottom (1) subpanel pixel at this scan position
+    //  - pixel_word  selects which (pixel_bytes/sdram_word_bytes)-word of that pixel
+    //                (low/high half of its padded color value)
+    function automatic logic [params::SDRAM_NATIVE_ADDR_BITS-1:0] sdram_word_addr(
+        input logic frame, input int unsigned scan_pos, input int unsigned col, input logic half,
+        input logic pixel_word, input int unsigned pixel_width, input int unsigned pixel_halfheight,
+        input int unsigned subpanel_count, input int unsigned pixel_bytes, input int unsigned sdram_word_bytes);
+        int unsigned words_per_pixel;
+        int unsigned buffer_words;
+        int unsigned frame_words;
+        int unsigned words_per_col;
+        int unsigned words_per_row;
+        words_per_pixel = pixel_bytes / sdram_word_bytes;
+        buffer_words =
+            num_sdram_buffer_words(pixel_width, pixel_halfheight, subpanel_count, pixel_bytes, sdram_word_bytes);
+        words_per_col = subpanel_count * words_per_pixel;
+        words_per_row = pixel_width * words_per_col;
+        frame_words = frame ? buffer_words : 0;
+        sdram_word_addr = params::SDRAM_NATIVE_ADDR_BITS'(frame_words + scan_pos * words_per_row +
+                              col * words_per_col + half * words_per_pixel + pixel_word);
+    endfunction
 endpackage

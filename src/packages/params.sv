@@ -83,6 +83,10 @@ package params;
     parameter int unsigned BYTES_PER_PIXEL = _BYTES_PER_PIXEL;
 `endif
 
+    // SDRAM (LiteDRAM native port / IS42S16160J)
+    parameter int unsigned SDRAM_WORD_BYTES = 2;  // 16-bit-wide SDR SDRAM data bus
+    parameter int unsigned SDRAM_NATIVE_ADDR_BITS = 24;  // matches cmd_addr width on the native port
+
 `ifdef BRIGHTNESS_LEVELS
     parameter int unsigned BRIGHTNESS_LEVELS = `BRIGHTNESS_LEVELS;
 `else
