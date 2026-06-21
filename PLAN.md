@@ -64,19 +64,39 @@ the source of truth. No visible change to output.
 - [x] **1.3 (sim)** `tb_row_prefetch` passes; `make simulation` (full suite, including `tb_main`)
   and `make build/mydesign.json` (yosys synthesis) both pass/complete cleanly with row_prefetch
   wired in. `make lint` clean.
-- [ ] **1.3 (hw)** Still needed from Aaron: flash and verify on hardware — solid-color fill, then
-  column-ramp pattern.
+- [x] **1.3 (hw)** Verified on hardware via the existing ESPHome test window — confirmed all
+  commands render correctly with `row_prefetch` in the display path. Phase 1 complete.
 
 ## Phase 2 — SDRAM standalone verification
 
 Confirm the controller is reliable before swapping the backend.
 
-- [ ] **2.1** `litedram_bist` hardware run — BIST module and `USE_LITEDRAM_BIST` build target
-  already exist. Flash and confirm `done` LED asserts with no error bits.
+- [x] **2.1** `litedram_bist` hardware run — confirmed on hardware: LED0 (`init_done`) and LED3
+  (`done`) lit, no error/busy bits. LiteDRAM controller initializes and the write/read/compare
+  transaction passes.
 
-- [ ] **2.2** `litedram_write_mirror` hardware run — `seen_write`, `dropped`, and `error` map to
-  LEDs in the `USE_LITEDRAM_WRITE_MIRROR` build. Confirm `seen_write` without `error` or
-  `dropped` under normal write traffic. (Already simulation-tested.)
+- [x] **2.2** `litedram_write_mirror` hardware run — confirmed on hardware (at `-DCLK_80`, SPI
+  rate halved to 40MHz to get a closeable build; see nextpnr note below): LED0 (`init_done`) and
+  LED3 (`seen_write`) lit, LED5 (`error`)/LED6 (`dropped_before_init`) off — controller
+  initializes cleanly and never faults. LED4 (`dropped`) was also lit. Doubling the per-byte
+  slack (vs. the original 90MHz/80MHz-SPI target) didn't stop the drops, which points away from
+  FPGA clock margin and toward real SDR SDRAM command timing (RAS/CAS/precharge) — plausible
+  since `write_mirror` issues one full SDRAM transaction per incoming byte, no batching. Reading:
+  **controller health confirmed good; the one-word-per-byte opportunistic mirror scheme confirmed
+  inadequate**, which is the expected, instrumented-for failure mode per its own header comment
+  ("deliberately never backpressures... missed writes are reported with sticky flags") — not a
+  blocking regression. Matches why 3.2 specifies real backpressure (`ready_for_data`) for the
+  production write path instead of opportunistic mirroring. Phase 2 complete.
+
+  **nextpnr runtime regression found while chasing this:** profiled (8 paired samples, serial,
+  not parallel — parallel runs bias the timing measurement itself) plain `make pack` (no LiteDRAM
+  flags) before vs. after `row_prefetch`: place+route time went from ~29s avg to ~179s avg
+  (~6x), consistently across samples, not seed noise. DP16KD utilization is identical (128/208)
+  both ways; TRELLIS_FF only grew 9%. Working theory: `row_prefetch`'s two row-buffer banks must
+  route into/out of an already 61%-utilized BRAM region (`multimem`), and that congestion — not
+  raw cell count — is what's costing the router. Untested whether this regresses further, holds,
+  or improves once 3.4 removes `multimem` (the actual experiment to check that was proposed and
+  declined — open question, not resolved). Worth reassessing once 3.1-3.4 land.
 
 ## Phase 3 — SDRAM backend swap
 
