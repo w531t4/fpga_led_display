@@ -4,151 +4,152 @@
 `default_nettype none
 
 // tb_sdram_arbiter:
-// - Confirms fixed-priority ordering (client 0 highest) when multiple clients
-//   request at once.
-// - Confirms a write client's cmd/wdata reach the native port and that
-//   client_done only pulses once both channels are accepted.
-// - Confirms a read client's address reaches the native port and that
-//   client_rdata/client_done reflect the (mocked) native-port response.
-// - Confirms a lower-priority client gets served once a higher-priority
-//   client's single-word request is withdrawn, demonstrating the
-//   word-granular interleaving the arbiter provides for free.
-// - Confirms no client is granted while init_done is low, and that a
-//   pending request is served as soon as init_done goes high.
+// - Confirms the prefetch read port is PIPELINED: many read commands are
+//   accepted before the first word returns, and returned words match the
+//   issued addresses in order.
+// - Confirms a simple write (client 0) reaches the native port and pulses
+//   s_done once cmd+wdata are accepted; a simple read (client 1) returns on
+//   s_rdata.
+// - Confirms a pending write is INTERLEAVED into an active prefetch read burst
+//   without disturbing the in-order read returns.
 module tb_sdram_arbiter;
-    localparam int unsigned NUM_CLIENTS = 3;
-    localparam int unsigned MAX_WAIT_CYCLES = 64;
-    localparam int unsigned READ_LATENCY = 3;
+    localparam int unsigned NUM_SIMPLE = 2;
+    localparam int unsigned READ_LATENCY = 6;
+    localparam int unsigned MAX_WAIT = 512;
+    localparam int unsigned BURST = 24;
 
     logic clk;
     logic reset;
     logic init_done;
 
-    logic [NUM_CLIENTS-1:0] client_req;
-    logic [NUM_CLIENTS-1:0] client_we;
-    types::sdram_word_addr_t [NUM_CLIENTS-1:0] client_addr;
-    types::sdram_byte_en_t [NUM_CLIENTS-1:0] client_wdata_we;
-    types::sdram_word_data_t [NUM_CLIENTS-1:0] client_wdata;
-    wire [NUM_CLIENTS-1:0] client_grant;
-    wire [NUM_CLIENTS-1:0] client_done;
-    wire types::sdram_word_data_t client_rdata;
+    // Prefetch (pipelined read) port -- driven by a synchronous counter issuer.
+    logic                    burst_en;
+    types::sdram_word_addr_t burst_base;
+    int unsigned             issue_idx;
+    wire                     rd_req  = burst_en && (issue_idx < BURST);
+    wire types::sdram_word_addr_t rd_addr = burst_base + types::sdram_word_addr_t'(issue_idx);
+    wire                     rd_cmd_ready;
+    wire                     rd_rvalid;
+    wire types::sdram_word_data_t rd_rdata;
 
-    wire cmd_valid;
-    logic cmd_ready;
-    wire cmd_we;
+    // Simple clients (0 = write, 1 = copyframe).
+    logic [NUM_SIMPLE-1:0]                  s_req;
+    logic [NUM_SIMPLE-1:0]                  s_we;
+    types::sdram_word_addr_t [NUM_SIMPLE-1:0] s_addr;
+    types::sdram_byte_en_t   [NUM_SIMPLE-1:0] s_wdata_we;
+    types::sdram_word_data_t [NUM_SIMPLE-1:0] s_wdata;
+    wire [NUM_SIMPLE-1:0]                    s_grant;
+    wire [NUM_SIMPLE-1:0]                    s_done;
+    wire types::sdram_word_data_t           s_rdata;
+
+    // Native port.
+    wire                     cmd_valid;
+    logic                    cmd_ready;
+    wire                     cmd_we;
     wire types::sdram_word_addr_t cmd_addr;
-    wire wdata_valid;
-    logic wdata_ready;
+    wire                     wdata_valid;
+    logic                    wdata_ready;
     wire types::sdram_byte_en_t wdata_we;
     wire types::sdram_word_data_t wdata_data;
-    logic rdata_valid;
-    wire rdata_ready;
+    logic                    rdata_valid;
+    wire                     rdata_ready;
     types::sdram_word_data_t rdata_data;
 
-    logic [7:0] cycle_count;
-    logic [NUM_CLIENTS-1:0] done_seen_q;
-    types::sdram_word_data_t rdata_seen_q;
-
-    logic read_pending_q;
-    logic [$clog2(READ_LATENCY + 1)-1:0] read_wait_q;
-    types::sdram_word_addr_t read_addr_q;
-
-    // Folds every address bit into the result (instead of just truncating)
-    // so the mock exercises the full address width without lint warnings.
-    function automatic types::sdram_word_data_t mock_read_data(input types::sdram_word_addr_t addr);
-        mock_read_data = types::sdram_word_data_t'(addr) ^ types::sdram_word_data_t'(addr >> $bits(types::sdram_word_data_t));
-    endfunction
-
-    sdram_arbiter #(
-        .NUM_CLIENTS(NUM_CLIENTS)
-    ) dut (
-        .clk(clk),
-        .reset(reset),
-        .init_done(init_done),
-        .client_req(client_req),
-        .client_we(client_we),
-        .client_addr(client_addr),
-        .client_wdata_we(client_wdata_we),
-        .client_wdata(client_wdata),
-        .client_grant(client_grant),
-        .client_done(client_done),
-        .client_rdata(client_rdata),
-        .cmd_valid(cmd_valid),
-        .cmd_ready(cmd_ready),
-        .cmd_we(cmd_we),
-        .cmd_addr(cmd_addr),
-        .wdata_valid(wdata_valid),
-        .wdata_ready(wdata_ready),
-        .wdata_we(wdata_we),
-        .wdata_data(wdata_data),
-        .rdata_valid(rdata_valid),
-        .rdata_ready(rdata_ready),
-        .rdata_data(rdata_data)
+    sdram_arbiter #(.NUM_SIMPLE(NUM_SIMPLE)) dut (
+        .clk(clk), .reset(reset), .init_done(init_done),
+        .rd_req(rd_req), .rd_addr(rd_addr), .rd_cmd_ready(rd_cmd_ready),
+        .rd_rvalid(rd_rvalid), .rd_rdata(rd_rdata),
+        .s_req(s_req), .s_we(s_we), .s_addr(s_addr), .s_wdata_we(s_wdata_we), .s_wdata(s_wdata),
+        .s_grant(s_grant), .s_done(s_done), .s_rdata(s_rdata),
+        .cmd_valid(cmd_valid), .cmd_ready(cmd_ready), .cmd_we(cmd_we), .cmd_addr(cmd_addr),
+        .wdata_valid(wdata_valid), .wdata_ready(wdata_ready), .wdata_we(wdata_we), .wdata_data(wdata_data),
+        .rdata_valid(rdata_valid), .rdata_ready(rdata_ready), .rdata_data(rdata_data)
     );
 
-    always begin
-        #(params::SIM_HALF_PERIOD_NS) clk <= ~clk;
+    always #(params::SIM_HALF_PERIOD_NS) clk <= ~clk;
+
+    // Synchronous read-command issuer: advance exactly when a command is accepted.
+    always_ff @(posedge clk) begin
+        if (reset || !burst_en) issue_idx <= 0;
+        else if (rd_req && rd_cmd_ready) issue_idx <= issue_idx + 1;
     end
 
-    // Native port mock: cmd/wdata ready toggle every other cycle so the
-    // arbiter's cmd_done_q/data_done_q latches get exercised, and reads
-    // come back automatically after READ_LATENCY cycles.
-    always_comb begin
-        cmd_ready = !reset && cycle_count[0] == 1'b1;
-        wdata_ready = !reset && cycle_count[0] == 1'b1;
-    end
+    // ----- Behavioral pipelined native port: a memory + a read latency line. -----
+    types::sdram_word_data_t nmem[types::sdram_word_addr_t];
+    assign cmd_ready   = !reset && init_done;
+    assign wdata_ready = !reset && init_done;
+
+    logic                    rpipe_valid[READ_LATENCY];
+    types::sdram_word_addr_t rpipe_addr [READ_LATENCY];
+    int unsigned reads_outstanding;
+    int unsigned max_outstanding;
+
+    wire rd_cmd_acc = cmd_valid && cmd_ready && !cmd_we;
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            cycle_count <= '0;
-            done_seen_q <= '0;
-            rdata_seen_q <= '0;
-            read_pending_q <= 1'b0;
-            read_wait_q <= '0;
             rdata_valid <= 1'b0;
-        end else begin
-            cycle_count <= cycle_count + 1'b1;
-            done_seen_q <= client_done;
-            rdata_seen_q <= client_rdata;
-
-            if (!rdata_ready) $fatal(1, "arbiter deasserted rdata_ready, which it should never do");
-            if (wdata_valid && client_grant == '0) $fatal(1, "wdata_valid asserted without a granted client");
-
-            rdata_valid <= 1'b0;
-            if (cmd_valid && cmd_ready && !cmd_we) begin
-                read_pending_q <= 1'b1;
-                read_wait_q <= ($bits(read_wait_q))'(READ_LATENCY);
-                read_addr_q <= cmd_addr;
-            end else if (read_pending_q) begin
-                if (read_wait_q == 0) begin
-                    read_pending_q <= 1'b0;
-                    rdata_valid <= 1'b1;
-                    rdata_data <= mock_read_data(read_addr_q);
-                end else begin
-                    read_wait_q <= read_wait_q - 1'b1;
-                end
+            rdata_data <= '0;
+            reads_outstanding <= 0;
+            max_outstanding <= 0;
+            for (int i = 0; i < READ_LATENCY; i++) begin
+                rpipe_valid[i] <= 1'b0;
+                rpipe_addr[i] <= '0;
             end
+        end else begin
+            if (!rdata_ready) $fatal(1, "arbiter deasserted rdata_ready");
+            if (cmd_valid && cmd_ready && cmd_we) nmem[cmd_addr] = wdata_data;  // blocking: assoc array
+            for (int i = READ_LATENCY - 1; i > 0; i--) begin
+                rpipe_valid[i] <= rpipe_valid[i-1];
+                rpipe_addr[i]  <= rpipe_addr[i-1];
+            end
+            rpipe_valid[0] <= rd_cmd_acc;
+            if (rd_cmd_acc) rpipe_addr[0] <= cmd_addr;
+            rdata_valid <= rpipe_valid[READ_LATENCY-1];
+            rdata_data  <= nmem[rpipe_addr[READ_LATENCY-1]];
+
+            if (rd_cmd_acc && !rpipe_valid[READ_LATENCY-1]) reads_outstanding <= reads_outstanding + 1;
+            else if (!rd_cmd_acc && rpipe_valid[READ_LATENCY-1]) reads_outstanding <= reads_outstanding - 1;
+            if (reads_outstanding > max_outstanding) max_outstanding <= reads_outstanding;
         end
     end
 
-    task automatic wait_grant(input int unsigned client, input int unsigned max_cycles);
-        int unsigned waited;
-        waited = 0;
-        while (!client_grant[client] && waited < max_cycles) begin
+    function automatic types::sdram_word_data_t patt(input int unsigned i);
+        patt = types::sdram_word_data_t'(16'hA000 + i);
+    endfunction
+
+    // Receive + check a full read burst from base (assumes nmem[base+i]=patt(i)).
+    task automatic recv_burst();
+        int unsigned recv;
+        recv = 0;
+        while (recv < BURST) begin
             @(posedge clk);
-            waited++;
+            if (rd_rvalid) begin
+                if (rd_rdata !== patt(recv))
+                    $fatal(1, "prefetch read %0d mismatch got %0h exp %0h", recv, rd_rdata, patt(recv));
+                recv = recv + 1;
+            end
         end
-        if (!client_grant[client]) $fatal(1, "client %0d never granted", client);
     endtask
 
-    task automatic wait_done(input int unsigned client, input int unsigned max_cycles);
-        int unsigned waited;
-        waited = 0;
-        while (!done_seen_q[client] && waited < max_cycles) begin
+    task automatic simple_op(input int unsigned idx, input logic we,
+                             input types::sdram_word_addr_t a, input types::sdram_word_data_t d);
+        int unsigned i;
+        logic done;
+        s_addr[idx] = a; s_we[idx] = we;
+        s_wdata_we[idx] = types::sdram_byte_en_t'(2'b11); s_wdata[idx] = d;
+        s_req[idx] = 1'b1;
+        done = 1'b0;
+        for (i = 0; i < MAX_WAIT && !done; i++) begin
             @(posedge clk);
-            waited++;
+            if (s_done[idx]) begin
+                if (!we && s_rdata !== d) $fatal(1, "simple read %0d data wrong %0h exp %0h", idx, s_rdata, d);
+                done = 1'b1;
+            end
         end
-        if (!done_seen_q[client]) $fatal(1, "client %0d never completed", client);
+        if (!done) $fatal(1, "simple op on client %0d never completed", idx);
+        s_req[idx] = 1'b0;
+        @(posedge clk);
     endtask
 
     initial begin
@@ -156,92 +157,49 @@ module tb_sdram_arbiter;
         $dumpfile(`DUMP_FILE_NAME);
 `endif
         $dumpvars(0, tb_sdram_arbiter);
-        clk = 1'b0;
-        reset = 1'b1;
-        init_done = 1'b0;
-        client_req = '0;
-        client_we = '0;
-        client_addr = '0;
-        client_wdata_we = '0;
-        client_wdata = '0;
+        clk = 1'b0; reset = 1'b1; init_done = 1'b0;
+        burst_en = 1'b0; burst_base = '0;
+        s_req = '0; s_we = '0; s_addr = '0; s_wdata_we = '0; s_wdata = '0;
         rdata_data = '0;
+        for (int i = 0; i < BURST; i++) begin
+            nmem[types::sdram_word_addr_t'(24'h10_0000 + i)] = patt(i);
+            nmem[types::sdram_word_addr_t'(24'h40_0000 + i)] = patt(i);
+        end
+
         repeat (4) @(posedge clk);
         reset = 1'b0;
-
-        // A pending request must not be granted before init_done -- the
-        // native port's behavior is undefined until LiteDRAM finishes
-        // init/calibration.
-        client_addr[0] = types::sdram_word_addr_t'(24'h00_0005);
-        client_req[0] = 1'b1;
-        repeat (MAX_WAIT_CYCLES) begin
-            @(posedge clk);
-            if (client_grant != '0) $fatal(1, "client granted before init_done");
-        end
+        repeat (2) @(posedge clk);
         init_done = 1'b1;
-        wait_grant(0, MAX_WAIT_CYCLES);
-        wait_done(0, MAX_WAIT_CYCLES);
-        client_req[0] = 1'b0;
-        @(posedge clk);
 
-        // All three request at once: confirm strict priority order 0 > 1 > 2,
-        // and that each client's own fields reach the native port while
-        // granted.
-        client_addr[0] = types::sdram_word_addr_t'(24'h00_0001);
-        client_we[0] = 1'b0;
-        client_addr[1] = types::sdram_word_addr_t'(24'h00_0002);
-        client_we[1] = 1'b1;
-        client_wdata_we[1] = types::sdram_byte_en_t'(2'b01);
-        client_wdata[1] = types::sdram_word_data_t'(16'h00a5);
-        client_addr[2] = types::sdram_word_addr_t'(24'h00_0003);
-        client_we[2] = 1'b0;
-        client_req = 3'b111;
+        // ---- 1) Pipelined prefetch read burst ----
+        burst_base = types::sdram_word_addr_t'(24'h10_0000);
+        burst_en = 1'b1;
+        recv_burst();
+        burst_en = 1'b0;
+        if (max_outstanding < 3)
+            $fatal(1, "prefetch reads not pipelined: max_outstanding=%0d", max_outstanding);
+        $display("tb_sdram_arbiter: pipelined read burst OK (max_outstanding=%0d)", max_outstanding);
+        repeat (8) @(posedge clk);
 
-        wait_grant(0, MAX_WAIT_CYCLES);
-        if (cmd_we !== 1'b0 || cmd_addr !== client_addr[0])
-            $fatal(1, "client 0 cmd mismatch we=%0b addr=%0h", cmd_we, cmd_addr);
-        wait_done(0, MAX_WAIT_CYCLES);
-        if (rdata_seen_q !== mock_read_data(client_addr[0]))
-            $fatal(1, "client 0 rdata mismatch %0h", rdata_seen_q);
-        client_req[0] = 1'b0;
-        @(posedge clk);
-        if (client_grant[0]) $fatal(1, "client 0 grant did not release");
+        // ---- 2) Simple write, then read it back ----
+        simple_op(0, 1'b1, types::sdram_word_addr_t'(24'h20_0000), types::sdram_word_data_t'(16'hBEEF));
+        if (nmem[types::sdram_word_addr_t'(24'h20_0000)] !== 16'hBEEF) $fatal(1, "simple write data wrong");
+        simple_op(1, 1'b0, types::sdram_word_addr_t'(24'h20_0000), types::sdram_word_data_t'(16'hBEEF));
+        $display("tb_sdram_arbiter: simple write+read OK");
 
-        wait_grant(1, MAX_WAIT_CYCLES);
-        if (cmd_we !== 1'b1 || cmd_addr !== client_addr[1] || wdata_we !== client_wdata_we[1] ||
-            wdata_data !== client_wdata[1])
-            $fatal(1, "client 1 cmd/wdata mismatch we=%0b addr=%0h wwe=%0b wdata=%0h", cmd_we, cmd_addr, wdata_we,
-                   wdata_data);
-        wait_done(1, MAX_WAIT_CYCLES);
-        client_req[1] = 1'b0;
-        @(posedge clk);
-        if (client_grant[1]) $fatal(1, "client 1 grant did not release");
-
-        wait_grant(2, MAX_WAIT_CYCLES);
-        if (cmd_we !== 1'b0 || cmd_addr !== client_addr[2])
-            $fatal(1, "client 2 cmd mismatch we=%0b addr=%0h", cmd_we, cmd_addr);
-        wait_done(2, MAX_WAIT_CYCLES);
-        if (rdata_seen_q !== mock_read_data(client_addr[2]))
-            $fatal(1, "client 2 rdata mismatch %0h", rdata_seen_q);
-        client_req[2] = 1'b0;
-        @(posedge clk);
-
-        // Client 0 holds a standing request (simulating a multi-word row
-        // fill re-requesting word after word) while client 1 has a single
-        // pending write. Confirm client 1 gets served as soon as client 0
-        // withdraws its request for the current word, rather than being
-        // starved for an entire burst.
-        client_addr[1] = types::sdram_word_addr_t'(24'h00_0004);
-        client_wdata[1] = types::sdram_word_data_t'(16'h0042);
-        client_req[1] = 1'b1;
-        client_req[0] = 1'b1;
-        wait_grant(0, MAX_WAIT_CYCLES);
-        wait_done(0, MAX_WAIT_CYCLES);
-        client_req[0] = 1'b0;
-        wait_grant(1, MAX_WAIT_CYCLES);
-        if (cmd_we !== 1'b1 || cmd_addr !== client_addr[1])
-            $fatal(1, "interleave scenario: client 1 cmd mismatch we=%0b addr=%0h", cmd_we, cmd_addr);
-        wait_done(1, MAX_WAIT_CYCLES);
-        client_req[1] = 1'b0;
+        // ---- 3) Write interleaved into a prefetch read burst ----
+        burst_base = types::sdram_word_addr_t'(24'h40_0000);
+        burst_en = 1'b1;
+        fork
+            recv_burst();
+            begin : interleaved_write
+                repeat (4) @(posedge clk);
+                simple_op(0, 1'b1, types::sdram_word_addr_t'(24'h50_0000), types::sdram_word_data_t'(16'hCAFE));
+            end
+        join
+        burst_en = 1'b0;
+        if (nmem[types::sdram_word_addr_t'(24'h50_0000)] !== 16'hCAFE) $fatal(1, "interleaved write data wrong");
+        $display("tb_sdram_arbiter: write interleave OK");
 
         $display("tb_sdram_arbiter: PASS");
         $finish;

@@ -55,9 +55,22 @@ module ulx3s_litedram_wrapper (
     logic        wb_ctrl_we;
     logic        init_fsm_done;
 
-    // GENSDRPHY does not expose a separate clock pad. Forward the same clock to
-    // the SDRAM device; later timing work can replace this with a dedicated ODDR.
+    // SDRAM output clock. The SDR device samples command/address/write-data on
+    // the RISING edge of sdram_clk; that edge must land in the MIDDLE of the
+    // FPGA's data-valid window, not on the FPGA's own clock edge (where outputs
+    // are transitioning). `sdram_clk = clk` (in phase) sampled right on the data
+    // transitions -> corrupted, flickering reads on real hardware (sim's
+    // idealized PHY has no clock phase, so it never showed this). Shift 180deg
+    // (invert) so the device's rising edge falls at the FPGA's falling edge =
+    // mid data eye -- the standard SDR phase relationship. Tune on hardware; a
+    // dedicated ODDR + PLL phase output is the cleaner long-term form.
+    // (Plain invert keeps the Verilator/sim build free of vendor primitives;
+    // sdram_clk is unused there anyway.)
+`ifdef SDRAM_CLK_INPHASE
     assign sdram_clk = clk;
+`else
+    assign sdram_clk = ~clk;  // 180 degrees
+`endif
 
     litedram_init init (
         .clk(clk),

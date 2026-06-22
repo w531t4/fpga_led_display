@@ -70,6 +70,12 @@ module tb_sdram_write_client;
         @(negedge clk_in);
         source_write_valid = 1'b0;
 
+        // The write client buffers one write (1-deep skid buffer for write/SPI
+        // overlap), so it issues to the arbiter the cycle after capture
+        // (pending -> in-flight register copy). Wait one cycle for that issue.
+        @(posedge clk_in);
+        @(negedge clk_in);
+
         if (!sdram_req) $fatal(1, "sdram_req not asserted after write_valid");
         if (sdram_addr !== expected_addr(~frame_select, addr))
             $fatal(1, "addr mismatch: expected=%0h got=%0h", expected_addr(~frame_select, addr), sdram_addr);

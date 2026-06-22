@@ -16,11 +16,17 @@
 // begins into the bank that just went inactive. This gives the fill a full
 // row's display time (8x its own duration) to complete before it's needed.
 //
-// Fill source: under USE_SDRAM_FB, each column is fetched word-by-word from
-// the SDRAM arbiter (one req/done round trip per word, WORDS_PER_COL words
-// per column) instead of a free-running BRAM burst, since SDRAM latency
-// isn't fixed the way multimem's was. Without the flag, the original
-// fixed-latency multimem burst is unchanged.
+// Fill source: under USE_SDRAM_FB the fill streams words from the SDRAM
+// arbiter over a PIPELINED native-style read interface: it issues read
+// commands (sdram_req/sdram_addr accepted on sdram_cmd_ready) as fast as the
+// arbiter accepts them, without waiting for each word's data to come back, and
+// consumes returned words in order (sdram_rvalid/sdram_rdata). Decoupling
+// command issue from data return hides the LiteDRAM round-trip latency: a
+// WORDS-word row fills in ~WORDS cycles + one round-trip, instead of
+// WORDS * round-trip cycles. The old one-word-per-round-trip scheme could not
+// fill a row inside its display window at real DRAM latency (refresh / row
+// miss), so the display showed stale/garbage rows. Without the flag, the
+// original fixed-latency multimem burst is unchanged.
 module row_prefetch #(
     // verilator lint_off UNUSEDPARAM
     parameter integer unsigned _UNUSED = 0
@@ -40,11 +46,16 @@ module row_prefetch #(
     input logic                      row_latch,
 
 `ifdef USE_SDRAM_FB
-    // Backing-store fill port (drives sdram_arbiter's priority-1 client).
+    // Pipelined backing-store fill port (drives sdram_arbiter's priority-0,
+    // read-only client). Command channel: sdram_req asserts while there is an
+    // address to issue; sdram_addr is that address; sdram_cmd_ready pulses when
+    // the arbiter accepts it (issue advances). Data channel: sdram_rvalid pulses
+    // (in command order) when a word returns on sdram_rdata.
     input  logic                    frame_select,
     output logic                    sdram_req,
-    input  logic                    sdram_done,
     output types::sdram_word_addr_t sdram_addr,
+    input  logic                    sdram_cmd_ready,
+    input  logic                    sdram_rvalid,
     input  types::sdram_word_data_t sdram_rdata
 `else
     // Backing-store fill port (drives framebuffer_fabric's RAM-B port).
@@ -61,36 +72,40 @@ module row_prefetch #(
     localparam int unsigned WORD_BITS = $bits(types::sdram_word_data_t);
     localparam int unsigned WORDS_PER_COL = $bits(types::mem_read_data_t) / WORD_BITS;
     localparam int unsigned WORD_IDX_BITS = calc::safe_clog2(WORDS_PER_COL);
+    localparam int unsigned MRD_BITS = $bits(types::mem_read_data_t);
 `else
     // Matches the AddressB -> QB latency in mem_lane (sync read + outreg stage).
     localparam int unsigned READ_LATENCY = 2;
 `endif
 
-    typedef enum logic [1:0] {
-        STATE_FILL,
-`ifndef USE_SDRAM_FB
-        STATE_DRAIN,
-`endif
-        STATE_IDLE
-    } fill_state_t;
-    fill_state_t state_q;
-
     logic                      bank_sel_q;  // bank currently active for display reads
     types::row_subpanel_addr_t fill_row_q;
-    types::col_addr_t          issue_col_q;
     logic                      fill_done_q;
 
 `ifdef USE_SDRAM_FB
-    logic [WORD_IDX_BITS-1:0] word_idx_q;
-    logic [$bits(types::mem_read_data_t)-1:0] accum_q;
-    // Registered so sdram_addr is a pure flop output: computing it live from
-    // fill_row_q/issue_col_q/word_idx_q on every cycle chained the address
-    // arithmetic straight into the arbiter/LiteDRAM round trip with no
-    // register in between, which blew timing at 80MHz (see PLAN.md 3.3
-    // (build) hardware note). Computed alongside those counters below instead,
-    // using whatever values they're about to take.
+    // Command-issue side (decoupled from data return).
+    logic                     issue_active_q;  // a fill is issuing read commands
+    types::col_addr_t         issue_col_q;
+    logic [WORD_IDX_BITS-1:0] issue_word_q;
+    // Data-return side.
+    logic                     recv_active_q;   // a fill is still receiving words
+    types::col_addr_t         recv_col_q;
+    logic [WORD_IDX_BITS-1:0] recv_word_q;
+    logic [MRD_BITS-1:0]      accum_q;
+    // Registered so sdram_addr is a pure flop output: computing it live from the
+    // issue counters every cycle chained the address arithmetic straight into
+    // the arbiter/LiteDRAM round trip with no register in between, which blew
+    // timing at 80MHz (see PLAN.md 3.3 (build) hardware note). Computed alongside
+    // the issue counters below instead, using whatever values they're about to take.
     types::sdram_word_addr_t sdram_addr_q;
 `else
+    typedef enum logic [1:0] {
+        STATE_FILL,
+        STATE_DRAIN,
+        STATE_IDLE
+    } fill_state_t;
+    fill_state_t state_q;
+    types::col_addr_t issue_col_q;
     types::col_addr_t col_pipe[READ_LATENCY];
     logic             valid_pipe[READ_LATENCY];
 `endif
@@ -110,12 +125,16 @@ module row_prefetch #(
     wire trigger = row_latch && (brightness_mask == types::brightness_level_t'(1)) && fill_done_q;
 
 `ifdef USE_SDRAM_FB
-    wire [$bits(types::mem_read_data_t)-1:0] shifted_word =
-        ($bits(types::mem_read_data_t))'(sdram_rdata) << (int'(word_idx_q) * WORD_BITS);
-    wire [$bits(types::mem_read_data_t)-1:0] merged_word = accum_q | shifted_word;
-    wire [WORD_IDX_BITS-1:0] next_word_idx = word_idx_q + 1'b1;
+    // Assemble returned words into the column accumulator.
+    wire [MRD_BITS-1:0] recv_shifted = MRD_BITS'(sdram_rdata) << (int'(recv_word_q) * WORD_BITS);
+    wire [MRD_BITS-1:0] recv_merged  = accum_q | recv_shifted;
+    wire recv_col_last  = (recv_col_q == LAST_COL);
+    // Command issue: present a command whenever a fill is issuing.
+    wire issue_col_last  = (issue_col_q == LAST_COL);
+    wire issue_word_last = (issue_word_q == WORD_IDX_BITS'(WORDS_PER_COL - 1));
+    wire [WORD_IDX_BITS-1:0] issue_next_word = issue_word_q + 1'b1;
 
-    assign sdram_req = (state_q == STATE_FILL);
+    assign sdram_req  = issue_active_q;
     assign sdram_addr = sdram_addr_q;
 `else
     assign fill_address    = {fill_row_q, issue_col_q};
@@ -124,21 +143,26 @@ module row_prefetch #(
 
     always @(posedge clk_in) begin
         if (reset) begin
-            state_q <= STATE_FILL;
             bank_sel_q <= 1'b0;
             // Bank0 starts as the active (display) bank holding its default-zero
             // contents -- the same blank state multimem would show pre-migration.
             // Bank1 is primed with row 1 immediately so the first real swap is correct.
             fill_row_q <= types::row_subpanel_addr_t'(1);
-            issue_col_q <= '0;
             fill_done_q <= 1'b0;
 `ifdef USE_SDRAM_FB
-            word_idx_q <= '0;
+            issue_active_q <= 1'b1;
+            recv_active_q <= 1'b1;
+            issue_col_q <= '0;
+            issue_word_q <= '0;
+            recv_col_q <= '0;
+            recv_word_q <= '0;
             accum_q <= '0;
             sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(types::row_subpanel_addr_t'(1)), 0,
                                                    1'b0, 1'b0, params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
                                                    NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
 `else
+            state_q <= STATE_FILL;
+            issue_col_q <= '0;
             for (int i = 0; i < READ_LATENCY; i++) begin
                 col_pipe[i] <= '0;
                 valid_pipe[i] <= 1'b0;
@@ -154,56 +178,73 @@ module row_prefetch #(
 
             if (trigger) begin
                 bank_sel_q <= ~bank_sel_q;
-                state_q <= STATE_FILL;
                 fill_row_q <= row_address + types::row_subpanel_addr_t'(2);
-                issue_col_q <= '0;
                 fill_done_q <= 1'b0;
 `ifdef USE_SDRAM_FB
-                word_idx_q <= '0;
+                issue_active_q <= 1'b1;
+                recv_active_q <= 1'b1;
+                issue_col_q <= '0;
+                issue_word_q <= '0;
+                recv_col_q <= '0;
+                recv_word_q <= '0;
                 accum_q <= '0;
                 sdram_addr_q <= calc::sdram_word_addr(frame_select,
                                                        $bits(int)'(row_address + types::row_subpanel_addr_t'(2)), 0,
                                                        1'b0, 1'b0, params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
                                                        NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
 `else
+                state_q <= STATE_FILL;
+                issue_col_q <= '0;
                 col_pipe[0] <= '0;
                 valid_pipe[0] <= 1'b0;
 `endif
             end else begin
+`ifdef USE_SDRAM_FB
+                // ----- Command issue (pipelined): advance on each accept. -----
+                if (issue_active_q && sdram_cmd_ready) begin
+                    if (issue_col_last && issue_word_last) begin
+                        issue_active_q <= 1'b0;  // all commands issued
+                    end else if (issue_word_last) begin
+                        issue_word_q <= '0;
+                        issue_col_q  <= issue_col_q + 1'b1;
+                        sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q),
+                                                               $bits(int)'(issue_col_q + 1'b1), 1'b0, 1'b0,
+                                                               params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
+                                                               NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
+                    end else begin
+                        issue_word_q <= issue_next_word;
+                        sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q),
+                                                               $bits(int)'(issue_col_q), issue_next_word[1],
+                                                               issue_next_word[0], params::PIXEL_WIDTH,
+                                                               params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
+                                                               params::SDRAM_WORD_BYTES);
+                    end
+                end
+
+                // ----- Data return (in order): assemble + commit columns. -----
+                if (recv_active_q && sdram_rvalid) begin
+                    if (recv_word_q == WORD_IDX_BITS'(WORDS_PER_COL - 1)) begin
+                        if (bank_sel_q) begin
+                            bank0[recv_col_q] <= types::mem_read_data_t'(recv_merged);
+                        end else begin
+                            bank1[recv_col_q] <= types::mem_read_data_t'(recv_merged);
+                        end
+                        accum_q <= '0;
+                        recv_word_q <= '0;
+                        if (recv_col_last) begin
+                            recv_active_q <= 1'b0;
+                            fill_done_q <= 1'b1;
+                        end else begin
+                            recv_col_q <= recv_col_q + 1'b1;
+                        end
+                    end else begin
+                        accum_q <= recv_merged;
+                        recv_word_q <= recv_word_q + 1'b1;
+                    end
+                end
+`else
                 case (state_q)
                     STATE_FILL: begin
-`ifdef USE_SDRAM_FB
-                        if (sdram_done) begin
-                            if (word_idx_q == WORD_IDX_BITS'(WORDS_PER_COL - 1)) begin
-                                if (bank_sel_q) begin
-                                    bank0[issue_col_q] <= types::mem_read_data_t'(merged_word);
-                                end else begin
-                                    bank1[issue_col_q] <= types::mem_read_data_t'(merged_word);
-                                end
-                                word_idx_q <= '0;
-                                accum_q <= '0;
-                                if (issue_col_q == LAST_COL) begin
-                                    state_q <= STATE_IDLE;
-                                    fill_done_q <= 1'b1;
-                                end else begin
-                                    issue_col_q <= issue_col_q + 1'b1;
-                                    sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q),
-                                                                           $bits(int)'(issue_col_q + 1'b1), 1'b0,
-                                                                           1'b0, params::PIXEL_WIDTH,
-                                                                           params::PIXEL_HALFHEIGHT, NUM_SUBPANELS,
-                                                                           PIXEL_BYTES, params::SDRAM_WORD_BYTES);
-                                end
-                            end else begin
-                                accum_q <= merged_word;
-                                word_idx_q <= word_idx_q + 1'b1;
-                                sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q),
-                                                                       $bits(int)'(issue_col_q), next_word_idx[1],
-                                                                       next_word_idx[0], params::PIXEL_WIDTH,
-                                                                       params::PIXEL_HALFHEIGHT, NUM_SUBPANELS,
-                                                                       PIXEL_BYTES, params::SDRAM_WORD_BYTES);
-                            end
-                        end
-`else
                         col_pipe[0]   <= issue_col_q;
                         valid_pipe[0] <= 1'b1;
                         if (issue_col_q == LAST_COL) begin
@@ -211,9 +252,7 @@ module row_prefetch #(
                         end else begin
                             issue_col_q <= issue_col_q + 1'b1;
                         end
-`endif
                     end
-`ifndef USE_SDRAM_FB
                     STATE_DRAIN: begin
                         col_pipe[0]   <= '0;
                         valid_pipe[0] <= 1'b0;
@@ -222,15 +261,13 @@ module row_prefetch #(
                             fill_done_q <= 1'b1;
                         end
                     end
-`endif
                     STATE_IDLE: begin
-`ifndef USE_SDRAM_FB
                         col_pipe[0]   <= '0;
                         valid_pipe[0] <= 1'b0;
-`endif
                     end
                     default: state_q <= STATE_IDLE;
                 endcase
+`endif
             end
 
 `ifndef USE_SDRAM_FB
@@ -267,5 +304,9 @@ module row_prefetch #(
     end
     assign read_data_out = bank_sel_q ? bank1_dout_q : bank0_dout_q;
 
+`ifdef USE_SDRAM_FB
     wire _unused_ok = &{1'b0, read_address.row, 1'b0};
+`else
+    wire _unused_ok = &{1'b0, read_address.row, 1'b0};
+`endif
 endmodule

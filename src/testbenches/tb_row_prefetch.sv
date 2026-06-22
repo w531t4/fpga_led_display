@@ -4,30 +4,43 @@
 
 // tb_row_prefetch:
 // - Drives row_prefetch's backing-store fill port with a behavioral memory model
-//   (multimem-shaped 2-cycle latency by default; word-at-a-time SDRAM arbiter
-//   shape under USE_SDRAM_FB).
+//   (multimem-shaped 2-cycle latency by default; PIPELINED native-style read
+//   interface under USE_SDRAM_FB).
 // - Pulses row_latch/brightness_mask the way matrix_scan would at the end of a
 //   row's bitplane sequence, and checks the display-side read port returns the
-//   correct row's data after each ping-pong swap.
-// - Confirms the read port ignores the .row field of its address (only .col matters).
+//   correct row's data after each ping-pong swap (DATA CORRECTNESS).
+// - Under USE_SDRAM_FB, uses a deliberately HIGH read latency and asserts the
+//   fill still completes within a row's display window (THROUGHPUT): the old
+//   one-word-per-round-trip path could not, which is what scrambled hardware.
 module tb_row_prefetch;
     localparam time CLK_PERIOD = 10ns;
     localparam int unsigned RESET_CYCLES = 4;
-    localparam int unsigned FILL_MARGIN_CYCLES = 8;
 `ifdef USE_SDRAM_FB
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     localparam int unsigned PIXEL_BYTES = calc::num_pixeldata_bits(params::BYTES_PER_PIXEL) / 8;
     localparam int unsigned WORD_BITS = $bits(types::sdram_word_data_t);
     localparam int unsigned WORDS_PER_COL = $bits(types::mem_read_data_t) / WORD_BITS;
-    // Per word, the mock spends one cycle detecting sdram_req (IDLE), one
-    // cycle settling after done (SETTLE), and SDRAM_MOCK_READ_LATENCY+1
-    // cycles counting down to (and including) zero (WAIT).
-    localparam int unsigned SDRAM_MOCK_FSM_OVERHEAD_CYCLES = 2;
-    localparam int unsigned SDRAM_MOCK_CYCLES_PER_WORD =
-        params::SDRAM_MOCK_READ_LATENCY + 1 + SDRAM_MOCK_FSM_OVERHEAD_CYCLES;
-    localparam int unsigned FILL_WAIT_CYCLES =
-        params::PIXEL_WIDTH * WORDS_PER_COL * SDRAM_MOCK_CYCLES_PER_WORD + FILL_MARGIN_CYCLES;
+    localparam int unsigned WORDS_PER_FILL = params::PIXEL_WIDTH * WORDS_PER_COL;
+
+    // Deliberately high read latency to model real LiteDRAM (refresh / row miss)
+    // round trips -- far worse than the optimistic sim PHY -- so the throughput
+    // assertion actually bites. Pipelining must hide this.
+    localparam int unsigned MOCK_LATENCY = 24;
+    // The mock also backpressures command accept 1 cycle in 4, so the issue rate
+    // is ~3/4 word/cycle even when fully pipelined.
+    localparam int unsigned MOCK_BP_PERIOD = 4;
+
+    // A pipelined fill is ~ WORDS_PER_FILL * (MOCK_BP_PERIOD/(MOCK_BP_PERIOD-1))
+    // + MOCK_LATENCY cycles. Give generous slack for pacing between checks.
+    localparam int unsigned FILL_WAIT_CYCLES = WORDS_PER_FILL * 2 + MOCK_LATENCY + 256;
+
+    // THROUGHPUT DEADLINE: the fill must land well inside a display row window.
+    // The measured row window is ~21000 cycles; require the fill to finish in
+    // under a quarter of that. The old unpipelined path at MOCK_LATENCY=24 took
+    // ~WORDS_PER_FILL*(24+overhead) ~= 40k cycles and would blow this.
+    localparam int unsigned THROUGHPUT_DEADLINE_CYCLES = 5000;
 `else
+    localparam int unsigned FILL_MARGIN_CYCLES = 8;
     localparam int unsigned FILL_WAIT_CYCLES = params::PIXEL_WIDTH + FILL_MARGIN_CYCLES;
 `endif
 
@@ -45,8 +58,9 @@ module tb_row_prefetch;
 `ifdef USE_SDRAM_FB
     logic                    frame_select;
     logic                    sdram_req;
-    logic                    sdram_done;
     types::sdram_word_addr_t sdram_addr;
+    logic                    sdram_cmd_ready;
+    logic                    sdram_rvalid;
     types::sdram_word_data_t sdram_rdata;
 `else
     types::mem_read_addr_t fill_address;
@@ -68,8 +82,9 @@ module tb_row_prefetch;
 `ifdef USE_SDRAM_FB
         .frame_select(frame_select),
         .sdram_req(sdram_req),
-        .sdram_done(sdram_done),
         .sdram_addr(sdram_addr),
+        .sdram_cmd_ready(sdram_cmd_ready),
+        .sdram_rvalid(sdram_rvalid),
         .sdram_rdata(sdram_rdata)
 `else
         .fill_address(fill_address),
@@ -90,47 +105,43 @@ module tb_row_prefetch;
     endfunction
 
 `ifdef USE_SDRAM_FB
-    // ----- Behavioral SDRAM arbiter model: one word per req/done round trip. -----
+    // ----- Pipelined behavioral SDRAM read model: fixed MOCK_LATENCY, 1 cmd/cycle
+    // accept with periodic backpressure, in-order data return via a delay line. -----
     types::sdram_word_data_t model_words[types::sdram_word_addr_t];
-    enums::sdram_mock_state_e mock_state_q;
-    types::sdram_mock_wait_count_t read_wait_q;
-    types::sdram_word_addr_t read_addr_q;
 
-    // MOCK_SETTLE exists because row_prefetch reacts to `done` one cycle
-    // later (it's also a registered FSM), advancing word_idx_q/sdram_addr
-    // only after that edge. Without this extra idle cycle, this model would
-    // see "no transaction pending" and latch a new request against the
-    // *previous* word's still-unchanged sdram_addr -- duplicating it instead
-    // of fetching the next word.
+    logic [$clog2(MOCK_BP_PERIOD)-1:0] bp_q;
+    assign sdram_cmd_ready = (bp_q != 0);  // not-ready 1 cycle in MOCK_BP_PERIOD
+
+    logic                    pipe_valid_q[MOCK_LATENCY];
+    types::sdram_word_addr_t pipe_addr_q [MOCK_LATENCY];
+
     always_ff @(posedge clk_in) begin
         if (reset) begin
-            mock_state_q <= enums::SDRAM_MOCK_IDLE;
-            read_wait_q <= '0;
-            sdram_done <= 1'b0;
+            bp_q <= '0;
+            sdram_rvalid <= 1'b0;
+            sdram_rdata <= '0;
+            for (int i = 0; i < MOCK_LATENCY; i++) begin
+                pipe_valid_q[i] <= 1'b0;
+                pipe_addr_q[i] <= '0;
+            end
         end else begin
-            sdram_done <= 1'b0;
-            case (mock_state_q)
-                enums::SDRAM_MOCK_IDLE: begin
-                    if (sdram_req) begin
-                        read_addr_q <= sdram_addr;
-                        read_wait_q <= types::sdram_mock_wait_count_t'(params::SDRAM_MOCK_READ_LATENCY);
-                        mock_state_q <= enums::SDRAM_MOCK_WAIT;
-                    end
-                end
-                enums::SDRAM_MOCK_WAIT: begin
-                    if (read_wait_q == 0) begin
-                        sdram_done <= 1'b1;
-                        sdram_rdata <= model_words[read_addr_q];
-                        mock_state_q <= enums::SDRAM_MOCK_SETTLE;
-                    end else begin
-                        read_wait_q <= read_wait_q - 1'b1;
-                    end
-                end
-                enums::SDRAM_MOCK_SETTLE: begin
-                    mock_state_q <= enums::SDRAM_MOCK_IDLE;
-                end
-                default: mock_state_q <= enums::SDRAM_MOCK_IDLE;
-            endcase
+            bp_q <= (bp_q == ($clog2(MOCK_BP_PERIOD))'(MOCK_BP_PERIOD - 1)) ? '0 : bp_q + 1'b1;
+
+            // Shift the latency delay line up by one stage.
+            for (int i = MOCK_LATENCY - 1; i > 0; i--) begin
+                pipe_valid_q[i] <= pipe_valid_q[i-1];
+                pipe_addr_q[i]  <= pipe_addr_q[i-1];
+            end
+            // Enqueue an accepted command at stage 0.
+            if (sdram_req && sdram_cmd_ready) begin
+                pipe_valid_q[0] <= 1'b1;
+                pipe_addr_q[0]  <= sdram_addr;
+            end else begin
+                pipe_valid_q[0] <= 1'b0;
+            end
+            // Drive the data return from the last stage (registered).
+            sdram_rvalid <= pipe_valid_q[MOCK_LATENCY-1];
+            sdram_rdata  <= model_words[pipe_addr_q[MOCK_LATENCY-1]];
         end
     end
 `else
@@ -173,6 +184,27 @@ module tb_row_prefetch;
     localparam types::col_addr_t LAST_COL = types::col_addr_t'(params::PIXEL_WIDTH - 1);
     localparam types::col_addr_t MID_COL = types::col_addr_t'(params::PIXEL_WIDTH / 2);
     localparam types::row_subpanel_addr_t JUNK_ROW = '1;
+
+`ifdef USE_SDRAM_FB
+    // ----- Throughput watchdog: time the first fill (primed at reset) and assert
+    // it finishes within the row-window deadline. row_prefetch.fill_done_q rises
+    // when a fill's last word has been received. -----
+    initial begin : throughput_check
+        int unsigned cyc;
+        cyc = 0;
+        @(negedge reset);
+        // Wait for the reset-primed fill of row 1 to complete.
+        while (dut.fill_done_q !== 1'b1) begin
+            @(posedge clk_in);
+            cyc = cyc + 1;
+            if (cyc > THROUGHPUT_DEADLINE_CYCLES)
+                $fatal(1, "THROUGHPUT: fill did not complete within %0d cycles (latency=%0d) -- read path not pipelined",
+                       THROUGHPUT_DEADLINE_CYCLES, MOCK_LATENCY);
+        end
+        $display("tb_row_prefetch: fill completed in %0d cycles (deadline %0d, latency %0d)",
+                 cyc, THROUGHPUT_DEADLINE_CYCLES, MOCK_LATENCY);
+    end
+`endif
 
     initial begin
 `ifdef DUMP_FILE_NAME
