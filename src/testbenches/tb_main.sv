@@ -164,6 +164,19 @@ module tb_main #(
 `ifdef SPI
     wire [7:0] _unused_data_rx;
     wire _unused_data_ready_n;
+    // Pace the modeled SPI master. Default: the full ready_for_data handshake.
+    // TB_SPI_FREERUN models the REAL ESP32: it honors the command-level
+    // backpressure it can actually see (busy / a command holding off its byte
+    // stream, == ready_for_data_logic || ~busy) but NOT the per-byte SDRAM write
+    // backpressure (sdram_write_ready), which is not wired off-chip. So during a
+    // data command (readrow/readrect/readframe) the master free-runs and, if the
+    // SDRAM write path can't keep up, bytes are dropped exactly as on the board --
+    // reproducing the persistent-wrong-pixels failure.
+`ifdef TB_SPI_FREERUN
+    wire spi_pace_ready = tb_main.tbi_main.ctrl.ready_for_data_logic || ~tb_main.tbi_main.ctrl.busy;
+`else
+    wire spi_pace_ready = tb_main.tbi_main.ctrl.ready_for_data;
+`endif
     tb_spi_streamer #(
         .SPI_CDIV(SPI_CDIV),
         .DATA_BITS($bits(cmd_series)),
@@ -172,7 +185,7 @@ module tb_main #(
         .clk           (clk),
         .reset         (reset),
         .start         (spi_start),
-        .ready_for_data(tb_main.tbi_main.ctrl.ready_for_data),
+        .ready_for_data(spi_pace_ready),
         .data          (cmd_series),
         .done          (spi_done),
         .spi_clk_en    (spi_clk_en),
@@ -280,8 +293,40 @@ module tb_main #(
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         wait (cmd_line_state_seq_done);
+`ifdef TB_SPI_FREERUN
+        if (wc_notready_max >= WC_NOTREADY_LIMIT)
+            $fatal(1, "WRITE-KEEPUP FAIL: SDRAM write path not ready for up to %0d consecutive cycles mid data-command (>= an SPI byte period) -> host bytes dropped on hardware (wrong/persistent pixels)", wc_notready_max);
+        $display("WRITE-KEEPUP OK: worst write not-ready run = %0d cycles (< byte period; no host bytes dropped)", wc_notready_max);
+`endif
         $finish;
     end
+
+`ifdef TB_SPI_FREERUN
+    // Write keep-up monitor (real-ESP32 model): during a host-data command
+    // (ready_for_data_logic==1 -> readrow/readrect/readframe/readcol/readpixel/
+    // readbrightness) the free-running master cannot be stalled, so the SDRAM
+    // write path must stay ready. A SUSTAINED not-ready stretch (>= one SPI byte
+    // period, ~33 cycles here) guarantees a host byte is dropped on the wire ==
+    // a persistent wrong pixel on hardware. Track the worst consecutive not-ready
+    // run: a 1-2 cycle command-boundary transient drops nothing and is tolerated,
+    // while the shallow-FIFO failure produces runs in the hundreds. The depth-32
+    // write FIFO keeps the worst run to <=2. (fill/blank/copy self-backpressure
+    // with logic==0 and are correctly excluded.)
+    localparam int unsigned WC_NOTREADY_LIMIT = 16;
+    int unsigned wc_notready_run = 0;
+    int unsigned wc_notready_max = 0;
+    always @(posedge clk) begin
+        if (!reset
+            && tb_main.tbi_main.ctrl.cmd_line_state !== enums::STATE_IDLE
+            && tb_main.tbi_main.ctrl.ready_for_data_logic === 1'b1
+            && tb_main.tbi_main.write_client_ready === 1'b0) begin
+            wc_notready_run <= wc_notready_run + 1;
+            if (wc_notready_run + 1 > wc_notready_max) wc_notready_max <= wc_notready_run + 1;
+        end else begin
+            wc_notready_run <= 0;
+        end
+    end
+`endif
 
 `ifdef SPI_ESP32
     initial begin : assert_fpga_ready_sequence

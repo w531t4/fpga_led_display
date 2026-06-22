@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 
+// Depth of the write FIFO (must be a power of 2). Overridable per-build for
+// tuning the SDRAM write-absorption margin, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_WRITE_FIFO_DEPTH=64".
+`ifndef SDRAM_WRITE_FIFO_DEPTH
+`define SDRAM_WRITE_FIFO_DEPTH 32
+`endif
+
 // sdram_write_client: Converts control_module's existing per-byte BRAM-style write
 // output into a priority-2 client of sdram_arbiter. One write at a time -- `ready`
 // gates control_module's `ready_for_data` so the host can't outrun us.
@@ -32,29 +38,40 @@ module sdram_write_client #(
     localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     localparam int unsigned PIXEL_BYTES = calc::num_pixeldata_bits(params::BYTES_PER_PIXEL) / 8;
 
-    // 1-deep skid buffer (capacity 2: one in-flight to the arbiter + one
-    // pending). Without it the client was strictly one-at-a-time, so `ready`
-    // (which gates control_module's ready_for_data) stayed low for a whole write
-    // round trip after every byte and the host SPI serialized as SPI-byte-time +
-    // write-round-trip per byte. Buffering one write lets the host stream the
-    // next byte while the current write is in flight, so the write overlaps the
-    // next SPI transfer and large host writes (readrow/readframe) run near their
-    // SPI floor.
+    // Write FIFO (depth DEPTH) ahead of a single arbiter-facing in-flight slot.
+    //
+    // WHY A DEEP FIFO (not a 1-deep skid): the ESP32 is the SPI master and CANNOT
+    // be stalled mid-command -- `ready`/control_module's ready_for_data is NOT
+    // wired off-chip (the only off-chip flow control is the command-level `busy`
+    // line, polled between commands). So within one host write command
+    // (readrow/readrect/readframe) the FPGA must absorb every byte at the SPI rate
+    // or that byte is silently dropped on the wire, desyncing the pixel stream --
+    // the "persistent wrong pixels / failed to interpret ESP32 data" hardware
+    // failure. (Reproduced in sim by tb_main + -DTB_SPI_FREERUN, which free-runs
+    // the modeled master like the real ESP32; a 1-deep skid drops bytes there.)
+    // The SDRAM has ~30x the host's average write bandwidth even while sharing the
+    // bus with prefetch, so a FIFO this deep rides out the prefetch-fill bursts and
+    // keeps `ready` high for the whole command. DEPTH is overridable for tuning.
     //
     // CRITICAL PATH: the deep src_addr arithmetic (calc::sdram_word_addr) ONLY
-    // lands in the pending/skid registers; the arbiter-facing sdram_addr_q is
-    // loaded by a plain register copy (pending -> in-flight). Driving src_addr
-    // straight into sdram_addr_q's input mux dropped the SDRAM-clock Fmax below
-    // 80MHz (see PLAN.md 3.3 hardware note); keeping it one stage back restores it.
-    logic inflight_q;    // a write issued to the arbiter, awaiting sdram_done
-    logic pend_valid_q;  // a captured write buffered behind the in-flight one
+    // lands at the FIFO write port; the arbiter-facing sdram_addr_q is a plain
+    // register copy of the FIFO head (no arithmetic in that path). Driving
+    // src_addr straight into sdram_addr_q's input mux dropped the SDRAM-clock Fmax
+    // below 80MHz (see PLAN.md 3.3 hardware note); keeping it behind the FIFO
+    // restores it.
+    localparam int unsigned DEPTH = `SDRAM_WRITE_FIFO_DEPTH;
+    localparam int unsigned PTR_BITS = $clog2(DEPTH);
 
-    types::sdram_word_addr_t sdram_addr_q;      // in-flight (arbiter-facing) regs
+    types::sdram_word_addr_t fifo_addr_q [DEPTH];   // deep arith lands here (write port)
+    types::sdram_byte_en_t   fifo_we_q   [DEPTH];
+    types::sdram_word_data_t fifo_data_q [DEPTH];
+    logic [PTR_BITS-1:0]     wr_ptr_q, rd_ptr_q;
+    logic [PTR_BITS:0]       count_q;               // occupancy 0..DEPTH
+
+    logic inflight_q;                               // a write issued to the arbiter, awaiting sdram_done
+    types::sdram_word_addr_t sdram_addr_q;          // in-flight (arbiter-facing) regs -- register copy of FIFO head
     types::sdram_byte_en_t   sdram_wdata_we_q;
     types::sdram_word_data_t sdram_wdata_q;
-    types::sdram_word_addr_t pend_addr_q;       // buffered next write (deep arith lands here)
-    types::sdram_byte_en_t   pend_wdata_we_q;
-    types::sdram_word_data_t pend_wdata_q;
 
     wire word_select_in = calc::sdram_pixel_word_select($bits(int)'(source_addr.pixel), params::SDRAM_WORD_BYTES);
     wire types::sdram_byte_in_word_t byte_in_word_in =
@@ -69,8 +86,32 @@ module sdram_write_client #(
         types::sdram_word_data_t'($bits(int)'(source_data) << (byte_in_word_in * 8));
 
     wire inflight_free = !inflight_q || sdram_done;
+    wire empty = (count_q == '0);
+    wire full  = count_q[PTR_BITS];                 // count_q == DEPTH (DEPTH is 2**PTR_BITS)
 
-    assign ready = !pend_valid_q || inflight_free;
+    wire push = source_write_valid && !full;        // accept a host write into the FIFO tail
+`ifdef SDRAM_SIM_SLOW_WRITES
+    // SIM-ONLY (never synthesized): periodically stall write draining to mimic the
+    // real-DRAM stalls (refresh / tRC / row-miss, plus longer prefetch fills) that
+    // the optimistic SDRAMPHYModel doesn't model -- so the sim can reproduce the
+    // on-chip write-overrun byte drop and demonstrate this FIFO's depth fixing it.
+    // Stalls draining SDRAM_SIM_WRITE_PAUSE cycles out of every SDRAM_SIM_WRITE_PERIOD.
+    `ifndef SDRAM_SIM_WRITE_PERIOD
+    `define SDRAM_SIM_WRITE_PERIOD 2000
+    `endif
+    `ifndef SDRAM_SIM_WRITE_PAUSE
+    `define SDRAM_SIM_WRITE_PAUSE 200
+    `endif
+    int unsigned throttle_cnt_q = 0;
+    wire write_drain_paused = (throttle_cnt_q < `SDRAM_SIM_WRITE_PAUSE);
+    always @(posedge clk_in)
+        throttle_cnt_q <= (reset || throttle_cnt_q >= `SDRAM_SIM_WRITE_PERIOD - 1) ? 0 : throttle_cnt_q + 1;
+`else
+    wire write_drain_paused = 1'b0;
+`endif
+    wire pop  = inflight_free && !empty && !write_drain_paused;  // move FIFO head into the in-flight slot
+
+    assign ready = !full;
     assign sdram_req = inflight_q;
     assign sdram_addr = sdram_addr_q;
     assign sdram_wdata_we = sdram_wdata_we_q;
@@ -79,38 +120,40 @@ module sdram_write_client #(
     always @(posedge clk_in) begin
         if (reset) begin
             inflight_q <= 1'b0;
-            pend_valid_q <= 1'b0;
+            wr_ptr_q <= '0;
+            rd_ptr_q <= '0;
+            count_q <= '0;
             sdram_addr_q <= '0;
             sdram_wdata_we_q <= '0;
             sdram_wdata_q <= '0;
-            pend_addr_q <= '0;
-            pend_wdata_we_q <= '0;
-            pend_wdata_q <= '0;
         end else begin
-            // Issue: promote the pending write into the freeing in-flight slot.
-            // Register-to-register copy only -- no arithmetic in this path.
-            if (inflight_free) begin
-                if (pend_valid_q) begin
-                    sdram_addr_q     <= pend_addr_q;
-                    sdram_wdata_we_q <= pend_wdata_we_q;
-                    sdram_wdata_q    <= pend_wdata_q;
-                    inflight_q       <= 1'b1;
-                    pend_valid_q     <= 1'b0;
-                end else begin
-                    inflight_q <= 1'b0;
-                end
+            // Push: capture a new source write into the FIFO tail. This is the only
+            // flop the deep src_addr arithmetic feeds.
+            if (push) begin
+                fifo_addr_q[wr_ptr_q] <= src_addr;
+                fifo_we_q[wr_ptr_q]   <= src_wdata_we;
+                fifo_data_q[wr_ptr_q] <= src_wdata;
+                wr_ptr_q <= wr_ptr_q + 1'b1;
             end
 
-            // Capture a new source write into the pending slot. This is the only
-            // flop the deep src_addr arithmetic feeds. Non-blocking semantics let
-            // an issue (reading old pend_*) and a capture (writing new pend_*)
-            // co-occur, so steady-state throughput stays one write per cycle-pair.
-            if (source_write_valid && ready) begin
-                pend_addr_q     <= src_addr;
-                pend_wdata_we_q <= src_wdata_we;
-                pend_wdata_q    <= src_wdata;
-                pend_valid_q    <= 1'b1;
+            // Pop: promote the FIFO head into the freeing in-flight slot. Plain
+            // register copy from the FIFO read port -- no arithmetic in this path.
+            if (pop) begin
+                sdram_addr_q     <= fifo_addr_q[rd_ptr_q];
+                sdram_wdata_we_q <= fifo_we_q[rd_ptr_q];
+                sdram_wdata_q    <= fifo_data_q[rd_ptr_q];
+                inflight_q       <= 1'b1;
+                rd_ptr_q         <= rd_ptr_q + 1'b1;
+            end else if (inflight_free) begin
+                inflight_q <= 1'b0;
             end
+
+            // Occupancy: push and pop may co-occur (host streams the next byte as a
+            // write completes), netting zero change -- only a lone push/pop moves it.
+            if (push && !pop)
+                count_q <= count_q + 1'b1;
+            else if (pop && !push)
+                count_q <= count_q - 1'b1;
         end
     end
 endmodule

@@ -9,6 +9,23 @@
 `ifdef SIM
 `timescale 1ns / 10ps
 `endif
+
+// SDRAM device-clock phase (SPEED 2 / 80 MHz CLKOS), as ECP5 PLL CPHASE/FPHASE.
+// Default 4/6 == +90 deg, the LiteX ULX3S known-good SDR relationship that made
+// the display correct. One FPHASE step ~= 6.4 deg (360/CLKOS_DIV/8, CLKOS_DIV=7);
+// CPHASE+1 == +51.4 deg. Reads are clean at 90 deg but writes are marginal (some
+// pixels persist wrong), so the optimum write/read compromise may be a few FPHASE
+// steps off 90. Override per-build to sweep the SDRAM clock phase WITHOUT editing
+// source, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_CLK_FPHASE=4" (~77 deg) or
+// "-DSDRAM_CLK_CPHASE=5 -DSDRAM_CLK_FPHASE=0" (~103 deg). Sweep grid around 90:
+//   77: C4 F4 | 84: C4 F5 | 90: C4 F6 | 96: C4 F7 | 103: C5 F0 | 109: C5 F1
+`ifndef SDRAM_CLK_CPHASE
+`define SDRAM_CLK_CPHASE 4
+`endif
+`ifndef SDRAM_CLK_FPHASE
+`define SDRAM_CLK_FPHASE 6
+`endif
+
 module new_pll #(
     parameter integer unsigned SPEED = 0,  // 0 - 16mhz, 1 - 50mhz, 2 - 80mhz 3 - 90mhz, 4 - 100mhz, 5 - 110mhz - else use the incoming 25mhz clock
     // verilator lint_off UNUSEDPARAM
@@ -147,8 +164,8 @@ module new_pll #(
             .CLKOP_FPHASE(0),
             .CLKOS_ENABLE("ENABLED"),
             .CLKOS_DIV(7),
-            .CLKOS_CPHASE(4),
-            .CLKOS_FPHASE(6),
+            .CLKOS_CPHASE(`SDRAM_CLK_CPHASE),
+            .CLKOS_FPHASE(`SDRAM_CLK_FPHASE),
             .FEEDBK_PATH("CLKOP"),
             .CLKFB_DIV(16)
         ) pll_i (
