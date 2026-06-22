@@ -34,9 +34,17 @@ VERILATOR_EXCLUDE_SOURCES += $(LITEDRAM_GATEWARE)
 VERILATOR_EXTRA_SOURCES   += $(LITEDRAM_SIM_GATEWARE)
 else
 # The sim-core bring-up tb only makes sense when the wrapper is in the build.
-TBSRCS  := $(filter-out $(TB_DIR)/tb_litedram_wrapper_sim.sv, $(TBSRCS))
-SIMBINS := $(filter-out $(SIM_BIN_DIR)/litedram_wrapper_sim, $(SIMBINS))
-FSTOBJS := $(filter-out $(SIMULATION_DIR)/litedram_wrapper_sim.fst, $(FSTOBJS))
+TBSRCS  := $(filter-out $(TB_DIR)/tb_litedram_wrapper_sim.sv $(TB_DIR)/tb_sdram_fb_e2e.sv, $(TBSRCS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/litedram_wrapper_sim $(SIM_BIN_DIR)/sdram_fb_e2e, $(SIMBINS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/litedram_wrapper_sim.fst $(SIMULATION_DIR)/sdram_fb_e2e.fst, $(FSTOBJS))
+endif
+
+# The end-to-end framebuffer test also needs the SDRAM framebuffer path
+# (row_prefetch/arbiter/write_client SDRAM ports), so drop it without USE_SDRAM_FB.
+ifneq ($(findstring -DUSE_SDRAM_FB,$(BUILD_FLAGS)),-DUSE_SDRAM_FB)
+TBSRCS  := $(filter-out $(TB_DIR)/tb_sdram_fb_e2e.sv, $(TBSRCS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/sdram_fb_e2e, $(SIMBINS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/sdram_fb_e2e.fst, $(FSTOBJS))
 endif
 
 .PHONY: litedram litedram-smoke litedram-wrapper-smoke litedram-main-smoke
