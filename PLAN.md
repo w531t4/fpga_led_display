@@ -237,8 +237,47 @@ Confirm the controller is reliable before swapping the backend.
   Fixed by setting `sys_clk_freq` to `80e6` and regenerating (`make litedram`). Regeneration shifted
   the core's internal datapath enough to reopen a timing near-miss (76.38MHz); `make
   pack-until-success` closed it again at 81.80MHz. `make litedram-main-smoke` and `make pack` both
-  clean; `build/ulx3s.bit` rebuilt. Awaiting real-hardware re-flash to confirm the displayed image
-  is now correct.
+  clean; `build/ulx3s.bit` rebuilt.
+
+  Re-flash after the clock-frequency fix: still scrambled, plus new symptoms — ESPHome wrapper's
+  `update()` went from ~4ms to ~112ms, idle flicker far above the expected ~0.5%/s, and a test
+  pattern barely changed any pixels. Added a diagnostic-only `fill_overrun_sticky` output to
+  `row_prefetch.sv` (set if a row-swap point is ever reached before the previous fill finished) and
+  wired it to `led[2]`; it lit up immediately, even for a single push-and-toggle with zero
+  contention from other clients. Root cause: `sdram_arbiter.sv`'s per-word protocol is a full,
+  unpipelined round trip (re-arbitrate, issue command, wait for completion, *then* issue the next
+  word) — `row_prefetch` alone needs ~3072 such round trips per row, and the display's real
+  per-row deadline (governed by `matrix_scan`/`brightness_timeout`'s BAM timing) gives it nowhere
+  near enough margin at real LiteDRAM round-trip latency (`ulx3s_sdram.yml` already configures
+  `cmd_buffer_depth: 16`, i.e. LiteDRAM supports pipelined outstanding commands that the arbiter
+  never uses). Once a fill falls behind once, `trigger`'s gate on `fill_done_q` means it never
+  recovers — it holds the arbiter indefinitely, starving `sdram_write_client`/`control_cmd_copyframe`
+  (explains the slow `update()`/test-pattern symptoms) while the display keeps re-showing stale rows
+  (explains the scrambling/flicker). This is the risk flagged as unverified in the "Open performance
+  question for 3.5" note above, now confirmed real on hardware.
+
+  Before redesigning the arbiter, fixed the testbench suite that should have caught this but didn't:
+  `tb_row_prefetch.sv`'s correctness checks pace `pulse_trigger()` off `FILL_WAIT_CYCLES` (however
+  long the mock needs), so a fill can never appear to fall behind a deadline that's defined as
+  "whatever the fill needs." Added a second instance (`dut_throughput`) driven by real
+  `matrix_scan`+`clock_divider` (the same modules `main.sv` wires up) instead of a hand-paced
+  trigger, alongside a realistic `params::SDRAM_MOCK_READ_LATENCY` (raised from a toy `3` to `20`,
+  an informed estimate of a real LiteDRAM native-port round trip — arbiter entry + cmd_ready + CAS +
+  data-return pipeline). This new check fails immediately (as expected, confirming it actually
+  detects the bug): `tp_fill_overrun_sticky` trips well within `TP_ROW_CYCLES_TO_OBSERVE=3` row
+  cycles. The original correctness checks and every other testbench depending on
+  `SDRAM_MOCK_READ_LATENCY` (`tb_sdram_write_client`, `tb_sdram_arbiter`, `tb_control_cmd_copyframe`,
+  `tb_control_module_copyframe_readframe`) still pass — their wait-budgets are formula-derived from
+  the same constant, so they scaled automatically. `make lint` and full `make simulation` (default
+  flags) clean. Note: `tb_control_module_copyframe_readframe`'s realistic-latency run now shows
+  `copyframe_cycles` at ~3.8x `readframe_cycles` (1130450 vs 294904) — `control_cmd_copyframe`'s
+  word-at-a-time engine likely has the same unpipelined-round-trip problem as `row_prefetch`, just
+  not yet confirmed on hardware. Flagging as a follow-up, not fixing now.
+
+  Next: redesign `sdram_arbiter.sv`/`row_prefetch.sv` so a granted client can pipeline multiple
+  outstanding word requests (exclusive per-chunk grant, simple pass-through while granted, so the
+  arbiter doesn't need general multi-client outstanding-request bookkeeping) instead of waiting for
+  each word's full round trip before issuing the next.
 
 - [x] **3.4** Remove BRAM framebuffer — once SDRAM path is verified, remove `multimem`,
   `framebuffer_fabric`, `mem_lane` from the build. `litedram_write_mirror` becomes dead code

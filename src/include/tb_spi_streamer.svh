@@ -39,12 +39,18 @@ module tb_spi_streamer #(
     wire spi_master_txdone;
     wire [7:0] _unused_ok_rdata;
 
-    // Drive the spi_master exactly as tb_main does (start held high).
+    // Drive the spi_master exactly as tb_main does (start held high), but gate
+    // the clock on ready_for_data: the master only advances bits while the FPGA
+    // is ready for the next byte. Without this, the free-running master keeps
+    // clocking when ready_for_data drops (e.g. SDRAM write backpressure) and
+    // RE-TRANSMITS the current byte -- injecting duplicate bytes that desync the
+    // command stream. Gating models the real host holding off SPI until ready.
+    // (Under BRAM ready_for_data stays high, so behavior is unchanged.)
     spi_master #(
         ._UNUSED('d0)
     ) spimaster (
         .rstb (~reset),
-        .clk  (clk && spi_clk_en),
+        .clk  (clk && spi_clk_en && ready_for_data),
         .mlb  (1'b1),               // shift msb first
         .start(spi_start),
         .tdat (thebyte),
