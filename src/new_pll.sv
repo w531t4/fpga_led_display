@@ -15,16 +15,23 @@ module new_pll #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-    input  clock_in,   // 25 MHz, 0 deg
-    output clock_out,  // depends on SPEED
+    input  clock_in,      // 25 MHz, 0 deg
+    output clock_out,     // system clock, depends on SPEED
+    // Same frequency as clock_out but +90 deg, for the SDRAM device clock (the
+    // ULX3S/LiteX known-good SDR relationship -- see PLAN2.md). Only the SPEED 2
+    // (80 MHz) branch produces a true 90 deg shift today; other speeds tie it to
+    // clock_out (they are not the active SDRAM build).
+    output clock_shifted,
     output locked
 );
 `ifdef SIM
     assign clock_out = clock_in;
+    assign clock_shifted = clock_in;
     assign locked = 1'b1;
 `else
     wire clkfb;
     if (SPEED == 0) begin : g_speed0
+        assign clock_shifted = clock_out;  // no SDRAM 90deg output at this speed
         // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 16 -n pll --highres --file abc
         (* FREQUENCY_PIN_CLKI="25" *)
         (* FREQUENCY_PIN_CLKOS="16" *)
@@ -70,6 +77,7 @@ module new_pll #(
             .LOCK(locked)
         );
     end else if (SPEED == 1) begin : g_speed1
+        assign clock_shifted = clock_out;  // TODO: 90deg output if/when 50MHz SDRAM fallback is used
         // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 50 -n pll --highres --file abc
         (* FREQUENCY_PIN_CLKI="25" *)
         (* FREQUENCY_PIN_CLKOS="50" *)
@@ -115,9 +123,14 @@ module new_pll #(
             .LOCK(locked)
         );
     end else if (SPEED == 2) begin : g_speed2
-        wire clkfb;
-        (* FREQUENCY_PIN_CLKI="25" *) (* FREQUENCY_PIN_CLKOS="80" *) (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *)
-            (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
+        // ecppll: -i 25 --clkout0 80 --clkout1 80 --phase1 90  (no --highres).
+        // CLKOP = clock_out (80 MHz, 0 deg, also the feedback); CLKOS =
+        // clock_shifted (80 MHz, +90 deg) for the SDRAM device clock. This also
+        // replaces the previous out-of-range CLKOS CPHASE/FPHASE constants.
+        (* FREQUENCY_PIN_CLKI="25" *)
+        (* FREQUENCY_PIN_CLKOP="80" *)
+        (* FREQUENCY_PIN_CLKOS="80" *)
+        (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
         EHXPLLL #(
             .PLLRST_ENA("DISABLED"),
             .INTFB_WAKE("DISABLED"),
@@ -129,22 +142,22 @@ module new_pll #(
             .OUTDIVIDER_MUXD("DIVD"),
             .CLKI_DIV(5),
             .CLKOP_ENABLE("ENABLED"),
-            .CLKOP_DIV(56),
-            .CLKOP_CPHASE(9),
+            .CLKOP_DIV(7),
+            .CLKOP_CPHASE(3),
             .CLKOP_FPHASE(0),
             .CLKOS_ENABLE("ENABLED"),
             .CLKOS_DIV(7),
-            .CLKOS_CPHASE(-1385788672),
-            .CLKOS_FPHASE(32767),
+            .CLKOS_CPHASE(4),
+            .CLKOS_FPHASE(6),
             .FEEDBK_PATH("CLKOP"),
-            .CLKFB_DIV(2)
+            .CLKFB_DIV(16)
         ) pll_i (
             .RST(1'b0),
             .STDBY(1'b0),
             .CLKI(clock_in),
-            .CLKOP(clkfb),
-            .CLKOS(clock_out),
-            .CLKFB(clkfb),
+            .CLKOP(clock_out),
+            .CLKOS(clock_shifted),
+            .CLKFB(clock_out),
             .CLKINTFB(),
             .PHASESEL0(1'b0),
             .PHASESEL1(1'b0),
@@ -156,6 +169,7 @@ module new_pll #(
             .LOCK(locked)
         );
     end else if (SPEED == 3) begin : g_speed3
+        assign clock_shifted = clock_out;  // no SDRAM 90deg output at this speed
         // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 90 -n pll --highres --file abc
         (* FREQUENCY_PIN_CLKI="25" *)
         (* FREQUENCY_PIN_CLKOS="90" *)
@@ -201,6 +215,7 @@ module new_pll #(
             .LOCK(locked)
         );
     end else if (SPEED == 4) begin : g_speed4
+        assign clock_shifted = clock_out;  // no SDRAM 90deg output at this speed
         // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 100 -n pll --highres --file abc
         (* FREQUENCY_PIN_CLKI="25" *)
         (* FREQUENCY_PIN_CLKOS="100" *)
@@ -246,6 +261,7 @@ module new_pll #(
             .LOCK(locked)
         );
     end else if (SPEED == 5) begin : g_speed5
+        assign clock_shifted = clock_out;  // no SDRAM 90deg output at this speed
         (* FREQUENCY_PIN_CLKI="25" *)
             (* FREQUENCY_PIN_CLKOS="110" *)
             (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
@@ -288,6 +304,7 @@ module new_pll #(
         );
     end else begin : g_speedelse
         assign clock_out = clock_in;
+        assign clock_shifted = clock_in;
     end
 `endif
     logic _unused_ok = &{1'b0, 1'(SPEED), 1'b0};

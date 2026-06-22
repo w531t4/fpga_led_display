@@ -7,6 +7,7 @@
 // native-port interface plus board-level SDRAM pins.
 module ulx3s_litedram_wrapper (
     input  logic        clk,
+    input  logic        clk_shifted,  // clk shifted +90 deg, forwarded to the SDRAM clock pad
     input  logic        reset,
 
     output logic        init_done,
@@ -66,10 +67,25 @@ module ulx3s_litedram_wrapper (
     // dedicated ODDR + PLL phase output is the cleaner long-term form.
     // (Plain invert keeps the Verilator/sim build free of vendor primitives;
     // sdram_clk is unused there anyway.)
-`ifdef SDRAM_CLK_INPHASE
+    // Forward the 90-deg phase-shifted clock to the SDRAM clock pad through a DDR
+    // output register -- exactly the LiteX ULX3S target's
+    // `DDROutput(1, 0, sdram_clock, ClockSignal("sys_ps"))` with sys_ps = clk+90.
+    // The SDR device samples on its rising edge, which 90 deg lands mid-data-eye
+    // (in-phase / the old crude ~clk both sampled near the data transitions ->
+    // corrupted reads on hardware). ODDRX1F is an ECP5 synth-only primitive with
+    // no Verilator model; under SIM the sim core has no SDRAM pads and sdram_clk
+    // is unused, so tie it off there to keep the sim build primitive-free.
+`ifdef SIM
     assign sdram_clk = clk;
+    wire _unused_ok_clk_shifted = &{1'b0, clk_shifted, 1'b0};
 `else
-    assign sdram_clk = ~clk;  // 180 degrees
+    ODDRX1F sdram_clk_oddr (
+        .SCLK(clk_shifted),
+        .RST (1'b0),
+        .D0  (1'b1),
+        .D1  (1'b0),
+        .Q   (sdram_clk)
+    );
 `endif
 
     litedram_init init (

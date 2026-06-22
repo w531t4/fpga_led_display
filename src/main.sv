@@ -280,11 +280,18 @@ module main #(
 `endif
     // No wires past here
 
+`ifdef USE_LITEDRAM
+    // 90-deg-shifted copy of clk_root, forwarded to the SDRAM device clock.
+    wire clk_root_shifted;
+`endif
     new_pll #(
         .SPEED(params::PLL_SPEED)
     ) new_pll_inst (
         .clock_in(clk_25mhz),
         .clock_out(clk_root),
+`ifdef USE_LITEDRAM
+        .clock_shifted(clk_root_shifted),
+`endif
         .locked(pll_locked)
     );
 
@@ -362,6 +369,7 @@ module main #(
 `ifdef USE_LITEDRAM
     ulx3s_litedram_wrapper litedram (
         .clk(clk_root),
+        .clk_shifted(clk_root_shifted),
         .reset(global_reset_sync | ~pll_locked),
         .init_done(litedram_init_done),
         .init_error(litedram_init_error),
