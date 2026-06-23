@@ -56,7 +56,13 @@ module row_prefetch #(
     output types::sdram_word_addr_t sdram_addr,
     input  logic                    sdram_cmd_ready,
     input  logic                    sdram_rvalid,
-    input  types::sdram_word_data_t sdram_rdata
+    input  types::sdram_word_data_t sdram_rdata,
+    // STICKY diagnostic (-> LED): set if a fill ever misses its display-row
+    // deadline (the swap point arrives before the next row finished filling from
+    // SDRAM). On real DRAM (CAS latency / row activate / refresh, made worse by
+    // concurrent writes) the fill can overrun even though the optimistic sim core
+    // never does -- this is the hardware signal the testbenches can't produce.
+    output logic                    fill_overrun
 `else
     // Backing-store fill port (drives framebuffer_fabric's RAM-B port).
     output types::mem_read_addr_t fill_address,
@@ -128,7 +134,13 @@ module row_prefetch #(
     (* ram_style = "block", no_rw_check *)
     types::mem_read_data_t bank1[params::PIXEL_WIDTH];
 
-    wire trigger = row_latch && (brightness_mask == types::brightness_level_t'(1)) && fill_done_q;
+    // The swap deadline: the last bitplane of the row that's ending. The active
+    // bank must already hold the next row's data (fill_done_q) by now.
+    wire fill_deadline = row_latch && (brightness_mask == types::brightness_level_t'(1));
+    wire trigger = fill_deadline && fill_done_q;
+`ifdef USE_SDRAM_FB
+    logic seen_fill_done;  // gate overrun detection until the first fill completes (skips startup)
+`endif
 
 `ifdef USE_SDRAM_FB
     // Assemble returned words into the column accumulator.
@@ -164,6 +176,8 @@ module row_prefetch #(
             recv_word_q <= '0;
             accum_q <= '0;
             fill_frame_q <= frame_select;
+            fill_overrun <= 1'b0;
+            seen_fill_done <= 1'b0;
             sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(types::row_subpanel_addr_t'(1)), 0,
                                                    1'b0, 1'b0, params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
                                                    NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
@@ -176,6 +190,14 @@ module row_prefetch #(
             end
 `endif
         end else begin
+`ifdef USE_SDRAM_FB
+            // Diagnostic: once the prefetch has completed at least one fill (so we
+            // skip the blank startup), latch an overrun if a swap deadline arrives
+            // while the next row hasn't finished filling -- the real-DRAM throughput
+            // failure the optimistic sim core can't reproduce.
+            if (fill_done_q) seen_fill_done <= 1'b1;
+            if (seen_fill_done && fill_deadline && !fill_done_q) fill_overrun <= 1'b1;
+`endif
 `ifndef USE_SDRAM_FB
             for (int i = READ_LATENCY - 1; i > 0; i--) begin
                 col_pipe[i] <= col_pipe[i-1];

@@ -67,6 +67,7 @@ module tb_sdram_arbiter;
     );
 
     always #(params::SIM_HALF_PERIOD_NS) clk <= ~clk;
+    initial begin #5_000_000; $fatal(1, "tb_sdram_arbiter: global timeout"); end
 
     // Synchronous read-command issuer: advance exactly when a command is accepted.
     always_ff @(posedge clk) begin
@@ -200,6 +201,40 @@ module tb_sdram_arbiter;
         burst_en = 1'b0;
         if (nmem[types::sdram_word_addr_t'(24'h50_0000)] !== 16'hCAFE) $fatal(1, "interleaved write data wrong");
         $display("tb_sdram_arbiter: write interleave OK");
+        repeat (8) @(posedge clk);
+
+        // ---- 4) A prefetch read burst must NOT be starved by a CONTINUOUS write
+        // stream. This reproduces the dynamic-content pixelation: the row_prefetch
+        // fill is deadline-critical (must fill a display row before it's scanned),
+        // but the arbiter served interleaved writes with priority, so a sustained
+        // write stream (ESP32 updating a changing region: scrolling text / seconds)
+        // starves the fill -> it overruns -> stale/partial rows = pixelation, ONLY
+        // where there's heavy write traffic. Hold client-0 write requests high and
+        // run a read burst; the reads must still drain within a bounded window.
+        begin : starve_test
+            int unsigned recv, cyc;
+            localparam int unsigned STARVE_DEADLINE = BURST * 8;
+            s_addr[0] = types::sdram_word_addr_t'(24'h60_0000); s_we[0] = 1'b1;
+            s_wdata_we[0] = types::sdram_byte_en_t'(2'b11); s_wdata[0] = types::sdram_word_data_t'(16'hD00D);
+            s_req[0] = 1'b1;                       // held high -> back-to-back writes
+            burst_base = types::sdram_word_addr_t'(24'h10_0000);  // nmem preloaded with patt()
+            burst_en = 1'b1;
+            recv = 0; cyc = 0;
+            while (recv < BURST) begin
+                @(posedge clk);
+                cyc = cyc + 1;
+                if (cyc > STARVE_DEADLINE)
+                    $fatal(1, "FILL STARVED: read burst got only %0d/%0d words in %0d cycles under a continuous write stream -> prefetch fill overruns -> dynamic-region pixelation",
+                           recv, BURST, cyc);
+                if (rd_rvalid) begin
+                    if (rd_rdata !== patt(recv)) $fatal(1, "starve-test read %0d mismatch got %0h exp %0h", recv, rd_rdata, patt(recv));
+                    recv = recv + 1;
+                end
+            end
+            s_req[0] = 1'b0;
+            burst_en = 1'b0;
+            $display("tb_sdram_arbiter: read-not-starved-by-continuous-writes OK (%0d cycles)", cyc);
+        end
 
         $display("tb_sdram_arbiter: PASS");
         $finish;

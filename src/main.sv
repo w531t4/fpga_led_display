@@ -208,6 +208,7 @@ module main #(
     // copy engine (read+write); it stays tied off without DOUBLE_BUFFER, since
     // the copyframe command doesn't exist in that build.
     wire row_prefetch_sdram_req;
+    wire row_prefetch_fill_overrun;  // sticky: a fill missed its display-row deadline (real-DRAM overrun) -> led[2]
     wire types::sdram_word_addr_t row_prefetch_sdram_addr;
 
     wire write_client_ready;
@@ -274,8 +275,11 @@ module main #(
     assign led = {1'b0, litedram_mirror_dropped_before_init, litedram_mirror_error, litedram_mirror_dropped,
                   litedram_mirror_seen_write, litedram_mirror_busy, litedram_init_error, litedram_init_done};
 `elsif USE_SDRAM_FB
-    // SDRAM framebuffer bring-up LEDs: [0]=init_done, [1]=init_error.
-    assign led = {6'b000000, litedram_init_error, litedram_init_done};
+    // SDRAM framebuffer bring-up LEDs: [0]=init_done, [1]=init_error,
+    // [2]=fill_overrun (STICKY: a row_prefetch fill missed its display-row deadline
+    // = real-DRAM read-throughput overrun, the cause of dynamic-region junk that the
+    // optimistic sim core never shows). led[2] LIT after running = overrun confirmed.
+    assign led = {5'b00000, row_prefetch_fill_overrun, litedram_init_error, litedram_init_done};
 `elsif USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -595,7 +599,8 @@ module main #(
         .sdram_addr(row_prefetch_sdram_addr),
         .sdram_cmd_ready(arb_rd_cmd_ready),
         .sdram_rvalid(arb_rd_rvalid),
-        .sdram_rdata(arb_rd_rdata)
+        .sdram_rdata(arb_rd_rdata),
+        .fill_overrun(row_prefetch_fill_overrun)
 `else
         .fill_address(ram_b_address),
         .fill_clk_enable(ram_b_clk_enable),

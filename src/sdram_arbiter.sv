@@ -87,6 +87,12 @@ module sdram_arbiter #(
     // Interleaved-write (client 0) progress, used only inside ARB_PREFETCH.
     logic iw_cmd_done_q;
     logic iw_data_done_q;
+    // After an interleaved write, the fill is "owed" a run of read slots before the
+    // next write may interleave. This bounds read starvation under a SUSTAINED write
+    // stream (so the deadline-critical fill keeps progressing) while still serving
+    // each write PROMPTLY the moment it arrives (rd_credit starts at 0).
+    localparam logic [3:0] READS_PER_WRITE = 4'd7;
+    logic [3:0] rd_credit_q;  // read slots still owed to the fill before the next write
 
     // Registered prefetch return (keeps rd_rvalid/rd_rdata flop-clean).
     logic                    rd_rvalid_q;
@@ -94,13 +100,21 @@ module sdram_arbiter #(
 
     wire in_prefetch = (state_q == ARB_PREFETCH);
 
-    // Serve an interleaved write only while the burst is genuinely active (reads
-    // pending or outstanding) or one is already mid-flight -- never start a fresh
-    // write just as the burst is draining, so the burst can exit cleanly.
-    wire iw_pending = s_req[0];
-    wire iw_midway  = iw_cmd_done_q || iw_data_done_q;
-    wire burst_busy = rd_req || (outstanding_q != '0);
-    wire iw_serve   = in_prefetch && iw_pending && (burst_busy || iw_midway);
+    // WRITE INTERLEAVE DISABLED (hardware fix, confirmed by led[2]=fill_overrun):
+    // interleaving a back-buffer WRITE into the front-buffer READ fill forces the
+    // SDRAM controller to precharge the read row and activate the write row (then
+    // switch back) -- DRAM row "thrashing" that the flat-latency sim core charges
+    // nothing for but that overran the fill deadline on real hardware. So the fill
+    // burst now runs EXCLUSIVELY on its DRAM row; writes (and copyframe) drain
+    // between fills via the simple path, batched on the write row. Keeping the host
+    // fed during a fill is handled by the deeper write-client FIFO instead of by
+    // interleaving. (iw_pending/iw_midway/iw_block/rd_credit are now inert.)
+    wire iw_pending  = s_req[0];
+    wire iw_midway   = iw_cmd_done_q || iw_data_done_q;
+    wire burst_busy  = rd_req || (outstanding_q != '0);
+    wire iw_block    = (rd_credit_q != '0) && rd_req;
+    wire iw_serve    = 1'b0;
+    wire _unused_iw  = &{1'b0, iw_pending, iw_midway, burst_busy, iw_block, 1'b0};
 
     // Interleaved-write command/data acceptance this cycle.
     wire iw_cmd_acc  = iw_cmd_done_q  || cmd_ready;
@@ -190,6 +204,7 @@ module sdram_arbiter #(
             data_done_q <= 1'b0;
             iw_cmd_done_q <= 1'b0;
             iw_data_done_q <= 1'b0;
+            rd_credit_q <= '0;
             rd_rvalid_q <= 1'b0;
             rd_rdata_q <= '0;
             rdata_q <= '0;
@@ -216,6 +231,18 @@ module sdram_arbiter #(
                     if (!iw_cmd_done_q && cmd_ready) iw_cmd_done_q <= 1'b1;
                     if (!iw_data_done_q && wdata_ready) iw_data_done_q <= 1'b1;
                 end
+            end
+
+            // Read-credit for the write fairness: each interleaved write owes the
+            // fill READS_PER_WRITE reads before the next write; reads spend the
+            // credit. Reset on leaving the prefetch burst.
+            if (in_prefetch) begin
+                if (iw_done)
+                    rd_credit_q <= READS_PER_WRITE;
+                else if (prefetch_rd_issue && rd_credit_q != '0)
+                    rd_credit_q <= rd_credit_q - 1'b1;
+            end else begin
+                rd_credit_q <= '0;
             end
 
             case (state_q)

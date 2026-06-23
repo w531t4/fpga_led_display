@@ -49,7 +49,7 @@ module tb_sdram_fb_e2e;
     types::mem_write_addr_t wc_source_addr = '0;
     types::mem_write_data_t wc_source_data = '0;
     logic wc_source_valid = 1'b0;
-    wire  wc_ready, wc_req;
+    wire  wc_ready, wc_req, wc_drained;
     wire types::sdram_word_addr_t wc_addr;
     wire types::sdram_byte_en_t   wc_wdata_we;
     wire types::sdram_word_data_t wc_wdata;
@@ -58,7 +58,7 @@ module tb_sdram_fb_e2e;
     sdram_write_client wc (
         .reset(reset), .clk_in(clk), .frame_select(1'b1),  // ~1 => writes frame 0
         .source_addr(wc_source_addr), .source_data(wc_source_data), .source_write_valid(wc_source_valid),
-        .ready(wc_ready), .sdram_req(wc_req), .sdram_done(s_done[0]),
+        .ready(wc_ready), .drained(wc_drained), .sdram_req(wc_req), .sdram_done(s_done[0]),
         .sdram_addr(wc_addr), .sdram_wdata_we(wc_wdata_we), .sdram_wdata(wc_wdata)
     );
 
@@ -168,8 +168,10 @@ module tb_sdram_fb_e2e;
             for (int sp = 0; sp < NUM_SUBPANELS; sp++)
                 for (int px = 0; px < PIXEL_BYTES; px++)
                     do_write(sp, col, px);
-        // Let the last writes drain.
-        repeat (64) @(posedge clk);
+        // Let the writes fully commit (wait for the write client to drain, not a
+        // fixed count -- robust to the FIFO depth).
+        while (!wc_drained) @(posedge clk);
+        repeat (8) @(posedge clk);
 
         // Release row_prefetch -> it fills TEST_ROW (1) into bank1 from SDRAM.
         rp_reset = 1'b0;

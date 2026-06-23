@@ -2,10 +2,14 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 
-// Depth of the write FIFO (must be a power of 2). Overridable per-build for
-// tuning the SDRAM write-absorption margin, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_WRITE_FIFO_DEPTH=64".
+// Depth of the write FIFO (must be a power of 2). The arbiter no longer interleaves
+// writes into a prefetch read fill (that thrashed DRAM rows and overran the fill on
+// real hardware), so writes only drain BETWEEN fills -- this FIFO must hold a full
+// fill's worth of host writes so the (un-stallable) host isn't dropped mid-command.
+// Sized for ~a display-row fill duration at the host write rate, with margin.
+// Overridable per-build, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_WRITE_FIFO_DEPTH=256".
 `ifndef SDRAM_WRITE_FIFO_DEPTH
-`define SDRAM_WRITE_FIFO_DEPTH 32
+`define SDRAM_WRITE_FIFO_DEPTH 512
 `endif
 
 // sdram_write_client: Converts control_module's existing per-byte BRAM-style write
