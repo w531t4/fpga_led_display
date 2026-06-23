@@ -39,12 +39,13 @@ SIMBINS := $(filter-out $(SIM_BIN_DIR)/litedram_wrapper_sim $(SIM_BIN_DIR)/sdram
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/litedram_wrapper_sim.fst $(SIMULATION_DIR)/sdram_fb_e2e.fst, $(FSTOBJS))
 endif
 
-# The end-to-end framebuffer test also needs the SDRAM framebuffer path
-# (row_prefetch/arbiter/write_client SDRAM ports), so drop it without USE_SDRAM_FB.
+# The end-to-end framebuffer test and the contention harness also need the SDRAM
+# framebuffer path (row_prefetch/arbiter/write_client SDRAM ports), so drop them
+# without USE_SDRAM_FB (otherwise default lint hits row_prefetch's non-SDRAM ports).
 ifneq ($(findstring -DUSE_SDRAM_FB,$(BUILD_FLAGS)),-DUSE_SDRAM_FB)
-TBSRCS  := $(filter-out $(TB_DIR)/tb_sdram_fb_e2e.sv, $(TBSRCS))
-SIMBINS := $(filter-out $(SIM_BIN_DIR)/sdram_fb_e2e, $(SIMBINS))
-FSTOBJS := $(filter-out $(SIMULATION_DIR)/sdram_fb_e2e.fst, $(FSTOBJS))
+TBSRCS  := $(filter-out $(TB_DIR)/tb_sdram_fb_e2e.sv $(TB_DIR)/tb_sdram_contention.sv, $(TBSRCS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/sdram_fb_e2e $(SIM_BIN_DIR)/sdram_contention, $(SIMBINS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/sdram_fb_e2e.fst $(SIMULATION_DIR)/sdram_contention.fst, $(FSTOBJS))
 endif
 
 .PHONY: litedram litedram-smoke litedram-wrapper-smoke litedram-main-smoke

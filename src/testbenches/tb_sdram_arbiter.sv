@@ -56,7 +56,7 @@ module tb_sdram_arbiter;
     types::sdram_word_data_t rdata_data;
 
     sdram_arbiter #(.NUM_SIMPLE(NUM_SIMPLE)) dut (
-        .clk(clk), .reset(reset), .init_done(init_done),
+        .clk(clk), .reset(reset), .init_done(init_done), .boost_writes(1'b0),
         .rd_req(rd_req), .rd_addr(rd_addr), .rd_cmd_ready(rd_cmd_ready),
         .rd_rvalid(rd_rvalid), .rd_rdata(rd_rdata),
         .s_req(s_req), .s_we(s_we), .s_addr(s_addr), .s_wdata_we(s_wdata_we), .s_wdata(s_wdata),

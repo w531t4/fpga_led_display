@@ -101,7 +101,7 @@ module tb_sdram_fb_e2e;
     wire types::sdram_word_data_t s_rdata;
 
     sdram_arbiter #(.NUM_SIMPLE(NUM_SIMPLE)) arb (
-        .clk(clk), .reset(reset), .init_done(init_done),
+        .clk(clk), .reset(reset), .init_done(init_done), .boost_writes(1'b0),
         .rd_req(rp_req_g), .rd_addr(rp_addr), .rd_cmd_ready(arb_rd_cmd_ready),
         .rd_rvalid(arb_rd_rvalid), .rd_rdata(arb_rd_rdata),
         .s_req(s_req), .s_we(s_we), .s_addr(s_addr), .s_wdata_we(s_wwe), .s_wdata(s_wdat),

@@ -33,6 +33,12 @@ module sdram_arbiter #(
     input logic reset,
     input logic init_done,
 
+    // When asserted, a pending client-0 (write) request PREEMPTS the otherwise
+    // top-priority read fill at the arbitration point. Driven by the write client's
+    // hysteretic FIFO pressure so a sustained host write burst can't be starved into
+    // overflow (dropped pixels). Off in steady state -> reads keep their priority.
+    input logic boost_writes,
+
     // Pipelined read-only client (row_prefetch), highest priority.
     input  logic                    rd_req,
     input  types::sdram_word_addr_t rd_addr,
@@ -72,7 +78,8 @@ module sdram_arbiter #(
         ARB_PREFETCH,
         ARB_S_CMD,
         ARB_S_RWAIT,
-        ARB_S_DONE
+        ARB_S_DONE,
+        ARB_S_WBURST   // back-to-back write drain (client 0) while the FIFO is pressured
     } arb_state_t;
 
     arb_state_t state_q;
@@ -121,8 +128,9 @@ module sdram_arbiter #(
     wire iw_data_acc = iw_data_done_q || wdata_ready;
     wire iw_done     = iw_serve && iw_cmd_acc && iw_data_acc;
 
-    // Prefetch read command accepted this cycle (only when not issuing a write).
-    wire prefetch_rd_issue = in_prefetch && !iw_serve && rd_req && cmd_ready;
+    // Prefetch read command accepted this cycle (only when not issuing a write, and not
+    // while paused for a pressured write burst -- see ARB_PREFETCH below).
+    wire prefetch_rd_issue = in_prefetch && !iw_serve && rd_req && cmd_ready && !boost_writes;
     wire prefetch_done = in_prefetch && !rd_req && (outstanding_q == '0) && !iw_serve && !iw_midway;
 
     // Highest-priority requesting simple client (index 0 wins ties).
@@ -144,6 +152,12 @@ module sdram_arbiter #(
     wire s_write_done = (state_q == ARB_S_CMD) && s_active_we_q && s_cmd_accepted && s_data_accepted;
     wire s_read_cmd_accepted = (state_q == ARB_S_CMD) && !s_active_we_q && s_cmd_accepted;
     wire s_read_done = (state_q == ARB_S_RWAIT) && rdata_valid;
+
+    // Write-burst (client 0) acceptance: gated by s_req[0] so a momentarily-empty FIFO
+    // can't issue a phantom write with a stale address.
+    wire wb_cmd_acc  = cmd_done_q  || (s_req[0] && cmd_ready);
+    wire wb_data_acc = data_done_q || (s_req[0] && wdata_ready);
+    wire wb_write_done = (state_q == ARB_S_WBURST) && s_req[0] && wb_cmd_acc && wb_data_acc;
 
     always_comb begin
         cmd_valid = 1'b0;
@@ -174,12 +188,26 @@ module sdram_arbiter #(
                 wdata_data  = s_wdata[0];
                 if (iw_done) s_done[0] = 1'b1;
             end else begin
-                // Stream a prefetch read command.
-                cmd_valid = rd_req;
+                // Stream a prefetch read command -- UNLESS the write FIFO is pressured,
+                // in which case stop issuing reads so the outstanding ones can drain
+                // before we hand the bus to the write burst (no read word is lost: the
+                // already-issued reads still return while we're in ARB_PREFETCH).
+                cmd_valid = rd_req && !boost_writes;
                 cmd_we = 1'b0;
                 cmd_addr = rd_addr;
-                rd_cmd_ready = cmd_ready;
+                rd_cmd_ready = cmd_ready && !boost_writes;
             end
+        end else if (state_q == ARB_S_WBURST) begin
+            // Drain client 0 writes back-to-back (same DRAM row -> hits) until the FIFO
+            // pressure clears. No read data, so no ordering hazard with prefetch.
+            s_grant[0]  = 1'b1;
+            cmd_valid   = s_req[0] && !cmd_done_q;
+            cmd_we      = 1'b1;
+            cmd_addr    = s_addr[0];
+            wdata_valid = s_req[0] && !data_done_q;
+            wdata_we    = s_wdata_we[0];
+            wdata_data  = s_wdata[0];
+            if (wb_write_done) s_done[0] = 1'b1;
         end else if (state_q == ARB_S_CMD || state_q == ARB_S_RWAIT || state_q == ARB_S_DONE) begin
             s_grant[s_active_q] = 1'b1;
             if (state_q == ARB_S_CMD) begin
@@ -248,7 +276,14 @@ module sdram_arbiter #(
             case (state_q)
                 ARB_IDLE: begin
                     outstanding_q <= '0;
-                    if (init_done && rd_req) begin
+                    if (init_done && boost_writes && s_req[0]) begin
+                        // Write FIFO near overflow: drain writes (in a burst) ahead of
+                        // the fill. A late fill is a transient flicker; a dropped write
+                        // is a persistent wrong pixel -- the sanctioned trade.
+                        cmd_done_q <= 1'b0;
+                        data_done_q <= 1'b0;
+                        state_q <= ARB_S_WBURST;
+                    end else if (init_done && rd_req) begin
                         state_q <= ARB_PREFETCH;
                     end else if (init_done && s_winner_valid) begin
                         s_active_q <= s_winner;
@@ -257,7 +292,17 @@ module sdram_arbiter #(
                     end
                 end
                 ARB_PREFETCH: begin
-                    if (prefetch_done) state_q <= ARB_IDLE;
+                    if (prefetch_done) begin
+                        state_q <= ARB_IDLE;
+                    end else if (boost_writes && s_req[0] && outstanding_q == '0) begin
+                        // Fill paused (reads gated off above) and all outstanding read
+                        // data has drained -> safe to hand the bus to the write burst.
+                        // row_prefetch holds its issue position (no rd_cmd_ready), so the
+                        // fill resumes correctly when we return to ARB_PREFETCH.
+                        cmd_done_q <= 1'b0;
+                        data_done_q <= 1'b0;
+                        state_q <= ARB_S_WBURST;
+                    end
                 end
                 ARB_S_CMD: begin
                     if (!cmd_done_q && cmd_ready) cmd_done_q <= 1'b1;
@@ -278,6 +323,24 @@ module sdram_arbiter #(
                     end
                 end
                 ARB_S_DONE: state_q <= ARB_IDLE;
+                ARB_S_WBURST: begin
+                    if (!s_req[0]) begin
+                        // FIFO drained -> hand the bus back to the (priority) read fill.
+                        cmd_done_q <= 1'b0;
+                        data_done_q <= 1'b0;
+                        state_q <= ARB_IDLE;
+                    end else begin
+                        if (!cmd_done_q && cmd_ready) cmd_done_q <= 1'b1;
+                        if (!data_done_q && wdata_ready) data_done_q <= 1'b1;
+                        if (wb_write_done) begin
+                            cmd_done_q <= 1'b0;
+                            data_done_q <= 1'b0;
+                            // Keep bursting while still pressured; the client presents the
+                            // next write. Once pressure clears, yield to reads.
+                            if (!boost_writes) state_q <= ARB_IDLE;
+                        end
+                    end
+                end
                 default: state_q <= ARB_IDLE;
             endcase
         end

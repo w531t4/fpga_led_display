@@ -214,6 +214,9 @@ module main #(
 
     wire write_client_ready;
     wire write_client_drained;
+    wire write_client_dropped;            // STICKY: a host write was lost to a full write FIFO
+    wire write_client_wr_pressure;        // hysteretic: write FIFO filling -> arbiter preempts reads
+    logic [24:0] write_dropped_recent_q;  // ~0.67s one-shot, reloaded on each fresh drop (at 50MHz)
     wire write_client_sdram_req;
     wire types::sdram_word_addr_t write_client_sdram_addr;
     wire types::sdram_byte_en_t write_client_sdram_wdata_we;
@@ -280,14 +283,16 @@ module main #(
                   litedram_mirror_seen_write, litedram_mirror_busy, litedram_init_error, litedram_init_done};
 `elsif USE_SDRAM_FB
     // SDRAM framebuffer bring-up LEDs, spaced every-other for easy reading at a
-    // distance: [0]=init_done, [2]=init_error, [4]=fill_overrun STICKY (a fill ever
-    // missed its display-row deadline), [6]=fill_overrun RECENT (an overrun in the
-    // last ~0.7s -> ONGOING vs a one-time startup blip). [6] lit while content runs
-    // = systematic overrun. Odd LEDs ([1],[3],[5],[7]) stay off as spacers.
-    assign led = {1'b0, row_prefetch_fill_overrun_recent,
-                  1'b0, row_prefetch_fill_overrun,
-                  1'b0, litedram_init_error,
+    // distance: [0]=init_done, [2]=write_dropped STICKY (a host write was ever LOST to
+    // a full write FIFO -> the persistent-wrong-pixels cause), [4]=write_dropped RECENT
+    // (a drop in the last ~0.7s -> ONGOING vs a startup blip; lit while content streams
+    // = writes can't keep up), [6]=fill_overrun STICKY (a fill ever missed its deadline,
+    // secondary). Odd LEDs ([1],[3],[5],[7]) stay off as spacers.
+    assign led = {1'b0, row_prefetch_fill_overrun,
+                  1'b0, write_dropped_recent_q != '0,
+                  1'b0, write_client_dropped,
                   1'b0, litedram_init_done};
+    wire _unused_sdram_fb_leds = &{1'b0, litedram_init_error, row_prefetch_fill_overrun_recent, 1'b0};
 `elsif USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -479,6 +484,7 @@ module main #(
         .clk(litedram_user_clk),
         .reset(global_reset_sync | ~pll_locked | litedram_user_rst),
         .init_done(litedram_init_done),
+        .boost_writes(write_client_wr_pressure),
         .rd_req(row_prefetch_sdram_req),
         .rd_addr(row_prefetch_sdram_addr),
         .rd_cmd_ready(arb_rd_cmd_ready),
@@ -716,12 +722,25 @@ module main #(
         .source_write_valid(ctrl_ram_clk_enable & ctrl_ram_write_enable),
         .ready(write_client_ready),
         .drained(write_client_drained),
+        .dropped(write_client_dropped),
+        .wr_pressure(write_client_wr_pressure),
         .sdram_req(write_client_sdram_req),
         .sdram_done(sdram_s_done[0]),
         .sdram_addr(write_client_sdram_addr),
         .sdram_wdata_we(write_client_sdram_wdata_we),
         .sdram_wdata(write_client_sdram_wdata)
     );
+
+    // RECENT-drop one-shot: a host write presented while the FIFO was full (ready low)
+    // is the lost byte. Reloads a ~0.67s timer so an ONGOING drop (lit while content
+    // streams) reads distinctly from a one-time startup blip. (write_client_dropped is
+    // the sticky latch.)
+    wire write_drop_event = (ctrl_ram_clk_enable & ctrl_ram_write_enable) & ~write_client_ready;
+    always_ff @(posedge clk_root) begin
+        if (global_reset_sync) write_dropped_recent_q <= '0;
+        else if (write_drop_event) write_dropped_recent_q <= '1;
+        else if (write_dropped_recent_q != '0) write_dropped_recent_q <= write_dropped_recent_q - 1'b1;
+    end
 `else
     // Framebuffer fabric (mux + multimem instances).
     framebuffer_fabric fb_fabric (

@@ -38,6 +38,17 @@ module sdram_write_client #(
     // (`ready` = !full is NOT sufficient: it is high with up to DEPTH writes still
     // queued.)
     output logic drained,
+    // STICKY (-> LED): a host write arrived while the FIFO was FULL, so push was
+    // gated off and the byte was LOST. Makes the persistent-wrong-pixels failure
+    // observable: on real DRAM the one-at-a-time write drain can't keep up with a
+    // sustained host write burst, the FIFO fills, and writes are silently dropped.
+    output logic dropped,
+    // HYSTERETIC backpressure-demand (-> arbiter boost_writes): asserts when the FIFO
+    // crosses HIGH_WATER and holds until it drains below LOW_WATER. The arbiter uses
+    // it to let writes PREEMPT the (otherwise top-priority) read fill, so a sustained
+    // host write burst can't starve the drain into overflow + dropped pixels. Costs at
+    // most an occasional late fill (transient), never a lost write.
+    output logic wr_pressure,
 
     output logic                    sdram_req,
     input  logic                    sdram_done,
@@ -71,6 +82,10 @@ module sdram_write_client #(
     // restores it.
     localparam int unsigned DEPTH = `SDRAM_WRITE_FIFO_DEPTH;
     localparam int unsigned PTR_BITS = $clog2(DEPTH);
+    // Demand-backpressure watermarks: start preempting reads at 3/4 full, stop once
+    // back down to 1/2 (hysteresis avoids flapping read/write priority every cycle).
+    localparam int unsigned HIGH_WATER = DEPTH - (DEPTH / 4);
+    localparam int unsigned LOW_WATER  = DEPTH / 2;
 
     types::sdram_word_addr_t fifo_addr_q [DEPTH];   // deep arith lands here (write port)
     types::sdram_byte_en_t   fifo_we_q   [DEPTH];
@@ -79,6 +94,8 @@ module sdram_write_client #(
     logic [PTR_BITS:0]       count_q;               // occupancy 0..DEPTH
 
     logic inflight_q;                               // a write issued to the arbiter, awaiting sdram_done
+    logic dropped_q;                                // STICKY: a host write was lost to a full FIFO
+    logic wr_pressure_q;                            // hysteretic: FIFO is filling, preempt reads to drain
     types::sdram_word_addr_t sdram_addr_q;          // in-flight (arbiter-facing) regs -- register copy of FIFO head
     types::sdram_byte_en_t   sdram_wdata_we_q;
     types::sdram_word_data_t sdram_wdata_q;
@@ -123,6 +140,8 @@ module sdram_write_client #(
 
     assign ready = !full;
     assign drained = empty && !inflight_q;
+    assign dropped = dropped_q;
+    assign wr_pressure = wr_pressure_q;
     assign sdram_req = inflight_q;
     assign sdram_addr = sdram_addr_q;
     assign sdram_wdata_we = sdram_wdata_we_q;
@@ -137,7 +156,17 @@ module sdram_write_client #(
             sdram_addr_q <= '0;
             sdram_wdata_we_q <= '0;
             sdram_wdata_q <= '0;
+            dropped_q <= 1'b0;
+            wr_pressure_q <= 1'b0;
         end else begin
+            // A host write presented while full is lost (push is gated by !full).
+            if (source_write_valid && full) dropped_q <= 1'b1;
+
+            // Hysteretic fill-pressure: demand read-preemption above HIGH_WATER, release
+            // below LOW_WATER.
+            if (count_q >= (PTR_BITS+1)'(HIGH_WATER)) wr_pressure_q <= 1'b1;
+            else if (count_q <= (PTR_BITS+1)'(LOW_WATER)) wr_pressure_q <= 1'b0;
+
             // Push: capture a new source write into the FIFO tail. This is the only
             // flop the deep src_addr arithmetic feeds.
             if (push) begin
