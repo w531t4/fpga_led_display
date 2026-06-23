@@ -83,20 +83,10 @@ module control_cmd_copyframe #(
             case (state_q)
                 STATE_IDLE: begin
                     if (enable) begin
-`ifdef USE_SDRAM_DBUF_MIRROR
-                        // Write mirroring (sdram_write_client) commits every host write
-                        // to BOTH buffers, so they are already identical -- the front->back
-                        // copy is a no-op. Skip it: the full-frame copy otherwise burns
-                        // huge SDRAM bandwidth every frame and starves the display row
-                        // fills (late fills -> stale/garbled bottom rows). Report done
-                        // immediately so the host's command sequence keeps flowing.
-                        done <= 1'b1;
-`else
                         word_q <= '0;
                         state_q <= STATE_READ;
                         sdram_addr_q <= front_base;
                         sdram_we_q <= 1'b0;
-`endif
                     end
                 end
                 STATE_READ: begin
