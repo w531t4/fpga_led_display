@@ -62,7 +62,11 @@ module row_prefetch #(
     // SDRAM). On real DRAM (CAS latency / row activate / refresh, made worse by
     // concurrent writes) the fill can overrun even though the optimistic sim core
     // never does -- this is the hardware signal the testbenches can't produce.
-    output logic                    fill_overrun
+    output logic                    fill_overrun,
+    // RECENT diagnostic (-> LED): high for ~0.7s after the last overrun, so an
+    // ongoing/systematic overrun (lit while content runs) is distinguishable from a
+    // one-time startup blip (the sticky bit above latches either forever).
+    output logic                    fill_overrun_recent
 `else
     // Backing-store fill port (drives framebuffer_fabric's RAM-B port).
     output types::mem_read_addr_t fill_address,
@@ -139,7 +143,9 @@ module row_prefetch #(
     wire fill_deadline = row_latch && (brightness_mask == types::brightness_level_t'(1));
     wire trigger = fill_deadline && fill_done_q;
 `ifdef USE_SDRAM_FB
-    logic seen_fill_done;  // gate overrun detection until the first fill completes (skips startup)
+    logic seen_fill_done;           // gate overrun detection until the first fill completes (skips startup)
+    logic [24:0] overrun_recent_q;  // ~0.67s one-shot timer, reloaded on each overrun (at 50MHz)
+    assign fill_overrun_recent = |overrun_recent_q;
 `endif
 
 `ifdef USE_SDRAM_FB
@@ -178,6 +184,7 @@ module row_prefetch #(
             fill_frame_q <= frame_select;
             fill_overrun <= 1'b0;
             seen_fill_done <= 1'b0;
+            overrun_recent_q <= '0;
             sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(types::row_subpanel_addr_t'(1)), 0,
                                                    1'b0, 1'b0, params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
                                                    NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
@@ -196,7 +203,12 @@ module row_prefetch #(
             // while the next row hasn't finished filling -- the real-DRAM throughput
             // failure the optimistic sim core can't reproduce.
             if (fill_done_q) seen_fill_done <= 1'b1;
-            if (seen_fill_done && fill_deadline && !fill_done_q) fill_overrun <= 1'b1;
+            if (seen_fill_done && fill_deadline && !fill_done_q) begin
+                fill_overrun <= 1'b1;        // sticky
+                overrun_recent_q <= '1;      // reload the ~0.7s recent-overrun one-shot
+            end else if (overrun_recent_q != '0) begin
+                overrun_recent_q <= overrun_recent_q - 1'b1;
+            end
 `endif
 `ifndef USE_SDRAM_FB
             for (int i = READ_LATENCY - 1; i > 0; i--) begin

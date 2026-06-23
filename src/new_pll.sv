@@ -19,11 +19,25 @@
 // source, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_CLK_FPHASE=4" (~77 deg) or
 // "-DSDRAM_CLK_CPHASE=5 -DSDRAM_CLK_FPHASE=0" (~103 deg). Sweep grid around 90:
 //   77: C4 F4 | 84: C4 F5 | 90: C4 F6 | 96: C4 F7 | 103: C5 F0 | 109: C5 F1
+// Default depends on the active clock (different CLKOS_DIV -> different CPHASE for
+// 90 deg): 50MHz (SPEED 1, CLKOS_DIV=12) = 8/0; 80MHz (SPEED 2, CLKOS_DIV=7) = 4/6.
+// One FPHASE step ~= 360/CLKOS_DIV/8 (3.75 deg at 50MHz, 6.4 deg at 80MHz); CPHASE+1
+// = 360/CLKOS_DIV. Override to sweep the SDRAM-clock (= write/read sample) phase on
+// hardware against the litedram_bist error LED, e.g. at 50MHz:
+//   C7 F4 ~= 76 | C8 F0 = 90 | C8 F4 ~= 105 | C9 F0 = 120 | C9 F4 ~= 135 deg
 `ifndef SDRAM_CLK_CPHASE
-`define SDRAM_CLK_CPHASE 4
+ `ifdef CLK_50
+  `define SDRAM_CLK_CPHASE 8
+ `else
+  `define SDRAM_CLK_CPHASE 4
+ `endif
 `endif
 `ifndef SDRAM_CLK_FPHASE
-`define SDRAM_CLK_FPHASE 6
+ `ifdef CLK_50
+  `define SDRAM_CLK_FPHASE 0
+ `else
+  `define SDRAM_CLK_FPHASE 6
+ `endif
 `endif
 
 module new_pll #(
@@ -120,8 +134,8 @@ module new_pll #(
             .CLKOP_FPHASE(0),
             .CLKOS_ENABLE("ENABLED"),
             .CLKOS_DIV(12),
-            .CLKOS_CPHASE(8),
-            .CLKOS_FPHASE(0),
+            .CLKOS_CPHASE(`SDRAM_CLK_CPHASE),
+            .CLKOS_FPHASE(`SDRAM_CLK_FPHASE),
             .FEEDBK_PATH("CLKOP"),
             .CLKFB_DIV(2)
         ) pll_i (

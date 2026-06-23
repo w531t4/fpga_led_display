@@ -208,7 +208,8 @@ module main #(
     // copy engine (read+write); it stays tied off without DOUBLE_BUFFER, since
     // the copyframe command doesn't exist in that build.
     wire row_prefetch_sdram_req;
-    wire row_prefetch_fill_overrun;  // sticky: a fill missed its display-row deadline (real-DRAM overrun) -> led[2]
+    wire row_prefetch_fill_overrun;         // sticky: a fill missed its display-row deadline (real-DRAM overrun) -> led[2]
+    wire row_prefetch_fill_overrun_recent;  // high ~0.7s after the last overrun (ongoing vs startup) -> led[3]
     wire types::sdram_word_addr_t row_prefetch_sdram_addr;
 
     wire write_client_ready;
@@ -261,12 +262,15 @@ module main #(
 `endif
 `endif
 `ifdef USE_LITEDRAM_BIST
-    // BIST bring-up LEDs: [0]=init_done, [1]=init_error, [2]=busy,
-    // [3]=done, [4]=error. Desired pass result is led[0] and led[3]
-    // on, with led[1], led[2], and led[4] off. Upper LEDs are reserved
-    // for later probes.
-    assign led = {3'b000, litedram_bist_error, litedram_bist_done, litedram_bist_busy, litedram_init_error,
-                  litedram_init_done};
+    // BIST LEDs, spaced every-other for distance reading: [0]=init_done,
+    // [2]=init_error, [4]=bist_error (ON = real DRAM read/write MISMATCH -> the
+    // core/PHY itself is corrupting reads), [6]=bist_done (ON = a full test pass
+    // completed). PASS = [0]+[6] on, [2]+[4] off. Odd LEDs are spacers.
+    wire _unused_bist_busy = &{1'b0, litedram_bist_busy, 1'b0};
+    assign led = {1'b0, litedram_bist_done,
+                  1'b0, litedram_bist_error,
+                  1'b0, litedram_init_error,
+                  1'b0, litedram_init_done};
 `elsif USE_LITEDRAM_WRITE_MIRROR
     // Write-mirror LEDs: [0]=init_done, [1]=init_error, [2]=busy,
     // [3]=saw at least one mirrored write, [4]=dropped while busy,
@@ -275,11 +279,15 @@ module main #(
     assign led = {1'b0, litedram_mirror_dropped_before_init, litedram_mirror_error, litedram_mirror_dropped,
                   litedram_mirror_seen_write, litedram_mirror_busy, litedram_init_error, litedram_init_done};
 `elsif USE_SDRAM_FB
-    // SDRAM framebuffer bring-up LEDs: [0]=init_done, [1]=init_error,
-    // [2]=fill_overrun (STICKY: a row_prefetch fill missed its display-row deadline
-    // = real-DRAM read-throughput overrun, the cause of dynamic-region junk that the
-    // optimistic sim core never shows). led[2] LIT after running = overrun confirmed.
-    assign led = {5'b00000, row_prefetch_fill_overrun, litedram_init_error, litedram_init_done};
+    // SDRAM framebuffer bring-up LEDs, spaced every-other for easy reading at a
+    // distance: [0]=init_done, [2]=init_error, [4]=fill_overrun STICKY (a fill ever
+    // missed its display-row deadline), [6]=fill_overrun RECENT (an overrun in the
+    // last ~0.7s -> ONGOING vs a one-time startup blip). [6] lit while content runs
+    // = systematic overrun. Odd LEDs ([1],[3],[5],[7]) stay off as spacers.
+    assign led = {1'b0, row_prefetch_fill_overrun_recent,
+                  1'b0, row_prefetch_fill_overrun,
+                  1'b0, litedram_init_error,
+                  1'b0, litedram_init_done};
 `elsif USE_BOARDLEDS_BRIGHTNESS
     assign led = brightness_enable;
 `endif
@@ -600,7 +608,8 @@ module main #(
         .sdram_cmd_ready(arb_rd_cmd_ready),
         .sdram_rvalid(arb_rd_rvalid),
         .sdram_rdata(arb_rd_rdata),
-        .fill_overrun(row_prefetch_fill_overrun)
+        .fill_overrun(row_prefetch_fill_overrun),
+        .fill_overrun_recent(row_prefetch_fill_overrun_recent)
 `else
         .fill_address(ram_b_address),
         .fill_clk_enable(ram_b_clk_enable),
