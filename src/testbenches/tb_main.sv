@@ -293,6 +293,11 @@ module tb_main #(
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         wait (cmd_line_state_seq_done);
+`ifdef USE_SDRAM_FB
+        if (busy_low_pending_max != 0)
+            $fatal(1, "BUSY-DRAIN FAIL: busy dropped with up to %0d uncommitted SDRAM writes -> the host can swap the frame before the delta tail commits (stale/persistent wrong pixels)", busy_low_pending_max);
+        $display("BUSY-DRAIN OK: busy held until the write client drained (0 uncommitted writes while busy==0)");
+`endif
 `ifdef TB_SPI_FREERUN
         if (wc_notready_max >= WC_NOTREADY_LIMIT)
             $fatal(1, "WRITE-KEEPUP FAIL: SDRAM write path not ready for up to %0d consecutive cycles mid data-command (>= an SPI byte period) -> host bytes dropped on hardware (wrong/persistent pixels)", wc_notready_max);
@@ -326,6 +331,24 @@ module tb_main #(
             wc_notready_run <= 0;
         end
     end
+`endif
+
+`ifdef USE_SDRAM_FB
+    // Busy/drain race reproduction: `busy` (wifi_gpio35) is the ONLY off-chip flow
+    // control the ESP32 polls. If it drops while the SDRAM write client still has
+    // queued/in-flight delta writes, the host can send TOGGLE_FRAME and swap the
+    // displayed buffer before the delta tail commits to SDRAM -> stale (persistent
+    // wrong) pixels. Track the worst uncommitted-write count seen while busy==0;
+    // any value > 0 is the bug (the host could swap with that many writes still in
+    // flight). The deep write FIFO makes the window worse (up to DEPTH+1).
+    wire [31:0] wc_pending =
+        32'(tb_main.tbi_main.sdram_write.count_q) + (tb_main.tbi_main.sdram_write.inflight_q ? 32'd1 : 32'd0);
+    int unsigned busy_low_pending_max = 0;
+    always @(posedge clk) begin
+        if (!reset && tb_main.tbi_main.ctrl_busy === 1'b0 && wc_pending > busy_low_pending_max)
+            busy_low_pending_max <= wc_pending;
+    end
+    final $display("BUSY-DRAIN: max uncommitted writes while busy==0 = %0d (>0 == host can swap before deltas commit -> stale pixels)", busy_low_pending_max);
 `endif
 
 `ifdef SPI_ESP32

@@ -115,6 +115,7 @@ module tb_control_module;
 `endif
 `ifdef USE_SDRAM_FB
         .sdram_write_ready(1'b1),
+        .sdram_write_drained(1'b1),
 `endif
         .frame_select(frame_select)
     );

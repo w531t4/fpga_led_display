@@ -46,7 +46,12 @@ export CCACHE_DIR
 # USE_LITEDRAM_WRITE_MIRROR - With USE_LITEDRAM, mirror controller framebuffer writes into LiteDRAM
 # USE_SDRAM_FB - With USE_LITEDRAM, row_prefetch reads through sdram_arbiter instead of multimem
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_80 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
+# NOTE (temporary): dropped CLK_80 -> CLK_50 to widen the SDR SDRAM timing margin
+# and clear the persistent wrong pixels (analog margin at 80MHz). Lower frame rate
+# is tolerated for now; raise back toward CLK_90 once the SDRAM PHY margin is solid
+# (90deg phase + write-address pipelining). Also regen the litedram core to match
+# (ulx3s_sdram.yml sys_clk_freq).
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_50 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
 # EXTRA_BUILD_FLAGS - append flags for one-off builds without editing the BUILD_FLAGS default,
 #                     e.g. `make EXTRA_BUILD_FLAGS="-DUSE_LITEDRAM -DUSE_LITEDRAM_WRITE_MIRROR"`
 EXTRA_BUILD_FLAGS ?=

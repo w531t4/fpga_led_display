@@ -98,6 +98,12 @@ module row_prefetch #(
     // timing at 80MHz (see PLAN.md 3.3 (build) hardware note). Computed alongside
     // the issue counters below instead, using whatever values they're about to take.
     types::sdram_word_addr_t sdram_addr_q;
+    // frame_select latched at the start of each fill. The display-side frame_select
+    // toggles on a frame swap (TOGGLE_FRAME); if it changed mid-fill, the remaining
+    // read commands of an in-progress row would target the OTHER frame, assembling
+    // one bank row from a mix of both buffers (corrupt pixels). Latching pins the
+    // whole fill to one frame.
+    logic fill_frame_q;
 `else
     typedef enum logic [1:0] {
         STATE_FILL,
@@ -157,6 +163,7 @@ module row_prefetch #(
             recv_col_q <= '0;
             recv_word_q <= '0;
             accum_q <= '0;
+            fill_frame_q <= frame_select;
             sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(types::row_subpanel_addr_t'(1)), 0,
                                                    1'b0, 1'b0, params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
                                                    NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
@@ -188,6 +195,7 @@ module row_prefetch #(
                 recv_col_q <= '0;
                 recv_word_q <= '0;
                 accum_q <= '0;
+                fill_frame_q <= frame_select;
                 sdram_addr_q <= calc::sdram_word_addr(frame_select,
                                                        $bits(int)'(row_address + types::row_subpanel_addr_t'(2)), 0,
                                                        1'b0, 1'b0, params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
@@ -207,13 +215,13 @@ module row_prefetch #(
                     end else if (issue_word_last) begin
                         issue_word_q <= '0;
                         issue_col_q  <= issue_col_q + 1'b1;
-                        sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q),
+                        sdram_addr_q <= calc::sdram_word_addr(fill_frame_q, $bits(int)'(fill_row_q),
                                                                $bits(int)'(issue_col_q + 1'b1), 1'b0, 1'b0,
                                                                params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
                                                                NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES);
                     end else begin
                         issue_word_q <= issue_next_word;
-                        sdram_addr_q <= calc::sdram_word_addr(frame_select, $bits(int)'(fill_row_q),
+                        sdram_addr_q <= calc::sdram_word_addr(fill_frame_q, $bits(int)'(fill_row_q),
                                                                $bits(int)'(issue_col_q), issue_next_word[1],
                                                                issue_next_word[0], params::PIXEL_WIDTH,
                                                                params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,

@@ -94,14 +94,16 @@ module new_pll #(
             .LOCK(locked)
         );
     end else if (SPEED == 1) begin : g_speed1
-        assign clock_shifted = clock_out;  // TODO: 90deg output if/when 50MHz SDRAM fallback is used
-        // oss-cad-suite/bin/ecppll --clkin_name clock_in --clkout0_name clock_out -i 25 -o 50 -n pll --highres --file abc
+        // ecppll: -i 25 --clkout0 50 --clkout1 50 --phase1 90 (no --highres).
+        // CLKOP = clock_out (50 MHz, 0 deg, also the feedback); CLKOS =
+        // clock_shifted (50 MHz, +90 deg) for the SDRAM device clock. 50 MHz
+        // widens the SDR write/cmd/read timing windows ~60% vs 80 MHz -- the LiteX
+        // ULX3S known-good SDRAM rate. CLKOS_DIV=12 so one VCO cycle = 30 deg;
+        // CLKOS_CPHASE=8 vs CLKOP_CPHASE=5 == +3 cycles == +90 deg.
         (* FREQUENCY_PIN_CLKI="25" *)
+        (* FREQUENCY_PIN_CLKOP="50" *)
         (* FREQUENCY_PIN_CLKOS="50" *)
-        (* ICP_CURRENT="12" *)
-        (* LPF_RESISTOR="8" *)
-        (* MFG_ENABLE_FILTEROPAMP="1" *)
-        (* MFG_GMCREF_SEL="2" *)
+        (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
         EHXPLLL #(
             .PLLRST_ENA("DISABLED"),
             .INTFB_WAKE("DISABLED"),
@@ -113,22 +115,22 @@ module new_pll #(
             .OUTDIVIDER_MUXD("DIVD"),
             .CLKI_DIV(1),
             .CLKOP_ENABLE("ENABLED"),
-            .CLKOP_DIV(24),
-            .CLKOP_CPHASE(9),
+            .CLKOP_DIV(12),
+            .CLKOP_CPHASE(5),
             .CLKOP_FPHASE(0),
             .CLKOS_ENABLE("ENABLED"),
             .CLKOS_DIV(12),
-            .CLKOS_CPHASE(0),
+            .CLKOS_CPHASE(8),
             .CLKOS_FPHASE(0),
             .FEEDBK_PATH("CLKOP"),
-            .CLKFB_DIV(1)
+            .CLKFB_DIV(2)
         ) pll_i (
             .RST(1'b0),
             .STDBY(1'b0),
             .CLKI(clock_in),
-            .CLKOP(clkfb),
-            .CLKOS(clock_out),
-            .CLKFB(clkfb),
+            .CLKOP(clock_out),
+            .CLKOS(clock_shifted),
+            .CLKFB(clock_out),
             .CLKINTFB(),
             .PHASESEL0(1'b0),
             .PHASESEL1(1'b0),

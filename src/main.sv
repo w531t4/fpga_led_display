@@ -211,6 +211,7 @@ module main #(
     wire types::sdram_word_addr_t row_prefetch_sdram_addr;
 
     wire write_client_ready;
+    wire write_client_drained;
     wire write_client_sdram_req;
     wire types::sdram_word_addr_t write_client_sdram_addr;
     wire types::sdram_byte_en_t write_client_sdram_wdata_we;
@@ -681,6 +682,7 @@ module main #(
 `endif
 `ifdef USE_SDRAM_FB
         .sdram_write_ready(write_client_ready),
+        .sdram_write_drained(write_client_drained),
 `endif
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
@@ -699,6 +701,7 @@ module main #(
         .source_data(ctrl_ram_data_out),
         .source_write_valid(ctrl_ram_clk_enable & ctrl_ram_write_enable),
         .ready(write_client_ready),
+        .drained(write_client_drained),
         .sdram_req(write_client_sdram_req),
         .sdram_done(sdram_s_done[0]),
         .sdram_addr(write_client_sdram_addr),

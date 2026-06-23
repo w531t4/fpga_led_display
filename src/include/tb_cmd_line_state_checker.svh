@@ -19,10 +19,19 @@ module tb_cmd_line_state_checker #(
     input  enums::control_module_fsm_e cmd_line_state,
     output logic                       seq_done
 );
-    // Mirror tb_main timing assumptions: 500us per step at ROOT_CLOCK.
+    // Per-step timeout. Historically 500us at ROOT_CLOCK -- fine at 80MHz (40000
+    // cyc) but the panel-fill commands (blankpanel/fillpanel) take a FREQUENCY-
+    // INDEPENDENT ~PIXEL_WIDTH*PIXEL_HEIGHT*BYTES_PER_PIXEL cycles, which exceeds a
+    // time-based 500us budget at lower clocks (only 25000 cyc at 50MHz). So floor
+    // the budget at 1.5x a full-panel fill (cycle-based, frequency-robust).
     localparam integer CMD_LINE_STATE_STEP_NS = 500_000;
-    localparam longint unsigned CMD_LINE_STATE_STEP_CYCLES =
+    localparam longint unsigned CMD_LINE_STATE_STEP_CYCLES_TIME =
         (64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000;
+    localparam longint unsigned FILL_PANEL_CYCLES =
+        longint'(params::PIXEL_WIDTH) * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
+    localparam longint unsigned FILL_PANEL_BUDGET = FILL_PANEL_CYCLES + (FILL_PANEL_CYCLES / 2);
+    localparam longint unsigned CMD_LINE_STATE_STEP_CYCLES =
+        (FILL_PANEL_BUDGET > CMD_LINE_STATE_STEP_CYCLES_TIME) ? FILL_PANEL_BUDGET : CMD_LINE_STATE_STEP_CYCLES_TIME;
 
     // Derive SPI byte cadence from the same divider as tb_main's spi_master.
     localparam int unsigned SPI_CLK_DIVIDE = 4 << SPI_CDIV;  // spi_master: 00=/4, 01=/8, 10=/16, 11=/32

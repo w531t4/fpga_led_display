@@ -41,6 +41,9 @@ module control_module #(
 `endif
 `ifdef USE_SDRAM_FB
     input logic sdram_write_ready,
+    // High only once every accepted write has COMMITTED to SDRAM (see
+    // sdram_write_client.drained). Used to hold `busy` until the write tail lands.
+    input logic sdram_write_drained,
 `endif
     output logic ram_clk_enable
 
@@ -99,7 +102,10 @@ module control_module #(
             sdram_write_pending_q <= 1'b0;
         end else if (ram_clk_enable && ram_write_enable) begin
             sdram_write_pending_q <= 1'b1;
-        end else if (sdram_write_ready) begin
+        end else if (sdram_write_drained) begin
+            // Clear only when the write client is fully drained (FIFO empty + no
+            // in-flight write), NOT when merely !full -- otherwise `busy` drops with
+            // queued delta writes still uncommitted and the host can swap early.
             sdram_write_pending_q <= 1'b0;
         end
     end

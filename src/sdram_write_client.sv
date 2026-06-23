@@ -28,6 +28,12 @@ module sdram_write_client #(
     input logic                   source_write_valid,
 
     output logic ready,
+    // High only when every accepted write has COMMITTED to SDRAM (FIFO empty and
+    // no in-flight write). control_module gates `busy` on this so the host can't
+    // swap the frame (TOGGLE_FRAME) before the delta tail lands -> no stale pixels.
+    // (`ready` = !full is NOT sufficient: it is high with up to DEPTH writes still
+    // queued.)
+    output logic drained,
 
     output logic                    sdram_req,
     input  logic                    sdram_done,
@@ -112,6 +118,7 @@ module sdram_write_client #(
     wire pop  = inflight_free && !empty && !write_drain_paused;  // move FIFO head into the in-flight slot
 
     assign ready = !full;
+    assign drained = empty && !inflight_q;
     assign sdram_req = inflight_q;
     assign sdram_addr = sdram_addr_q;
     assign sdram_wdata_we = sdram_wdata_we_q;
