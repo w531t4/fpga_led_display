@@ -13,7 +13,14 @@
 module litedram_bist #(
     parameter logic [23:0] TEST_ADDR = 24'h000000,  // base of the swept address range
     parameter logic [15:0] TEST_DATA = 16'h5a3c,     // data = (addr ^ TEST_DATA), distinct per address
-    parameter logic [23:0] ADDR_SPAN = 24'h002000,   // addresses per pass (8192 -> spans many DRAM rows/banks)
+    // Sweep the WHOLE framebuffer address range (both double-buffer copies ~= 0x18000
+    // words), not just the first 8192 -- otherwise the high addresses that back the
+    // bottom display rows are never exercised. Overridable for quick runs.
+`ifdef LITEDRAM_BIST_ADDR_SPAN
+    parameter logic [23:0] ADDR_SPAN = `LITEDRAM_BIST_ADDR_SPAN,
+`else
+    parameter logic [23:0] ADDR_SPAN = 24'h01A000,
+`endif
     parameter int unsigned MAX_WAIT_TICKS = 1024
 ) (
     input logic clk,

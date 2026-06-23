@@ -254,30 +254,20 @@ module tb_row_prefetch;
         // Reset primes a fill of row 1 into bank1; give it time to land.
         repeat (FILL_WAIT_CYCLES) @(posedge clk_in);
 
-        // Transition row0 -> row1: bank1 (row1 data) becomes active.
-        // Also kicks off the fill of row2 into bank0.
-        pulse_trigger(types::row_subpanel_addr_t'(0));
-        check_read(0, JUNK_ROW, make_pattern(1, 0));
-        check_read(MID_COL, '0, make_pattern(1, MID_COL));
-        check_read(LAST_COL, JUNK_ROW, make_pattern(1, LAST_COL));
+        // Sweep EVERY scan position. pulse_trigger(R) makes the bank holding row R+1
+        // (filled the previous iteration) active and kicks off the fill of row R+2.
+        // Checking the full assembled column at every row catches any scan-position-
+        // specific fill/assembly bug -- the bottom display rows are the bottom subpanel
+        // of high scan positions, which e2e (row 1 only) never exercised.
+        for (int unsigned R = 0; R < params::PIXEL_HALFHEIGHT - 1; R++) begin
+            pulse_trigger(types::row_subpanel_addr_t'(R));
+            check_read(0,        JUNK_ROW, make_pattern(R + 1, 0));
+            check_read(MID_COL,  JUNK_ROW, make_pattern(R + 1, MID_COL));
+            check_read(LAST_COL, JUNK_ROW, make_pattern(R + 1, LAST_COL));
+            repeat (FILL_WAIT_CYCLES) @(posedge clk_in);
+        end
 
-        repeat (FILL_WAIT_CYCLES) @(posedge clk_in);
-
-        // Transition row1 -> row2: bank0 (row2 data) becomes active.
-        // Also kicks off the fill of row3 into bank1.
-        pulse_trigger(types::row_subpanel_addr_t'(1));
-        check_read(0, JUNK_ROW, make_pattern(2, 0));
-        check_read(MID_COL, JUNK_ROW, make_pattern(2, MID_COL));
-        check_read(LAST_COL, '1, make_pattern(2, LAST_COL));
-
-        repeat (FILL_WAIT_CYCLES) @(posedge clk_in);
-
-        // Transition row2 -> row3: bank1 (row3 data) becomes active.
-        pulse_trigger(types::row_subpanel_addr_t'(2));
-        check_read(0, JUNK_ROW, make_pattern(3, 0));
-        check_read(LAST_COL, JUNK_ROW, make_pattern(3, LAST_COL));
-
-        $display("tb_row_prefetch: PASS");
+        $display("tb_row_prefetch: PASS (swept scan rows 1..%0d)", params::PIXEL_HALFHEIGHT - 1);
         $finish;
     end
 
