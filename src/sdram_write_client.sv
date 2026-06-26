@@ -17,16 +17,8 @@
 // gates control_module's `ready_for_data` so the host can't outrun us.
 module sdram_write_client #(
     // verilator lint_off UNUSEDPARAM
-    parameter integer unsigned _UNUSED = 0,
+    parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
-    // Double-buffer write mirror (see the block comment below). Defaults to the
-    // build-time `ifdef so synthesis is unchanged; exposed as a parameter only so a
-    // testbench can instantiate both MIRROR=0 and MIRROR=1 in one compile.
-`ifdef USE_SDRAM_DBUF_MIRROR
-    parameter bit MIRROR = 1'b1
-`else
-    parameter bit MIRROR = 1'b0
-`endif
 ) (
     input logic reset,
     input logic clk_in,
@@ -91,18 +83,6 @@ module sdram_write_client #(
     localparam int unsigned DEPTH = `SDRAM_WRITE_FIFO_DEPTH;
     localparam int unsigned PTR_BITS = $clog2(DEPTH);
 
-    // DOUBLE-BUFFER WRITE MIRROR: the host (ESPHome display_layout) is a delta-only,
-    // persistent-canvas renderer -- it never redraws the full frame; each frame only the
-    // changed regions are written, and it relies on the ESP32 driver's copyFrame to keep
-    // the two SDRAM buffers identical. On real DRAM copyframe is far too slow and gets
-    // raced/dropped, so the buffers desync and stale pixels survive exactly where content
-    // moved (the persistent trail). Mirroring every host write into BOTH buffers keeps
-    // them identical by construction, so a slow/dropped copyframe can no longer desync
-    // them. Each FIFO entry is then drained as TWO writes (buffer 0, then buffer 1).
-    // (MIRROR is a module parameter, defaulted from USE_SDRAM_DBUF_MIRROR above.)
-    localparam types::sdram_word_addr_t BUFFER_WORDS_OFFSET =
-        types::sdram_word_addr_t'(calc::num_sdram_buffer_words(params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
-                                                                NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES));
     // Demand-backpressure watermarks: start preempting reads at 3/4 full, stop once
     // back down to 1/2 (hysteresis avoids flapping read/write priority every cycle).
     localparam int unsigned HIGH_WATER = DEPTH - (DEPTH / 4);
@@ -118,8 +98,6 @@ module sdram_write_client #(
     logic dropped_q;                                // STICKY: a host write was lost to a full FIFO
     logic wr_pressure_q;                            // hysteretic: FIFO is filling, preempt reads to drain
     types::sdram_word_addr_t sdram_addr_q;          // in-flight (arbiter-facing) regs -- register copy of FIFO head
-    types::sdram_word_addr_t sdram_addr_mirror_q;   // buffer-1 copy of the in-flight write (mirror, +BUFFER_WORDS)
-    logic                    mirror_phase_q;        // 0 = issuing the buffer-0 write, 1 = the buffer-1 write
     types::sdram_byte_en_t   sdram_wdata_we_q;
     types::sdram_word_data_t sdram_wdata_q;
 
@@ -127,9 +105,8 @@ module sdram_write_client #(
     wire types::sdram_byte_in_word_t byte_in_word_in =
         types::sdram_byte_in_word_t'(calc::sdram_byte_in_word_select($bits(int)'(source_addr.pixel),
                                                                       params::SDRAM_WORD_BYTES));
-    // With mirroring, write to the canonical frame-0 buffer (frame 1 is reached by
-    // +BUFFER_WORDS in the drain); without it, the back buffer (~frame_select) as before.
-    wire src_frame = MIRROR ? 1'b0 : ~frame_select;
+    // Writes target the back buffer -- the opposite of whichever frame is being displayed.
+    wire src_frame = ~frame_select;
     wire types::sdram_word_addr_t src_addr =
         calc::sdram_word_addr(src_frame, $bits(int)'(source_addr.row), $bits(int)'(source_addr.col),
                               source_addr.subpanel, word_select_in, params::PIXEL_WIDTH,
@@ -138,9 +115,8 @@ module sdram_write_client #(
     wire types::sdram_word_data_t src_wdata =
         types::sdram_word_data_t'($bits(int)'(source_data) << (byte_in_word_in * 8));
 
-    // A FIFO entry is fully written once its buffer-0 write (and, when mirroring, its
-    // buffer-1 write) has been acknowledged by the arbiter.
-    wire entry_done    = inflight_q && sdram_done && (!MIRROR || mirror_phase_q);
+    // A FIFO entry is fully written once its single SDRAM write is acknowledged.
+    wire entry_done    = inflight_q && sdram_done;
     wire inflight_free = !inflight_q || entry_done;
     wire empty = (count_q == '0);
     wire full  = count_q[PTR_BITS];                 // count_q == DEPTH (DEPTH is 2**PTR_BITS)
@@ -172,7 +148,7 @@ module sdram_write_client #(
     assign dropped = dropped_q;
     assign wr_pressure = wr_pressure_q;
     assign sdram_req = inflight_q;
-    assign sdram_addr = (MIRROR && mirror_phase_q) ? sdram_addr_mirror_q : sdram_addr_q;
+    assign sdram_addr = sdram_addr_q;
     assign sdram_wdata_we = sdram_wdata_we_q;
     assign sdram_wdata = sdram_wdata_q;
 
@@ -183,8 +159,6 @@ module sdram_write_client #(
             rd_ptr_q <= '0;
             count_q <= '0;
             sdram_addr_q <= '0;
-            sdram_addr_mirror_q <= '0;
-            mirror_phase_q <= 1'b0;
             sdram_wdata_we_q <= '0;
             sdram_wdata_q <= '0;
             dropped_q <= 1'b0;
@@ -207,20 +181,13 @@ module sdram_write_client #(
                 wr_ptr_q <= wr_ptr_q + 1'b1;
             end
 
-            // Mirror: once the buffer-0 write is accepted, advance to the buffer-1 write
-            // before this entry is considered done / popped.
-            if (MIRROR && inflight_q && sdram_done && !mirror_phase_q) mirror_phase_q <= 1'b1;
-
             // Pop: promote the FIFO head into the freeing in-flight slot. Plain register
-            // copy from the FIFO read port; the +BUFFER_WORDS for the buffer-1 mirror is
-            // registered here too (not in the arbiter-facing path) to keep timing.
+            // copy from the FIFO read port (no arithmetic in the arbiter-facing path).
             if (pop) begin
                 sdram_addr_q        <= fifo_addr_q[rd_ptr_q];
-                sdram_addr_mirror_q <= fifo_addr_q[rd_ptr_q] + BUFFER_WORDS_OFFSET;
                 sdram_wdata_we_q    <= fifo_we_q[rd_ptr_q];
                 sdram_wdata_q       <= fifo_data_q[rd_ptr_q];
                 inflight_q          <= 1'b1;
-                mirror_phase_q      <= 1'b0;
                 rd_ptr_q            <= rd_ptr_q + 1'b1;
             end else if (inflight_free) begin
                 inflight_q <= 1'b0;

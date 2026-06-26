@@ -43,9 +43,9 @@ endif
 # framebuffer path (row_prefetch/arbiter/write_client SDRAM ports), so drop them
 # without USE_SDRAM_FB (otherwise default lint hits row_prefetch's non-SDRAM ports).
 ifneq ($(findstring -DUSE_SDRAM_FB,$(BUILD_FLAGS)),-DUSE_SDRAM_FB)
-TBSRCS  := $(filter-out $(TB_DIR)/tb_sdram_fb_e2e.sv $(TB_DIR)/tb_sdram_contention.sv $(TB_DIR)/tb_sdram_mirror_contention.sv, $(TBSRCS))
-SIMBINS := $(filter-out $(SIM_BIN_DIR)/sdram_fb_e2e $(SIM_BIN_DIR)/sdram_contention $(SIM_BIN_DIR)/sdram_mirror_contention, $(SIMBINS))
-FSTOBJS := $(filter-out $(SIMULATION_DIR)/sdram_fb_e2e.fst $(SIMULATION_DIR)/sdram_contention.fst $(SIMULATION_DIR)/sdram_mirror_contention.fst, $(FSTOBJS))
+TBSRCS  := $(filter-out $(TB_DIR)/tb_sdram_fb_e2e.sv $(TB_DIR)/tb_sdram_contention.sv, $(TBSRCS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/sdram_fb_e2e $(SIM_BIN_DIR)/sdram_contention, $(SIMBINS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/sdram_fb_e2e.fst $(SIMULATION_DIR)/sdram_contention.fst, $(FSTOBJS))
 endif
 
 .PHONY: litedram litedram-smoke litedram-wrapper-smoke litedram-main-smoke
