@@ -43,9 +43,9 @@ endif
 # framebuffer path (row_prefetch/arbiter/write_client SDRAM ports), so drop them
 # without USE_SDRAM_FB (otherwise default lint hits row_prefetch's non-SDRAM ports).
 ifneq ($(findstring -DUSE_SDRAM_FB,$(BUILD_FLAGS)),-DUSE_SDRAM_FB)
-TBSRCS  := $(filter-out $(TB_DIR)/tb_sdram_fb_e2e.sv $(TB_DIR)/tb_sdram_contention.sv, $(TBSRCS))
-SIMBINS := $(filter-out $(SIM_BIN_DIR)/sdram_fb_e2e $(SIM_BIN_DIR)/sdram_contention, $(SIMBINS))
-FSTOBJS := $(filter-out $(SIMULATION_DIR)/sdram_fb_e2e.fst $(SIMULATION_DIR)/sdram_contention.fst, $(FSTOBJS))
+TBSRCS  := $(filter-out $(TB_DIR)/tb_sdram_fb_e2e.sv $(TB_DIR)/tb_sdram_contention.sv $(TB_DIR)/tb_sdram_drawcol_tail.sv $(TB_DIR)/tb_f2b_command_path.sv $(TB_DIR)/tb_f2b_readback.sv, $(TBSRCS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/sdram_fb_e2e $(SIM_BIN_DIR)/sdram_contention $(SIM_BIN_DIR)/sdram_drawcol_tail $(SIM_BIN_DIR)/f2b_command_path $(SIM_BIN_DIR)/f2b_readback, $(SIMBINS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/sdram_fb_e2e.fst $(SIMULATION_DIR)/sdram_contention.fst $(SIMULATION_DIR)/sdram_drawcol_tail.fst $(SIMULATION_DIR)/f2b_command_path.fst $(SIMULATION_DIR)/f2b_readback.fst, $(FSTOBJS))
 endif
 
 .PHONY: litedram litedram-smoke litedram-wrapper-smoke litedram-main-smoke

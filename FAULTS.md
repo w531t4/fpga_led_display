@@ -61,6 +61,16 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
     cols 720–767), so the bands do **not** show through past it — its right edge is flush with
     the panel edge.
 - **Justification:** _TBD._
+- **Fix attempts:**
+  - **T1 — raise system/SDRAM clock 50 → 70 MHz** (more SDRAM bandwidth; added `CLK_70` /
+    `new_pll` SPEED 6 with a 90° SDRAM clock, regenerated the LiteDRAM core at 70e6).
+    **Result: NO change** — neither F2.a (red dashing) nor F2.b (magenta short) improved,
+    and **no new issues** appeared. **Reverted to CLK_50.** Takeaway: a ~40% bandwidth
+    increase changing *nothing* argues F2 is **deterministic/structural**, not
+    bandwidth-/contention-bound. (Note F2.b varies 5–8px run-to-run → a race/timing tail,
+    not a fixed mapping offset.)
+  - **T2 (next):** attempt to fix **F2.b** (magenta bar 5–8 cols short of the right edge)
+    specifically.
 - **Status:** OPEN
 
 ---

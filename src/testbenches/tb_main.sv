@@ -284,6 +284,7 @@ module tb_main #(
             cmd_series
         ) + 1000) * params::SIM_HALF_PERIOD_NS * 2 *
             4);  // HALF_CYCLE * 2, to get period. 4, because master spi divides primary clock by 4. 1000 for kicks
+`ifndef F2B_SERIES
         `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === types::row_subpanel_addr_t'('b0101),
                      TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
@@ -293,15 +294,30 @@ module tb_main #(
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         wait (cmd_line_state_seq_done);
+`else
+        // F2.b repro: the free-running master blasts the whole drawColumn burst then
+        // swapFrame; the default sequence checker does not apply. Give the write FIFO
+        // a long settle window so the busy/drain detector samples the worst
+        // uncommitted-tail-at-swap.
+        repeat (300000) @(posedge clk);
+`endif
 `ifdef USE_SDRAM_FB
+`ifdef F2B_SERIES
+        $display("F2B-REPRO: BUSY-DRAIN max uncommitted writes while busy==0 = %0d  (>0 => host swaps before the drawColumn tail commits -> background shows through the high columns)", busy_low_pending_max);
+`else
         if (busy_low_pending_max != 0)
             $fatal(1, "BUSY-DRAIN FAIL: busy dropped with up to %0d uncommitted SDRAM writes -> the host can swap the frame before the delta tail commits (stale/persistent wrong pixels)", busy_low_pending_max);
         $display("BUSY-DRAIN OK: busy held until the write client drained (0 uncommitted writes while busy==0)");
 `endif
+`endif
 `ifdef TB_SPI_FREERUN
+`ifdef F2B_SERIES
+        $display("F2B-REPRO: WRITE-KEEPUP worst not-ready run = %0d cycles (limit %0d; >= => host bytes dropped mid-drawColumn)", wc_notready_max, WC_NOTREADY_LIMIT);
+`else
         if (wc_notready_max >= WC_NOTREADY_LIMIT)
             $fatal(1, "WRITE-KEEPUP FAIL: SDRAM write path not ready for up to %0d consecutive cycles mid data-command (>= an SPI byte period) -> host bytes dropped on hardware (wrong/persistent pixels)", wc_notready_max);
         $display("WRITE-KEEPUP OK: worst write not-ready run = %0d cycles (< byte period; no host bytes dropped)", wc_notready_max);
+`endif
 `endif
         $finish;
     end
@@ -365,6 +381,10 @@ module tb_main #(
 `endif
 
     // Shared cmd_line_state sequence checker (keep in sync with cmd_series).
+    // The F2.b repro stream is not the default command series, so the sequence
+    // checker (which times out + $fatals if the observed states don't match the
+    // default order) is bypassed there.
+`ifndef F2B_SERIES
     tb_cmd_line_state_checker #(
         .SPI_CDIV(SPI_CDIV),
         .READRECT_W(READRECT_W),
@@ -375,7 +395,11 @@ module tb_main #(
         .cmd_line_state(tb_main.tbi_main.ctrl.cmd_line_state),
         .seq_done      (cmd_line_state_seq_done)
     );
+`else
+    assign cmd_line_state_seq_done = 1'b1;  // unused in the F2.b repro (wait is bypassed)
+`endif
 
+`ifndef F2B_SERIES
     initial begin : assert_readrect_pipelining
         // Verify that a readframe command following readrect is accepted without a host-side gap.
         `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_CMD_READRECT, TB_MAIN_WAIT_CYCLES)
@@ -390,6 +414,7 @@ module tb_main #(
                      int'(READFRAME_WAIT_CYCLES))
         `WAIT_ASSERT(clk, tb_main.tbi_main.ctrl.cmd_line_state == enums::STATE_IDLE, int'(CMD_LINE_STATE_STEP_CYCLES))
     end
+`endif
     always begin
         #(params::SIM_HALF_PERIOD_NS) clk <= !clk;
     end

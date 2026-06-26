@@ -152,4 +152,43 @@ localparam logic [$bits(cmd_readrect_header)+(READRECT_TOTAL_BYTES*8)-1:0] cmd_r
     cmd_readrect, \
     cmd_readframe, \
     cmd_pixel_1
+`ifdef F2B_SERIES
+// ---------------------------------------------------------------------------
+// F2.b reproduction stream (host-faithful): a drawColumn ("K") burst across the
+// magenta bar's high columns, immediately followed by swapFrame ("t") -- the
+// exact host sequence whose right-edge drops on SDRAM. Each "K" blasts 96 payload
+// bytes down 32 DIFFERENT SDRAM rows (a row-miss every write); the free-running
+// master (TB_SPI_FREERUN) cannot be stalled per byte, so when the write FIFO
+// drains slowly (SDRAM_SIM_SLOW_WRITES) the tail is still in flight when busy
+// drops and the swap lands -> the high columns show the stale background.
+// ---------------------------------------------------------------------------
+localparam int unsigned F2B_NUM_COLS  = 48;
+localparam int unsigned F2B_FIRST_COL = params::PIXEL_WIDTH - F2B_NUM_COLS;  // 720 @ W=768
+localparam int unsigned F2B_K_BITS    = $bits(types::readcol_cmd_t);
+localparam int unsigned F2B_T_BITS    = $bits(cmd::opcode_t);
+localparam int unsigned F2B_TOTAL_BITS = F2B_NUM_COLS * F2B_K_BITS + F2B_T_BITS;
+
+function automatic logic [F2B_TOTAL_BITS-1:0] f2b_build_series();
+    logic [F2B_TOTAL_BITS-1:0]  s;
+    types::column_data_field_t  mag;
+    types::readcol_cmd_t        k;
+    int unsigned                bitpos;
+    mag = '1;                       // all-ones payload (color is irrelevant to the drain mechanism)
+    s = '0;
+    bitpos = F2B_TOTAL_BITS;        // fill MSB-first == on-the-wire send order
+    for (int unsigned c = 0; c < F2B_NUM_COLS; c++) begin
+        k = types::readcol_cmd_t'({cmd::READCOL,
+                                   types::col_addr_field_t'(F2B_FIRST_COL + c),
+                                   mag});
+        bitpos -= F2B_K_BITS;
+        s[bitpos +: F2B_K_BITS] = k;
+    end
+    bitpos -= F2B_T_BITS;
+    s[bitpos +: F2B_T_BITS] = F2B_T_BITS'(cmd::TOGGLE_FRAME);
+    f2b_build_series = s;
+endfunction
+
+localparam logic [F2B_TOTAL_BITS-1:0] cmd_series = f2b_build_series();
+`else
 localparam logic [$bits({`CMD_SERIES_FIELDS})-1:0] cmd_series = {`CMD_SERIES_FIELDS};
+`endif
