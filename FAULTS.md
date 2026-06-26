@@ -10,7 +10,7 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
 
 ## References
 
-- **`test_pattern.jpg`** — clean capture of the built-in test pattern (`run_test_graphic`),
+- **`test_pattern.jpg`** — clean capture of the built-in test pattern (`run_test_graphic`), from commit 47bf8af33961abb41b9f5a9869a362e8dd97b440
   used as the "the panel + pipeline *can* render cleanly" reference. It shows: a solid
   **yellow** vertical bar flush to the **left** edge, a solid **white** vertical bar flush
   to the **right** edge, full-width thin **red** (top) / **cyan** (middle) / **green**
@@ -44,9 +44,10 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
 - **Observed in:** `IMG_0175.JPG` (built-in test pattern / `run_test_graphic` scene)
 - **What we see (by `run_test_graphic` object; from native-resolution 22 MP crops):**
   - incorrect:
-    - **Red top band (`drawRowRGB888`):** solid/continuous for the **left ~3/5** of the board (yellow bar → ~3/5 of the way across), then degrades into a **regularly-spaced dashed line of short red segments** (periodic gaps, at a roughly constant height — **not** drifting/scattered) across the **right ~2/5**. **This is the fault — and it is the only band affected.**
+    - a) **Red top band (`drawRowRGB888`):** solid/continuous for the **left ~3/5** of the board (yellow bar → ~3/5 of the way across), then degrades into a **regularly-spaced dashed line of short red segments** (periodic gaps, at a roughly constant height — **not** drifting/scattered) across the **right ~2/5**. **This is the fault — and it is the only band affected.**
 
-    - **Magenta right accent bar (`drawColumnRGB888`) is ~8 LED columns SHORT of the right edge:** the box's rightmost ~8 columns are missing, so the red/blue/green bands (drawn full-width underneath it) **show through and continue past the box's right edge** out to the panel's true right edge in those final ~8 columns. The bands reach the edge; the box does not. **This is a second fault** (matches the earlier "magenta offset ~5–8px" report). Measured: box edge ≈ x5420, bands end ≈ x5470 (~50 px ≈ ~8 LED columns at ~5.8 px/col).
+    - b) **Magenta right accent bar (`drawColumnRGB888`) is ~8 LED columns SHORT of the right edge:** the box's rightmost ~8 columns are missing, so the red/blue/green bands (drawn full-width underneath it) **show through and continue past the box's right edge** out to the panel's true right edge in those final ~8 columns. The bands reach the edge; the box does not. **This is a second fault** (matches the earlier "magenta offset ~5–8px" report). Measured: box edge ≈ x5420, bands end ≈ x5470 (~50 px ≈ ~8 LED columns at ~5.8 px/col).
+      - each time i enter demo-mode, the magenta bar appears to offset from its desired location (all the way on the right) by a varying number of pixels (usually between 5-8)
   - correct:
     - **Blue/cyan center band (`fillRect`):** solid, continuous, **full width** (confirmed through and past the gradient rectangle, out to the magenta bar) — correct.
     - **Green bottom band (`fillRect`):** solid, continuous, full width — correct.
