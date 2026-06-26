@@ -121,6 +121,8 @@ module tb_sdram_contention;
         .rd_rvalid(arb_rd_rvalid), .rd_rdata(arb_rd_rdata),
         .s_req(s_req), .s_we(s_we), .s_addr(s_addr), .s_wdata_we(s_wwe), .s_wdata(s_wdat),
         .s_grant(s_grant), .s_done(s_done), .s_rdata(s_rdata),
+        .cp_req(1'b0), .cp_we(1'b0), .cp_addr('0), .cp_wdata_we('0), .cp_wdata('0),
+        .cp_cmd_ready(), .cp_rvalid(), .cp_rdata(),
         .cmd_valid(cmd_valid), .cmd_ready(cmd_ready), .cmd_we(cmd_we), .cmd_addr(cmd_addr),
         .wdata_valid(wdata_valid), .wdata_ready(wdata_ready), .wdata_we(wdata_we), .wdata_data(wdata_data),
         .rdata_valid(rdata_valid), .rdata_ready(rdata_ready), .rdata_data(rdata_data)

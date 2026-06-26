@@ -56,6 +56,20 @@ module sdram_arbiter #(
     output logic                    [NUM_SIMPLE-1:0] s_done,
     output types::sdram_word_data_t                  s_rdata,
 
+    // PIPELINED copyframe client (read+write), served BETWEEN display fills only.
+    // Like the prefetch read port but its commands carry a we bit, so copyframe
+    // streams a run of reads then a run of writes (front->back buffer copy) at
+    // ~bus rate. A pending fill (rd_req) preempts it; copyframe never runs inside a
+    // fill burst, so its different-row accesses can't thrash the fill's DRAM row.
+    input  logic                    cp_req,
+    input  logic                    cp_we,
+    input  types::sdram_word_addr_t cp_addr,
+    input  types::sdram_byte_en_t   cp_wdata_we,
+    input  types::sdram_word_data_t cp_wdata,
+    output logic                    cp_cmd_ready,
+    output logic                    cp_rvalid,
+    output types::sdram_word_data_t cp_rdata,
+
     output logic                    cmd_valid,
     input  logic                    cmd_ready,
     output logic                    cmd_we,
@@ -79,11 +93,15 @@ module sdram_arbiter #(
         ARB_S_CMD,
         ARB_S_RWAIT,
         ARB_S_DONE,
-        ARB_S_WBURST   // back-to-back write drain (client 0) while the FIFO is pressured
+        ARB_S_WBURST,  // back-to-back write drain (client 0) while the FIFO is pressured
+        ARB_COPY       // pipelined copyframe burst (reads+writes) between fills
     } arb_state_t;
 
     arb_state_t state_q;
     logic [OUTSTANDING_BITS-1:0] outstanding_q;
+    // Outstanding copyframe READS (so we know when the burst's read data has drained
+    // before yielding the bus back to a preempting fill -- no read word is lost).
+    logic [OUTSTANDING_BITS-1:0] cp_outstanding_q;
 
     logic [SIMPLE_IDX_BITS-1:0] s_active_q;
     logic s_active_we_q;
@@ -105,7 +123,22 @@ module sdram_arbiter #(
     logic                    rd_rvalid_q;
     types::sdram_word_data_t rd_rdata_q;
 
+    // Registered copyframe read return (same flop-clean rule as the prefetch return).
+    logic                    cp_rvalid_q;
+    types::sdram_word_data_t cp_rdata_q;
+
     wire in_prefetch = (state_q == ARB_PREFETCH);
+    wire in_copy     = (state_q == ARB_COPY);
+
+    // Copyframe yields the bus to a fill: stop accepting new copy commands once a
+    // fill is pending, finish draining the outstanding copy reads, then hand over.
+    wire cp_preempt = rd_req;
+    // A copyframe command is accepted to the port this cycle.
+    wire cp_cmd_issue = in_copy && cp_req && cmd_ready && (!cp_we || wdata_ready) && !cp_preempt;
+    // A copyframe READ command is accepted this cycle (only reads are tracked).
+    wire cp_rd_issue  = cp_cmd_issue && !cp_we;
+    // The copy burst is fully parked: client idle (or preempted) and all reads drained.
+    wire cp_burst_done = in_copy && (!cp_req || cp_preempt) && (cp_outstanding_q == '0);
 
     // WRITE INTERLEAVE DISABLED (hardware fix, confirmed by led[2]=fill_overrun):
     // interleaving a back-buffer WRITE into the front-buffer READ fill forces the
@@ -172,11 +205,27 @@ module sdram_arbiter #(
         rd_rvalid = rd_rvalid_q;
         rd_rdata = rd_rdata_q;
 
+        cp_cmd_ready = 1'b0;
+        cp_rvalid = cp_rvalid_q;
+        cp_rdata = cp_rdata_q;
+
         s_grant = '0;
         s_done = '0;
         s_rdata = rdata_q;
 
-        if (in_prefetch) begin
+        if (in_copy) begin
+            // Stream copyframe commands (read or write) -- UNLESS a fill is pending,
+            // in which case stop issuing so the outstanding copy reads drain and the
+            // fill can take the bus. copyframe holds its issue position (no cp_cmd_ready
+            // returned) and resumes when we return to ARB_COPY.
+            cmd_valid    = cp_req && !cp_preempt;
+            cmd_we       = cp_we;
+            cmd_addr     = cp_addr;
+            wdata_valid  = cp_req && cp_we && !cp_preempt;
+            wdata_we     = cp_wdata_we;
+            wdata_data   = cp_wdata;
+            cp_cmd_ready = cp_req && cmd_ready && (!cp_we || wdata_ready) && !cp_preempt;
+        end else if (in_prefetch) begin
             if (iw_serve) begin
                 // Interleave client-0's write into the read stream.
                 s_grant[0] = 1'b1;
@@ -226,6 +275,7 @@ module sdram_arbiter #(
         if (reset) begin
             state_q <= ARB_IDLE;
             outstanding_q <= '0;
+            cp_outstanding_q <= '0;
             s_active_q <= '0;
             s_active_we_q <= 1'b0;
             cmd_done_q <= 1'b0;
@@ -235,6 +285,8 @@ module sdram_arbiter #(
             rd_credit_q <= '0;
             rd_rvalid_q <= 1'b0;
             rd_rdata_q <= '0;
+            cp_rvalid_q <= 1'b0;
+            cp_rdata_q <= '0;
             rdata_q <= '0;
         end else begin
             // Registered prefetch data return: every port rdata during a burst
@@ -242,12 +294,26 @@ module sdram_arbiter #(
             rd_rvalid_q <= in_prefetch && rdata_valid;
             if (in_prefetch && rdata_valid) rd_rdata_q <= rdata_data;
 
+            // Registered copyframe read return: same rule, gated to the copy burst.
+            // Returns during a copy burst all belong to copyframe (reads are never
+            // interleaved with fill reads), so no per-read tagging is needed.
+            cp_rvalid_q <= in_copy && rdata_valid;
+            if (in_copy && rdata_valid) cp_rdata_q <= rdata_data;
+
             // Outstanding read accounting (writes don't count).
             if (in_prefetch) begin
                 if (prefetch_rd_issue && !rdata_valid)
                     outstanding_q <= outstanding_q + 1'b1;
                 else if (!prefetch_rd_issue && rdata_valid)
                     outstanding_q <= outstanding_q - 1'b1;
+            end
+
+            // Outstanding copyframe read accounting.
+            if (in_copy) begin
+                if (cp_rd_issue && !rdata_valid)
+                    cp_outstanding_q <= cp_outstanding_q + 1'b1;
+                else if (!cp_rd_issue && rdata_valid)
+                    cp_outstanding_q <= cp_outstanding_q - 1'b1;
             end
 
             // Interleaved-write progress within the burst.
@@ -276,6 +342,7 @@ module sdram_arbiter #(
             case (state_q)
                 ARB_IDLE: begin
                     outstanding_q <= '0;
+                    cp_outstanding_q <= '0;
                     if (init_done && boost_writes && s_req[0]) begin
                         // Write FIFO near overflow: drain writes (in a burst) ahead of
                         // the fill. A late fill is a transient flicker; a dropped write
@@ -289,6 +356,10 @@ module sdram_arbiter #(
                         s_active_q <= s_winner;
                         s_active_we_q <= s_we[s_winner];
                         state_q <= ARB_S_CMD;
+                    end else if (init_done && cp_req) begin
+                        // Lowest priority: copyframe runs only in idle bus time between
+                        // fills/writes. A fill (rd_req) arriving mid-burst preempts it.
+                        state_q <= ARB_COPY;
                     end
                 end
                 ARB_PREFETCH: begin
@@ -321,6 +392,12 @@ module sdram_arbiter #(
                         rdata_q <= rdata_data;
                         state_q <= ARB_S_DONE;
                     end
+                end
+                ARB_COPY: begin
+                    // Park the burst once the client is idle or a fill is pending AND all
+                    // outstanding copy reads have returned (no read word stranded), then
+                    // yield to ARB_IDLE so the fill (or write/idle) can take the bus next.
+                    if (cp_burst_done) state_q <= ARB_IDLE;
                 end
                 ARB_S_DONE: state_q <= ARB_IDLE;
                 ARB_S_WBURST: begin

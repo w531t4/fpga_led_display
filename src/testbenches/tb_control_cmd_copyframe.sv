@@ -17,8 +17,10 @@ module tb_control_cmd_copyframe;
     localparam int unsigned BUFFER_WORDS =
         calc::num_sdram_buffer_words(params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
                                       params::SDRAM_WORD_BYTES);
-    localparam int unsigned CYCLES_PER_WORD_PHASE = params::SDRAM_MOCK_READ_LATENCY + 3;
-    localparam int unsigned MAX_WAIT_CYCLES = BUFFER_WORDS * 2 * CYCLES_PER_WORD_PHASE + 32;
+    localparam int unsigned READ_LATENCY = params::SDRAM_MOCK_READ_LATENCY + 2;
+    // Pipelined: a full copy now costs ~BUFFER_WORDS reads + BUFFER_WORDS writes plus
+    // the pipeline fill, not 2*round-trip per word. Keep a generous bound anyway.
+    localparam int unsigned MAX_WAIT_CYCLES = BUFFER_WORDS * 4 + 256;
 
     logic clk;
     logic reset;
@@ -29,7 +31,8 @@ module tb_control_cmd_copyframe;
     wire types::sdram_word_addr_t sdram_addr;
     wire types::sdram_byte_en_t sdram_wdata_we;
     wire types::sdram_word_data_t sdram_wdata;
-    logic sdram_done;
+    logic sdram_cmd_ready;
+    logic sdram_rvalid;
     types::sdram_word_data_t sdram_rdata;
     wire done;
 
@@ -47,58 +50,49 @@ module tb_control_cmd_copyframe;
         .sdram_addr(sdram_addr),
         .sdram_wdata_we(sdram_wdata_we),
         .sdram_wdata(sdram_wdata),
-        .sdram_done(sdram_done),
+        .sdram_cmd_ready(sdram_cmd_ready),
+        .sdram_rvalid(sdram_rvalid),
         .sdram_rdata(sdram_rdata),
         .done(done)
     );
 
     always #(params::SIM_HALF_PERIOD_NS) clk = ~clk;
 
-    // Single-outstanding-transaction memory mock (same shape as tb_row_prefetch's,
-    // extended to also service writes since copyframe issues both per word).
-    enums::sdram_mock_state_e mock_state_q;
-    types::sdram_mock_wait_count_t mock_wait_q;
-    types::sdram_word_addr_t mock_addr_q;
-    logic mock_we_q;
-    types::sdram_word_data_t mock_wdata_q;
+    // PIPELINED native-port-style mock: accepts a command every cycle (cmd_ready=1),
+    // commits writes immediately, and returns read data READ_LATENCY cycles later in
+    // command order via a small latency line. This exercises the engine's read-ahead
+    // FIFO and write drain the same way the real arbiter does.
+    assign sdram_cmd_ready = !reset;
+
+    logic                    rpipe_valid[READ_LATENCY];
+    types::sdram_word_addr_t rpipe_addr [READ_LATENCY];
+    wire cmd_acc    = sdram_req && sdram_cmd_ready;
+    wire rd_cmd_acc = cmd_acc && !sdram_we;
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            mock_state_q <= enums::SDRAM_MOCK_IDLE;
-            mock_wait_q <= '0;
-            sdram_done <= 1'b0;
+            sdram_rvalid <= 1'b0;
+            sdram_rdata <= '0;
+            for (int i = 0; i < READ_LATENCY; i++) begin
+                rpipe_valid[i] <= 1'b0;
+                rpipe_addr[i] <= '0;
+            end
         end else begin
-            sdram_done <= 1'b0;
-            case (mock_state_q)
-                enums::SDRAM_MOCK_IDLE: begin
-                    if (sdram_req) begin
-                        // copyframe always moves a full word, so wdata_we should
-                        // never gate out any byte while a write is in flight.
-                        if (sdram_we && sdram_wdata_we !== '1)
-                            $fatal(1, "expected a full-word byte enable, got %0b", sdram_wdata_we);
-                        mock_addr_q <= sdram_addr;
-                        mock_we_q <= sdram_we;
-                        mock_wdata_q <= sdram_wdata;
-                        mock_wait_q <= types::sdram_mock_wait_count_t'(params::SDRAM_MOCK_READ_LATENCY);
-                        mock_state_q <= enums::SDRAM_MOCK_WAIT;
-                    end
-                end
-                enums::SDRAM_MOCK_WAIT: begin
-                    if (mock_wait_q == 0) begin
-                        sdram_done <= 1'b1;
-                        if (mock_we_q) begin
-                            model_words[types::sdram_buffer_word_idx_t'(mock_addr_q)] <= mock_wdata_q;
-                        end else begin
-                            sdram_rdata <= model_words[types::sdram_buffer_word_idx_t'(mock_addr_q)];
-                        end
-                        mock_state_q <= enums::SDRAM_MOCK_SETTLE;
-                    end else begin
-                        mock_wait_q <= mock_wait_q - 1'b1;
-                    end
-                end
-                enums::SDRAM_MOCK_SETTLE: mock_state_q <= enums::SDRAM_MOCK_IDLE;
-                default: mock_state_q <= enums::SDRAM_MOCK_IDLE;
-            endcase
+            // Commit writes immediately on accept.
+            if (cmd_acc && sdram_we) begin
+                if (sdram_wdata_we !== '1)
+                    $fatal(1, "expected a full-word byte enable, got %0b", sdram_wdata_we);
+                model_words[types::sdram_buffer_word_idx_t'(sdram_addr)] <= sdram_wdata;
+            end
+            // Read latency line: data returns READ_LATENCY cycles after the cmd accept.
+            for (int i = READ_LATENCY - 1; i > 0; i--) begin
+                rpipe_valid[i] <= rpipe_valid[i-1];
+                rpipe_addr[i]  <= rpipe_addr[i-1];
+            end
+            rpipe_valid[0] <= rd_cmd_acc;
+            if (rd_cmd_acc) rpipe_addr[0] <= sdram_addr;
+            sdram_rvalid <= rpipe_valid[READ_LATENCY-1];
+            sdram_rdata  <= model_words[types::sdram_buffer_word_idx_t'(rpipe_addr[READ_LATENCY-1])];
         end
     end
 
@@ -144,10 +138,11 @@ module tb_control_cmd_copyframe;
         $finish;
     end
 
-    // This mock only ever exercises the in-use word range, so mock_addr_q's upper
-    // bits (above what sdram_buffer_word_idx_t can index) are always zero by
+    // This mock only ever exercises the in-use word range, so the command address'
+    // upper bits (above what sdram_buffer_word_idx_t can index) are always zero by
     // construction; reference them explicitly rather than leaving them unused.
-    wire _unused_ok = &{1'b0, mock_addr_q[$bits(types::sdram_word_addr_t)-1:$bits(types::sdram_buffer_word_idx_t)],
+    wire _unused_ok = &{1'b0, sdram_addr[$bits(types::sdram_word_addr_t)-1:$bits(types::sdram_buffer_word_idx_t)],
+                        rpipe_addr[0][$bits(types::sdram_word_addr_t)-1:$bits(types::sdram_buffer_word_idx_t)],
                         1'b0};
 endmodule
 `else

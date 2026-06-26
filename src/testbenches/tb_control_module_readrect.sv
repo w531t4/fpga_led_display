@@ -103,7 +103,8 @@ module tb_control_module_readrect;
         .sdram_copyframe_addr(copyframe_sdram_addr),
         .sdram_copyframe_wdata_we(copyframe_sdram_wdata_we),
         .sdram_copyframe_wdata(copyframe_sdram_wdata),
-        .sdram_copyframe_done(1'b0),
+        .sdram_copyframe_cmd_ready(1'b0),
+        .sdram_copyframe_rvalid(1'b0),
         .sdram_copyframe_rdata('0),
 `else
         .cmd_copyframe_if(copy_int),

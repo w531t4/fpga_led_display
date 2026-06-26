@@ -235,6 +235,16 @@ module main #(
     wire types::sdram_byte_en_t copyframe_sdram_wdata_we = '0;
     wire types::sdram_word_data_t copyframe_sdram_wdata = '0;
 `endif
+    // copyframe's PIPELINED arbiter return (cp_* port).
+    wire                          copyframe_sdram_cmd_ready;
+    wire                          copyframe_sdram_rvalid;
+    wire types::sdram_word_data_t copyframe_sdram_rdata;
+`ifndef DOUBLE_BUFFER
+    // No copyframe command without DOUBLE_BUFFER -> cp_req is tied low and these
+    // arbiter returns have no consumer; sink them so lint stays clean.
+    wire _unused_ok_copyframe_ret = &{1'b0, copyframe_sdram_cmd_ready, copyframe_sdram_rvalid,
+                                      copyframe_sdram_rdata, 1'b0};
+`endif
 
     // row_prefetch uses the arbiter's dedicated PIPELINED read port.
     wire                          arb_rd_cmd_ready;
@@ -242,20 +252,21 @@ module main #(
     wire types::sdram_word_data_t arb_rd_rdata;
 
     // One-at-a-time "simple" clients on the arbiter: index 0 = write (highest
-    // priority among these), index 1 = copyframe.
+    // priority among these). Copyframe is now a dedicated PIPELINED client (cp_*),
+    // not a simple slot, so index 1 is unused (tied off).
     localparam int unsigned SDRAM_NUM_SIMPLE = 2;
-    wire [SDRAM_NUM_SIMPLE-1:0]                  sdram_s_req = {copyframe_sdram_req, write_client_sdram_req};
-    wire [SDRAM_NUM_SIMPLE-1:0]                  sdram_s_we  = {copyframe_sdram_we, 1'b1};
+    wire [SDRAM_NUM_SIMPLE-1:0]                  sdram_s_req = {1'b0, write_client_sdram_req};
+    wire [SDRAM_NUM_SIMPLE-1:0]                  sdram_s_we  = {1'b0, 1'b1};
     wire types::sdram_word_addr_t [SDRAM_NUM_SIMPLE-1:0] sdram_s_addr =
-        {copyframe_sdram_addr, write_client_sdram_addr};
+        {types::sdram_word_addr_t'(0), write_client_sdram_addr};
     wire types::sdram_byte_en_t   [SDRAM_NUM_SIMPLE-1:0] sdram_s_wdata_we =
-        {copyframe_sdram_wdata_we, write_client_sdram_wdata_we};
+        {types::sdram_byte_en_t'(0), write_client_sdram_wdata_we};
     wire types::sdram_word_data_t [SDRAM_NUM_SIMPLE-1:0] sdram_s_wdata =
-        {copyframe_sdram_wdata, write_client_sdram_wdata};
+        {types::sdram_word_data_t'(0), write_client_sdram_wdata};
     wire [SDRAM_NUM_SIMPLE-1:0]    sdram_s_grant;
     wire [SDRAM_NUM_SIMPLE-1:0]    sdram_s_done;
     wire types::sdram_word_data_t  sdram_s_rdata;
-    wire _unused_ok_sdram_grant = &{1'b0, sdram_s_grant, 1'b0};
+    wire _unused_ok_sdram_grant = &{1'b0, sdram_s_grant, sdram_s_done[1], sdram_s_rdata, 1'b0};
 
     wire sdram_frame_select;
 `ifdef DOUBLE_BUFFER
@@ -498,6 +509,14 @@ module main #(
         .s_grant(sdram_s_grant),
         .s_done(sdram_s_done),
         .s_rdata(sdram_s_rdata),
+        .cp_req(copyframe_sdram_req),
+        .cp_we(copyframe_sdram_we),
+        .cp_addr(copyframe_sdram_addr),
+        .cp_wdata_we(copyframe_sdram_wdata_we),
+        .cp_wdata(copyframe_sdram_wdata),
+        .cp_cmd_ready(copyframe_sdram_cmd_ready),
+        .cp_rvalid(copyframe_sdram_rvalid),
+        .cp_rdata(copyframe_sdram_rdata),
         .cmd_valid(litedram_cmd_valid),
         .cmd_ready(litedram_cmd_ready),
         .cmd_we(litedram_cmd_we),
@@ -687,8 +706,9 @@ module main #(
         .sdram_copyframe_addr(copyframe_sdram_addr),
         .sdram_copyframe_wdata_we(copyframe_sdram_wdata_we),
         .sdram_copyframe_wdata(copyframe_sdram_wdata),
-        .sdram_copyframe_done(sdram_s_done[1]),
-        .sdram_copyframe_rdata(sdram_s_rdata),
+        .sdram_copyframe_cmd_ready(copyframe_sdram_cmd_ready),
+        .sdram_copyframe_rvalid(copyframe_sdram_rvalid),
+        .sdram_copyframe_rdata(copyframe_sdram_rdata),
 `else
         .cmd_copyframe_if(copy_int),
 `endif

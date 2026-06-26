@@ -106,6 +106,8 @@ module tb_sdram_fb_e2e;
         .rd_rvalid(arb_rd_rvalid), .rd_rdata(arb_rd_rdata),
         .s_req(s_req), .s_we(s_we), .s_addr(s_addr), .s_wdata_we(s_wwe), .s_wdata(s_wdat),
         .s_grant(s_grant), .s_done(s_done), .s_rdata(s_rdata),
+        .cp_req(1'b0), .cp_we(1'b0), .cp_addr('0), .cp_wdata_we('0), .cp_wdata('0),
+        .cp_cmd_ready(), .cp_rvalid(), .cp_rdata(),
         .cmd_valid(lcmd_valid), .cmd_ready(lcmd_ready), .cmd_we(lcmd_we), .cmd_addr(lcmd_addr),
         .wdata_valid(lwdata_valid), .wdata_ready(lwdata_ready), .wdata_we(lwdata_we), .wdata_data(lwdata_data),
         .rdata_valid(lrdata_valid), .rdata_ready(lrdata_ready), .rdata_data(lrdata_data)

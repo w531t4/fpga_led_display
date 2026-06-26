@@ -26,7 +26,8 @@ module control_module #(
     output types::sdram_word_addr_t sdram_copyframe_addr,
     output types::sdram_byte_en_t   sdram_copyframe_wdata_we,
     output types::sdram_word_data_t sdram_copyframe_wdata,
-    input  logic                    sdram_copyframe_done,
+    input  logic                    sdram_copyframe_cmd_ready,
+    input  logic                    sdram_copyframe_rvalid,
     input  types::sdram_word_data_t sdram_copyframe_rdata,
 `else
     mem_copy_if.engine cmd_copyframe_if,
@@ -331,7 +332,8 @@ module control_module #(
         .sdram_addr(sdram_copyframe_addr),
         .sdram_wdata_we(sdram_copyframe_wdata_we),
         .sdram_wdata(sdram_copyframe_wdata),
-        .sdram_done(sdram_copyframe_done),
+        .sdram_cmd_ready(sdram_copyframe_cmd_ready),
+        .sdram_rvalid(sdram_copyframe_rvalid),
         .sdram_rdata(sdram_copyframe_rdata),
         .done(cmd_copyframe_done)
     );

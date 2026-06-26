@@ -32,7 +32,7 @@ module tb_sdram_arbiter;
     wire                     rd_rvalid;
     wire types::sdram_word_data_t rd_rdata;
 
-    // Simple clients (0 = write, 1 = copyframe).
+    // Simple clients (0 = write, 1 = a generic simple read).
     logic [NUM_SIMPLE-1:0]                  s_req;
     logic [NUM_SIMPLE-1:0]                  s_we;
     types::sdram_word_addr_t [NUM_SIMPLE-1:0] s_addr;
@@ -41,6 +41,18 @@ module tb_sdram_arbiter;
     wire [NUM_SIMPLE-1:0]                    s_grant;
     wire [NUM_SIMPLE-1:0]                    s_done;
     wire types::sdram_word_data_t           s_rdata;
+
+    // Pipelined copyframe client (cp_*) -- driven by a synchronous issuer below.
+    logic                    cp_en;
+    logic                    cp_we_i;
+    types::sdram_word_addr_t cp_base;
+    int unsigned             cp_idx;
+    localparam int unsigned  CP_BURST = 20;
+    wire                     cp_req = cp_en && (cp_idx < CP_BURST);
+    wire types::sdram_word_addr_t cp_addr = cp_base + types::sdram_word_addr_t'(cp_idx);
+    wire                     cp_cmd_ready;
+    wire                     cp_rvalid;
+    wire types::sdram_word_data_t cp_rdata;
 
     // Native port.
     wire                     cmd_valid;
@@ -61,6 +73,9 @@ module tb_sdram_arbiter;
         .rd_rvalid(rd_rvalid), .rd_rdata(rd_rdata),
         .s_req(s_req), .s_we(s_we), .s_addr(s_addr), .s_wdata_we(s_wdata_we), .s_wdata(s_wdata),
         .s_grant(s_grant), .s_done(s_done), .s_rdata(s_rdata),
+        .cp_req(cp_req), .cp_we(cp_we_i), .cp_addr(cp_addr),
+        .cp_wdata_we(types::sdram_byte_en_t'(2'b11)), .cp_wdata(types::sdram_word_data_t'(16'hC0DE)),
+        .cp_cmd_ready(cp_cmd_ready), .cp_rvalid(cp_rvalid), .cp_rdata(cp_rdata),
         .cmd_valid(cmd_valid), .cmd_ready(cmd_ready), .cmd_we(cmd_we), .cmd_addr(cmd_addr),
         .wdata_valid(wdata_valid), .wdata_ready(wdata_ready), .wdata_we(wdata_we), .wdata_data(wdata_data),
         .rdata_valid(rdata_valid), .rdata_ready(rdata_ready), .rdata_data(rdata_data)
@@ -73,6 +88,25 @@ module tb_sdram_arbiter;
     always_ff @(posedge clk) begin
         if (reset || !burst_en) issue_idx <= 0;
         else if (rd_req && rd_cmd_ready) issue_idx <= issue_idx + 1;
+    end
+
+    // Copyframe command issuer: advance exactly when a copy command is accepted.
+    always_ff @(posedge clk) begin
+        if (reset || !cp_en) cp_idx <= 0;
+        else if (cp_req && cp_cmd_ready) cp_idx <= cp_idx + 1;
+    end
+
+    // Count copyframe read returns so the pipelined-copy test can check none are lost.
+    int unsigned cp_reads_recv;
+    int unsigned cp_max_outstanding;
+    always_ff @(posedge clk) begin
+        if (reset) begin
+            cp_reads_recv <= 0;
+            cp_max_outstanding <= 0;
+        end else begin
+            if (cp_rvalid) cp_reads_recv <= cp_reads_recv + 1;
+            if (reads_outstanding > cp_max_outstanding && cp_en) cp_max_outstanding <= reads_outstanding;
+        end
     end
 
     // ----- Behavioral pipelined native port: a memory + a read latency line. -----
@@ -160,6 +194,7 @@ module tb_sdram_arbiter;
         $dumpvars(0, tb_sdram_arbiter);
         clk = 1'b0; reset = 1'b1; init_done = 1'b0;
         burst_en = 1'b0; burst_base = '0;
+        cp_en = 1'b0; cp_we_i = 1'b0; cp_base = '0;
         s_req = '0; s_we = '0; s_addr = '0; s_wdata_we = '0; s_wdata = '0;
         rdata_data = '0;
         for (int i = 0; i < BURST; i++) begin
@@ -234,6 +269,67 @@ module tb_sdram_arbiter;
             s_req[0] = 1'b0;
             burst_en = 1'b0;
             $display("tb_sdram_arbiter: read-not-starved-by-continuous-writes OK (%0d cycles)", cyc);
+        end
+        repeat (8) @(posedge clk);
+
+        // ---- 5) Pipelined copyframe READ burst on the dedicated cp_* port: many
+        // commands accepted before the first word returns, returned words in order.
+        for (int i = 0; i < CP_BURST; i++) nmem[types::sdram_word_addr_t'(24'h70_0000 + i)] = patt(i);
+        begin : cp_read_burst
+            int unsigned recv;
+            cp_max_outstanding = 0;
+            cp_base = types::sdram_word_addr_t'(24'h70_0000);
+            cp_we_i = 1'b0;
+            cp_en = 1'b1;
+            recv = 0;
+            while (recv < CP_BURST) begin
+                @(posedge clk);
+                if (cp_rvalid) begin
+                    if (cp_rdata !== patt(recv))
+                        $fatal(1, "copyframe read %0d mismatch got %0h exp %0h", recv, cp_rdata, patt(recv));
+                    recv = recv + 1;
+                end
+            end
+            // recv reached CP_BURST with every word matching patt() in order above,
+            // which already proves none were lost; cp_reads_recv (registered) just
+            // needs one more settle cycle to catch the final pulse.
+            @(posedge clk);
+            cp_en = 1'b0;
+            if (cp_max_outstanding < 3)
+                $fatal(1, "copyframe reads not pipelined: max_outstanding=%0d", cp_max_outstanding);
+            if (cp_reads_recv != CP_BURST)
+                $fatal(1, "copyframe read census wrong: received %0d of %0d", cp_reads_recv, CP_BURST);
+            $display("tb_sdram_arbiter: pipelined copyframe read burst OK (max_outstanding=%0d)",
+                     cp_max_outstanding);
+        end
+        repeat (8) @(posedge clk);
+
+        // ---- 6) A fill (rd_req) PREEMPTS an in-progress copyframe burst: hold the
+        // copy port requesting and start a prefetch burst; the prefetch reads must
+        // still drain within a bounded window (copyframe yields between fills).
+        begin : cp_preempt_test
+            int unsigned recv, cyc;
+            localparam int unsigned PREEMPT_DEADLINE = BURST * 8;
+            cp_base = types::sdram_word_addr_t'(24'h70_0000);
+            cp_we_i = 1'b0;
+            cp_en = 1'b1;                      // copyframe wants the bus continuously
+            burst_base = types::sdram_word_addr_t'(24'h10_0000);  // preloaded with patt()
+            burst_en = 1'b1;
+            recv = 0; cyc = 0;
+            while (recv < BURST) begin
+                @(posedge clk);
+                cyc = cyc + 1;
+                if (cyc > PREEMPT_DEADLINE)
+                    $fatal(1, "FILL STARVED by copyframe: got %0d/%0d in %0d cycles", recv, BURST, cyc);
+                if (rd_rvalid) begin
+                    if (rd_rdata !== patt(recv))
+                        $fatal(1, "preempt-test read %0d mismatch got %0h exp %0h", recv, rd_rdata, patt(recv));
+                    recv = recv + 1;
+                end
+            end
+            burst_en = 1'b0;
+            cp_en = 1'b0;
+            $display("tb_sdram_arbiter: fill-preempts-copyframe OK (%0d cycles)", cyc);
         end
 
         $display("tb_sdram_arbiter: PASS");

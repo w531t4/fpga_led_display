@@ -41,9 +41,9 @@ module tb_control_module_copyframe_readframe;
     localparam int unsigned BUFFER_WORDS =
         calc::num_sdram_buffer_words(params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT, NUM_SUBPANELS, PIXEL_BYTES,
                                       params::SDRAM_WORD_BYTES);
-    localparam int unsigned CYCLES_PER_WORD_PHASE = params::SDRAM_MOCK_READ_LATENCY + 3;
+    // Pipelined copy: ~BUFFER_WORDS reads + BUFFER_WORDS writes plus pipeline fill.
     localparam longint unsigned COPYFRAME_WAIT_CYCLES =
-        longint'(BUFFER_WORDS) * 2 * longint'(CYCLES_PER_WORD_PHASE) + 32;
+        longint'(BUFFER_WORDS) * 4 + 256;
 `else
     // Keep in sync with control_cmd_copyframe READ_LATENCY.
     localparam int unsigned COPY_READ_LATENCY = 5;
@@ -87,47 +87,34 @@ module tb_control_module_copyframe_readframe;
     wire types::sdram_word_addr_t copyframe_sdram_addr;
     wire types::sdram_byte_en_t copyframe_sdram_wdata_we;
     wire types::sdram_word_data_t copyframe_sdram_wdata;
-    logic copyframe_sdram_done;
+    logic copyframe_sdram_cmd_ready;
+    logic copyframe_sdram_rvalid;
     types::sdram_word_data_t copyframe_sdram_rdata;
 
-    enums::sdram_mock_state_e mock_state_q;
-    types::sdram_mock_wait_count_t mock_wait_q;
-    logic mock_we_q;
+    // PIPELINED native-port-style mock: accepts a command every cycle, returns read
+    // data after a fixed latency, and pulses mock_write_done_pulse on each accepted
+    // write so the measurement below can count words committed.
+    localparam int unsigned MOCK_READ_LATENCY = params::SDRAM_MOCK_READ_LATENCY + 2;
+    logic copyframe_sdram_rvalid_pipe[MOCK_READ_LATENCY];
     logic mock_write_done_pulse;
+    wire  cf_cmd_acc = copyframe_sdram_req & copyframe_sdram_cmd_ready;
+
+    assign copyframe_sdram_cmd_ready = !reset;
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            mock_state_q <= enums::SDRAM_MOCK_IDLE;
-            mock_wait_q <= '0;
-            copyframe_sdram_done <= 1'b0;
+            copyframe_sdram_rvalid <= 1'b0;
+            copyframe_sdram_rdata <= '0;
             mock_write_done_pulse <= 1'b0;
+            for (int i = 0; i < MOCK_READ_LATENCY; i++) copyframe_sdram_rvalid_pipe[i] <= 1'b0;
         end else begin
-            copyframe_sdram_done <= 1'b0;
-            mock_write_done_pulse <= 1'b0;
-            case (mock_state_q)
-                enums::SDRAM_MOCK_IDLE: begin
-                    if (copyframe_sdram_req) begin
-                        mock_we_q <= copyframe_sdram_we;
-                        mock_wait_q <= types::sdram_mock_wait_count_t'(params::SDRAM_MOCK_READ_LATENCY);
-                        mock_state_q <= enums::SDRAM_MOCK_WAIT;
-                    end
-                end
-                enums::SDRAM_MOCK_WAIT: begin
-                    if (mock_wait_q == 0) begin
-                        copyframe_sdram_done <= 1'b1;
-                        if (mock_we_q) begin
-                            mock_write_done_pulse <= 1'b1;
-                        end else begin
-                            copyframe_sdram_rdata <= types::sdram_word_data_t'('0);
-                        end
-                        mock_state_q <= enums::SDRAM_MOCK_SETTLE;
-                    end else begin
-                        mock_wait_q <= mock_wait_q - 1'b1;
-                    end
-                end
-                enums::SDRAM_MOCK_SETTLE: mock_state_q <= enums::SDRAM_MOCK_IDLE;
-                default: mock_state_q <= enums::SDRAM_MOCK_IDLE;
-            endcase
+            mock_write_done_pulse <= cf_cmd_acc & copyframe_sdram_we;
+            for (int i = MOCK_READ_LATENCY - 1; i > 0; i--)
+                copyframe_sdram_rvalid_pipe[i] <= copyframe_sdram_rvalid_pipe[i-1];
+            copyframe_sdram_rvalid_pipe[0] <= cf_cmd_acc & ~copyframe_sdram_we;
+            copyframe_sdram_rvalid <= copyframe_sdram_rvalid_pipe[MOCK_READ_LATENCY-1];
+            // Data values don't matter here (timing is the focus); return a fixed pattern.
+            copyframe_sdram_rdata <= types::sdram_word_data_t'('0);
         end
     end
 `else
@@ -177,7 +164,8 @@ module tb_control_module_copyframe_readframe;
         .sdram_copyframe_addr(copyframe_sdram_addr),
         .sdram_copyframe_wdata_we(copyframe_sdram_wdata_we),
         .sdram_copyframe_wdata(copyframe_sdram_wdata),
-        .sdram_copyframe_done(copyframe_sdram_done),
+        .sdram_copyframe_cmd_ready(copyframe_sdram_cmd_ready),
+        .sdram_copyframe_rvalid(copyframe_sdram_rvalid),
         .sdram_copyframe_rdata(copyframe_sdram_rdata),
 `else
         .cmd_copyframe_if(copy_int),
