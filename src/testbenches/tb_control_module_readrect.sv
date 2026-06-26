@@ -121,6 +121,7 @@ module tb_control_module_readrect;
 `ifdef USE_SDRAM_FB
         .sdram_write_ready(1'b1),
         .sdram_write_drained(1'b1),
+        .sdram_write_pressure(1'b0),
 `endif
         .watchdog_reset(watchdog_reset)
     );

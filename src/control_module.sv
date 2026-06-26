@@ -44,11 +44,22 @@ module control_module #(
     // High only once every accepted write has COMMITTED to SDRAM (see
     // sdram_write_client.drained). Used to hold `busy` until the write tail lands.
     input logic sdram_write_drained,
+    // Hysteretic write-FIFO-almost-full (sdram_write_client.wr_pressure): stalls the
+    // fill generators so a fast fill can't overrun the (mirror-slowed) write drain and
+    // drop pixels. Proven necessary by tb_sdram_mirror_contention.
+    input logic sdram_write_pressure,
 `endif
     output logic ram_clk_enable
 
 );
     localparam integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS;
+    // Throttle the fill generators only on the SDRAM build; BRAM has no write FIFO to
+    // overrun, so leave its fills running at full clock rate (unchanged behaviour).
+`ifdef USE_SDRAM_FB
+    wire fill_throttle = sdram_write_pressure;
+`else
+    wire fill_throttle = 1'b0;
+`endif
     // for now, if adding new states, ensure cmd_line_state2 is updated.
     cmd::indata8_t data_rx_latch;
     logic ready_for_data_logic;
@@ -231,6 +242,7 @@ module control_module #(
         .enable          ((cmd_line_state == enums::STATE_CMD_FILLPANEL) && ~data_ready_n),
         .clk             (clk_in),
         .mem_clk         (clk_in),
+        .wr_pressure     (fill_throttle),
         .data_in         (data_rx_latch),
         .addr            (cmd_fillpanel_addr),
         .data_out        (cmd_fillpanel_do),
@@ -254,6 +266,7 @@ module control_module #(
         .enable          ((cmd_line_state == enums::STATE_CMD_FILLRECT) && ~data_ready_n),
         .clk             (clk_in),
         .mem_clk         (clk_in),
+        .wr_pressure     (fill_throttle),
         .data_in         (data_rx_latch),
         .addr            (cmd_fillrect_addr),
         .data_out        (cmd_fillrect_do),

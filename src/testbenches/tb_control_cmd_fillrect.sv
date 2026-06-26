@@ -25,6 +25,7 @@ module tb_control_cmd_fillrect;
     logic                                     clk;
     logic                                     reset;
     logic                                     enable;
+    logic                                     wr_pressure;
     logic                 [              7:0] data_in;
     wire types::fb_addr_t                     addr;
     wire                                      ram_write_enable;
@@ -42,6 +43,7 @@ module tb_control_cmd_fillrect;
         .enable(enable),
         .clk(clk),
         .mem_clk(clk),
+        .wr_pressure(wr_pressure),
         .addr(addr),
         .data_out(data_out),
         .ram_write_enable(ram_write_enable),
@@ -59,6 +61,7 @@ module tb_control_cmd_fillrect;
         clk = 0;
         reset = 1;
         enable = 0;
+        wr_pressure = 0;
         data_in = 0;
         // verilator lint_off WIDTHCONCAT
         mem = {MEM_NUM_BYTES{1'b1}};
@@ -77,6 +80,10 @@ module tb_control_cmd_fillrect;
     initial begin
         @(negedge reset);
         wait (ready_for_data);
+        // Engage the FIFO-pressure throttle BEFORE the fill can run. Header capture uses
+        // the outer `enable` (not gated), so the command still parses; only the fillarea
+        // generator is gated -> it must stall once it would otherwise start writing.
+        wr_pressure = 1'b1;
         stream_byte(8'(RECT_X1));
         stream_byte(8'(RECT_Y1));
         stream_byte(8'(RECT_W));
@@ -89,6 +96,16 @@ module tb_control_cmd_fillrect;
         enable = 0;
         if (dut.selected_color != COLOR)
             $fatal(1, "Fillrect captured color mismatch: saw 0x%0h expected 0x%0h", dut.selected_color, COLOR);
+        // Throttle held: the fill must be STALLED -- not a single write may leak, and it
+        // must not report done.
+        repeat (40) @(posedge clk);
+        assert (writes_seen == 0)
+            else $fatal(1, "throttle FAILED: %0d writes leaked while wr_pressure held", writes_seen);
+        assert (done == 1'b0)
+            else $fatal(1, "throttle FAILED: fill reported done while wr_pressure held");
+        // Release the throttle: the fill resumes and EVERY write still lands (none lost
+        // across the stall) -- this is the property the mirror needs to not drop pixels.
+        wr_pressure = 1'b0;
         `WAIT_ASSERT(clk, done == 1'b1, 512)
         `WAIT_ASSERT(clk, writes_seen == TOTAL_WRITES, 10)
         @(posedge clk);

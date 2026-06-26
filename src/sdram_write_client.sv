@@ -17,8 +17,16 @@
 // gates control_module's `ready_for_data` so the host can't outrun us.
 module sdram_write_client #(
     // verilator lint_off UNUSEDPARAM
-    parameter integer unsigned _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0,
     // verilator lint_on UNUSEDPARAM
+    // Double-buffer write mirror (see the block comment below). Defaults to the
+    // build-time `ifdef so synthesis is unchanged; exposed as a parameter only so a
+    // testbench can instantiate both MIRROR=0 and MIRROR=1 in one compile.
+`ifdef USE_SDRAM_DBUF_MIRROR
+    parameter bit MIRROR = 1'b1
+`else
+    parameter bit MIRROR = 1'b0
+`endif
 ) (
     input logic reset,
     input logic clk_in,
@@ -91,11 +99,7 @@ module sdram_write_client #(
     // moved (the persistent trail). Mirroring every host write into BOTH buffers keeps
     // them identical by construction, so a slow/dropped copyframe can no longer desync
     // them. Each FIFO entry is then drained as TWO writes (buffer 0, then buffer 1).
-`ifdef USE_SDRAM_DBUF_MIRROR
-    localparam bit MIRROR = 1'b1;
-`else
-    localparam bit MIRROR = 1'b0;
-`endif
+    // (MIRROR is a module parameter, defaulted from USE_SDRAM_DBUF_MIRROR above.)
     localparam types::sdram_word_addr_t BUFFER_WORDS_OFFSET =
         types::sdram_word_addr_t'(calc::num_sdram_buffer_words(params::PIXEL_WIDTH, params::PIXEL_HALFHEIGHT,
                                                                 NUM_SUBPANELS, PIXEL_BYTES, params::SDRAM_WORD_BYTES));

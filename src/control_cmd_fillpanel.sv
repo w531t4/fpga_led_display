@@ -11,6 +11,10 @@ module control_cmd_fillpanel #(
     input enable,
     input clk,
     input mem_clk,
+    // When high (write FIFO near-full, from sdram_write_client.wr_pressure), stall the
+    // fillarea generator so a fast fill can't outrun the SDRAM write drain and drop
+    // pixels. Tied 0 for the BRAM build -> no throttle, behaviour unchanged.
+    input wr_pressure,
 
     output types::fb_addr_t addr,
     output logic [7:0] data_out,
@@ -101,7 +105,7 @@ module control_cmd_fillpanel #(
         ._UNUSED('d0)
     ) subcmd_fillarea (
         .reset(reset || local_reset),
-        .enable(subcmd_enable),
+        .enable(subcmd_enable && !wr_pressure),
         .clk(mem_clk),
         .ack(done),
         .x1(0),

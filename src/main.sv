@@ -703,6 +703,7 @@ module main #(
 `ifdef USE_SDRAM_FB
         .sdram_write_ready(write_client_ready),
         .sdram_write_drained(write_client_drained),
+        .sdram_write_pressure(write_client_wr_pressure),
 `endif
         .ram_clk_enable(ctrl_ram_clk_enable)
     );
