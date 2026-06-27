@@ -75,6 +75,18 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
 
 ---
 
+## F3 — Test pattern: yellow left accent bar width is unstable (too wide, flexing)
+
+- **Observed in:** live demo mode (`run_test_graphic`), observed directly by eye (intermittent — not yet captured in a still)
+- **What we see:**
+  - **Yellow left accent bar (`drawColumnRGB888`, cols 0–47):** the **left edge is always correctly flush to the left** of the window, but the bar's **width is at times LARGER than it should be** (its right edge extends past the intended column), and the width visibly **flexes** — it changes over time / frame-to-frame rather than holding a fixed width.
+- **What we expect (per `test_pattern.jpg`):** a solid yellow bar at its intended width (~48 columns, cols 0–47) with a **stable** right edge — no over-width, no flexing.
+- **Justification:** _TBD._
+- **Relation (observation only, no mechanism claimed):** pairs with **F2.b** — both are `drawColumnRGB888` bars whose **width is unstable frame-to-frame**: yellow trends **wider** than intended, magenta (F2.b) trends **shorter**.
+- **Status:** OPEN
+
+---
+
 <!--
 Template for new entries:
 
