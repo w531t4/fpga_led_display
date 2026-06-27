@@ -51,7 +51,7 @@ export CCACHE_DIR
 # is tolerated for now; raise back toward CLK_90 once the SDRAM PHY margin is solid
 # (90deg phase + write-address pipelining). Also regen the litedram core to match
 # (ulx3s_sdram.yml sys_clk_freq).
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_50 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_50 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU -DUSE_LITEDRAM -DUSE_SDRAM_FB
 # EXTRA_BUILD_FLAGS - append flags for one-off builds without editing the BUILD_FLAGS default,
 #                     e.g. `make EXTRA_BUILD_FLAGS="-DUSE_LITEDRAM -DUSE_LITEDRAM_WRITE_MIRROR"`
 EXTRA_BUILD_FLAGS ?=

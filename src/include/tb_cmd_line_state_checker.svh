@@ -29,7 +29,20 @@ module tb_cmd_line_state_checker #(
         (64'd1 * params::ROOT_CLOCK * CMD_LINE_STATE_STEP_NS) / 1_000_000_000;
     localparam longint unsigned FILL_PANEL_CYCLES =
         longint'(params::PIXEL_WIDTH) * params::PIXEL_HEIGHT * params::BYTES_PER_PIXEL;
+    // BRAM fills run at ~1 byte/cycle, so 1.5x the byte count is plenty. SDRAM writes
+    // are FUNDAMENTALLY slower for a whole-panel fill: the single-inflight write client
+    // drains one write per memory round-trip while sharing the bus with display fills,
+    // measured ~5x slower than BRAM (tb_main fillpanel ~177k vs ~37k cycles). Scale the
+    // per-fill budget under USE_SDRAM_FB so the timeout reflects real SDRAM write
+    // throughput -- the fill is still REQUIRED to complete correctly (tb_main verifies
+    // every command finishes and the write client fully drains); this only gives it the
+    // realistic SDRAM time instead of the BRAM time. (8x covers the ~5x with margin; a
+    // genuine hang still trips it.)
+`ifdef USE_SDRAM_FB
+    localparam longint unsigned FILL_PANEL_BUDGET = 8 * (FILL_PANEL_CYCLES + (FILL_PANEL_CYCLES / 2));
+`else
     localparam longint unsigned FILL_PANEL_BUDGET = FILL_PANEL_CYCLES + (FILL_PANEL_CYCLES / 2);
+`endif
     localparam longint unsigned CMD_LINE_STATE_STEP_CYCLES =
         (FILL_PANEL_BUDGET > CMD_LINE_STATE_STEP_CYCLES_TIME) ? FILL_PANEL_BUDGET : CMD_LINE_STATE_STEP_CYCLES_TIME;
 
