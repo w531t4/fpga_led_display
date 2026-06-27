@@ -21,7 +21,7 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
 
 ---
 
-## F1 — Mixed-RGB pixel corruption across bottom of strip
+## F1 — Mixed-RGB pixel corruption across bottom of strip — ⛔ CLOSED (stale)
 
 - **Observed in:** `IMG_0161.JPG` (live chat/overlay scene; on-screen clock reads JUN 25, 17:32)
 - **What we see:**
@@ -34,12 +34,14 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
   - The upper left hand corner has 2-3 pixels that are green and shouldn't be.
     - Outside of the 2-3 pixels cited above, the top-most ~16-17 rows of the display are perfect
 - **What we expect:** The whole strip renders cleanly with **no** random pixels anywhere — every element (avatars, chat, weather, date, clock) crisp
-- **Justification:** _TBD._
-- **Status:** OPEN
+- **Justification:** _Not investigated — see Status._
+- **Status:** **CLOSED (STALE)** (per Aaron, 2026-06-27). The capture (`IMG_0161.JPG`,
+  JUN 25) predates the F2 fix and subsequent framebuffer work and no longer reflects current
+  hardware behavior. Reopen with a fresh capture if bottom-row corruption recurs.
 
 ---
 
-## F2 — Test pattern: red top band dashes on the right + magenta bar ~8 cols short of the right edge
+## F2 — Test pattern: red top band dashes on the right (F2.a) + magenta bar ~8 cols short of the right edge (F2.b) — ✅ FIXED (commit `9c3e75d`)
 
 - **Observed in:** `IMG_0175.JPG` (built-in test pattern / `run_test_graphic` scene)
 - **What we see (by `run_test_graphic` object; from native-resolution 22 MP crops):**
@@ -60,7 +62,20 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
   - The **magenta right bar** reaches the **true right edge** (covers its full ~48 columns,
     cols 720–767), so the bands do **not** show through past it — its right edge is flush with
     the panel edge.
-- **Justification:** _TBD._
+- **Justification:**
+  - **F2.a (red top-band dashing):** now renders as a solid full-width line (confirmed by
+    eye — the whole test pattern looks correct). Attributed to the **same** `busy`-fix as
+    F2.b: `drawRowRGB888` is the same class of host-streamed line primitive driven through
+    the same worker-queue / off-chip `busy` path, so once `busy` stopped lingering on each
+    write's SDRAM commit, the host stopped dropping the row's right-hand segments. Not
+    independently instrumented like F2.b, but resolved by the same change and visually clean.
+  - **F2.b (magenta bar short):** the host's `drawColumnRGB888` worker queue (34-deep,
+    drop-on-full enqueue) overflowed and silently dropped the **rightmost** columns,
+    because the FPGA held its off-chip `busy` line high until each column's SDRAM writes
+    fully **committed** (slow row-miss writes, 32 px down 32 rows). The unchanged host —
+    which renders this flush on the BRAM build, where `busy` clears instantly — couldn't
+    keep up, so the tail columns were dropped **on the host side**, varying 5–8 px
+    run-to-run. Not an analog/mapping offset; a `busy`-timing-induced host-queue overflow.
 - **Fix attempts:**
   - **T1 — raise system/SDRAM clock 50 → 70 MHz** (more SDRAM bandwidth; added `CLK_70` /
     `new_pll` SPEED 6 with a 90° SDRAM clock, regenerated the LiteDRAM core at 70e6).
@@ -69,21 +84,37 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
     increase changing *nothing* argues F2 is **deterministic/structural**, not
     bandwidth-/contention-bound. (Note F2.b varies 5–8px run-to-run → a race/timing tail,
     not a fixed mapping offset.)
-  - **T2 (next):** attempt to fix **F2.b** (magenta bar 5–8 cols short of the right edge)
-    specifically.
-- **Status:** OPEN
+  - **T2 — fix F2.b (DONE):** clear `busy` on write-FIFO **space** instead of full drain
+    (defer only the frame *swap* until `sdram_write_drained`, so no tearing) + deepen the
+    write FIFO to 8192 (block-RAM) so the whole 48-col / 4608-write burst is absorbed and
+    `busy` clears fast for every column. **Result: F2.b FIXED** (commit `9c3e75d` — note its
+    "- fail" message was premature; the fix is intact in the current tree:
+    `control_module.sv:460,511`, `sdram_write_client.sv:15`). Measured in sim: busy-hold per
+    drawColumn 29370 → 3234 cy (= SPI-transfer floor, BRAM-equivalent); within-command write
+    drops 2079 → 0; no swap while a write is in flight. (Deep-FIFO **alone** had made it
+    WORSE — `busy` then waited on the deeper drain — so the two changes are needed together.)
+- **Status:** **FIXED** — both F2.a and F2.b, confirmed by eye 2026-06-27 (full test pattern
+  renders clean). Root fix: commit `9c3e75d` (`busy` clears on write-FIFO space + deferred
+  swap + 8192 write FIFO). F2.b independently sim-instrumented; F2.a attributed to the same
+  fix.
 
 ---
 
-## F3 — Test pattern: yellow left accent bar width is unstable (too wide, flexing)
+## F3 — Test pattern: yellow left accent bar width is unstable (too wide, flexing) — ✅ FIXED (commit `9c3e75d`)
 
 - **Observed in:** live demo mode (`run_test_graphic`), observed directly by eye (intermittent — not yet captured in a still)
 - **What we see:**
   - **Yellow left accent bar (`drawColumnRGB888`, cols 0–47):** the **left edge is always correctly flush to the left** of the window, but the bar's **width is at times LARGER than it should be** (its right edge extends past the intended column), and the width visibly **flexes** — it changes over time / frame-to-frame rather than holding a fixed width.
 - **What we expect (per `test_pattern.jpg`):** a solid yellow bar at its intended width (~48 columns, cols 0–47) with a **stable** right edge — no over-width, no flexing.
-- **Justification:** _TBD._
-- **Relation (observation only, no mechanism claimed):** pairs with **F2.b** — both are `drawColumnRGB888` bars whose **width is unstable frame-to-frame**: yellow trends **wider** than intended, magenta (F2.b) trends **shorter**.
-- **Status:** OPEN
+- **Justification:** same root cause as **F2.b** — `drawColumnRGB888` is host-streamed
+  through the same worker-queue / off-chip `busy` path; while `busy` lingered on each write's
+  SDRAM commit, the host dropped/over-ran the bar's right-edge columns so its width flexed
+  frame-to-frame. The `busy`-fix (commit `9c3e75d`) cleared it.
+- **Relation:** same fault class as **F2.b** — both `drawColumnRGB888` bars with
+  frame-to-frame-unstable width (yellow trended **wider**, magenta trended **shorter**);
+  both fixed by commit `9c3e75d`.
+- **Status:** **FIXED** (commit `9c3e75d`; same `busy`-fix as F2.b). Confirmed by eye 2026-06-27
+  — full test pattern renders clean, yellow bar holds a stable width.
 
 ---
 
