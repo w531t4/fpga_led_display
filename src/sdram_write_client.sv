@@ -5,21 +5,11 @@
 // Depth of the write FIFO (must be a power of 2). The arbiter no longer interleaves
 // writes into a prefetch read fill (that thrashed DRAM rows and overran the fill on
 // real hardware), so writes only drain BETWEEN fills -- this FIFO must hold a full
-// HOST WRITE BURST so the (un-stallable, no off-chip per-byte backpressure) host
-// isn't dropped mid-command. The worst burst is a full-height drawColumn bar: the
-// test pattern's magenta accent is 48 columns x 32 rows x 3 RGB bytes (each byte is
-// its own write) = 4608 back-to-back host writes, which overran a 512-deep FIFO and
-// dropped the high-column tail (== fault F2.b: bands showing through the bar's right
-// edge). Reproduced + fixed in sim via tb_main -DF2B_SERIES -DTB_SPI_FREERUN: depth
-// 512 -> 2079-cycle write-keepup stall (host bytes dropped); depth >= the burst -> 0.
-// Clock/PHY-independent (flat sim core and slow-write model both fail at 512), so
-// this is logic, not analog. Sized to 8192 (> the 4608-write bar burst, next pow2)
-// so the FIFO holds the WHOLE burst even if the drain stalls -- robust to real-DRAM
-// drain rate, not just the optimistic sim. MUST map to BRAM (ram_style below): as
-// flip-flops a deep FIFO does not fit the 85F. Synth check @8192: ~24/208 BRAM,
-// well within budget. Overridable, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_WRITE_FIFO_DEPTH=2048".
+// fill's worth of host writes so the (un-stallable) host isn't dropped mid-command.
+// Sized for ~a display-row fill duration at the host write rate, with margin.
+// Overridable per-build, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_WRITE_FIFO_DEPTH=256".
 `ifndef SDRAM_WRITE_FIFO_DEPTH
-`define SDRAM_WRITE_FIFO_DEPTH 8192
+`define SDRAM_WRITE_FIFO_DEPTH 512
 `endif
 
 // sdram_write_client: Converts control_module's existing per-byte BRAM-style write
@@ -98,16 +88,8 @@ module sdram_write_client #(
     localparam int unsigned HIGH_WATER = DEPTH - (DEPTH / 4);
     localparam int unsigned LOW_WATER  = DEPTH / 2;
 
-    // Force block RAM (1W1R FIFO; matches row_prefetch.sv's precedent): without
-    // ram_style, yosys's BRAM-inference heuristic falls back to flip-flops, which at
-    // a deep DEPTH (2048) is ~86K FFs == does not fit the 85F. As BRAM it is ~6
-    // DP16KD blocks. no_rw_check: read and write never target the same address in
-    // the same cycle here (separate wr_ptr/rd_ptr), so skip the collision logic.
-    (* ram_style = "block", no_rw_check *)
     types::sdram_word_addr_t fifo_addr_q [DEPTH];   // deep arith lands here (write port)
-    (* ram_style = "block", no_rw_check *)
     types::sdram_byte_en_t   fifo_we_q   [DEPTH];
-    (* ram_style = "block", no_rw_check *)
     types::sdram_word_data_t fifo_data_q [DEPTH];
     logic [PTR_BITS-1:0]     wr_ptr_q, rd_ptr_q;
     logic [PTR_BITS:0]       count_q;               // occupancy 0..DEPTH
