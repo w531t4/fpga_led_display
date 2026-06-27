@@ -2,18 +2,16 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 // =============================================================================
-// tb_f4_liveloop -- reproduces fault F4 by testing control_cmd_copyframe through
-// the REAL sdram_arbiter + timing-real SDRAM model, UNDER rd-port (display
-// prefetch) contention that forces the arbiter to PREEMPT the copy mid-flight.
+// tb_f4_liveloop -- end-to-end correctness check for control_cmd_copyframe through
+// the REAL sdram_arbiter + timing-real SDRAM model, UNDER rd-port (display prefetch)
+// contention that forces the arbiter to PREEMPT the copy mid-flight.
 //
-// Why this exposes F4 and nothing else has: copyframe is the lowest-priority
-// arbiter client (cp_preempt = rd_req) and is the ONLY live-mode carry-forward
-// path -- the test pattern never uses it, and its sole unit test drives an IDEAL
-// mock (cmd_ready=1 every cycle, never preempted). So copyframe's behaviour while
-// being repeatedly preempted/resumed has never run in sim. If its read-ahead FIFO
-// / batch accounting drifts under preemption, the copy MISALIGNS -> the carried
-// background renders as shifted garbage while freshly-drawn chunks stay clean,
-// which is exactly F4.
+// Closes a real coverage gap: copyframe is the lowest-priority arbiter client
+// (cp_preempt = rd_req) and the only live-mode carry-forward path -- the test pattern
+// never uses it, and its sole unit test drives an IDEAL mock (cmd_ready=1 every cycle,
+// never preempted), so its behaviour while being repeatedly preempted/resumed had
+// never run in sim. This test confirms the copy stays correct under preemption (it
+// does -- so copyframe is NOT the F4 fault).
 //
 // Seed-free check: the timing model returns def_data(addr)=addr[15:0]^0x5a3c for
 // any unwritten word. copyframe reads the (unwritten) FRONT buffer -> gets
@@ -149,36 +147,6 @@ module tb_f4_liveloop;
         end
     end
 
-
-    // progress monitor: count accepted cp commands; flag stall
-    int unsigned cp_rd_acc = 0;
-    int unsigned cp_wr_acc = 0;
-    int unsigned core_rdata = 0;
-    int unsigned cp_rvalids = 0;
-    int unsigned mon_cycles = 0;
-    always @(posedge clk) begin
-        if (cf_req && cf_cmd_ready && !cf_we) cp_rd_acc <= cp_rd_acc + 1;
-        if (cf_req && cf_cmd_ready &&  cf_we) cp_wr_acc <= cp_wr_acc + 1;
-        if (cf_rvalid) cp_rvalids <= cp_rvalids + 1;
-        if (lrdata_valid && lrdata_ready) core_rdata <= core_rdata + 1;  // total core read returns
-        mon_cycles <= mon_cycles + 1;
-        if (mon_cycles % 100000 == 0)
-            $display("  [mon] cyc=%0d cp_rd_acc=%0d cp_wr_acc=%0d cp_rval=%0d core_rdata=%0d cf_req=%0b cf_we=%0b cf_cmd_rdy=%0b cf_done=%0b",
-                     mon_cycles, cp_rd_acc, cp_wr_acc, cp_rvalids, core_rdata, cf_req, cf_we, cf_cmd_ready, cf_done);
-        if (mon_cycles == 500000 && !cf_done) begin
-            $display("  [STALL] copyframe internals:");
-            $display("    cf.state_q=%0d rd_word=%0d wr_word=%0d rd_inflight=%0d fifo_count=%0d batch=%0d req_q=%0b we_q=%0b",
-                     int'(cf.state_q), int'(cf.rd_word_q), int'(cf.wr_word_q), int'(cf.rd_inflight_q),
-                     int'(cf.fifo_count_q), int'(cf.batch_q), cf.sdram_req_q, cf.sdram_we_q);
-            $display("    reads_remain=%0b writes_remain=%0b can_read_more=%0b can_write_more=%0b fifo_room=%0b fifo_has_data=%0b reserved_n=%0d",
-                     cf.reads_remain, cf.writes_remain, cf.can_read_more, cf.can_write_more, cf.fifo_room, cf.fifo_has_data, int'(cf.reserved_n));
-            $display("    BUFFER_WORDS_IDX=%0d  arb.state_q=%0d arb.cp_outstanding_q=%0d",
-                     int'(cf.BUFFER_WORDS_IDX), int'(arb.state_q), int'(arb.cp_outstanding_q));
-        end
-    end
-
-    // (Contention removed for this clean correctness check -- tb_rd_req is owned
-    // solely by the verify-phase rd_word task, so the readback can't be fought.)
 
     integer errors = 0;
     integer checked = 0;

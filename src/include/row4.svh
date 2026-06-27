@@ -189,6 +189,47 @@ function automatic logic [F2B_TOTAL_BITS-1:0] f2b_build_series();
 endfunction
 
 localparam logic [F2B_TOTAL_BITS-1:0] cmd_series = f2b_build_series();
+`elsif LIVE_F4_SERIES
+// ---------------------------------------------------------------------------
+// F4 reproduction (live/demo-mode cadence): fill a known BACKGROUND, then loop
+// {fillrect a chunk -> TOGGLE_FRAME -> COPY_FRAME} for several frames -- the exact
+// per-frame carry-forward + swap the live scene does (and the test pattern never
+// does). The displayed background must survive; if it degrades into garbage, F4
+// is reproduced in the displayed pixels (checked by reading the row_buf bank).
+// ---------------------------------------------------------------------------
+localparam int unsigned LF4_FRAMES  = 6;
+localparam int unsigned LF4_FP_BITS = $bits(types::fillpanel_cmd_t);
+localparam int unsigned LF4_FR_BITS = $bits(types::fillrect_cmd_t);
+localparam int unsigned LF4_OP_BITS = $bits(cmd::opcode_t);
+localparam int unsigned LF4_TOTAL_BITS = LF4_FP_BITS + 2*LF4_OP_BITS
+                                       + LF4_FRAMES*(LF4_FR_BITS + 2*LF4_OP_BITS);
+
+function automatic logic [LF4_TOTAL_BITS-1:0] lf4_build_series();
+    logic [LF4_TOTAL_BITS-1:0] s;
+    int unsigned bitpos;
+    s = '0;
+    bitpos = LF4_TOTAL_BITS;             // fill MSB-first == on-the-wire send order
+    // initial: fill the back buffer with a known background, swap it to front, copy it back
+    bitpos -= LF4_FP_BITS;
+    s[bitpos +: LF4_FP_BITS] = types::fillpanel_cmd_t'({cmd::FILLPANEL, types::color_t'('h214387)});
+    bitpos -= LF4_OP_BITS; s[bitpos +: LF4_OP_BITS] = LF4_OP_BITS'(cmd::TOGGLE_FRAME);
+    bitpos -= LF4_OP_BITS; s[bitpos +: LF4_OP_BITS] = LF4_OP_BITS'(cmd::COPY_FRAME);
+    // live frames: draw a chunk into the back buffer, swap, carry forward
+    for (int unsigned f = 0; f < LF4_FRAMES; f++) begin
+        bitpos -= LF4_FR_BITS;
+        s[bitpos +: LF4_FR_BITS] = types::fillrect_cmd_t'({cmd::FILLRECT,
+            types::col_addr_field_t'('h0064),                // x = 100
+            types::row_addr_field_t'('h00),                  // y = 0
+            types::col_addr_field_t'('h0010),                // w = 16
+            types::row_addr_field_t'(params::PIXEL_HEIGHT),  // full height
+            types::color_t'('hFF00FF)});                     // magenta chunk
+        bitpos -= LF4_OP_BITS; s[bitpos +: LF4_OP_BITS] = LF4_OP_BITS'(cmd::TOGGLE_FRAME);
+        bitpos -= LF4_OP_BITS; s[bitpos +: LF4_OP_BITS] = LF4_OP_BITS'(cmd::COPY_FRAME);
+    end
+    lf4_build_series = s;
+endfunction
+
+localparam logic [LF4_TOTAL_BITS-1:0] cmd_series = lf4_build_series();
 `else
 localparam logic [$bits({`CMD_SERIES_FIELDS})-1:0] cmd_series = {`CMD_SERIES_FIELDS};
 `endif
