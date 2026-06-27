@@ -41,6 +41,11 @@ module main #(
     output       wifi_en,
     output       wifi_gpio0,
 `endif
+`ifdef F2B_UART
+    // F2.b bring-up: plain-text "RC=0xNN" report driven out this GPIO (NOT USB),
+    // so the FTDI/passthru USB serial is left untouched. Probe it on wifi_gpio25.
+    output       wifi_gpio25,
+`endif
     output       gp0,
     output       gp1,
     output       gp2,
@@ -680,6 +685,9 @@ module main #(
     );
 
     /* the control module */
+`ifdef F2B_UART
+    wire [7:0] f2b_rc_count;
+`endif
     control_module #(
         .WATCHDOG_CONTROL_TICKS(params::WATCHDOG_CONTROL_TICKS),
         ._UNUSED('d0)
@@ -725,8 +733,28 @@ module main #(
         .sdram_write_drained(write_client_drained),
         .sdram_write_pressure(write_client_wr_pressure),
 `endif
+`ifdef F2B_UART
+        .ram_clk_enable(ctrl_ram_clk_enable),
+        .f2b_rc_count(f2b_rc_count)
+`else
         .ram_clk_enable(ctrl_ram_clk_enable)
+`endif
     );
+
+`ifdef F2B_UART
+    // F2.b bring-up: stream the decoded drawColumn (READCOL) count as plain ASCII
+    // "RC=0xNN\r\n" out wifi_gpio25 @115200 8N1 (probe the pin, not USB).
+    wire f2b_uart_tx;
+    assign wifi_gpio25 = f2b_uart_tx;
+    f2b_uart_report #(
+        .UART_TICKS_PER_BIT(params::DEBUG_TX_UART_TICKS_PER_BIT)
+    ) f2b_report (
+        .clk     (clk_root),
+        .reset   (global_reset),
+        .rc_count(f2b_rc_count),
+        .tx      (f2b_uart_tx)
+    );
+`endif
 
 `ifdef USE_SDRAM_FB
     // Write path: control_module's existing per-byte write output becomes a

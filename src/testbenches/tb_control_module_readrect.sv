@@ -113,6 +113,9 @@ module tb_control_module_readrect;
         .busy(busy),
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
+`ifdef F2B_UART
+        .f2b_rc_count(f2b_rc_count),
+`endif
 `ifdef DEBUGGER
         .debug_if(debug_if),
 `endif
@@ -360,6 +363,10 @@ module tb_control_module_readrect;
     end
 
     // verilog_format: off
+`ifdef F2B_UART
+    wire [7:0] f2b_rc_count;
+    wire _unused_ok_f2b = &{1'b0, f2b_rc_count};
+`endif
     wire _unused_ok = &{1'b0,
                         rgb_enable,
                         brightness_enable,

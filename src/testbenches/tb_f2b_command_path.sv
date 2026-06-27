@@ -125,7 +125,12 @@ module tb_f2b_command_path;
         .sdram_write_pressure(wc_pressure),
         .busy(ctrl_busy),
         .ready_for_data(ctrl_ready_for_data),
+`ifdef F2B_UART
+        .ram_clk_enable(ctrl_ram_clk_enable),
+        .f2b_rc_count(f2b_rc_count)
+`else
         .ram_clk_enable(ctrl_ram_clk_enable)
+`endif
     );
 
     // ================= REAL sdram_write_client (driven exactly as main.sv) =================
@@ -555,6 +560,10 @@ module tb_f2b_command_path;
     // Four 48-column runs at the realistic (slow) INTER_BYTE_CYC=30 spacing; sized with margin.
     initial begin #1_400_000_000; $fatal(1, "tb_f2b_command_path: global timeout"); end
 
+`ifdef F2B_UART
+    wire [7:0] f2b_rc_count;
+    wire _unused_f2b = &{1'b0, f2b_rc_count};
+`endif
     wire _unused = &{1'b0, rp_overrun, rp_overrun_recent, wc_drained, wc_pressure, s_grant, s_rdata,
                      cmd_we, rgb_enable, brightness_enable, watchdog_reset, ctrl_busy, backtoback,
                      copyframe_sdram_req, copyframe_sdram_we, copyframe_sdram_addr,

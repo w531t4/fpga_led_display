@@ -50,7 +50,13 @@ module control_module #(
     // drop pixels. Proven necessary by tb_sdram_mirror_contention.
     input logic sdram_write_pressure,
 `endif
+`ifdef F2B_UART
+    output logic ram_clk_enable,
+    // F2.b bring-up: running count of drawColumn (READCOL) commands decoded.
+    output logic [7:0] f2b_rc_count
+`else
     output logic ram_clk_enable
+`endif
 
 );
     localparam integer unsigned BRIGHTNESS_LEVELS = params::BRIGHTNESS_LEVELS;
@@ -477,6 +483,9 @@ module control_module #(
 `ifdef DEBUGGER
             debug_if.num_commands_processed <= 8'b0;
 `endif
+`ifdef F2B_UART
+            f2b_rc_count <= 8'd0;
+`endif
         end else begin
             if (state_done) begin
                 if (data_ready_n && cmd_line_state != enums::STATE_IDLE) begin
@@ -598,6 +607,10 @@ module control_module #(
                     end
                     cmd::READCOL: begin
                         cmd_line_state <= enums::STATE_CMD_READCOL;
+`ifdef F2B_UART
+                        // count each drawColumn (READCOL) command the FPGA decodes
+                        f2b_rc_count <= f2b_rc_count + 8'd1;
+`endif
                     end
                     cmd::READPIXEL: begin
                         cmd_line_state <= enums::STATE_CMD_READPIXEL;

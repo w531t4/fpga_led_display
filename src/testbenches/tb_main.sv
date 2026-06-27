@@ -80,6 +80,10 @@ module tb_main #(
     logic wifi_gpio0;
 `endif
     wire [13:0] _unused_output;
+`ifdef F2B_UART
+    wire f2b_uart_pin;
+    wire _unused_ok_f2b = &{1'b0, f2b_uart_pin};
+`endif
 
     main #(
         ._UNUSED('d0)
@@ -121,6 +125,9 @@ module tb_main #(
         .gp14       (rxdata),
         .gp16       (debugger_txout),
         .gp15       (debugger_rxin),
+`ifdef F2B_UART
+        .wifi_gpio25(f2b_uart_pin),
+`endif
 `ifdef SPI
 `ifdef SPI_ESP32
         .wifi_gpio14(spi_clk),             // clk
