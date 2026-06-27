@@ -8,7 +8,8 @@ PROJROOT_VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or
 VSOURCES := $(PKG_SOURCES) $(INTERFACE_SOURCES) $(PROJROOT_VSOURCES)
 LITEDRAM_CORE_SOURCES := $(SRC_DIR)/litedram/litedram_init.sv \
                          $(SRC_DIR)/litedram/litedram_bist.sv \
-                         $(SRC_DIR)/litedram/litedram_write_mirror.sv
+                         $(SRC_DIR)/litedram/litedram_write_mirror.sv \
+                         $(SRC_DIR)/litedram/sdram_native_timing_model.sv
 VSOURCES += $(LITEDRAM_CORE_SOURCES)
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 GAMMA_MEMS := $(sort $(shell find $(VINCLUDE_MEM_DIR) -maxdepth 1 -name '*.mem'))

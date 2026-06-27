@@ -295,11 +295,23 @@ module tb_main #(
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         wait (cmd_line_state_seq_done);
 `else
-        // F2.b repro: the free-running master blasts the whole drawColumn burst then
-        // swapFrame; the default sequence checker does not apply. Give the write FIFO
-        // a long settle window so the busy/drain detector samples the worst
-        // uncommitted-tail-at-swap.
-        repeat (300000) @(posedge clk);
+        // F2.b repro: free-running master draws the magenta bar (cols 720..767, payload
+        // all-ones 0xFF) then swapFrame. Read the RENDERED columns straight out of the
+        // row_prefetch display bank a few times -- this is the ACTUAL symptom (does the
+        // magenta reach the right edge, or is it short?), not a proxy.
+        for (int unsigned smp = 0; smp < 3; smp++) begin : f2b_render_probe
+            logic       ab;
+            logic [7:0] b;
+            repeat (100000) @(posedge clk);
+            ab = tb_main.tbi_main.row_buf.bank_sel_q;
+            $write("F2B-RENDER[%0d] magenta cols 712..767 (M=magenta0xFF .=blank0x00 ?=other): ", smp);
+            for (int c = 712; c <= 767; c++) begin
+                b = ab ? tb_main.tbi_main.row_buf.bank1[c].raw[7:0]
+                       : tb_main.tbi_main.row_buf.bank0[c].raw[7:0];
+                $write("%s", (b==8'hFF)?"M":(b==8'h00)?".":"?");
+            end
+            $write("\n");
+        end
 `endif
 `ifdef USE_SDRAM_FB
 `ifdef F2B_SERIES

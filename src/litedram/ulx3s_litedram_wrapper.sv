@@ -112,6 +112,24 @@ module ulx3s_litedram_wrapper (
     // The wb_ctrl bus and native port are identical to the real core, so
     // litedram_init drives bring-up the same way. This lets main (and every
     // testbench that reaches it) simulate the full SDRAM datapath in Verilator.
+`ifdef SDRAM_SIM_TIMING_MODEL
+    // Timing-real FUNCTIONAL model (per-bank row-hit/miss cost, CAS latency, refresh
+    // -> realistic native-port backpressure) in place of the optimistic SDRAMPHYModel
+    // core. Lets the full design run under the backpressure a row-miss-heavy access
+    // pattern actually generates. See src/litedram/sdram_native_timing_model.sv.
+    sdram_native_timing_model model (
+        .clk(clk), .reset(reset),
+        .init_done(init_done), .init_error(init_error),
+        .user_clk(user_clk), .user_rst(user_rst),
+        .cmd_valid(cmd_valid), .cmd_ready(cmd_ready), .cmd_we(cmd_we), .cmd_addr(cmd_addr),
+        .wdata_valid(wdata_valid), .wdata_ready(wdata_ready), .wdata_we(wdata_we), .wdata_data(wdata_data),
+        .rdata_valid(rdata_valid), .rdata_ready(rdata_ready), .rdata_data(rdata_data),
+        .wb_ctrl_adr(wb_ctrl_adr), .wb_ctrl_bte(wb_ctrl_bte), .wb_ctrl_cti(wb_ctrl_cti),
+        .wb_ctrl_cyc(wb_ctrl_cyc), .wb_ctrl_dat_r(wb_ctrl_dat_r), .wb_ctrl_dat_w(wb_ctrl_dat_w),
+        .wb_ctrl_ack(wb_ctrl_ack), .wb_ctrl_err(wb_ctrl_err), .wb_ctrl_sel(wb_ctrl_sel),
+        .wb_ctrl_stb(wb_ctrl_stb), .wb_ctrl_we(wb_ctrl_we)
+    );
+`else
     ulx3s_litedram_sim core (
         .clk(clk),
         .init_done(init_done),
@@ -142,6 +160,7 @@ module ulx3s_litedram_wrapper (
         .wb_ctrl_stb(wb_ctrl_stb),
         .wb_ctrl_we(wb_ctrl_we)
     );
+`endif
     // No SDRAM pads in the sim core: hold the board-level outputs in a benign
     // idle state and absorb the (unused) DQ input.
     assign sdram_a    = '0;
