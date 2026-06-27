@@ -78,15 +78,9 @@ module control_module #(
     types::brightness_level_t brightness_data_out;
 `ifdef DOUBLE_BUFFER
     logic cmd_copyframe_done;
-`endif
-`ifdef USE_SDRAM_FB
-    // Tracks a write byte accepted into the SDRAM write pipeline (one ram_clk_enable
-    // pulse) that hasn't landed yet. Without this, busy/state_done go low the instant
-    // the LAST byte of a write command is accepted -- not once its SDRAM round trip
-    // through sdram_write_client actually completes -- letting a host that polls busy
-    // (the only off-chip flow-control signal; ready_for_data isn't wired off-chip)
-    // send TOGGLE_FRAME while the tail of an upload is still in flight to SDRAM.
-    logic sdram_write_pending_q;
+    // Pending swap target; the actual display swap (frame_select) is applied from here,
+    // deferred until the write client drains under SDRAM (see the frame_select commit).
+    logic frame_select_temp;
 `endif
 
 `ifdef DEBUGGER
@@ -108,20 +102,6 @@ module control_module #(
         end
     end
 
-`ifdef USE_SDRAM_FB
-    always @(posedge clk_in) begin
-        if (reset) begin
-            sdram_write_pending_q <= 1'b0;
-        end else if (ram_clk_enable && ram_write_enable) begin
-            sdram_write_pending_q <= 1'b1;
-        end else if (sdram_write_drained) begin
-            // Clear only when the write client is fully drained (FIFO empty + no
-            // in-flight write), NOT when merely !full -- otherwise `busy` drops with
-            // queued delta writes still uncommitted and the host can swap early.
-            sdram_write_pending_q <= 1'b0;
-        end
-    end
-`endif
 
     // this prevents testbench from continuing to send data (even though we're not ready to accept)
     always_ff @(posedge clk_in) begin
@@ -465,7 +445,13 @@ module control_module #(
         endcase
     end
 `ifdef USE_SDRAM_FB
-    assign busy = ~(cmd_line_state == enums::STATE_IDLE || state_done) || sdram_write_pending_q;
+    // busy stays high only while the current command is running OR a frame swap is
+    // pending (requested by TOGGLE_FRAME but not yet applied because the write tail
+    // hasn't drained -- see the frame_select commit below). It deliberately does NOT
+    // wait for every ordinary write to drain: that made busy linger for the whole
+    // SDRAM write of each drawColumn, so the host's worker queue couldn't keep up and
+    // silently dropped the tail columns of a drawColumn burst (fault F2.b).
+    assign busy = ~(cmd_line_state == enums::STATE_IDLE || state_done) || (frame_select_temp != frame_select);
 `else
     assign busy = ~(cmd_line_state == enums::STATE_IDLE || state_done);
 `endif
@@ -476,9 +462,6 @@ module control_module #(
     assign ready_for_data = (ready_for_data_logic || ~busy) && sdram_write_ready;
 `else
     assign ready_for_data = ready_for_data_logic || ~busy;
-`endif
-`ifdef DOUBLE_BUFFER
-    logic frame_select_temp;
 `endif
     always @(posedge clk_in) begin
         if (reset) begin
@@ -510,7 +493,16 @@ module control_module #(
                 brightness_temp   <= brightness_data_out;
             end
 `ifdef DOUBLE_BUFFER
+`ifdef USE_SDRAM_FB
+            // Apply the requested frame swap ONLY once the write client is fully
+            // drained, so the displayed buffer never swaps with a write still in flight
+            // (tearing / stale tail). This is the one operation that needs the drain
+            // wait; while it's pending, `busy` stays high (above) so the host holds off
+            // TOGGLE just as before -- but ordinary writes no longer wait on the drain.
+            if (frame_select_temp != frame_select && sdram_write_drained) frame_select <= frame_select_temp;
+`else
             if (frame_select_temp != frame_select) frame_select <= frame_select_temp;
+`endif
 `endif
             /* CMD: Main */
             if ((cmd_line_state == enums::STATE_IDLE || state_done) && ~data_ready_n) begin

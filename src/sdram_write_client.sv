@@ -2,14 +2,17 @@
 // SPDX-License-Identifier: MIT
 `default_nettype none
 
-// Depth of the write FIFO (must be a power of 2). The arbiter no longer interleaves
-// writes into a prefetch read fill (that thrashed DRAM rows and overran the fill on
-// real hardware), so writes only drain BETWEEN fills -- this FIFO must hold a full
-// fill's worth of host writes so the (un-stallable) host isn't dropped mid-command.
-// Sized for ~a display-row fill duration at the host write rate, with margin.
-// Overridable per-build, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_WRITE_FIFO_DEPTH=256".
+// Depth of the write FIFO (must be a power of 2). The (un-stallable, no off-chip
+// per-byte backpressure) host streams a whole drawColumn burst as fast as `busy`
+// lets it; with the busy fix (control_module: busy clears on FIFO-space, not on full
+// drain) the host's worker queue keeps up ONLY if the FIFO doesn't fill mid-burst.
+// The worst burst is the test pattern's magenta accent: 48 columns x 32 rows x 3 RGB
+// bytes = 4608 back-to-back writes. Sized to 8192 (> that, next pow2) so the whole
+// burst is absorbed and `busy` clears fast for every column. Must map to BRAM
+// (ram_style below): as flip-flops a deep FIFO does not fit the 85F (synth: ~27/208
+// BRAM, fits). Overridable, e.g. EXTRA_BUILD_FLAGS="... -DSDRAM_WRITE_FIFO_DEPTH=512".
 `ifndef SDRAM_WRITE_FIFO_DEPTH
-`define SDRAM_WRITE_FIFO_DEPTH 512
+`define SDRAM_WRITE_FIFO_DEPTH 8192
 `endif
 
 // sdram_write_client: Converts control_module's existing per-byte BRAM-style write
@@ -88,8 +91,13 @@ module sdram_write_client #(
     localparam int unsigned HIGH_WATER = DEPTH - (DEPTH / 4);
     localparam int unsigned LOW_WATER  = DEPTH / 2;
 
+    // Force block RAM (1W1R FIFO; matches row_prefetch.sv's precedent): without
+    // ram_style, yosys infers ~86K flip-flops at this depth and the design won't fit.
+    (* ram_style = "block", no_rw_check *)
     types::sdram_word_addr_t fifo_addr_q [DEPTH];   // deep arith lands here (write port)
+    (* ram_style = "block", no_rw_check *)
     types::sdram_byte_en_t   fifo_we_q   [DEPTH];
+    (* ram_style = "block", no_rw_check *)
     types::sdram_word_data_t fifo_data_q [DEPTH];
     logic [PTR_BITS-1:0]     wr_ptr_q, rd_ptr_q;
     logic [PTR_BITS:0]       count_q;               // occupancy 0..DEPTH

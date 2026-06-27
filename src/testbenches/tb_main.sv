@@ -303,11 +303,11 @@ module tb_main #(
 `endif
 `ifdef USE_SDRAM_FB
 `ifdef F2B_SERIES
-        $display("F2B-REPRO: BUSY-DRAIN max uncommitted writes while busy==0 = %0d  (>0 => host swaps before the drawColumn tail commits -> background shows through the high columns)", busy_low_pending_max);
+        $display("F2B-REPRO: SWAP-DRAIN max uncommitted writes at a frame swap = %0d  (>0 => swapped before the drawColumn tail committed)", swap_with_pending_max);
 `else
-        if (busy_low_pending_max != 0)
-            $fatal(1, "BUSY-DRAIN FAIL: busy dropped with up to %0d uncommitted SDRAM writes -> the host can swap the frame before the delta tail commits (stale/persistent wrong pixels)", busy_low_pending_max);
-        $display("BUSY-DRAIN OK: busy held until the write client drained (0 uncommitted writes while busy==0)");
+        if (swap_with_pending_max != 0)
+            $fatal(1, "SWAP-DRAIN FAIL: frame swapped with up to %0d uncommitted SDRAM writes still in flight -> stale/torn tail", swap_with_pending_max);
+        $display("SWAP-DRAIN OK: every frame swap happened only after the write client fully drained");
 `endif
 `endif
 `ifdef TB_SPI_FREERUN
@@ -350,21 +350,43 @@ module tb_main #(
 `endif
 
 `ifdef USE_SDRAM_FB
-    // Busy/drain race reproduction: `busy` (wifi_gpio35) is the ONLY off-chip flow
-    // control the ESP32 polls. If it drops while the SDRAM write client still has
-    // queued/in-flight delta writes, the host can send TOGGLE_FRAME and swap the
-    // displayed buffer before the delta tail commits to SDRAM -> stale (persistent
-    // wrong) pixels. Track the worst uncommitted-write count seen while busy==0;
-    // any value > 0 is the bug (the host could swap with that many writes still in
-    // flight). The deep write FIFO makes the window worse (up to DEPTH+1).
+    // SWAP-DRAIN safety. The real hazard is the displayed buffer SWAPPING while a write
+    // is still in flight (stale/torn tail). Previously `busy` was held until fully
+    // drained as a proxy for this -- but that made `busy` linger for the whole SDRAM
+    // write of every drawColumn, so the host's 34-deep worker queue couldn't keep up and
+    // silently dropped the tail columns of a drawColumn burst (fault F2.b). The fix lets
+    // `busy` drop with writes still draining (so the worker keeps up) and instead DEFERS
+    // the actual swap (frame_select) until drained. So the precise invariant to check is:
+    // frame_select must never change while any write is still uncommitted.
     wire [31:0] wc_pending =
         32'(tb_main.tbi_main.sdram_write.count_q) + (tb_main.tbi_main.sdram_write.inflight_q ? 32'd1 : 32'd0);
-    int unsigned busy_low_pending_max = 0;
+    logic frame_select_prev;
+    int unsigned swap_with_pending_max = 0;
     always @(posedge clk) begin
-        if (!reset && tb_main.tbi_main.ctrl_busy === 1'b0 && wc_pending > busy_low_pending_max)
-            busy_low_pending_max <= wc_pending;
+        if (reset) begin
+            frame_select_prev <= tb_main.tbi_main.ctrl.frame_select;
+        end else begin
+            if (tb_main.tbi_main.ctrl.frame_select !== frame_select_prev && wc_pending > swap_with_pending_max)
+                swap_with_pending_max <= wc_pending;
+            frame_select_prev <= tb_main.tbi_main.ctrl.frame_select;
+        end
     end
-    final $display("BUSY-DRAIN: max uncommitted writes while busy==0 = %0d (>0 == host can swap before deltas commit -> stale pixels)", busy_low_pending_max);
+    final $display("SWAP-DRAIN: max uncommitted writes at a frame swap = %0d (>0 == swapped with writes in flight -> stale pixels)", swap_with_pending_max);
+
+    // F2.b fix proof: how long does `busy` stay high per command, EXCLUDING the
+    // intentional swap-defer? This is the host worker's per-command wait. Before the
+    // fix `busy` lingered for the whole SDRAM write drain of each drawColumn (so the
+    // 34-deep worker queue overflowed -> dropped tail columns); after, it clears at
+    // command-done. Run with -DSDRAM_SIM_SLOW_WRITES so the drain is realistically slow.
+    wire swap_pending_dbg = (tb_main.tbi_main.ctrl.frame_select_temp !== tb_main.tbi_main.ctrl.frame_select);
+    int unsigned busy_run = 0, busy_hold_max = 0;
+    always @(posedge clk) begin
+        if (!reset && tb_main.tbi_main.ctrl_busy === 1'b1 && !swap_pending_dbg) begin
+            busy_run <= busy_run + 1;
+            if (busy_run + 1 > busy_hold_max) busy_hold_max <= busy_run + 1;
+        end else busy_run <= 0;
+    end
+    final $display("BUSY-HOLD: longest busy-high run per command (excl. swap-defer) = %0d cycles", busy_hold_max);
 `endif
 
 `ifdef SPI_ESP32

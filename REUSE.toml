@@ -28,6 +28,7 @@ path = [
     "src/testbenches/tb_f2b_command_path.args",
     "src/testbenches/tb_f2b_readback.args",
     "src/testbenches/tb_sdram_drawcol_tail.args",
+    "src/testbenches/tb_sdram_contention.args",
     ".github/workflows/release.yml",
     ".python-version"
 ]
