@@ -118,6 +118,30 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
 
 ---
 
+## F4 — Live (non-test) scene: horizontal stream of scattered pixels scrolling right → left
+
+- **Observed in:** `IMG_0229.JPG` (live / normal operating mode — **NOT** `run_test_graphic`;
+  the source scene on the reference TV above the panel is a manga/book-reader page with a
+  Twitch **CHAT** overlay on the right)
+- **What we see:**
+  - The whole strip shows **horizontal streaks of scattered, randomly-colored pixels**
+    (green / red / white speckle forming broken horizontal lines across the full 768 px
+    width) — **no recognizable scene content**.
+  - **Live, the pixels continuously travel from the RIGHT edge of the panel toward the LEFT**
+    in a steady stream (a still photo can't show the motion — per direct observation). It
+    reads like the content is being shifted/scrolled left every frame instead of held in place.
+  - **Correct (the only correct element):** the bouncing **ping-pong single-pixel /
+    single-column widget** — each frame it shifts up/down and reverses direction when it hits
+    the top/bottom display edge — renders and animates exactly as intended.
+- **What we expect:** the live scene renders as **stable, correct content** (the intended
+  non-test image), holding in place frame-to-frame — no horizontal pixel stream / left-scroll.
+- **Scope note (observation only):** distinct from the test pattern — F2/F3 (`run_test_graphic`)
+  now render clean, so this is a **live/demo-mode-only** corruption.
+- **Justification:** _TBD._
+- **Status:** OPEN
+
+---
+
 <!--
 Template for new entries:
 
