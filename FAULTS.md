@@ -135,8 +135,10 @@ intentionally deferred — the `Justification` fields are placeholders to fill i
     the top/bottom display edge — renders and animates exactly as intended.
 - **What we expect:** the live scene renders as **stable, correct content** (the intended
   non-test image), holding in place frame-to-frame — no horizontal pixel stream / left-scroll.
-- **Scope note (observation only):** distinct from the test pattern — F2/F3 (`run_test_graphic`)
-  now render clean, so this is a **live/demo-mode-only** corruption.
+- **Scope note (observation only):** distinct from the test pattern — F2/F3 (`run_test_graphic`,
+  a.k.a. "demo mode") now render clean. F4 is the **LIVE / normal-operation scene** (the real
+  manga + Twitch CHAT content), a DIFFERENT path from the test pattern. (Do not conflate "demo
+  mode" = run_test_graphic with "live mode" = the real scene — they are different.)
 - **Justification:** _TBD._
 - **Status:** OPEN
 
