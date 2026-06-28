@@ -45,6 +45,9 @@ module main #(
     // F2.b bring-up: plain-text "RC=0xNN" report driven out this GPIO (NOT USB),
     // so the FTDI/passthru USB serial is left untouched. Probe it on wifi_gpio25.
     output       wifi_gpio25,
+`elsif F4_PROBE
+    // F4 diagnostic: displayed-row-data probe driven out this GPIO (NOT USB).
+    output       wifi_gpio25,
 `endif
     output       gp0,
     output       gp1,
@@ -741,7 +744,27 @@ module main #(
 `endif
     );
 
+`ifdef F4_PROBE
+    // F4 diagnostic: dump the DISPLAYED row data (read_data_out leaving row_prefetch
+    // toward the panel) for one fixed scan row out wifi_gpio25 @115200 8N1 -- see
+    // f4_row_probe.sv. Takes the pin from the F2B_UART probe when both are defined.
+    wire f4_probe_tx;
+    assign wifi_gpio25 = f4_probe_tx;
+    f4_row_probe #(
+        .UART_TICKS_PER_BIT(params::DEBUG_TX_UART_TICKS_PER_BIT)
+    ) f4_probe (
+        .clk          (clk_root),
+        .reset        (global_reset),
+        .row_address  (row_address),
+        .read_valid   (rowbuf_clk_enable),
+        .read_data_out(rowbuf_data_out),
+        .frame_select (sdram_frame_select),
+        .tx           (f4_probe_tx)
+    );
 `ifdef F2B_UART
+    wire _unused_ok_f2b_rc = &{1'b0, f2b_rc_count};  // f2b RC probe disabled by F4_PROBE
+`endif
+`elsif F2B_UART
     // F2.b bring-up: stream the decoded drawColumn (READCOL) count as plain ASCII
     // "RC=0xNN\r\n" out wifi_gpio25 @115200 8N1 (probe the pin, not USB).
     wire f2b_uart_tx;
