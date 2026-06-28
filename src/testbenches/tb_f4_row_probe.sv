@@ -28,7 +28,8 @@ module tb_f4_row_probe #(
 
     always #5 clk = ~clk;
 
-    f4_row_probe #(.UART_TICKS_PER_BIT(TPB), .PROBE_ROW(PROW), .NUM_SAMPLES(NSAMP), .THROTTLE(1))
+    f4_row_probe #(.UART_TICKS_PER_BIT(TPB), .PROBE_ROW(PROW), .NUM_SAMPLES(NSAMP), .THROTTLE(1),
+                   .SWEEP(1'b0))
         dut (.clk(clk), .reset(reset), .row_address(row_address), .read_valid(read_valid),
              .read_data_out(read_data_out), .frame_select(frame_select), .tx(tx));
 
@@ -46,7 +47,7 @@ module tb_f4_row_probe #(
         end
     endtask
 
-    logic [7:0] line [0:1 + NSAMP*2];   // 'F'? no -> frame char + hex + newline
+    logic [7:0] line [0:3 + NSAMP*2];   // row(2 hex) + frame char(1) + hex samples + newline
     int errors = 0;
 
     function automatic logic [7:0] hexd(input logic [3:0] n);
@@ -73,22 +74,23 @@ module tb_f4_row_probe #(
         @(negedge clk);
         row_address = '0;                 // leave the row -> triggers the line send
 
-        // decode the emitted line: frame char, then NSAMP hex bytes, then '\n'
-        for (int unsigned c = 0; c < 1 + NSAMP*2 + 1; c++) get_byte(line[c]);
+        // decode the emitted line: row(2 hex), frame char, NSAMP hex bytes, '\n'
+        for (int unsigned c = 0; c < 4 + NSAMP*2; c++) get_byte(line[c]);
 
         $write("  decoded line: \"");
-        for (int unsigned c = 0; c < 1 + NSAMP*2; c++) $write("%c", line[c]);
+        for (int unsigned c = 0; c < 3 + NSAMP*2; c++) $write("%c", line[c]);
         $display("\"");
 
-        // well-formed line: frame char is '0', hex digits, trailing newline
-        if (line[0] !== "0") begin errors++; $display("  frame char wrong: %02h", line[0]); end
-        if (line[1 + NSAMP*2] !== 8'h0A) begin errors++; $display("  missing newline"); end
+        // well-formed line: row prefix == PROW, frame char '0', trailing newline
+        if (line[0] !== "0" || line[1] !== "2") begin errors++; $display("  row prefix wrong: %c%c", line[0], line[1]); end
+        if (line[2] !== "0") begin errors++; $display("  frame char wrong: %02h", line[2]); end
+        if (line[3 + NSAMP*2] !== 8'h0A) begin errors++; $display("  missing newline"); end
         // the probe samples read_data_out at fixed STRIDE -> the bytes must form a
         // step-STRIDE ramp (mod 256), regardless of the exact start column.
         for (int unsigned k = 1; k < NSAMP; k++) begin
             logic [7:0] bcur, bprev;
-            bcur  = {unhex(line[1 + k*2]),     unhex(line[1 + k*2 + 1])};
-            bprev = {unhex(line[1 + (k-1)*2]), unhex(line[1 + (k-1)*2 + 1])};
+            bcur  = {unhex(line[3 + k*2]),     unhex(line[3 + k*2 + 1])};
+            bprev = {unhex(line[3 + (k-1)*2]), unhex(line[3 + (k-1)*2 + 1])};
             if (8'(bcur - bprev) !== 8'(STRIDE)) begin
                 errors++;
                 $display("  sample %0d step != STRIDE: %02h - %02h = %02h (exp %02h)",
