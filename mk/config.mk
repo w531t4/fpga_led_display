@@ -46,12 +46,15 @@ export CCACHE_DIR
 # USE_LITEDRAM_WRITE_MIRROR - With USE_LITEDRAM, mirror controller framebuffer writes into LiteDRAM
 # USE_SDRAM_FB - With USE_LITEDRAM, row_prefetch reads through sdram_arbiter instead of multimem
 
-# NOTE (temporary): dropped CLK_80 -> CLK_50 to widen the SDR SDRAM timing margin
-# and clear the persistent wrong pixels (analog margin at 80MHz). Lower frame rate
-# is tolerated for now; raise back toward CLK_90 once the SDRAM PHY margin is solid
-# (90deg phase + write-address pipelining). Also regen the litedram core to match
-# (ulx3s_sdram.yml sys_clk_freq).
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_50 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU -DF2B_UART -DUSE_LITEDRAM -DUSE_SDRAM_FB -DTB_SPI_FREERUN
+# NOTE (temporary): dropped CLK_80 -> CLK_50 -> CLK_40. The chip is a grade-6 ECP5
+# (LFE5U-85F-6BG381C); at --speed 6, clk_root only closes ~40 MHz (critical path ~25 ns
+# through the LiteDRAM bank machines + arbiter + copyframe). The earlier CLK_50 builds
+# were timed at --speed 8 (optimistic) and were genuinely over-clocked on real silicon
+# -> setup violations -> intermittent corruption. CLK_40 is the highest rate that meets
+# timing at the correct grade. LiteDRAM is regen'd to match (ulx3s_sdram.yml sys_clk_freq
+# = 40e6). Lower frame rate tolerated; raise the clock only by shortening that critical
+# path (register the write-client->LiteDRAM address, or regen LiteDRAM with more pipelining).
+BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_40 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU -DF2B_UART -DUSE_LITEDRAM -DUSE_SDRAM_FB -DTB_SPI_FREERUN
 # EXTRA_BUILD_FLAGS - append flags for one-off builds without editing the BUILD_FLAGS default,
 #                     e.g. `make EXTRA_BUILD_FLAGS="-DUSE_LITEDRAM -DUSE_LITEDRAM_WRITE_MIRROR"`
 EXTRA_BUILD_FLAGS ?=

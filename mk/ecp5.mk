@@ -8,7 +8,7 @@ $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR
 		--log $(ARTIFACT_DIR)/nextpnr.log \
 		--package CABGA381 \
 		--randomize-seed \
-		--speed 8 \
+		--speed 6 \
 		--report $(ARTIFACT_DIR)/nextpnr-report.json \
 		--placer-heap-critexp 3 --placer-heap-timingweight 20 \
 		--detailed-timing-report \

@@ -17,6 +17,9 @@ package params;
 `elsif CLK_50
     parameter int unsigned ROOT_CLOCK = 50_000_000;
     parameter int unsigned PLL_SPEED = 1;
+`elsif CLK_40
+    parameter int unsigned ROOT_CLOCK = 40_000_000;
+    parameter int unsigned PLL_SPEED = 6;
 `else
     parameter int unsigned ROOT_CLOCK = 16_000_000;
     parameter int unsigned PLL_SPEED = 0;

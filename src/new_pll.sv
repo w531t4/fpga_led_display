@@ -335,6 +335,56 @@ module new_pll #(
             .ENCLKOP(1'b0),
             .LOCK(locked)
         );
+    end else if (SPEED == 6) begin : g_speed6
+        // CLK_40: ecppll -i 25 --clkout0 40 --clkout1 40 --phase1 90. CLKOP = clock_out
+        // (40 MHz, 0 deg, also the feedback); CLKOS = clock_shifted (40 MHz, +90 deg)
+        // for the SDRAM device clock. 40 MHz is the highest rate the grade-6 ECP5
+        // (LFE5U-85F-6) closes clk_root timing at (critical path ~25 ns through the
+        // LiteDRAM bank machines + arbiter + copyframe); it also widens the SDR
+        // read/write sampling windows vs 50 MHz. VCO=600 (CLKOP_DIV=15); 90 deg =
+        // +3.75 VCO cycles -> CLKOS_CPHASE 10 + CLKOS_FPHASE 6. (LiteDRAM regen'd at
+        // 40e6 so refresh/timing counts match -- ulx3s_sdram.yml sys_clk_freq.)
+        (* FREQUENCY_PIN_CLKI="25" *)
+        (* FREQUENCY_PIN_CLKOP="40" *)
+        (* FREQUENCY_PIN_CLKOS="40" *)
+        (* ICP_CURRENT="12" *) (* LPF_RESISTOR="8" *) (* MFG_ENABLE_FILTEROPAMP="1" *) (* MFG_GMCREF_SEL="2" *)
+        EHXPLLL #(
+            .PLLRST_ENA("DISABLED"),
+            .INTFB_WAKE("DISABLED"),
+            .STDBY_ENABLE("DISABLED"),
+            .DPHASE_SOURCE("DISABLED"),
+            .OUTDIVIDER_MUXA("DIVA"),
+            .OUTDIVIDER_MUXB("DIVB"),
+            .OUTDIVIDER_MUXC("DIVC"),
+            .OUTDIVIDER_MUXD("DIVD"),
+            .CLKI_DIV(5),
+            .CLKOP_ENABLE("ENABLED"),
+            .CLKOP_DIV(15),
+            .CLKOP_CPHASE(7),
+            .CLKOP_FPHASE(0),
+            .CLKOS_ENABLE("ENABLED"),
+            .CLKOS_DIV(15),
+            .CLKOS_CPHASE(10),
+            .CLKOS_FPHASE(6),
+            .FEEDBK_PATH("CLKOP"),
+            .CLKFB_DIV(8)
+        ) pll_i (
+            .RST(1'b0),
+            .STDBY(1'b0),
+            .CLKI(clock_in),
+            .CLKOP(clock_out),
+            .CLKOS(clock_shifted),
+            .CLKFB(clock_out),
+            .CLKINTFB(),
+            .PHASESEL0(1'b0),
+            .PHASESEL1(1'b0),
+            .PHASEDIR(1'b1),
+            .PHASESTEP(1'b1),
+            .PHASELOADREG(1'b1),
+            .PLLWAKESYNC(1'b0),
+            .ENCLKOP(1'b0),
+            .LOCK(locked)
+        );
     end else begin : g_speedelse
         assign clock_out = clock_in;
         assign clock_shifted = clock_in;
