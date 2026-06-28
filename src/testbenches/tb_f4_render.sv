@@ -4,15 +4,28 @@
 `default_nettype none
 `include "tb_spi_streamer.svh"
 // =============================================================================
-// tb_f4_render -- FULL-SYSTEM live-cadence render check. Instantiates the whole
-// `main`, runs the REAL live-mode command cadence over SPI (LIVE_F4_SERIES:
-// background fill -> swap -> copyFrame, then frames of {fillrect chunk -> swap ->
-// copyFrame}) on the TIMING-REAL SDRAM model, then reads the DISPLAYED row_buf bank
+// tb_f4_render -- FULL-SYSTEM live-cadence render check, and the F4 regression guard.
+// Instantiates the whole `main`, runs the REAL live-mode command cadence over SPI
+// (LIVE_F4_SERIES: background fill -> swap -> copyFrame, then frames of {chunk -> swap
+// -> copyFrame}) on the TIMING-REAL SDRAM model, then reads the DISPLAYED row_buf bank
 // and asserts the carried background stayed uniform. Checks the pixels that come out,
-// not internal flags. Result: the live cadence renders correctly through the real
-// datapath (so the digital live path is NOT the F4 fault).
+// not internal flags.
 //
-// Build: default flags + -DLIVE_F4_SERIES -DSDRAM_SIM_TIMING_MODEL (see .args).
+// CRUCIAL and hard-won: the SPI master here is paced HOST-FAITHFULLY -- it streams the
+// next command as soon as the FSM is back in IDLE (the ESP32's "done the cycle after
+// the last byte" contract) and only stalls for the one genuinely-slow command,
+// copyFrame. It NEVER waits on `busy` like a polite testbench. That distinction is the
+// whole point: TOGGLE_FRAME leaves the FSM in IDLE, so COPY_FRAME streams straight after
+// it and races the DEFERRED frame swap (which only commits once the write tail drains).
+// With a polite ~busy pace the swap always commits before copyFrame starts and the bug
+// vanishes -- which is exactly why every earlier sim was falsely green while the board
+// showed scrolling garbage. Run at the true 768 panel width with realistically slow
+// writes so the swap is still pending when COPY lands (fault F4):
+//   - BROKEN RTL  -> displayed background degrades into garbage (assertion FAILS).
+//   - FIXED RTL   -> copyFrame waits for the swap to commit, background stays uniform.
+//
+// Build: default + -DLIVE_F4_SERIES -DSDRAM_SIM_TIMING_MODEL -DSDRAM_SIM_SLOW_WRITES
+//        -DPIXEL_WIDTH=768 (see .args).
 // =============================================================================
 module tb_f4_render;
     logic clk = 1'b0;
@@ -66,8 +79,16 @@ module tb_f4_render;
         .gn5(_unused_output[12]), .gn14(_unused_output[13])
     );
 
-    // SPI master paced on command-level busy (same as tb_main's TB_SPI_FREERUN path)
-    wire spi_pace_ready = dut.ctrl.ready_for_data_logic || ~dut.ctrl.busy;
+    // Host-faithful pacing: the ESP32 clocks the next byte as soon as the previous
+    // command "completes the cycle after its last byte" -- i.e. whenever the command
+    // FSM is back to IDLE -- and only stalls for the one genuinely-multi-cycle command
+    // (copyFrame). It NEVER waits on `busy`/`ready` like a polite testbench. Crucially
+    // TOGGLE_FRAME leaves the FSM in IDLE, so COPY_FRAME is streamed straight after it,
+    // racing the still-pending deferred swap exactly as on hardware (fault F4). (Pacing
+    // on ~busy -- the old line here -- waited out the swap and hid the bug; pacing on a
+    // bare 1'b1 was the opposite error, flooding commands into a deaf mid-copyFrame FSM.)
+    wire spi_pace_ready = dut.ctrl.ready_for_data_logic
+                       || (dut.ctrl.cmd_line_state == enums::STATE_IDLE);
     wire [7:0] _unused_data_rx; wire _unused_data_ready_n;
     tb_spi_streamer #(.SPI_CDIV(SPI_CDIV), .DATA_BITS($bits(cmd_series)), .USE_SLAVE(1'b0)) spi_streamer (
         .clk(clk), .reset(reset), .start(spi_start), .ready_for_data(spi_pace_ready),
@@ -107,8 +128,8 @@ module tb_f4_render;
         repeat (1_000_000) @(posedge clk);   // let the FPGA finish the last copyframe + settle
 
         // The live cadence (fill -> swap -> copyFrame, repeated) must leave the displayed
-        // background uniform. (Verified clean: copyFrame carry-forward + per-frame swaps
-        // render correctly through the real datapath on the timing-real SDRAM model.)
+        // background uniform. With the deferred-swap race unfixed it degrades into garbage
+        // (the F4 symptom); the copyFrame-start gate in control_module keeps it clean.
         nu = bg_distinct();
         if (nu <= 1)
             $display("tb_f4_render: PASS -- displayed background uniform after the live cadence");

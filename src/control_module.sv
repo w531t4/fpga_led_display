@@ -310,7 +310,15 @@ module control_module #(
         ._UNUSED('d0)
     ) cmd_copyframe (
         .reset(reset),
-        .enable(cmd_line_state == enums::STATE_CMD_COPYFRAME),
+        // Hold off the copy until any pending (deferred) frame swap has actually
+        // committed. The host blind-streams TOGGLE then COPY back-to-back; TOGGLE only
+        // sets frame_select_temp (the real swap is deferred until the write tail drains,
+        // see the frame_select commit below), so without this gate COPY would start
+        // copyframe while frame_select is still the PRE-swap value, then the swap would
+        // land mid-copy and flip front/back -- corrupting the carried-forward buffer
+        // (fault F4). Waiting costs nothing the host can see: it already treats COPY as
+        // the one slow command and waits for `done`.
+        .enable((cmd_line_state == enums::STATE_CMD_COPYFRAME) && (frame_select_temp == frame_select)),
         .clk(clk_in),
         .frame_select(frame_select),
         .sdram_req(sdram_copyframe_req),
