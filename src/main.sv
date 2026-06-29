@@ -10,20 +10,11 @@ module main #(
 `ifdef USE_BOARDLEDS_BRIGHTNESS
     output [7:0] led,
 `endif
-`ifdef SPI
-`ifdef SPI_ESP32
     input             wifi_gpio13,  // mosi
     input             wifi_gpio14,  // clk
     input        wifi_gpio21,  // ce
     output       wifi_gpio35,  // controller busy indicator (FPGA -> ESP32)
     output       wifi_gpio27,  // fpga reset notify
-`else
-    input        gp17,         // miso
-    //   output gp18, // mosi
-    input        gp19,         // clk
-    input        gp20,         // ce
-`endif
-`endif
 `ifdef USE_PASSTHRU
     input        ftdi_txd,
     input        wifi_txd,
@@ -137,14 +128,9 @@ module main #(
     wire rxdata_ready_level;
     wire rxdata_ready_pulse;
     wire [7:0] rxdata_to_controller;
-`ifdef SPI
     wire spi_clk;
     wire spi_cs;
     wire spi_slave_sdout;
-`else
-    // uart rx for controller
-    wire uart_rx_dataready;
-`endif
 `ifdef USE_WATCHDOG
     wire watchdog_reset;
 `endif
@@ -277,7 +263,6 @@ module main #(
     );
 
     // for controller
-`ifdef SPI
     spi_slave spislave (
         .rstb (~global_reset),
         .ten  (1'b0),                 // transmit enable, 0 = disabled
@@ -290,19 +275,6 @@ module main #(
         .done (rxdata_ready),         // data ready
         .rdata(rxdata_to_controller)  // data
     );
-`else
-    uart_rx #(
-        .TICKS_PER_BIT(params::CTRLR_CLK_TICKS_PER_BIT)
-    ) mycontrol_rxuart (
-        .reset(global_reset),
-        .i_clk(clk_root),
-        .i_enable(1'b1),
-        .i_din_priortobuffer(rxdata),
-        .o_rxdata(rxdata_to_controller),
-        .o_recvdata(uart_rx_dataready),
-        .o_busy(rxdata_ready)
-    );
-`endif
 
     // bring uart-data into main clock domain
     ff_sync #() uart_sync (
@@ -321,11 +293,7 @@ module main #(
         .reset(global_reset),
         .clk_in(clk_root),
         .data_rx(rxdata_to_controller),
-`ifdef SPI
         .data_ready_n(~rxdata_ready_pulse),
-`else
-        .data_ready_n(rxdata_ready_pulse),
-`endif
         .rgb_enable(rgb_enable),
         .brightness_enable(brightness_enable),
         .busy(ctrl_busy),
@@ -416,21 +384,11 @@ module main #(
     assign gp12 = row_latch;  // Row Latch
     assign gp13 = ~output_enable;  // #OE
     assign {gp10, gp9, gp8, gp7} = 4'(row_address_active);  // D, C, B, A
-`ifdef SPI
-`ifdef SPI_ESP32
     assign spi_clk = wifi_gpio14;
     assign spi_cs = wifi_gpio21;
     assign rxdata = wifi_gpio13;  // MOSI
     assign wifi_gpio27 = fpga_ready;
     assign wifi_gpio35 = ctrl_busy;  // high while command executes
-`else
-    assign spi_clk = gp19;
-    assign spi_cs  = gp20;
-    assign rxdata  = gp17;  // MOSI
-`endif
-`else
-    assign rxdata = gp14;
-`endif
 
     assign gn11 = clk_pixel;  // Pixel Clk
     assign gn12 = row_latch;  // Row Latch
@@ -458,12 +416,7 @@ module main #(
 `ifdef DEBUGGER
     wire _unused_ok_debugger = &{1'b0, debugger_current_state, debug_uart_tx, debug_uart_rx, debug_command, 1'b0};
 `endif
-
-`ifdef SPI
     wire _unused_ok_spi = &{1'b0, spi_slave_sdout, 1'b0};
-`else
-    wire _unused_ok_spi = &{1'b0, uart_rx_dataready, 1'b0};
-`endif
 `ifdef USE_FM6126A
     wire _unused_ok_fm6126a = &{1'b0, init_reset_strobe, 1'b0};
 `endif

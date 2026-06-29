@@ -24,9 +24,6 @@ export CCACHE_DIR
 # SIM - disable use of PLL in simulations
 # DEBUGGER - enable UART TX debugger (for use with src/scripts/uart_rx.py)
 # W128 - enable 128 pixel width
-# FOCUS_TB_MAIN_UART - limit main testbench to include only signals applicable to uart debugging
-# SPI - use SPI for data ingress instead of a UART
-# SPI_ESP32 - must also specify SPI. Uses esp32 pinout
 # CLK_110 - Use 110Mhz clock for clk_root
 # CLK_100 - Use 100MHz clock for clk_root
 # CLK_90 - Use 90MHz clock for clk_root
@@ -42,7 +39,7 @@ export CCACHE_DIR
 #				         .with the 2.5mm pitch 64x32 display..." https://www.adafruit.com/product/5036)
 # USE_PASSTHRU - Connects passthru pins which allows flashing the ESP32 from the same USB port as the FPGA
 
-BUILD_FLAGS ?=-DSPI -DGAMMA -DCLK_90 -DW128 -DRGB24 -DSPI_ESP32 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
+BUILD_FLAGS ?=-DGAMMA -DCLK_90 -DW128 -DRGB24 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
