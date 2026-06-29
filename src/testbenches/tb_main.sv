@@ -14,15 +14,14 @@ module tb_main #(
 );
 
     logic clk;
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
+    // Board-agnostic core signals (no physical pin names -- so this testbench is
+    // identical for every board). The board wrappers own the pin mapping.
     wire clk_pixel;
     wire row_latch;
     wire OE;
-    wire ROA0;
-    wire ROA1;
-    wire ROA2;
-    wire ROA3;
-    wire types::rgb_signals_t rgb2;
-    wire types::rgb_signals_t rgb1;
+    wire types::row_subpanel_addr_t row_addr_active;
+    wire types::rgb_signals_t rgb[NUM_SUBPANELS];
 `ifdef DEBUGGER
     wire debugger_txout;
     logic debugger_rxin;
@@ -75,11 +74,23 @@ module tb_main #(
     logic wifi_en;
     logic wifi_gpio0;
 `endif
-    wire [13:0] _unused_output;
 
-    main #(
+    // Instantiate the board-agnostic core directly (the board wrappers are not
+    // part of simulation). Instance name kept as `tbi_main` so the hierarchical
+    // probes below (tb_main.tbi_main.*) stay valid.
+    display_core #(
         ._UNUSED('d0)
     ) tbi_main (
+        .spi_clk           (spi_clk),
+        .spi_cs            (spi_cs),
+        .mosi              (mosi),
+        .ctrl_busy         (ctrl_busy),
+        .fpga_ready        (fpga_ready),
+        .rgb               (rgb),
+        .clk_pixel         (clk_pixel),
+        .row_latch         (row_latch),
+        .nOE               (OE),
+        .row_address_active(row_addr_active),
 `ifdef USE_PASSTHRU
         .ftdi_txd (ftdi_txd),
         .wifi_txd (wifi_txd),
@@ -91,56 +102,13 @@ module tb_main #(
         .wifi_en    (wifi_en),
         .wifi_gpio0 (wifi_gpio0),
 `endif
-        .gp11       (clk_pixel),
-        .gp12       (row_latch),
-        .gp13       (OE),
-        .clk_25mhz  (clk),
-        .gp7        (ROA0),
-        .gp8        (ROA1),
-        .gp9        (ROA2),
-        .gp10       (ROA3),
-`ifdef SWAP_BLUE_GREEN_CHAN
-        .gp0        (rgb1.red),
-        .gp1        (rgb1.blue),
-        .gp2        (rgb1.green),
-        .gp3        (rgb2.red),
-        .gp4        (rgb2.blue),
-        .gp5        (rgb2.green),
-`else
-        .gp0        (rgb1.red),
-        .gp1        (rgb1.green),
-        .gp2        (rgb1.blue),
-        .gp3        (rgb2.red),
-        .gp4        (rgb2.green),
-        .gp5        (rgb2.blue),
-`endif
 `ifdef DEBUGGER
-        .gp16       (debugger_txout),
-        .gp15       (debugger_rxin),
+        .debug_uart_rx(debugger_rxin),
+        .debug_uart_tx(debugger_txout),
 `endif
-        .wifi_gpio14(spi_clk),             // clk
-        .wifi_gpio13(mosi),
-        .wifi_gpio21(spi_cs),
-        .wifi_gpio27(fpga_ready),
-        .wifi_gpio35(ctrl_busy),           // controller busy indicator
-        .gn11       (_unused_output[0]),
-        .gn12       (_unused_output[1]),
-        .gn13       (_unused_output[2]),
-        .gn7        (_unused_output[3]),
-        .gn8        (_unused_output[4]),
-        .gn9        (_unused_output[5]),
-        .gn10       (_unused_output[6]),
-        .gn0        (_unused_output[7]),
-        .gn1        (_unused_output[8]),
-        .gn2        (_unused_output[9]),
-        .gn3        (_unused_output[10]),
-        .gn4        (_unused_output[11]),
-        .gn5        (_unused_output[12])
+        .clk_25mhz    (clk)
     );
     // verilog_format: off
-    wire _unused_ok_main = &{1'b0,
-                             _unused_output,
-                             1'b0};
 
     wire _unused_ok_ctrlbusy = &{1'b0,
                                  ctrl_busy,
@@ -187,8 +155,7 @@ module tb_main #(
 `endif
         reset = 1;
 `ifdef USE_PASSTHRU
-        // Match the board-level pull-ups for passthrough inputs when the testbench
-        // is not actively exercising the FTDI / WiFi serial path.
+        // Match the board-level pull-ups on the passthrough inputs.
         ftdi_txd  = 1'b1;
         ftdi_ndtr = 1'b1;
         ftdi_nrts = 1'b1;
@@ -281,12 +248,9 @@ module tb_main #(
     wire _unused_ok = &{1'b0,
                         clk_pixel,
                         OE,
-                        ROA0,
-                        ROA1,
-                        ROA2,
-                        ROA3,
-                        rgb1,
-                        rgb2,
+                        row_addr_active,
+                        rgb[0],
+                        rgb[1],
                         row_latch,
                         1'b0};
 `ifdef DEBUGGER

@@ -10,7 +10,7 @@ YOSYS_INCLUDE_EXTRA ?= false
 
 YOSYS_TARGETS:=$(ARTIFACT_DIR)/mydesign.json \
 			   $(ARTIFACT_DIR)/mydesign.il
-YOSYS_EXTRA:=hierarchy -check -top main;
+YOSYS_EXTRA:=hierarchy -check -top $(TOP);
 ifeq ($(YOSYS_INCLUDE_EXTRA),true)
 	YOSYS_EXTRA += ls;
 	YOSYS_EXTRA += proc -noopt;
@@ -35,7 +35,7 @@ ifeq ($(YOSYS_DEBUG), true)
 endif
 YOSYS_READSLANG_CMD:=read_slang $(YOSYS_READSLANG_ARGS)
 
-YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top main
+YOSYS_SYNTHECP5_CMD:=synth_ecp5 -top $(TOP)
 
 YOSYS_SCRIPT:=
 ifeq ($(YOSYS_DEBUG), true)
@@ -64,7 +64,7 @@ ifeq ($(YOSYS_DEBUG), true)
 endif
 
 YOSYS_HIER_SCRIPT:=read_slang --best-effort-hierarchy $(YOSYS_READSLANG_ARGS);
-YOSYS_HIER_SCRIPT +=hierarchy -check -top main;
+YOSYS_HIER_SCRIPT +=hierarchy -check -top $(TOP);
 YOSYS_HIER_SCRIPT +=write_json $(ARTIFACT_DIR)/mydesign_hier.json;
 
 $(ARTIFACT_DIR)/mydesign_hier.json: $(VSOURCES) $(INCLUDESRCS) $(MAKE_DEPS) | $(ARTIFACT_DIR)
