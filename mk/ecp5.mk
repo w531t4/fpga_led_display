@@ -4,7 +4,7 @@
 route: $(ARTIFACT_DIR)/ulx3s_out.config ## Run nextpnr place and route
 $(ARTIFACT_DIR)/ulx3s_out.config: $(ARTIFACT_DIR)/mydesign.json | $(ARTIFACT_DIR)
 	$(TOOLPATH)/nextpnr-ecp5 --85k --json $< \
-		--lpf $(CONSTRAINTS_DIR)/ulx3s_v316.lpf \
+		--lpf $(LPF) \
 		--log $(ARTIFACT_DIR)/nextpnr.log \
 		--package CABGA381 \
 		--randomize-seed \

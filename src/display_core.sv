@@ -2,16 +2,25 @@
 // SPDX-FileCopyrightText: 2025 Aaron White <w531t4@gmail.com>
 // SPDX-License-Identifier: MIT
 `default_nettype none
-module main #(
+module display_core #(
     // verilator lint_off UNUSEDPARAM
-    parameter integer unsigned _UNUSED = 0
+    parameter integer unsigned _UNUSED = 0,
     // verilator lint_on UNUSEDPARAM
+    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT)
 ) (
-    input             wifi_gpio13,  // mosi
-    input             wifi_gpio14,  // clk
-    input        wifi_gpio21,  // ce
-    output       wifi_gpio35,  // controller busy indicator (FPGA -> ESP32)
-    output       wifi_gpio27,  // fpga reset notify
+    // SPI slave: command stream from the host controller.
+    input                             spi_clk,
+    input                             spi_cs,
+    input                             mosi,
+    // Status Wires
+    output                            ctrl_busy,           // high while a command executes
+    output logic                      fpga_ready,          // fpga reset-notify / ready
+    // HUB75 logical panel signals
+    output types::rgb_signals_t       rgb[NUM_SUBPANELS],  // 0=top, 1=bottom
+    output                            clk_pixel,
+    output                            row_latch,
+    output                            nOE,                 // active-low #OE (already inverted here)
+    output types::row_subpanel_addr_t row_address_active,  // {D,C,B,A}
 `ifdef USE_PASSTHRU
     input        ftdi_txd,
     input        wifi_txd,
@@ -23,37 +32,11 @@ module main #(
     output       wifi_en,
     output       wifi_gpio0,
 `endif
-    output       gp0,
-    output       gp1,
-    output       gp2,
-    output       gp3,
-    output       gp4,
-    output       gp5,
-    output       gp7,
-    output       gp8,
-    output       gp9,
-    output       gp10,
-    output       gp11,
-    output       gp12,
-    output       gp13,
 `ifdef DEBUGGER
-    input        gp15,
-    output       gp16,
+    input                             debug_uart_rx,
+    output                            debug_uart_tx,
 `endif
-    input        clk_25mhz,
-    output       gn0,
-    output       gn1,
-    output       gn2,
-    output       gn3,
-    output       gn4,
-    output       gn5,
-    output       gn7,
-    output       gn8,
-    output       gn9,
-    output       gn10,
-    output       gn11,
-    output       gn12,
-    output       gn13
+    input        clk_25mhz
     // output gn15,
     // output gn16
 );
@@ -80,11 +63,8 @@ module main #(
     logic                        global_reset_sync;
     types::ready_holdoff_count_t _unused_ok_ready_holdoff_counter;
     wire                         ready_holdoff_running;
-    logic                        fpga_ready;
 
     wire                         clk_pixel_load;
-    wire                         clk_pixel;
-    wire                         row_latch;
     wire types::mem_write_data_t ctrl_ram_data_out;
     wire types::mem_write_addr_t ctrl_ram_address;
     wire                         ctrl_ram_write_enable;
@@ -98,10 +78,9 @@ module main #(
     wire ram_b_clk_enable;
 
     // Per-subpanel pixeldata fetched from framebuffer.
-    localparam int unsigned NUM_SUBPANELS = calc::num_subpanels(params::PIXEL_HEIGHT, params::PIXEL_HALFHEIGHT);
     wire types::color_field_t pixeldata_subpanels[NUM_SUBPANELS];
     wire types::rgb_signals_t rgb_subpanels[NUM_SUBPANELS];
-    wire ctrl_busy;
+    wire types::rgb_signals_t rgb_pre_swap[NUM_SUBPANELS];  // final RGB before green/blue swap
     wire ctrl_ready_for_data;
 
 `ifdef DEBUGGER
@@ -112,22 +91,18 @@ module main #(
     // [5:0]
     wire types::col_addr_t column_address;
     wire types::row_subpanel_addr_t row_address;
-    wire types::row_subpanel_addr_t row_address_active;
     wire types::brightness_level_t brightness_mask;
 
     wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
-    wire types::rgb_signals_t rgb[NUM_SUBPANELS];  // 0=top, 1=bottom
-    wire output_enable;
+    wire output_enable;           // active-high internally
+    assign nOE = ~output_enable;  // interface emits active-low #OE
     wire alt_reset;
     wire pll_locked;
-    wire mosi;
     wire rxdata_ready;
     wire rxdata_ready_level;
     wire rxdata_ready_pulse;
     wire [7:0] rxdata_to_controller;
-    wire spi_clk;
-    wire spi_cs;
     wire spi_slave_sdout;
 `ifdef USE_WATCHDOG
     wire watchdog_reset;
@@ -172,8 +147,6 @@ module main #(
     assign debug_if.brightness_enable = brightness_enable;
     assign debug_if.rgb_enable = rgb_enable;
     wire [7:0] debug_command;
-    wire debug_uart_tx;
-    wire debug_uart_rx;
 `endif
 
     reset_on_start #() RoS_obj (
@@ -345,11 +318,16 @@ module main #(
 `ifdef USE_FM6126A
             // FM6126A masking happens later, so feed the intermediaries.
             assign rgb_intermediary[subpanel_idx] = rgb_subpanels[subpanel_idx];
-            assign rgb[subpanel_idx] = (rgb_intermediary[subpanel_idx] & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
+            assign rgb_pre_swap[subpanel_idx] = (rgb_intermediary[subpanel_idx] & {3{fm6126mask_en}}) | (rgb_fm6126init & {3{~fm6126mask_en}});
 `else
             // Directly drive the final RGB signals when no masking is needed.
-            assign rgb[subpanel_idx] = rgb_subpanels[subpanel_idx];
+            assign rgb_pre_swap[subpanel_idx] = rgb_subpanels[subpanel_idx];
 `endif
+            // Apply the optional green/blue swap here so the board wrappers wire rgb[] straight to pins.
+            hub75_rgb_pack rgb_swap (
+                .rgb_in (rgb_pre_swap[subpanel_idx]),
+                .rgb_out(rgb[subpanel_idx])
+            );
         end
     endgenerate
 
@@ -368,35 +346,7 @@ module main #(
         .currentState(debugger_current_state),
         .tx_out(debug_uart_tx)
     );
-    assign gp16 = debug_uart_tx;
-    assign debug_uart_rx = gp15;
 `endif
-    hub75_rgb_pack rgb_conn1_top (.rgb_in(rgb[0]), .rgb_out({gp0, gp1, gp2}));
-    hub75_rgb_pack rgb_conn1_bot (.rgb_in(rgb[1]), .rgb_out({gp3, gp4, gp5}));
-    assign gp11 = clk_pixel;  // Pixel Clk
-    assign gp12 = row_latch;  // Row Latch
-    assign gp13 = ~output_enable;  // #OE
-    assign {gp10, gp9, gp8, gp7} = 4'(row_address_active);  // D, C, B, A
-    assign spi_clk = wifi_gpio14;
-    assign spi_cs = wifi_gpio21;
-    assign mosi = wifi_gpio13;  // MOSI
-    assign wifi_gpio27 = fpga_ready;
-    assign wifi_gpio35 = ctrl_busy;  // high while command executes
-
-    hub75_rgb_pack rgb_conn2_top (.rgb_in(rgb[0]), .rgb_out({gn0, gn1, gn2}));
-    hub75_rgb_pack rgb_conn2_bot (.rgb_in(rgb[1]), .rgb_out({gn3, gn4, gn5}));
-    assign gn11 = clk_pixel;  // Pixel Clk
-    assign gn12 = row_latch;  // Row Latch
-    assign gn13 = ~output_enable;  // #OE
-    assign {gn10, gn9, gn8, gn7} = 4'(row_address_active);  // D, C, B, A
-
-    // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
-    // assign gn1 = debug_if.ram_access_start;
-    // assign {gn15, gn12, gn10, gn5, gn4, gn3, gn2 } = {~cmd_line_addr2[6:1], cmd_line_addr2[0]};
-    // assign {gn9, gn8, gn7, gn16} = ram_a_data_in[5:0];
-    // assign gn0 = ram_a_write_enable;
-    // assign gn11 = rx_running;
-    // assign {gn14, gn13} = cmd_line_state;
 
     // template
     //     assign {gn15, gn14, gn13, gn12, gn11, gn10, gn9, gn8, gn7, gn16, gn5, gn4, gn3, gn2, gn1, gn0}

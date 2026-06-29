@@ -40,5 +40,20 @@ export CCACHE_DIR
 
 BUILD_FLAGS ?=-DGAMMA -DCLK_90 -DW128 -DRGB24 -DDOUBLE_BUFFER -DUSE_WATCHDOG -DUSE_INFER_BRAM_PLUGIN -DSWAP_BLUE_GREEN_CHAN -DUSE_PASSTHRU
 SIM_FLAGS:=-DSIM $(BUILD_FLAGS)
+
+# == BOARD SELECTION ==
+# Each board has a thin top wrapper (src/top_<board>.sv) whose ports match its
+# constraint file. The board-agnostic logic lives in display_core (src/main.sv).
+# Switch boards with e.g. `make BOARD=ulx3s pack`. Default is panelith.
+BOARD ?= panelith
+ifeq ($(BOARD),panelith)
+  TOP := top_panelith
+  LPF := $(CONSTRAINTS_DIR)/panelith_v1.0.17.lpf
+else ifeq ($(BOARD),ulx3s)
+  TOP := top_ulx3s
+  LPF := $(CONSTRAINTS_DIR)/ulx3s_v316.lpf
+else
+  $(error Unknown BOARD '$(BOARD)' -- use 'panelith' or 'ulx3s')
+endif
 TOOLPATH:=oss-cad-suite/bin
 NETLISTSVG:=depends/netlistsvg/node_modules/netlistsvg/bin/netlistsvg.js
