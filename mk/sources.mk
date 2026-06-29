@@ -13,10 +13,6 @@ INCLUDESRCS := $(sort $(shell find $(VINCLUDE_DIR) -maxdepth 1 -name '*.vh' -or 
 SIMBINS:=$(subst tb_,, $(subst $(TB_DIR), $(SIM_BIN_DIR), $(TBSRCS:%.sv=%)))
 FSTOBJS:=$(subst tb_,, $(subst $(TB_DIR), $(SIMULATION_DIR), $(TBSRCS:%.sv=%.fst)))
 TB_ARGS_FILES := $(wildcard $(TB_DIR)/tb_*.args)
-ifneq ($(findstring -DSPI,$(BUILD_FLAGS)), -DSPI)
-VSOURCES := $(filter-out $(SRC_DIR)/spi_master.sv, $(VSOURCES))
-VSOURCES := $(filter-out $(SRC_DIR)/spi_slave.sv, $(VSOURCES))
-endif
 
 ifneq ($(findstring -DUSE_WATCHDOG,$(BUILD_FLAGS)), -DUSE_WATCHDOG)
 VSOURCES := $(filter-out $(SRC_DIR)/control_cmd_watchdog.sv, $(VSOURCES))
