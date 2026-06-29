@@ -49,8 +49,10 @@ module main #(
     output       gp12,
     output       gp13,
     input        gp14,
+`ifdef DEBUGGER
     input        gp15,
     output       gp16,
+`endif
     input        clk_25mhz,
     output       gn0,
     output       gn1,
@@ -402,8 +404,6 @@ module main #(
     );
     assign gp16 = debug_uart_tx;
     assign debug_uart_rx = gp15;
-`else
-    assign gp16 = 1'b0;
 `endif
 `ifdef SWAP_BLUE_GREEN_CHAN
     assign {gp0, gp1, gp2} = {rgb[0].red, rgb[0].blue, rgb[0].green};
@@ -457,8 +457,6 @@ module main #(
     //     assign {gn15, gn14, gn13, gn12, gn11, gn10, gn9, gn8, gn7, gn16, gn5, gn4, gn3, gn2, gn1, gn0}
 `ifdef DEBUGGER
     wire _unused_ok_debugger = &{1'b0, debugger_current_state, debug_uart_tx, debug_uart_rx, debug_command, 1'b0};
-`else
-    wire _unused_ok_debugger = &{1'b0, gp15, 1'b0};
 `endif
 
 `ifdef SPI

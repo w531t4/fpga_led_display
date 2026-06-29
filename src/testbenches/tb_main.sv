@@ -23,8 +23,10 @@ module tb_main #(
     wire ROA3;
     wire types::rgb_signals_t rgb2;
     wire types::rgb_signals_t rgb1;
+`ifdef DEBUGGER
     wire debugger_txout;
     logic debugger_rxin;
+`endif
 
     logic reset;
     `include "row4.svh"
@@ -119,8 +121,10 @@ module tb_main #(
         .gp5        (rgb2.blue),
 `endif
         .gp14       (rxdata),
+`ifdef DEBUGGER
         .gp16       (debugger_txout),
         .gp15       (debugger_rxin),
+`endif
 `ifdef SPI
 `ifdef SPI_ESP32
         .wifi_gpio14(spi_clk),             // clk
@@ -241,7 +245,9 @@ module tb_main #(
         spi_start = 1'b0;
 `endif
 
+`ifdef DEBUGGER
         debugger_rxin = 0;
+`endif
         reset = 1;
 `ifdef USE_PASSTHRU
         // Match the board-level pull-ups for passthrough inputs when the testbench
@@ -349,7 +355,11 @@ module tb_main #(
                         rgb1,
                         rgb2,
                         row_latch,
-                        debugger_txout,
                         1'b0};
+`ifdef DEBUGGER
+    wire _unused_ok_debug = &{1'b0,
+                              debugger_txout,
+                              1'b0};
+`endif
     // verilog_format: on
 endmodule
