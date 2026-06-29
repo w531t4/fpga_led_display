@@ -114,7 +114,6 @@ module tb_main #(
         .gp4        (rgb2.green),
         .gp5        (rgb2.blue),
 `endif
-        .gp14       (rxdata),
 `ifdef DEBUGGER
         .gp16       (debugger_txout),
         .gp15       (debugger_rxin),
@@ -136,8 +135,7 @@ module tb_main #(
         .gn2        (_unused_output[9]),
         .gn3        (_unused_output[10]),
         .gn4        (_unused_output[11]),
-        .gn5        (_unused_output[12]),
-        .gn14       (_unused_output[13])
+        .gn5        (_unused_output[12])
     );
     // verilog_format: off
     wire _unused_ok_main = &{1'b0,

@@ -36,7 +36,6 @@ module main #(
     output       gp11,
     output       gp12,
     output       gp13,
-    input        gp14,
 `ifdef DEBUGGER
     input        gp15,
     output       gp16,
@@ -54,8 +53,7 @@ module main #(
     output       gn10,
     output       gn11,
     output       gn12,
-    output       gn13,
-    output       gn14
+    output       gn13
     // output gn15,
     // output gn16
 );
@@ -401,7 +399,6 @@ module main #(
     assign {gn0, gn1, gn2} = rgb[0];
     assign {gn3, gn4, gn5} = rgb[1];
 `endif
-    assign gn14 = gp14;  // ctrl serial port RX
 
     // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
     // assign gn1 = debug_if.ram_access_start;
