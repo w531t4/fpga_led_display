@@ -13,8 +13,6 @@
 `default_nettype none
 
 module ulx3s_v20_passthru_wifi_modified (
-    // Required clock (used only for timing-safe logic if expanded later)
-    input wire clk_25mhz,
 
     // ===============================
     // FTDI USB SERIAL (REQUIRED)
