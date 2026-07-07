@@ -6,6 +6,12 @@ PKG_SOURCES := $(PKG_DIR)/params.sv $(PKG_DIR)/calc.sv $(PKG_DIR)/cmd.sv $(PKG_D
 INTERFACE_SOURCES := $(sort $(shell find $(INTERFACE_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 PROJROOT_VSOURCES := $(sort $(shell find $(SRC_DIR) -maxdepth 1 -name '*.sv' -or -name '*.v'))
 VSOURCES := $(PKG_SOURCES) $(INTERFACE_SOURCES) $(PROJROOT_VSOURCES)
+# The ESP32-flashing passthrough submodule lives under src/passthru/ (it doubles as
+# the standalone restore-flash top), so it's outside the depth-1 glob above. Pull it
+# into the main build only when USE_PASSTHRU is set (matches main.sv's instantiation).
+ifeq ($(findstring -DUSE_PASSTHRU,$(BUILD_FLAGS)), -DUSE_PASSTHRU)
+VSOURCES += $(SRC_DIR)/passthru/ulx3s_v20_passthru_wifi_modified.v
+endif
 TBSRCS := $(sort $(shell find $(TB_DIR) -name '*.sv' -or -name '*.v'))
 GAMMA_MEMS := $(sort $(shell find $(VINCLUDE_MEM_DIR) -maxdepth 1 -name '*.mem'))
 GAMMA_INCLUDES := $(patsubst $(VINCLUDE_MEM_DIR)/%.mem,$(VINCLUDE_MEM_DIR)/%.svh,$(GAMMA_MEMS))
