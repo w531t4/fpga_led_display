@@ -64,12 +64,18 @@ module main #(
 );
 
 `ifdef USE_PASSTHRU
-    assign ftdi_rxd = wifi_txd;
-    assign wifi_rxd = ftdi_txd;
-    wire [1:0] pass_in = {ftdi_ndtr, ftdi_nrts};
-    wire [1:0] pass_out = (pass_in == 2'b10) ? 2'b01 : (pass_in == 2'b01) ? 2'b10 : 2'b11;
-    assign wifi_en    = pass_out[1];
-    assign wifi_gpio0 = pass_out[0];
+    // ESP32 flashing passthrough (shared with the standalone restore-flash build,
+    // src/passthru/ulx3s_v20_passthru_wifi_modified.v).
+    ulx3s_v20_passthru_wifi_modified passthru_inst (
+        .ftdi_txd  (ftdi_txd),
+        .wifi_txd  (wifi_txd),
+        .ftdi_ndtr (ftdi_ndtr),
+        .ftdi_nrts (ftdi_nrts),
+        .ftdi_rxd  (ftdi_rxd),
+        .wifi_rxd  (wifi_rxd),
+        .wifi_en   (wifi_en),
+        .wifi_gpio0(wifi_gpio0)
+    );
 `endif
 
     wire                         clk_root;
