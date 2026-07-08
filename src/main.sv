@@ -121,7 +121,7 @@ module main #(
     wire output_enable;
     wire alt_reset;
     wire pll_locked;
-    wire rxdata;
+    wire mosi;
     wire rxdata_ready;
     wire rxdata_ready_level;
     wire rxdata_ready_pulse;
@@ -268,7 +268,7 @@ module main #(
         .mlb  (1'b1),                 // shift msb first
         .ss   (spi_cs),
         .sck  (spi_clk),
-        .sdin (rxdata),               // data coming from master
+        .sdin (mosi),                 // data coming from master
         .sdout(spi_slave_sdout),
         .done (rxdata_ready),         // data ready
         .rdata(rxdata_to_controller)  // data
@@ -384,7 +384,7 @@ module main #(
     assign {gp10, gp9, gp8, gp7} = 4'(row_address_active);  // D, C, B, A
     assign spi_clk = wifi_gpio14;
     assign spi_cs = wifi_gpio21;
-    assign rxdata = wifi_gpio13;  // MOSI
+    assign mosi = wifi_gpio13;  // MOSI
     assign wifi_gpio27 = fpga_ready;
     assign wifi_gpio35 = ctrl_busy;  // high while command executes
 

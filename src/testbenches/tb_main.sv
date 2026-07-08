@@ -56,7 +56,7 @@ module tb_main #(
         ((longint'(READRECT_TOTAL_BYTES) + READRECT_WAIT_EXTRA_BYTES) * SPI_BYTE_CYCLES);
     logic cmd_line_state_seq_done;
 
-    wire  rxdata;
+    wire mosi;
     wire spi_done;
     wire spi_clk_en;
     wire spi_clk;
@@ -119,7 +119,7 @@ module tb_main #(
         .gp15       (debugger_rxin),
 `endif
         .wifi_gpio14(spi_clk),             // clk
-        .wifi_gpio13(rxdata),
+        .wifi_gpio13(mosi),
         .wifi_gpio21(spi_cs),
         .wifi_gpio27(fpga_ready),
         .wifi_gpio35(ctrl_busy),           // controller busy indicator
@@ -160,7 +160,7 @@ module tb_main #(
         .data          (cmd_series),
         .done          (spi_done),
         .spi_clk_en    (spi_clk_en),
-        .spi_mosi      (rxdata),
+        .spi_mosi      (mosi),
         .spi_clk       (spi_clk),
         .spi_cs        (spi_cs),
         .data_rx       (_unused_data_rx),
