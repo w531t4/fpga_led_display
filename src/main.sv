@@ -7,9 +7,6 @@ module main #(
     parameter integer unsigned _UNUSED = 0
     // verilator lint_on UNUSEDPARAM
 ) (
-`ifdef USE_BOARDLEDS_BRIGHTNESS
-    output [7:0] led,
-`endif
     input             wifi_gpio13,  // mosi
     input             wifi_gpio14,  // clk
     input        wifi_gpio21,  // ce
@@ -122,9 +119,6 @@ module main #(
 
     wire types::rgb_signals_t rgb_enable;
     wire types::brightness_level_t brightness_enable;
-`ifdef USE_BOARDLEDS_BRIGHTNESS
-    assign led = brightness_enable;
-`endif
     wire types::rgb_signals_t rgb[NUM_SUBPANELS];  // 0=top, 1=bottom
     wire output_enable;
     wire alt_reset;

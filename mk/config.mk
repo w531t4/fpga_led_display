@@ -31,7 +31,6 @@ export CCACHE_DIR
 # CLK_50 - Use 50MHz clock for clk_root
 # RGB24 - Use RGB24 instead of RGB565
 # GAMMA - Enable Gamma Correction
-# USE_BOARDLEDS_BRIGHTNESS - Use development board led's to show brightness levels
 # DOUBLE_BUFFER - Allow image to be written to one buffer while displaying the other buffer at led's.
 # USE_INFER_BRAM_PLUGIN - Compile and use Yosys plugin to assist with inferring OUTREG for BRAM's
 # USE_WATCHDOG - Requires recurring command sequence to be present, otherwise board resets
