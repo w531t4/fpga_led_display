@@ -371,13 +371,8 @@ module main #(
     assign gp16 = debug_uart_tx;
     assign debug_uart_rx = gp15;
 `endif
-`ifdef SWAP_BLUE_GREEN_CHAN
-    assign {gp0, gp1, gp2} = {rgb[0].red, rgb[0].blue, rgb[0].green};
-    assign {gp3, gp4, gp5} = {rgb[1].red, rgb[1].blue, rgb[1].green};
-`else
-    assign {gp0, gp1, gp2} = rgb[0];
-    assign {gp3, gp4, gp5} = rgb[1];
-`endif
+    hub75_rgb_pack rgb_conn1_top (.rgb_in(rgb[0]), .rgb_out({gp0, gp1, gp2}));
+    hub75_rgb_pack rgb_conn1_bot (.rgb_in(rgb[1]), .rgb_out({gp3, gp4, gp5}));
     assign gp11 = clk_pixel;  // Pixel Clk
     assign gp12 = row_latch;  // Row Latch
     assign gp13 = ~output_enable;  // #OE
@@ -388,17 +383,12 @@ module main #(
     assign wifi_gpio27 = fpga_ready;
     assign wifi_gpio35 = ctrl_busy;  // high while command executes
 
+    hub75_rgb_pack rgb_conn2_top (.rgb_in(rgb[0]), .rgb_out({gn0, gn1, gn2}));
+    hub75_rgb_pack rgb_conn2_bot (.rgb_in(rgb[1]), .rgb_out({gn3, gn4, gn5}));
     assign gn11 = clk_pixel;  // Pixel Clk
     assign gn12 = row_latch;  // Row Latch
     assign gn13 = ~output_enable;  // #OE
     assign {gn10, gn9, gn8, gn7} = 4'(row_address_active);  // D, C, B, A
-`ifdef SWAP_BLUE_GREEN_CHAN
-    assign {gn0, gn1, gn2} = {rgb[0].red, rgb[0].blue, rgb[0].green};
-    assign {gn3, gn4, gn5} = {rgb[1].red, rgb[1].blue, rgb[1].green};
-`else
-    assign {gn0, gn1, gn2} = rgb[0];
-    assign {gn3, gn4, gn5} = rgb[1];
-`endif
 
     // gtkw 20250714-part1 -- use this for digging into suspected ctrl/uartrx issues
     // assign gn1 = debug_if.ram_access_start;
