@@ -13,30 +13,29 @@ module display_core #(
     input                             spi_cs,
     input                             mosi,
     // Status Wires
-    output                            ctrl_busy,           // high while a command executes
-    output logic                      fpga_ready,          // fpga reset-notify / ready
+    output                            ctrl_busy,                          // high while a command executes
+    output logic                      fpga_ready,                         // fpga reset-notify / ready
     // HUB75 logical panel signals
-    output types::rgb_signals_t       rgb[NUM_SUBPANELS],  // 0=top, 1=bottom
+    output types::rgb_signals_t       rgb               [NUM_SUBPANELS],  // 0=top, 1=bottom
     output                            clk_pixel,
     output                            row_latch,
-    output                            nOE,                 // active-low #OE (already inverted here)
-    output types::row_subpanel_addr_t row_address_active,  // {D,C,B,A}
+    output                            nOE,                                // active-low #OE (already inverted here)
+    output types::row_subpanel_addr_t row_address_active,                 // {D,C,B,A}
 `ifdef USE_PASSTHRU
-    input        ftdi_txd,
-    input        wifi_txd,
-    input        ftdi_ndtr,
-    input        ftdi_nrts,
-
-    output       ftdi_rxd,
-    output       wifi_rxd,
-    output       wifi_en,
-    output       wifi_gpio0,
+    input                             ftdi_txd,
+    input                             wifi_txd,
+    input                             ftdi_ndtr,
+    input                             ftdi_nrts,
+    output                            ftdi_rxd,
+    output                            wifi_rxd,
+    output                            wifi_en,
+    output                            wifi_gpio0,
 `endif
 `ifdef DEBUGGER
     input                             debug_uart_rx,
     output                            debug_uart_tx,
 `endif
-    input        clk_25mhz
+    input                             clk_25mhz
     // output gn15,
     // output gn16
 );
@@ -71,7 +70,7 @@ module display_core #(
     wire                         ctrl_ram_clk_enable;
 `ifdef DOUBLE_BUFFER
     mem_copy_if copy_int ();
-    wire  frame_select;
+    wire frame_select;
 `endif
     types::mem_read_data_t ram_b_data_out;
     wire types::mem_read_addr_t ram_b_address;
@@ -89,13 +88,13 @@ module display_core #(
 `endif
 
     // [5:0]
-    wire types::col_addr_t column_address;
+    wire types::col_addr_t          column_address;
     wire types::row_subpanel_addr_t row_address;
-    wire types::brightness_level_t brightness_mask;
+    wire types::brightness_level_t  brightness_mask;
 
-    wire types::rgb_signals_t rgb_enable;
-    wire types::brightness_level_t brightness_enable;
-    wire output_enable;           // active-high internally
+    wire types::rgb_signals_t       rgb_enable;
+    wire types::brightness_level_t  brightness_enable;
+    wire                            output_enable;  // active-high internally
     assign nOE = ~output_enable;  // interface emits active-low #OE
     wire alt_reset;
     wire pll_locked;
