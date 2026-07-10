@@ -18,6 +18,8 @@ RUN \
         libreadline-dev \
         libffi-dev \
         tcl8.6-dev \
+        # needed by verilator
+        liblz4-dev \
         # required by verilog module
         universal-ctags \
         # verible deps start
