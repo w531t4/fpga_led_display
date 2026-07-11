@@ -33,6 +33,17 @@ package params;
     parameter int unsigned DEBUG_UART_RX_FREQ_GOAL = 244444;
     parameter int unsigned DEBUG_MSGS_PER_SEC_TICKS = ROOT_CLOCK / DEBUG_UART_RX_FREQ_GOAL;
 
+    // STATUS READBACK (READSTATUS reply-frame field sizes, in bytes; the wire
+    // format and typedefs live in types.sv)
+    parameter int unsigned STATUS_ADDR_BYTES = 1;
+    parameter int unsigned STATUS_SEQ_BYTES = 1;
+    parameter int unsigned STATUS_VALUE_BYTES = 8;
+    parameter int unsigned STATUS_CRC_BYTES = 2;  // CRC-16/XMODEM; see crc16.sv
+    // Derived containers: body = what the CRC covers; frame = what the wire
+    // carries (see reg_mailbox.sv's drawing).
+    parameter int unsigned STATUS_BODY_BYTES = STATUS_ADDR_BYTES + STATUS_SEQ_BYTES + STATUS_VALUE_BYTES;
+    parameter int unsigned STATUS_FRAME_BYTES = STATUS_BODY_BYTES + STATUS_CRC_BYTES;
+
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
     // FRAMEBUFFER FETCH

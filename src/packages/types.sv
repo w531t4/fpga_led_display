@@ -295,4 +295,38 @@ package types;
     // TODO: change opcode only commands to something like opcode_cmd_t
     typedef struct packed {cmd::opcode_t opcode;} brightness3_cmd_t;
 
+    // ==== STATUS READBACK ====
+    // READSTATUS register map (USE_STATUS_SPI): the command's argument byte
+    // selects ONE register; the reply returns that register's value. Keep the
+    // ESP32-side parser in sync with this section.
+    typedef enum logic [7:0] {
+        STATUS_ADDR_NONE       = 8'hFF   // reserved: the never-latched mailbox sentinel
+    } status_addr_e;
+    // Field shapes; the byte sizes live in params:: (STATUS_*_BYTES).
+    typedef logic [params::STATUS_ADDR_BYTES*8-1:0] status_addr_t;
+    typedef logic [params::STATUS_SEQ_BYTES*8-1:0] status_seq_t;
+    typedef logic [params::STATUS_VALUE_BYTES*8-1:0] status_value_t;
+    typedef logic [params::STATUS_CRC_BYTES*8-1:0] status_crc_t;
+    // Reply frame, shifted out MSB-first under CS framing:
+    //   - byte 0: address echo (the READSTATUS argument byte) -- pairing
+    //     proof; 0xFF = never-latched sentinel (reserved address)
+    //   - byte 1: seq -- mailbox latch counter, +1 per accepted request
+    //     (retries included), wraps mod 256 through zero. Host freshness
+    //     rule: fresh iff seq DIFFERS from the last accepted frame's
+    //   - byte 2..: selected register value (see status_addr_e)
+    //   - last STATUS_CRC_BYTES: CRC over all preceding bytes (MSB-first,
+    //     init 0, CRC-16/XMODEM -- see crc16.sv)
+    // Body = the CRC-covered content; the reply frame = body + crc.
+    typedef struct packed {
+        status_addr_t  addr;
+        status_seq_t   seq;
+        status_value_t value;
+    } status_body_t;
+    typedef struct packed {
+        status_addr_t  addr;
+        status_seq_t   seq;
+        status_value_t value;
+        status_crc_t   crc;
+    } status_reply_t;
+    // ==== /STATUS READBACK ====
 endpackage
