@@ -9,6 +9,11 @@ module top_panelith (
     input        wifi_gpio21,  // ce
     output       wifi_gpio38,  // controller busy indicator (FPGA -> ESP32)
     output       wifi_gpio18,  // fpga reset notify
+`ifdef USE_STATUS_SPI
+    input        wifi_gpio1,   // READSTATUS read port sck (sd_clk trace)
+    input        wifi_gpio2,   // READSTATUS read port cs_n (sd_cmd trace; gpio45 avoided: S3 strap)
+    output       wifi_gpio17,  // READSTATUS read port miso (sd_d0 trace)
+`endif
 `ifdef USE_PASSTHRU
     input        ftdi_txd,
     input        wifi_txd,
@@ -72,6 +77,11 @@ module top_panelith (
         .mosi(gn27),
         .ctrl_busy(ctrl_busy),
         .fpga_ready(fpga_ready),
+`ifdef USE_STATUS_SPI
+        .status_sck(wifi_gpio1),
+        .status_cs_n(wifi_gpio2),
+        .status_miso(wifi_gpio17),
+`endif
         .rgb(rgb),
         .clk_pixel(clk_pixel),
         .row_latch(row_latch),

@@ -16,6 +16,9 @@ package cmd;
 `ifdef USE_WATCHDOG
         WATCHDOG       = "W",
 `endif
+`ifdef USE_STATUS_SPI
+        READSTATUS     = "S",
+`endif
 `ifdef DOUBLE_BUFFER
         TOGGLE_FRAME   = "t",
         COPY_FRAME     = "C",

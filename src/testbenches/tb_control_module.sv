@@ -39,6 +39,10 @@ module tb_control_module;
     wire ram_clk_enable;
     wire                         watchdog_reset;
     wire                         frame_select;
+`ifdef USE_STATUS_SPI
+    wire [7:0] status_addr;
+    wire status_request;
+`endif
 
     // === SPI model (mirror tb_main) ===
     logic spi_start;
@@ -88,6 +92,10 @@ module tb_control_module;
         .ready_for_data(ready_for_data),
         .ram_clk_enable(ram_clk_enable),
         .watchdog_reset(watchdog_reset),
+`ifdef USE_STATUS_SPI
+        .status_addr(status_addr),
+        .status_request(status_request),
+`endif
 `ifdef DEBUGGER
         .debug_if(debug_if),
 `endif
@@ -222,6 +230,9 @@ module tb_control_module;
     end
 
     // verilog_format: off
+`ifdef USE_STATUS_SPI
+    wire _unused_ok_status_spi = &{1'b0, status_addr, status_request, 1'b0};
+`endif
     wire _unused_ok = &{1'b0,
                         rgb_enable,
                         brightness_enable,

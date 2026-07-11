@@ -26,6 +26,10 @@ module control_module #(
 `ifdef USE_WATCHDOG
     output logic watchdog_reset,
 `endif
+`ifdef USE_STATUS_SPI
+    output types::status_addr_t status_addr,
+    output logic status_request,
+`endif
 `ifdef DEBUGGER
     debugger_if.control_module debug_if,
 `endif
@@ -282,6 +286,26 @@ module control_module #(
     );
 `endif
 
+`ifdef USE_STATUS_SPI
+    wire                      cmd_readstatus_done;
+    wire                      cmd_readstatus_le;
+    wire types::status_addr_t cmd_readstatus_do;
+
+    control_cmd_readstatus #(
+        ._UNUSED('d0)
+    ) cmd_readstatus (
+        .reset          (reset),
+        .data_in        (data_rx_latch),
+        .clk            (clk_in),
+        .enable         ((cmd_line_state == enums::STATE_CMD_READSTATUS) && ~data_ready_n),
+        .data_out       (cmd_readstatus_do),
+        .status_latch_en(cmd_readstatus_le),
+        .done           (cmd_readstatus_done)
+    );
+    assign status_addr = cmd_readstatus_do;
+    assign status_request = cmd_readstatus_le;
+`endif
+
 `ifdef USE_WATCHDOG
     wire cmd_watchdog_done;
     wire cmd_watchdog_sysreset;
@@ -378,6 +402,11 @@ module control_module #(
             enums::STATE_CMD_COPYFRAME: begin
                 state_done           = cmd_copyframe_done;
                 ready_for_data_logic = 1'b0;
+            end
+`endif
+`ifdef USE_STATUS_SPI
+            enums::STATE_CMD_READSTATUS: begin
+                state_done = cmd_readstatus_done;
             end
 `endif
 `ifdef USE_WATCHDOG
@@ -527,6 +556,11 @@ module control_module #(
 `ifdef USE_WATCHDOG
                     cmd::WATCHDOG: begin
                         cmd_line_state <= enums::STATE_CMD_WATCHDOG;
+                    end
+`endif
+`ifdef USE_STATUS_SPI
+                    cmd::READSTATUS: begin
+                        cmd_line_state <= enums::STATE_CMD_READSTATUS;
                     end
 `endif
 `ifdef DOUBLE_BUFFER

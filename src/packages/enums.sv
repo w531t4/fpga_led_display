@@ -12,6 +12,9 @@ package enums;
         STATE_CMD_READRECT,
         STATE_CMD_READPIXEL,
         STATE_CMD_READFRAME
+`ifdef USE_STATUS_SPI,
+        STATE_CMD_READSTATUS
+`endif
 `ifdef USE_WATCHDOG,
         STATE_CMD_WATCHDOG
 `endif
