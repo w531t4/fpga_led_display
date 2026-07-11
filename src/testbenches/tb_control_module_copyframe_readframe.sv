@@ -56,6 +56,10 @@ module tb_control_module_copyframe_readframe;
 `ifdef USE_WATCHDOG
     wire watchdog_reset;
 `endif
+`ifdef USE_STATUS_SPI
+    wire [7:0] status_addr;
+    wire status_request;
+`endif
 
     // === Copy engine wiring ===
     mem_copy_if copy_int();
@@ -106,6 +110,10 @@ module tb_control_module_copyframe_readframe;
 `endif
 `ifdef USE_WATCHDOG
         .watchdog_reset(watchdog_reset),
+`endif
+`ifdef USE_STATUS_SPI
+        .status_addr(status_addr),
+        .status_request(status_request),
 `endif
         .frame_select(frame_select)
     );
@@ -286,6 +294,9 @@ module tb_control_module_copyframe_readframe;
     wire _unused_ok_watchdog = &{1'b0,
                                  watchdog_reset,
                                  1'b0};
+`endif
+`ifdef USE_STATUS_SPI
+    wire _unused_ok_status_spi = &{1'b0, status_addr, status_request, 1'b0};
 `endif
     // verilog_format: on
 endmodule

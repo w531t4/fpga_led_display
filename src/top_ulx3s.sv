@@ -8,6 +8,11 @@ module top_ulx3s (
     input        wifi_gpio21,  // ce
     output       wifi_gpio35,  // controller busy indicator (FPGA -> ESP32)
     output       wifi_gpio27,  // fpga reset notify
+`ifdef USE_STATUS_SPI
+    input        wifi_gpio15,  // READSTATUS read port sck (sd_cmd trace, ESP32 GPIO15)
+    input        wifi_gpio4,   // READSTATUS read port cs_n (sd_d1 trace, ESP32 GPIO4)
+    output       wifi_gpio2,   // READSTATUS read port miso (sd_d0 trace, ESP32 GPIO2)
+`endif
 `ifdef USE_PASSTHRU
     input        ftdi_txd,
     input        wifi_txd,
@@ -57,6 +62,11 @@ module top_ulx3s (
         .mosi(wifi_gpio13),
         .ctrl_busy(ctrl_busy),
         .fpga_ready(fpga_ready),
+`ifdef USE_STATUS_SPI
+        .status_sck(wifi_gpio15),
+        .status_cs_n(wifi_gpio4),
+        .status_miso(wifi_gpio2),
+`endif
         .rgb(rgb),
         .clk_pixel(clk_pixel),
         .row_latch(row_latch),

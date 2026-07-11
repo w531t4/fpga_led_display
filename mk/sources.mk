@@ -27,6 +27,13 @@ SIMBINS := $(filter-out $(SIM_BIN_DIR)/control_cmd_watchdog, $(SIMBINS))
 FSTOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_watchdog.fst, $(FSTOBJS))
 endif
 
+ifneq ($(findstring -DUSE_STATUS_SPI,$(BUILD_FLAGS)), -DUSE_STATUS_SPI)
+VSOURCES := $(filter-out $(SRC_DIR)/control_cmd_readstatus.sv $(SRC_DIR)/reg_spi_responder.sv, $(VSOURCES))
+TBSRCS := $(filter-out $(TB_DIR)/tb_control_cmd_readstatus.sv $(TB_DIR)/tb_reg_spi_responder.sv, $(TBSRCS))
+SIMBINS := $(filter-out $(SIM_BIN_DIR)/control_cmd_readstatus $(SIM_BIN_DIR)/reg_spi_responder, $(SIMBINS))
+FSTOBJS := $(filter-out $(SIMULATION_DIR)/control_cmd_readstatus.fst $(SIMULATION_DIR)/reg_spi_responder.fst, $(FSTOBJS))
+endif
+
 ifneq ($(findstring -DUSE_FM6126A,$(BUILD_FLAGS)), -DUSE_FM6126A)
 VSOURCES := $(filter-out $(SRC_DIR)/fm6126init.sv, $(VSOURCES))
 TBSRCS := $(filter-out $(TB_DIR)/tb_fm6126init.sv, $(TBSRCS))

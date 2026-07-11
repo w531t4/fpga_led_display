@@ -15,6 +15,12 @@ module display_core #(
     // Status Wires
     output                            ctrl_busy,                          // high while a command executes
     output logic                      fpga_ready,                         // fpga reset-notify / ready
+    // READSTATUS read port: host-clocked CS-framed register readback
+`ifdef USE_STATUS_SPI
+    input                             status_sck,
+    input                             status_cs_n,
+    output                            status_miso,
+`endif
     // HUB75 logical panel signals
     output types::rgb_signals_t       rgb               [NUM_SUBPANELS],  // 0=top, 1=bottom
     output                            clk_pixel,
@@ -102,6 +108,10 @@ module display_core #(
     wire rxdata_ready_level;
     wire rxdata_ready_pulse;
     wire [7:0] rxdata_to_controller;
+`ifdef USE_STATUS_SPI
+    wire types::status_addr_t status_addr;
+    wire status_request;
+`endif
     wire spi_slave_sdout;
 `ifdef USE_WATCHDOG
     wire watchdog_reset;
@@ -278,6 +288,10 @@ module display_core #(
 `ifdef USE_WATCHDOG
         .watchdog_reset(watchdog_reset),
 `endif
+`ifdef USE_STATUS_SPI
+        .status_addr(status_addr),
+        .status_request(status_request),
+`endif
 `ifdef DEBUGGER
         .debug_if(debug_if),
 `endif
@@ -344,6 +358,32 @@ module display_core #(
         .debug_command(debug_command),
         .currentState(debugger_current_state),
         .tx_out(debug_uart_tx)
+    );
+`endif
+
+`ifdef USE_STATUS_SPI
+    // Select the one register named by the host's READSTATUS address byte (the
+    // register map and wire format live in types.sv).
+    types::status_value_t status_value;
+    always_comb begin
+        status_value = '0;  // reserved addresses read as zero; unused high bits stay zero
+        case (status_addr)
+            types::STATUS_ADDR_FLAGS:      status_value[2:0] = {fpga_ready, ctrl_busy, ctrl_ready_for_data};
+            types::STATUS_ADDR_RGB:        status_value[$bits(rgb_enable)-1:0] = rgb_enable;
+            types::STATUS_ADDR_BRIGHTNESS: status_value[$bits(brightness_enable)-1:0] = brightness_enable;
+            default:                       ;
+        endcase
+    end
+
+    reg_spi_responder reg_spi_responder_inst (
+        .clk_in  (clk_root),
+        .reset   (global_reset),
+        .latch   (status_request),
+        .addr_in (status_addr),
+        .value_in(status_value),
+        .sck     (status_sck),
+        .cs_n    (status_cs_n),
+        .miso    (status_miso)
     );
 `endif
 

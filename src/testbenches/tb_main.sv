@@ -63,6 +63,14 @@ module tb_main #(
     logic spi_start;
     wire fpga_ready;
     wire ctrl_busy;
+`ifdef USE_STATUS_SPI
+    localparam int unsigned STATUS_REPLY_BITS = $bits(types::status_reply_t);
+    logic status_sck;
+    logic status_cs_n;
+    wire status_miso;
+    logic [STATUS_REPLY_BITS-1:0] status_cap;
+    logic status_read_done;
+`endif
 `ifdef USE_PASSTHRU
     logic ftdi_txd;
     logic wifi_txd;
@@ -86,6 +94,11 @@ module tb_main #(
         .mosi              (mosi),
         .ctrl_busy         (ctrl_busy),
         .fpga_ready        (fpga_ready),
+`ifdef USE_STATUS_SPI
+        .status_sck        (status_sck),
+        .status_cs_n       (status_cs_n),
+        .status_miso       (status_miso),
+`endif
         .rgb               (rgb),
         .clk_pixel         (clk_pixel),
         .row_latch         (row_latch),
@@ -188,8 +201,42 @@ module tb_main #(
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active !== 4'b0101, TB_MAIN_WAIT_CYCLES)
         // `WAIT_ASSERT(clk, tb_main.tbi_main.row_address_active === 4'b0101, TB_MAIN_WAIT_CYCLES)
         wait (cmd_line_state_seq_done);
+`ifdef USE_STATUS_SPI
+        wait (status_read_done);
+`endif
         $finish;
     end
+
+`ifdef USE_STATUS_SPI
+    // Read the reset-state READSTATUS frame over the status port while command
+    // traffic runs on the main bus (the ports are independent). No READSTATUS
+    // is issued in cmd_series, so the mailbox must hold the 0xFF sentinel.
+    initial begin : assert_status_readport
+        status_sck       = 1'b1;  // mode 3: idle high
+        status_cs_n      = 1'b1;
+        status_read_done = 1'b0;
+        `WAIT_ASSERT(clk, fpga_ready === 1'b1, TB_MAIN_WAIT_CYCLES)
+        repeat (4) @(posedge clk);
+        status_cs_n = 1'b0;
+        #(params::SIM_HALF_PERIOD_NS * 4);
+        for (int unsigned i = 0; i < STATUS_REPLY_BITS; i = i + 1) begin
+            status_sck = 1'b0;
+            #(params::SIM_HALF_PERIOD_NS * 4);
+            status_cap = {status_cap[STATUS_REPLY_BITS-2:0], status_miso};
+            status_sck = 1'b1;
+            #(params::SIM_HALF_PERIOD_NS * 4);
+        end
+        status_cs_n = 1'b1;
+        #(params::SIM_HALF_PERIOD_NS * 4);
+        if (status_cap !== tb_main.tbi_main.reg_spi_responder_inst.frame)
+            $fatal(1, "status port readout mismatch: got %0h, mailbox %0h", status_cap,
+                   tb_main.tbi_main.reg_spi_responder_inst.frame);
+        if (status_cap[STATUS_REPLY_BITS-1-:8] !== 8'hFF)
+            $fatal(1, "status addr sentinel mismatch: got %02x, expected ff", status_cap[STATUS_REPLY_BITS-1-:8]);
+        if (status_miso !== 1'b1) $fatal(1, "status_miso should idle high after CS deasserts");
+        status_read_done = 1'b1;
+    end
+`endif
 
     initial begin : assert_fpga_ready_sequence
         `WAIT_ASSERT(clk, tb_main.tbi_main.global_reset === 1'b1, TB_MAIN_WAIT_CYCLES)

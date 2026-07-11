@@ -58,6 +58,10 @@ module tb_control_module_readrect;
     wire                                 ram_clk_enable;
     wire                                 watchdog_reset;
     wire                                 frame_select;
+`ifdef USE_STATUS_SPI
+    wire [7:0] status_addr;
+    wire status_request;
+`endif
 
     // === Scoreboard memory ===
     // byte unsigned mem_actual[0:MEM_TOTAL_BYTES-1];
@@ -95,6 +99,10 @@ module tb_control_module_readrect;
 `endif
 `ifdef DOUBLE_BUFFER
         .frame_select(frame_select),
+`endif
+`ifdef USE_STATUS_SPI
+        .status_addr(status_addr),
+        .status_request(status_request),
 `endif
         .watchdog_reset(watchdog_reset)
     );
@@ -330,6 +338,9 @@ module tb_control_module_readrect;
     end
 
     // verilog_format: off
+`ifdef USE_STATUS_SPI
+    wire _unused_ok_status_spi = &{1'b0, status_addr, status_request, 1'b0};
+`endif
     wire _unused_ok = &{1'b0,
                         rgb_enable,
                         brightness_enable,
