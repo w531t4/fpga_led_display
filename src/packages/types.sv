@@ -306,6 +306,7 @@ package types;
         STATUS_ADDR_RX_KBPS    = 8'h03,  // command-SPI receive rate, KBps, 5 s sliding window
         STATUS_ADDR_HUB75_FPS  = 8'h04,  // HUB75 frame-emit rate, Hz, 5 s sliding average
         STATUS_ADDR_FB_FPS     = 8'h05,  // framebuffer swap rate, /s, 5 s avg (0 if !DOUBLE_BUFFER)
+        STATUS_ADDR_UPTIME     = 8'h06,  // whole seconds since reset (plain counter)
         STATUS_ADDR_NONE       = 8'hFF   // reserved: the never-latched mailbox sentinel
     } status_addr_e;
     // Field shapes; the byte sizes live in params:: (STATUS_*_BYTES).

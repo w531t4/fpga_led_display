@@ -394,6 +394,14 @@ module display_core #(
         .value        (fb_fps_value)
     );
 
+    // Uptime: whole seconds since global_reset (self-contained 1 Hz tick).
+    types::status_value_t uptime_value;
+    reg_uptime_seconds uptime_reg (
+        .clk  (clk_root),
+        .reset(global_reset),
+        .value(uptime_value)
+    );
+
     // Select the one register named by the host's READSTATUS address byte (the
     // register map and wire format live in types.sv).
     types::status_value_t status_value;
@@ -406,6 +414,7 @@ module display_core #(
             types::STATUS_ADDR_RX_KBPS:    status_value = rx_kbps_value;
             types::STATUS_ADDR_HUB75_FPS:  status_value = hub75_fps_value;
             types::STATUS_ADDR_FB_FPS:     status_value = fb_fps_value;
+            types::STATUS_ADDR_UPTIME:     status_value = uptime_value;
             default:                       ;
         endcase
     end
