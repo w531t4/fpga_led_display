@@ -402,6 +402,12 @@ module display_core #(
         .value(uptime_value)
     );
 
+    // Version: build-time constant packed from the semantic-release tag (version_pkg).
+    types::status_value_t version_value;
+    reg_version version_reg (
+        .value(version_value)
+    );
+
     // Select the one register named by the host's READSTATUS address byte (the
     // register map and wire format live in types.sv).
     types::status_value_t status_value;
@@ -415,6 +421,7 @@ module display_core #(
             types::STATUS_ADDR_HUB75_FPS:  status_value = hub75_fps_value;
             types::STATUS_ADDR_FB_FPS:     status_value = fb_fps_value;
             types::STATUS_ADDR_UPTIME:     status_value = uptime_value;
+            types::STATUS_ADDR_VERSION:    status_value = version_value;
             default:                       ;
         endcase
     end
