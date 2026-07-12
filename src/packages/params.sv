@@ -61,6 +61,10 @@ package params;
     parameter int unsigned STATUS_FB_FPS_PRESCALE = STATUS_FB_FPS_WINDOW_SECONDS;
     parameter int unsigned STATUS_FB_FPS_BIN_TICKS = ROOT_CLOCK;  // 1 s bins
 
+    // Uptime: whole seconds since reset. A 1 Hz tick is ROOT_CLOCK clocks; a
+    // counter this wide wraps only after ~136 years, i.e. effectively never.
+    parameter int unsigned STATUS_UPTIME_SECONDS_BITS = 32;
+
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
     // FRAMEBUFFER FETCH
