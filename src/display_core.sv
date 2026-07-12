@@ -362,6 +362,15 @@ module display_core #(
 `endif
 
 `ifdef USE_STATUS_SPI
+    // Per-register value producers (each emits a full status_value_t).
+    types::status_value_t rx_kbps_value;
+    reg_spi_rx_kbps rx_kbps_reg (
+        .clk       (clk_root),
+        .reset     (global_reset),
+        .byte_pulse(rxdata_ready_pulse),
+        .value     (rx_kbps_value)
+    );
+
     // Select the one register named by the host's READSTATUS address byte (the
     // register map and wire format live in types.sv).
     types::status_value_t status_value;
@@ -371,6 +380,7 @@ module display_core #(
             types::STATUS_ADDR_FLAGS:      status_value[2:0] = {fpga_ready, ctrl_busy, ctrl_ready_for_data};
             types::STATUS_ADDR_RGB:        status_value[$bits(rgb_enable)-1:0] = rgb_enable;
             types::STATUS_ADDR_BRIGHTNESS: status_value[$bits(brightness_enable)-1:0] = brightness_enable;
+            types::STATUS_ADDR_RX_KBPS:    status_value = rx_kbps_value;
             default:                       ;
         endcase
     end

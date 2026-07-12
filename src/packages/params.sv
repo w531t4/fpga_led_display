@@ -43,6 +43,12 @@ package params;
     // carries (see reg_mailbox.sv's drawing).
     parameter int unsigned STATUS_BODY_BYTES = STATUS_ADDR_BYTES + STATUS_SEQ_BYTES + STATUS_VALUE_BYTES;
     parameter int unsigned STATUS_FRAME_BYTES = STATUS_BODY_BYTES + STATUS_CRC_BYTES;
+    // RX throughput register: bytes are prescaled into (window-seconds * 1000)
+    // -byte quanta, so quanta counted per window read directly in KBps -- no
+    // division anywhere (the prescaler carries the remainder).
+    parameter int unsigned STATUS_RX_KBPS_WINDOW_SECONDS = 5;
+    parameter int unsigned STATUS_RX_KBPS_PRESCALE = STATUS_RX_KBPS_WINDOW_SECONDS * 1000;
+    parameter int unsigned STATUS_RX_KBPS_BIN_TICKS = ROOT_CLOCK;  // 1 s bins
 
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
