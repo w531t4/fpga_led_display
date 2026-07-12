@@ -303,7 +303,6 @@ package types;
         STATUS_ADDR_FLAGS      = 8'h00,  // {5'b0, fpga_ready, ctrl_busy, ctrl_ready_for_data}
         STATUS_ADDR_RGB        = 8'h01,  // {5'b0, red, green, blue}
         STATUS_ADDR_BRIGHTNESS = 8'h02,  // brightness_enable (zero-padded high)
-        STATUS_ADDR_RX_KBPS    = 8'h03,  // command-SPI receive rate, KBps, 5 s sliding window
         STATUS_ADDR_NONE       = 8'hFF   // reserved: the never-latched mailbox sentinel
     } status_addr_e;
     // Field shapes; the byte sizes live in params:: (STATUS_*_BYTES).
