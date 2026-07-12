@@ -307,6 +307,7 @@ package types;
         STATUS_ADDR_HUB75_FPS  = 8'h04,  // HUB75 frame-emit rate, Hz, 5 s sliding average
         STATUS_ADDR_FB_FPS     = 8'h05,  // framebuffer swap rate, /s, 5 s avg (0 if !DOUBLE_BUFFER)
         STATUS_ADDR_UPTIME     = 8'h06,  // whole seconds since reset (plain counter)
+        STATUS_ADDR_VERSION    = 8'h07,  // gateware version {major,minor,patch,git_sha,commits,dirty} (see reg_version.sv)
         STATUS_ADDR_NONE       = 8'hFF   // reserved: the never-latched mailbox sentinel
     } status_addr_e;
     // Field shapes; the byte sizes live in params:: (STATUS_*_BYTES).
@@ -335,6 +336,18 @@ package types;
         status_value_t value;
         status_crc_t   crc;
     } status_reply_t;
+
+    // Layout of the STATUS_ADDR_VERSION register value (packed into status_value_t,
+    // first field = MSB). Populated by reg_version.sv from the build-time -D version
+    // flags (see mk/version.mk / gen_version_defines.sh). Widths sum to 64 bits.
+    typedef struct packed {
+        logic [6:0]  major;    // <= 127
+        logic [6:0]  minor;    // <= 127
+        logic [6:0]  patch;    // <= 127
+        logic [31:0] git_sha;  // high 32 bits of the HEAD commit hash
+        logic [9:0]  commits;  // commits since the tag, <= 1023
+        logic        dirty;    // 1 if the working tree had uncommitted changes
+    } version_t;               // 7+7+7+32+10+1 = 64 = $bits(status_value_t)
     // ==== /STATUS READBACK ====
 
 endpackage

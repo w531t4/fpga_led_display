@@ -11,6 +11,9 @@ include mk/config.mk
 # Ensure depfile includes don't override the default goal.
 .DEFAULT_GOAL := all
 
+# version.mk before sources.mk: sources.mk's PKG_SOURCES references $(VERSION_PKG).
+include mk/version.mk
+
 include mk/sources.mk
 
 include mk/verilator.mk
