@@ -362,6 +362,28 @@ module display_core #(
 `endif
 
 `ifdef USE_STATUS_SPI
+    // RX throughput register: received bytes -> prescaled quanta -> quanta
+    // per sliding window == KBps by construction (see params:: comment).
+    wire rx_kbps_quantum;
+    event_prescaler #(
+        .DIVISOR(params::STATUS_RX_KBPS_PRESCALE)
+    ) rx_kbps_prescaler (
+        .clk      (clk_root),
+        .reset    (global_reset),
+        .pulse_in (rxdata_ready_pulse),
+        .pulse_out(rx_kbps_quantum)
+    );
+    wire [calc::safe_clog2(params::STATUS_RX_KBPS_WINDOW_SECONDS*params::STATUS_RX_KBPS_BIN_TICKS+1)-1:0] rx_kbps;
+    event_rate_meter #(
+        .BIN_TICKS(params::STATUS_RX_KBPS_BIN_TICKS),
+        .BINS     (params::STATUS_RX_KBPS_WINDOW_SECONDS)
+    ) rx_kbps_meter (
+        .clk        (clk_root),
+        .reset      (global_reset),
+        .event_pulse(rx_kbps_quantum),
+        .count      (rx_kbps)
+    );
+
     // Select the one register named by the host's READSTATUS address byte (the
     // register map and wire format live in types.sv).
     types::status_value_t status_value;
@@ -371,6 +393,7 @@ module display_core #(
             types::STATUS_ADDR_FLAGS:      status_value[2:0] = {fpga_ready, ctrl_busy, ctrl_ready_for_data};
             types::STATUS_ADDR_RGB:        status_value[$bits(rgb_enable)-1:0] = rgb_enable;
             types::STATUS_ADDR_BRIGHTNESS: status_value[$bits(brightness_enable)-1:0] = brightness_enable;
+            types::STATUS_ADDR_RX_KBPS:    status_value[$bits(rx_kbps)-1:0] = rx_kbps;
             default:                       ;
         endcase
     end
