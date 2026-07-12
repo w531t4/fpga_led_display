@@ -55,6 +55,11 @@ package params;
     parameter int unsigned STATUS_HUB75_FPS_WINDOW_SECONDS = 5;
     parameter int unsigned STATUS_HUB75_FPS_PRESCALE = STATUS_HUB75_FPS_WINDOW_SECONDS;
     parameter int unsigned STATUS_HUB75_FPS_BIN_TICKS = ROOT_CLOCK;  // 1 s bins
+    // Framebuffer toggle-rate register: WINDOW_SECONDS sliding average, in
+    // toggles/second (prescale by window, same as STATUS_HUB75_FPS).
+    parameter int unsigned STATUS_FB_FPS_WINDOW_SECONDS = 5;
+    parameter int unsigned STATUS_FB_FPS_PRESCALE = STATUS_FB_FPS_WINDOW_SECONDS;
+    parameter int unsigned STATUS_FB_FPS_BIN_TICKS = ROOT_CLOCK;  // 1 s bins
 
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;

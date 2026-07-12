@@ -382,6 +382,18 @@ module display_core #(
         .value       (hub75_fps_value)
     );
 
+    // Framebuffer swap rate: frame_select flips once per swap (same domain);
+    // without DOUBLE_BUFFER the register takes no toggle input and reads 0.
+    types::status_value_t fb_fps_value;
+    reg_fb_fps fb_fps_reg (
+        .clk          (clk_root),
+        .reset        (global_reset),
+`ifdef DOUBLE_BUFFER
+        .toggle_signal(frame_select),
+`endif
+        .value        (fb_fps_value)
+    );
+
     // Select the one register named by the host's READSTATUS address byte (the
     // register map and wire format live in types.sv).
     types::status_value_t status_value;
@@ -393,6 +405,7 @@ module display_core #(
             types::STATUS_ADDR_BRIGHTNESS: status_value[$bits(brightness_enable)-1:0] = brightness_enable;
             types::STATUS_ADDR_RX_KBPS:    status_value = rx_kbps_value;
             types::STATUS_ADDR_HUB75_FPS:  status_value = hub75_fps_value;
+            types::STATUS_ADDR_FB_FPS:     status_value = fb_fps_value;
             default:                       ;
         endcase
     end
