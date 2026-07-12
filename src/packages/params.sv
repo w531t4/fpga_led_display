@@ -49,6 +49,12 @@ package params;
     parameter int unsigned STATUS_RX_KBPS_WINDOW_SECONDS = 5;
     parameter int unsigned STATUS_RX_KBPS_PRESCALE = STATUS_RX_KBPS_WINDOW_SECONDS * 1000;
     parameter int unsigned STATUS_RX_KBPS_BIN_TICKS = ROOT_CLOCK;  // 1 s bins
+    // HUB75 frame-emit rate register: WINDOW_SECONDS sliding average, in Hz.
+    // Prescale frames by the window length so quanta-per-window == Hz (same
+    // trick as STATUS_RX_KBPS, minus the KB/byte 1000 factor).
+    parameter int unsigned STATUS_HUB75_FPS_WINDOW_SECONDS = 5;
+    parameter int unsigned STATUS_HUB75_FPS_PRESCALE = STATUS_HUB75_FPS_WINDOW_SECONDS;
+    parameter int unsigned STATUS_HUB75_FPS_BIN_TICKS = ROOT_CLOCK;  // 1 s bins
 
     // Use this to tune what clock freq we expose to matrix_scan
     parameter int unsigned DIVIDE_CLK_BY_X_FOR_MATRIX = 2;
