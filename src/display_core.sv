@@ -371,6 +371,17 @@ module display_core #(
         .value     (rx_kbps_value)
     );
 
+    // Frame-emit rate: the row address MSB rises once per emitted frame; the
+    // register synchronizes that clk_matrix edge into clk_root internally.
+    wire frame_active = row_address_active[$bits(row_address_active)-1];
+    types::status_value_t hub75_fps_value;
+    reg_hub75_fps hub75_fps_reg (
+        .clk         (clk_root),
+        .reset       (global_reset),
+        .frame_active(frame_active),
+        .value       (hub75_fps_value)
+    );
+
     // Select the one register named by the host's READSTATUS address byte (the
     // register map and wire format live in types.sv).
     types::status_value_t status_value;
@@ -381,6 +392,7 @@ module display_core #(
             types::STATUS_ADDR_RGB:        status_value[$bits(rgb_enable)-1:0] = rgb_enable;
             types::STATUS_ADDR_BRIGHTNESS: status_value[$bits(brightness_enable)-1:0] = brightness_enable;
             types::STATUS_ADDR_RX_KBPS:    status_value = rx_kbps_value;
+            types::STATUS_ADDR_HUB75_FPS:  status_value = hub75_fps_value;
             default:                       ;
         endcase
     end
